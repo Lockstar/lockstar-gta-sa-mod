@@ -1,0 +1,11 @@
+relre:.*[.]ncb
+relre:.*[.]user
+relre:.*[.]suo
+relre:.*[.]Setup[.]exe
+relre:d3d9[.]dll
+relre:.*[.]obj
+relre:.*[.]idb
+relre:.*[.]lib
+relre:.*[.]res
+relre:.*BuildLog[.]htm
+relre:.*[.]exp
