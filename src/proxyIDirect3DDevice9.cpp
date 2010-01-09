@@ -1644,7 +1644,7 @@ bool bShowChat = true;
 void renderChat(void)
 {
 	if(g_Chat == NULL) return;
-	
+
 	if(GetAsyncKeyState(VK_TAB) < 0) return;
 	if(GetAsyncKeyState(VK_F1) < 0) return;
 	if(GetAsyncKeyState(VK_F5) < 0) return;
@@ -1652,18 +1652,18 @@ void renderChat(void)
 
 	static int chat_last = -1, chat_render;
 	mmm_yummy_poop(g_Chat, &g_Chat->iChatWindowMode, &chat_last, &chat_render, "chat text");
-	
+
 	if(chat_render && !gta_menu_active() && bShowChat)
 	{
 		if(set.d3dtext_chat_lines <= 0) set.d3dtext_chat_lines = 10;
 		if(set.d3dtext_chat_lines >= 100) set.d3dtext_chat_lines = 100;
-		
+
 		DWORD func = g_dwSAMP_Addr + 0x2D350;
 		__asm push 1
 		__asm call func
 
 		float fYChatPos = fYChatPosAdj;
-		
+
 		if(KEY_DOWN(VK_PRIOR))
 		{
 			(fYChatPos) -= 20.0f;
@@ -2506,36 +2506,90 @@ void proxyID3DDevice9_InitWindowMode(D3DPRESENT_PARAMETERS *pPresentationParamet
 		if (set.window_mode)
 		{
 			// set to windowed
-			GTAfunc_RwD3D9ChangeVideoMode(0);
-			*(int*)0xC920CC = 1; // _?windowed
-			g_RsGlobal->ps->fullscreen = 0;
-			g_pGTAPresent->Windowed = 1;
-			g_pGTAPresent->FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
-			g_pGTAPresent->BackBufferWidth = presentWidth;
-			g_pGTAPresent->BackBufferHeight = presentHeight;
-			pPresentationParameters->Windowed = 1;
-			pPresentationParameters->FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
-			pPresentationParameters->BackBufferWidth = presentWidth;
-			pPresentationParameters->BackBufferHeight = presentHeight;
-			GTAfunc_RwD3D9ChangeVideoMode(0);
-			GTAfunc_setCurrentVideoMode(0);
+			if (GTAfunc_RwD3D9ChangeVideoMode(0) != 1)
+			{
+				Log("proxyID3DDevice9_InitWindowMode() failed to GTAfunc_RwD3D9ChangeVideoMode(0) #1");
+				g_InitWindowMode_ForceUpdate_Active = false;
+				return;
+			}
+			else
+			{
+				*(int*)0xC920CC = 1; // _?windowed
+				g_RsGlobal->ps->fullscreen = 0;
+				if (isBadPtr_writeAny(g_pGTAPresent, sizeof(D3DPRESENT_PARAMETERS)))
+				{
+					Log("proxyID3DDevice9_InitWindowMode() g_pGTAPresent pointer bad. Continuing anyways.");
+				}
+				else
+				{
+					g_pGTAPresent->Windowed = 1;
+					g_pGTAPresent->FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
+					g_pGTAPresent->BackBufferWidth = presentWidth;
+					g_pGTAPresent->BackBufferHeight = presentHeight;
+				}
+				if (isBadPtr_writeAny(pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS)))
+				{
+					Log("proxyID3DDevice9_InitWindowMode() pPresentationParameters pointer bad. Continuing anyways.");
+				}
+				else
+				{
+					pPresentationParameters->Windowed = 1;
+					pPresentationParameters->FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
+					pPresentationParameters->BackBufferWidth = presentWidth;
+					pPresentationParameters->BackBufferHeight = presentHeight;
+				}
+				if (GTAfunc_RwD3D9ChangeVideoMode(0) != 1)
+				{
+					Log("proxyID3DDevice9_InitWindowMode() failed to GTAfunc_RwD3D9ChangeVideoMode(0) #2");
+					g_InitWindowMode_ForceUpdate_Active = false;
+					return;
+				}
+				//GTAfunc_setCurrentVideoMode(0);
+			}
 		}
 		else if (!set.window_mode)
 		{
 			// set to fullscreen
-			GTAfunc_RwD3D9ChangeVideoMode(0);
-			*(int*)0xC920CC = 0; // _?windowed
-			g_RsGlobal->ps->fullscreen = 1;
-			g_pGTAPresent->Windowed = 0;
-			g_pGTAPresent->FullScreen_RefreshRateInHz = ulFullScreenRefreshRate;
-			g_pGTAPresent->BackBufferWidth = presentWidth;
-			g_pGTAPresent->BackBufferHeight = presentHeight;
-			pPresentationParameters->Windowed = 0;
-			pPresentationParameters->FullScreen_RefreshRateInHz = ulFullScreenRefreshRate;
-			pPresentationParameters->BackBufferWidth = presentWidth;
-			pPresentationParameters->BackBufferHeight = presentHeight;
-			GTAfunc_RwD3D9ChangeVideoMode(m_dwVideoMode);
-			GTAfunc_setCurrentVideoMode(m_dwVideoMode);
+			if (GTAfunc_RwD3D9ChangeVideoMode(0) != 1)
+			{
+				Log("proxyID3DDevice9_InitWindowMode() failed to GTAfunc_RwD3D9ChangeVideoMode(0) #3");
+				g_InitWindowMode_ForceUpdate_Active = false;
+				return;
+			}
+			else
+			{
+				*(int*)0xC920CC = 0; // _?windowed
+				g_RsGlobal->ps->fullscreen = 1;
+				if (isBadPtr_writeAny(g_pGTAPresent, sizeof(D3DPRESENT_PARAMETERS)))
+				{
+					Log("proxyID3DDevice9_InitWindowMode() g_pGTAPresent pointer bad. Continuing anyways.");
+				}
+				else
+				{
+					g_pGTAPresent->Windowed = 0;
+					g_pGTAPresent->FullScreen_RefreshRateInHz = ulFullScreenRefreshRate;
+					g_pGTAPresent->BackBufferWidth = presentWidth;
+					g_pGTAPresent->BackBufferHeight = presentHeight;
+				}
+				if (isBadPtr_writeAny(pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS)))
+				{
+					Log("proxyID3DDevice9_InitWindowMode() pPresentationParameters pointer bad. Continuing anyways.");
+				}
+				else
+				{
+					pPresentationParameters->Windowed = 0;
+					pPresentationParameters->FullScreen_RefreshRateInHz = ulFullScreenRefreshRate;
+					pPresentationParameters->BackBufferWidth = presentWidth;
+					pPresentationParameters->BackBufferHeight = presentHeight;
+				}
+				if (GTAfunc_RwD3D9ChangeVideoMode(m_dwVideoMode) != 1)
+				{
+					Log("proxyID3DDevice9_InitWindowMode() failed to GTAfunc_RwD3D9ChangeVideoMode(m_dwVideoMode) #1, m_dwVideoMode=%d", m_dwVideoMode);
+					g_InitWindowMode_ForceUpdate_Active = false;
+					return;
+				}
+				//GTAfunc_setCurrentVideoMode(m_dwVideoMode);
+			}
 		}
 		g_InitWindowMode_ForceUpdate_Active = false;
 	}
@@ -2546,14 +2600,28 @@ void proxyID3DDevice9_InitWindowMode(D3DPRESENT_PARAMETERS *pPresentationParamet
 		g_InitWindowMode_ForceUpdate_Active = true;
 		*(int*)0xC920CC = 1; // _?windowed
 		g_RsGlobal->ps->fullscreen = 0;
-		g_pGTAPresent->Windowed = 1;
-		pPresentationParameters->Windowed = 1;
-		g_pGTAPresent->FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
-		g_pGTAPresent->BackBufferWidth = presentWidth;
-		g_pGTAPresent->BackBufferHeight = presentHeight;
-		pPresentationParameters->FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
-		pPresentationParameters->BackBufferWidth = presentWidth;
-		pPresentationParameters->BackBufferHeight = presentHeight;
+		if (isBadPtr_writeAny(g_pGTAPresent, sizeof(D3DPRESENT_PARAMETERS)))
+		{
+			Log("proxyID3DDevice9_InitWindowMode() g_pGTAPresent pointer bad. Continuing anyways.");
+		}
+		else
+		{
+			g_pGTAPresent->Windowed = 1;
+			g_pGTAPresent->FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
+			g_pGTAPresent->BackBufferWidth = presentWidth;
+			g_pGTAPresent->BackBufferHeight = presentHeight;
+		}
+		if (isBadPtr_writeAny(pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS)))
+		{
+			Log("proxyID3DDevice9_InitWindowMode() pPresentationParameters pointer bad. Continuing anyways.");
+		}
+		else
+		{
+			pPresentationParameters->Windowed = 1;
+			pPresentationParameters->FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
+			pPresentationParameters->BackBufferWidth = presentWidth;
+			pPresentationParameters->BackBufferHeight = presentHeight;
+		}
 		g_InitWindowMode_ForceUpdate_Active = false;
 	}
 
@@ -2616,9 +2684,6 @@ HRESULT proxyIDirect3DDevice9::Reset(D3DPRESENT_PARAMETERS *pPresentationParamet
 	// return for the reset
 	HRESULT hRes_orig_Reset;
 
-	// update the global Present Param struct
-	pPresentParam = *pPresentationParameters;
-
 	// this should always be done if a reset is requested
 	// and we have assets initialized on the proxy device
 	while (bD3DRenderInit) proxyID3DDevice9_UnInitOurShit();
@@ -2626,12 +2691,55 @@ HRESULT proxyIDirect3DDevice9::Reset(D3DPRESENT_PARAMETERS *pPresentationParamet
 	// always attempt to reset orig device if we are asked to
 	// since GTA is getting the state of the original device
 	hRes_orig_Reset = origIDirect3DDevice9->Reset(pPresentationParameters);
+
+	// check the pointers and wait 5 seconds if they are not good yet
+	short badPointerCount_g_pGTAPresent = 0;
+	bool badPointerBreak_g_pGTAPresent = false;
+	while (isBadPtr_writeAny(g_pGTAPresent, sizeof(D3DPRESENT_PARAMETERS))
+		&& !badPointerBreak_g_pGTAPresent)
+	{
+		badPointerCount_g_pGTAPresent++;
+		if (badPointerCount_g_pGTAPresent < 50)
+		{
+			Sleep(100);
+		}
+		else
+		{
+			Log("During D3D9 Reset(), g_pGTAPresent was bad for over 5 seconds. Continuing anyways.");
+			badPointerBreak_g_pGTAPresent = true;
+		}
+	}
+	short badPointerCount_pPresentationParameters = 0;
+	bool badPointerBreak_pPresentationParameters = false;
+	while (isBadPtr_writeAny(pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS))
+		&& !badPointerBreak_pPresentationParameters)
+	{
+		badPointerCount_pPresentationParameters++;
+		if (badPointerCount_pPresentationParameters < 50)
+		{
+			Sleep(100);
+		}
+		else
+		{
+			Log("During D3D9 Reset(), pPresentationParameters was bad for over 5 seconds. Continuing anyways.");
+			badPointerBreak_pPresentationParameters = true;
+		}
+	}
+
+	// handle the return from original Reset()
 	if (hRes_orig_Reset == D3D_OK)
 	{
 		// init our shit
-		while (!bD3DRenderInit) proxyID3DDevice9_InitOurShit(pPresentationParameters);
+		while (!bD3DRenderInit)
+		{
+			proxyID3DDevice9_InitOurShit(pPresentationParameters);
+			if (!bD3DRenderInit)
+				Sleep(100);
+		}
 		// init our window mode
 		proxyID3DDevice9_InitWindowMode(pPresentationParameters);
+		// update the global Present Param struct AFTER original reset, only if it's ok
+		pPresentParam = *pPresentationParameters;
 	}
 	// reporting problems is about all we can do here.
 	// we would normally just end the application gracefully right
@@ -2650,7 +2758,6 @@ HRESULT proxyIDirect3DDevice9::Reset(D3DPRESENT_PARAMETERS *pPresentationParamet
 	}
 	else
 	{
-		//wtf
 		Log("WTF: origIDirect3DDevice9::Reset() returned value %d", hRes_orig_Reset);
 	}
 
@@ -2984,6 +3091,11 @@ pRakNet_NetTxRx_Hook_End:;
 					if(set.hud_indicator_inveh_stick) { HUD_TEXT_TGL(x, cheat_state->vehicle.stick ? color_enabled : color_disabled , "Stick"); }
 					if(set.hud_indicator_inveh_brkdance) { HUD_TEXT_TGL(x, cheat_state->vehicle.brkdance ? color_enabled : color_disabled , "BrkDance"); }
 					RenderVehicleHPBar();
+
+					extern VECTOR vecForDisp;
+					_snprintf_s(buf, sizeof(buf), "vecForDisp: %0.4f %0.4f %0.4f", vecForDisp.X, vecForDisp.Y, vecForDisp.Z);
+					pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 30,
+						pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 40, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
 				}
 				else if(cheat_state->state == CHEAT_STATE_ACTOR)
 				{

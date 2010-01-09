@@ -350,3 +350,33 @@ int GTAfunc_RwD3D9ChangeVideoMode(int modeIndex)
         add     esp, 4
     }
 }
+
+VECTOR GTAfunc_GetMoveSpeed(vehicle_info *vinfo)
+{
+	VECTOR vecMoveSpeed;
+	DWORD dwFunc = FUNC_GetMoveSpeed;
+	DWORD dwThis = (DWORD)&vinfo->base;
+	DWORD dwReturn = 0;
+	__asm
+	{
+		mov		ecx, dwThis
+		call	dwFunc
+		mov		dwReturn, eax
+	}
+	memcpy_safe(&vecMoveSpeed, (void*)dwReturn, sizeof(VECTOR));
+	return vecMoveSpeed;
+}
+
+VOID GTAfunc_SetMoveSpeed(vehicle_info *vinfo, VECTOR vecMoveSpeed)
+{
+    DWORD dwFunc = FUNC_GetMoveSpeed;
+    DWORD dwThis = (DWORD)vinfo;
+    DWORD dwReturn = 0;
+    __asm
+    {
+        mov		ecx, dwThis
+        call	dwFunc
+        mov		dwReturn, eax
+    }
+    memcpy_safe((void*)dwReturn, &vecMoveSpeed, sizeof(VECTOR));
+}

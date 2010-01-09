@@ -196,9 +196,17 @@ void sampMainCheat()
 {
 	traceLastFunc("sampMainCheat()");
 
-	// g_Vehicles pointer needs to be refreshed
-	if(g_SAMP->pPool_Vehicle != NULL)
+
+	// g_Vehicles & g_Players pointers need to be refreshed or nulled
+	if (isBadPtr_writeAny(g_SAMP->pPool_Vehicle, sizeof(stVehiclePool)))
+		g_Vehicles = NULL;
+	else
 		g_Vehicles = g_SAMP->pPool_Vehicle;
+	if (isBadPtr_writeAny(g_SAMP->pPool_Player, sizeof(stPlayerPool)))
+		g_Players = NULL;
+	else
+		g_Players = g_SAMP->pPool_Player;
+
 
 	if(set.chatbox_logging)
 	{

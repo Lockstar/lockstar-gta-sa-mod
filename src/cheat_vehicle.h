@@ -44,3 +44,5 @@ void cheat_handle_vehicle_engine(struct vehicle_info *vehicle_info, float time_d
 void cheat_handle_vehicle_breakdance(struct vehicle_info *vehicle_info, float time_diff);
 void cheat_handle_fast_exit(struct vehicle_info *vehicle_info, float time_diff);
 void cheat_handle_repair_car(struct vehicle_info *vehicle_info, float time_diff);
+void cheat_handle_magnetWheels(vehicle_info *vinfo, float time_diff);
+void CPhysical_ApplyGravity(DWORD dwThis);

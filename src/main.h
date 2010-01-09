@@ -93,6 +93,8 @@ void Log(const char *fmt, ...);
 void LogChatbox(bool bLast, const char *fmt, ...);
 void setDebugPointer(void *ptr);
 
+void init_g_CCamera(void);
+
 // externals
 extern HMODULE g_hDllModule;
 extern char	g_szWorkingDirectory[MAX_PATH];
@@ -103,4 +105,5 @@ extern uint32_t	g_dwSAMP_Addr;
 extern CSettingsSAInterface *g_pCSettingsSAInterface;
 extern D3DPRESENT_PARAMETERS *g_pGTAPresent;
 extern RsGlobalType *g_RsGlobal;
+extern CCameraSA g_CCamera;
 // externals

@@ -38,6 +38,14 @@ $Id: math_stuff.cpp 31 2009-12-14 07:12:56Z futnucks $
 #include "main.h"
 
 
+/*
+
+a lot of these are only for float[] so it would be nice to consolidate
+some more functions for actual VECTOR/D3DVECTOR types, or better yet,
+to just finally move to the CVector and CMatrix classes.
+
+*/
+
 int near_zero(float v)
 {
    if(!isfinite(v))

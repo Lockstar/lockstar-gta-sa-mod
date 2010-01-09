@@ -149,7 +149,7 @@ void cheat_handle_debug(HWND wnd)
 {
    static const int data_size[4] = { 1, 2, 4, 4 };
    struct debug_info *debug = &cheat_state->debug;
-   int move = 0, hist_chng = 0, i;
+   int move = 0, hist_chng = 0;
 
 
    if(!cheat_state->debug_enabled)
@@ -246,7 +246,7 @@ void cheat_handle_debug(HWND wnd)
    }
 
 
-   for(i=0; i<9; i++)
+   for(int i=0; i<9; i++)
       KEY_CONSUME(VK_NUMPAD1 + i);
    KEY_CONSUME(VK_MULTIPLY);
    KEY_CONSUME(VK_DIVIDE);

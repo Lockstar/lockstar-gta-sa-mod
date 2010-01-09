@@ -843,6 +843,11 @@ static void ini_init(void)
 
    if((ent = ini_register_entry("enable_clouds", TYPE_BOOL)) != NULL)
       ini_register_data(ent, &set.enable_clouds, "true");
+
+
+	if((ent = ini_register_entry("key_magnetwheels", TYPE_KEY)) != NULL)
+		ini_register_data(ent, &set.key_magnetwheels, "pagedn");
+
 }
 
 int iGTAPatchesCount = 0;

@@ -330,6 +330,8 @@ struct settings
    int jpg_luminancetable;
 
    bool enable_clouds;
+
+   int key_magnetwheels;
 };
 
 extern struct settings set;

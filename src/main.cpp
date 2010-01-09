@@ -45,6 +45,23 @@ D3DPRESENT_PARAMETERS *g_pGTAPresent = (D3DPRESENT_PARAMETERS*)0xC9C040;
 RsGlobalType *g_RsGlobal = (RsGlobalType*)0xC17040;
 
 
+// new half-assed CCamera init
+CCameraSA g_CCamera;
+int is_init_g_CCamera = false;
+void init_g_CCamera(void)
+{
+	if (!is_init_g_CCamera)
+	{
+		traceLastFunc("init_g_CCamera()");
+		g_CCamera.internalInterface = (CCameraSAInterface*)CLASS_CCamera;
+		if (isBadPtr_writeAny(g_CCamera.internalInterface, sizeof(CCameraSAInterface))) return;
+		for(int i = 0; i<MAX_CAMS;i++)
+			g_CCamera.Cams[i].m_pInterface = (CCamSAInterface*)&g_CCamera.internalInterface->Cams[i];
+		is_init_g_CCamera = true;
+	}
+}
+
+
 void traceLastFunc(const char *szFunc)
 {
 	_snprintf_s(g_szLastFunc, sizeof(g_szLastFunc), szFunc);
@@ -287,7 +304,7 @@ static int init(void)
 			FreeLibrary(g_hOrigDll);
 			return 0;
 		}
-	  
+
 #ifdef M0D_DEV
 		CDetour api;
 		if(api.Create((uint8_t *)(uint32_t )0x53DED0, (uint8_t *)gtaload_log, DETOUR_TYPE_JMP, 5) == 0)

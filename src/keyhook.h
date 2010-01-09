@@ -36,7 +36,7 @@
    count by one, and invert the flip bit.
 
    This gives us a very simple key queue, which can be used to
-   emulate the old KEY_DOWN/UP KEY_PRESSED/RELEASED macros.
+   emulate the old KEY_DOWN/UP/PRESSED/RELEASED macros.
 */
 struct key_state
 {

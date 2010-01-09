@@ -56,14 +56,14 @@
 //#define		FUNC_CVehicle__SetRemapTexDictionary 0x6D0BC0
 #define		FUNC_CVehicle__GetRemapIndex	0x6D0B70
 #define		FUNC_CVehicle__SetRemap			0x6D0C00
+// VideoMode functions
 #define		FUNC_SetCurrentVideoMode		0x745C70
 #define		FUNC_GetCurrentVideoMode		0x7F2D20
 #define		FUNC_GetNumVideoModes			0x7F2CC0
 #define		FUNC_GetVideoModeInfo			0x7F2CF0
-
-// new testing ish
 #define		FUNC_RwD3D9ChangeVideoMode		0x7F8640
-
+// gravity functions
+#define		FUNC_GetMoveSpeed				0x404460
 
 // gta class addresses
 #define		CLASS_CMenuManager				0xBA6748
@@ -247,3 +247,7 @@ VideoMode *GTAfunc_getVideoModeInfo(VideoMode *modeInfo, int modeIndex);
 int GTAfunc_getCurrentVideoMode(void);
 void GTAfunc_setCurrentVideoMode(int modeIndex);
 int GTAfunc_RwD3D9ChangeVideoMode(int modeIndex);
+
+// gravity functions
+VECTOR GTAfunc_GetMoveSpeed(vehicle_info *vinfo);
+VOID GTAfunc_SetMoveSpeed(vehicle_info *vinfo, VECTOR vecMoveSpeed);
