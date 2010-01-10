@@ -287,6 +287,8 @@ struct settings
    int key_vehicle_hop;
    float vehicle_hop_speed;
 
+   int key_magnetwheels;
+
    float handling_multiplier;
 
    int use_current_name;
@@ -331,8 +333,12 @@ struct settings
 
    bool enable_clouds;
 
-   int key_magnetwheels;
+///////////////////////////////////////////////
+// DO NOT PUT ANYTHING AFTER THIS, DUMB FUCK //
+   int __DUMMYFUCKER_DONOTDELETE;
 };
+///////////////////////////////////////////////
+
 
 extern struct settings set;
 

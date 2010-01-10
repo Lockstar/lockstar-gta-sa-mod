@@ -888,9 +888,10 @@ void CPhysical_ApplyGravity(DWORD dwThis)
 		struct actor_info *ainfo_self = actor_info_get(ACTOR_SELF, 0);
 		if(vinfo_self != NULL
 			&& vinfo_self == (vehicle_info*)dwThis
-			&& vinfo_self->passengers[0] == ainfo_self)
+			&& vinfo_self->passengers[0] == ainfo_self
+			&& g_cheatVehicleMagnetWheels_Enabled)
 		{
-			// it's our vehicle, and we're driving, use the gravity vector
+			// it's our vehicle, and we're driving, and magnet wheels is enabled - use the gravity vector
 
 			VECTOR vecGravity = cheat_state->vehicle.gravityVector;
 			VECTOR vecMoveSpeed = GTAfunc_GetMoveSpeed(vinfo_self);
@@ -978,34 +979,6 @@ void cheat_vehicle_setGravity(vehicle_info *vinfo, VECTOR pvecGravity)
 	cheat_state->vehicle.gravityVector = pvecGravity;
 }
 
-void cheat_vehicle_magnetWheels(vehicle_info *vinfo, int magnetWheels_on)
-{
-	traceLastFunc("cheat_vehicle_magnetWheels()");
-	if (magnetWheels_on)
-	{
-		// update magnet wheels
-		VECTOR offsetVector = cheat_vehicle_getPositionUnder(vinfo);
-
-		// set the gravity
-		cheat_vehicle_setGravity(vinfo, offsetVector);
-
-		// set enabled
-		g_cheatVehicleMagnetWheels_Enabled = true;
-	}
-	else
-	{
-		if (g_cheatVehicleMagnetWheels_Enabled)
-		{
-			// disable magnet wheels
-			cheat_state->vehicle.gravityVector.X = 0.0f;
-			cheat_state->vehicle.gravityVector.Y = 0.0f;
-			cheat_state->vehicle.gravityVector.Z = -1.0f;
-			// set disabled
-			g_cheatVehicleMagnetWheels_Enabled = false;
-		}
-	}
-}
-
 void cheat_handle_magnetWheels(struct vehicle_info *vinfo, float time_diff)
 {
 	traceLastFunc("cheat_handle_magnetWheels()");
@@ -1016,12 +989,23 @@ void cheat_handle_magnetWheels(struct vehicle_info *vinfo, float time_diff)
 	if(KEY_PRESSED(set.key_magnetwheels))
 	{
 		cheat_state->vehicle.magnetWheels_on ^= 1;
-		Log("magnetWheels set to: %d", cheat_state->vehicle.magnetWheels_on);
 	}
-
-	// temp on
-	//cheat_vehicle_magnetWheels(vinfo, 1);
-	
-	// temp off
-	cheat_vehicle_magnetWheels(vinfo, cheat_state->vehicle.magnetWheels_on);
+	if (cheat_state->vehicle.magnetWheels_on)
+	{
+		// update magnet wheels
+		VECTOR offsetVector = cheat_vehicle_getPositionUnder(vinfo);
+		// set the gravity
+		cheat_vehicle_setGravity(vinfo, offsetVector);
+		// set enabled
+		g_cheatVehicleMagnetWheels_Enabled = true;
+	}
+	else if (g_cheatVehicleMagnetWheels_Enabled)
+	{
+		// disable magnet wheels
+		cheat_state->vehicle.gravityVector.X = 0.0f;
+		cheat_state->vehicle.gravityVector.Y = 0.0f;
+		cheat_state->vehicle.gravityVector.Z = -1.0f;
+		// set disabled
+		g_cheatVehicleMagnetWheels_Enabled = false;
+	}
 }
