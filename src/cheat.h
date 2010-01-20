@@ -19,12 +19,6 @@
 	You should have received a copy of the GNU General Public License
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
-	$LastChangedDate: 2010-01-05 01:40:59 -0600 (Tue, 05 Jan 2010) $
-	$LastChangedBy: futnucks $
-	$Revision: 43 $
-	$HeadURL: https://m0d-s0beit-sa.googlecode.com/svn/trunk/src/cheat.h $
-	$Id: cheat.h 43 2010-01-05 07:40:59Z futnucks $
-
 */
 
 /* only works for vehicles atm */
@@ -210,8 +204,9 @@ struct cheat_state_vehicle
    int		brkdance;
    int		is_engine_on;
    int		infNOS_toggle_on;
-   int		magnetWheels_on;
-   VECTOR	gravityVector;
+   int		spiderWheels_on;
+   CVector	gravityVector;
+   //VECTOR	gravityVector;
 };
 
 struct cheat_state_teleport
@@ -260,6 +255,12 @@ struct cheat_state_generic
    int nocols_enabled;
 };
 
+struct cheat_state_hooks
+{
+	// i'm a dummy
+	bool dummy;
+};
+
 
 #define DEBUG_DATA_SIZE 320
 #define DEBUG_HIST_LEN  100
@@ -288,6 +289,7 @@ struct cheat_state
    struct cheat_state_actor   actor;
    struct cheat_state_vehicle vehicle;
    struct cheat_state_generic _generic;
+   struct cheat_state_hooks hooks;
    struct cheat_state_teleport teleport[TELEPORT_MAX];
    struct cheat_state_teleport teleport_hist[TELEPORT_HIST_MAX];
    int teleport_hist_count;
@@ -345,39 +347,18 @@ struct weapon
    uint32_t __unknown;
 };
 
-struct CEntitySAInterfaceVTBL
-{
-	DWORD SCALAR_DELETING_DESTRUCTOR;
-	DWORD Add_CRect;
-	DWORD Add;
-	DWORD Remove;
-	DWORD SetIsStatic;
-	DWORD SetModelIndex;
-	DWORD SetModelIndexNoCreate;
-	DWORD CreateRwObject;
-	DWORD DeleteRwObject;
-	DWORD GetBoundRect;
-	DWORD ProcessControl;
-	DWORD ProcessCollision;
-	DWORD ProcessShift;
-	DWORD TestCollision;
-	DWORD Teleport;
-	DWORD SpecialEntityPreCollisionStuff;
-	DWORD SpecialEntityCalcCollisionSteps;
-	DWORD PreRender;
-	DWORD Render;
-	DWORD SetupLighting;
-	DWORD RemoveLighting;
-	DWORD FlagToDestroyWhenNextProcessed;
-};
 
+// object_base is now unioned with a CEntity pointer where applicable
 struct object_base
 {
 	#pragma pack(1)
 	CEntitySAInterfaceVTBL *vtbl;		// 0
-	// 4 // CPlaceableSAInterface -> CSimpleTransformSAInterface -> CVector m_translate;
-	float		coords[3];				// 4
 
+// this is now in CEntity
+//	CPlaceableSAInterface	Placeable;	// 4
+// but the following variables exist for compatability till we remove object_base completely
+
+	float		coords[3];				// 4
 	union {
 		// is MTA right?
 		float		m_heading;				// 16
@@ -385,12 +366,12 @@ struct object_base
 		float		*preMatrix;			// 16, a part of CPlaceable
 		MATRIX4X4	*preMatrixStruct;	// 16, a part of CPlaceable
 	};
-
 	union {
 		float		*matrix;			// 20
 		MATRIX4X4	*matrixStruct;		// 20
 	};
-	UINT_PTR	*ptrRenderWare;			// 24
+
+	RpClump			*m_pRwObject;		// 24
 
 	/********** BEGIN CFLAGS **************/
 	unsigned long bUsesCollision : 1;			// does entity use collision
@@ -510,8 +491,9 @@ struct actor_info
    uint8_t           __unknown_1889[92];  /* 1896 */
 };                                        /* 1988 */
 
-struct CVehicleFlags
+class CVehicleFlags
 {
+public:
 	// byte 1
 	unsigned char bIsLawEnforcer: 1; // Is this guy chasing the player at the moment
 	unsigned char bIsAmbulanceOnDuty: 1; // Ambulance trying to get to an accident
@@ -637,7 +619,10 @@ struct tHandlingDataSA
 struct vehicle_info
 {
    #pragma pack(1)
-   struct object_base base;
+	struct object_base base;
+	// can't put classes with constructors into unions
+	// until we're compiling with C++0x, dammit
+	//CEntitySAInterface m_CEntitySAInterface;
    uint8_t             flags;                     /* 66 - flags */
    uint8_t             __unknown_67;              /* 67 */
    float               speed[3];                  /* 68 */
@@ -731,7 +716,7 @@ struct vehicle_info
 	unsigned char		m_nCurrentGear;				/* 1204 */
 	float				m_fGearChangeCount;			/* 1205 */
 	float				m_fWheelSpinForAudio;		/* 1209 */
-	uint8_t				__unknown_1213[3];				/* 1213 */
+	uint8_t				__unknown_1213[3];			/* 1213 */
 
    float               hitpoints;                 /* 1216 */
    float               armor;                     /* 1220 */
@@ -754,9 +739,12 @@ struct vehicle_info
    float               suspension[4];             /* 2016 - FL, RL, FR, RR suspension height */
    uint8_t             __unknown_2032[244];       /* 2032 */
    float               burn_timer;                /* 2276 - burn timer counting up from 0.0f */
-   uint8_t             __unknown_2280[304];       /* 2280 */
-   /* 2280 might actually be the start of the next CVehicle */
-};                                               /* 2584 */
+	uint8_t				__unknown_2280[280];		/* 2280 */
+	uint8_t				SmokeTrailEnabled;			/* 2560 */
+	uint8_t				__unknown_2561[23];			/* 2561 */
+	/* 2584 */
+};
+
 
 struct object_info
 {
@@ -899,26 +887,26 @@ struct CCamSAInterface // 568 bytes?
 	static float CAM_BUMPED_DAMP_RATE;
 	static float CAM_BUMPED_MOVE_MULT;
 
-	VECTOR m_cvecSourceSpeedOverOneFrame; // 324
-	VECTOR m_cvecTargetSpeedOverOneFrame; // 336
-	VECTOR m_cvecUpOverOneFrame; // 348
+	CVector m_cvecSourceSpeedOverOneFrame; // 324
+	CVector m_cvecTargetSpeedOverOneFrame; // 336
+	CVector m_cvecUpOverOneFrame; // 348
 	
-	VECTOR m_cvecTargetCoorsForFudgeInter; // 360
-	VECTOR m_cvecCamFixedModeVector; // 372
-	VECTOR m_cvecCamFixedModeSource; // 384
-  	VECTOR m_cvecCamFixedModeUpOffSet; // 396
-	VECTOR m_vecLastAboveWaterCamPosition; //408  //helper for when the player has gone under the water
+	CVector m_cvecTargetCoorsForFudgeInter; // 360
+	CVector m_cvecCamFixedModeVector; // 372
+	CVector m_cvecCamFixedModeSource; // 384
+  	CVector m_cvecCamFixedModeUpOffSet; // 396
+	CVector m_vecLastAboveWaterCamPosition; //408  //helper for when the player has gone under the water
 
-	VECTOR m_vecBufferedPlayerBodyOffset; // 420
+	CVector m_vecBufferedPlayerBodyOffset; // 420
 
 	// The three vectors that determine this camera for this frame
-	VECTOR	Front;	// 432											// Direction of looking in
-	VECTOR	Source;													// Coors in world space
-	VECTOR	SourceBeforeLookBehind;
-	VECTOR	Up;														// Just that
-	VECTOR	m_arrPreviousVectors[NUMBER_OF_VECTORS_FOR_AVERAGE];	// used to average stuff
+	CVector	Front;	// 432											// Direction of looking in
+	CVector	Source;													// Coors in world space
+	CVector	SourceBeforeLookBehind;
+	CVector	Up;														// Just that
+	CVector	m_arrPreviousVectors[NUMBER_OF_VECTORS_FOR_AVERAGE];	// used to average stuff
 
-	VECTOR m_aTargetHistoryPos[CAM_NUM_TARGET_HISTORY];
+	CVector m_aTargetHistoryPos[CAM_NUM_TARGET_HISTORY];
 	DWORD m_nTargetHistoryTime[CAM_NUM_TARGET_HISTORY];
 	DWORD m_nCurrentHistoryPoints;
 
@@ -934,19 +922,6 @@ struct CCamSAInterface // 568 bytes?
 	bool		m_bFirstPersonRunAboutActive;
 */
 };
-
-struct CSimpleTransformSAInterface   // 16 bytes
-{
-	D3DVECTOR	m_translate;
-	float		m_heading;
-};
-
-struct CPlaceableSAInterface // 20 bytes
-{
-	CSimpleTransformSAInterface		m_transform;
-	MATRIX4X4						*matrix;
-};
-
 
 struct CCameraSAInterface 
 {

@@ -24,7 +24,7 @@
 !endif
 
 Name "${NAME} ${MP} ${MP_VERSION} ${VERSION}"
-OutFile "..\_DEV_installers\${NAME}.${MP}.${VERSION_DT}.SVN.${SVNREV}.Setup.exe"
+OutFile "..\_DEV_installers\${NAME}.${MP}.${VERSION_DT}.Setup.exe"
 SetCompressor /SOLID lzma
 CRCCheck force
 BrandingText /TRIMCENTER "Visit ${NAME} at Google Code, Click Here"
@@ -41,7 +41,7 @@ Function onGUIInit
 FunctionEnd
 
 Page directory
-DirText "Welcome to the installer for ${NAME} ${VERSION} for ${MP} ${MP_VERSION}.$\r$\n$\r$\nThis is a development version built from SVN Revision #${SVNREV}$\r$\n$\r$\nCheck out ${NAME} at Google Code for the lastest versions and information.  Just click the link on the bottom left." "Please select your GTA San Andreas directory."
+DirText "Welcome to the installer for ${NAME} ${VERSION} for ${MP} ${MP_VERSION}.$\r$\n$\r$\nThis is a development version.$\r$\n$\r$\nCheck out ${NAME} at Google Code for the lastest versions and information.  Just click the link on the bottom left." "Please select your GTA San Andreas directory."
 InstallDirRegKey HKLM "SOFTWARE\Rockstar Games\GTA San Andreas\Installation" ExePath
 Function .onVerifyInstDir
 	IfFileExists $INSTDIR\gta_sa.exe +2

@@ -19,12 +19,6 @@
 	You should have received a copy of the GNU General Public License
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
-	$LastChangedDate: 2010-01-05 01:40:59 -0600 (Tue, 05 Jan 2010) $
-	$LastChangedBy: futnucks $
-	$Revision: 43 $
-	$HeadURL: https://m0d-s0beit-sa.googlecode.com/svn/trunk/src/cheat.cpp $
-	$Id: cheat.cpp 43 2010-01-05 07:40:59Z futnucks $
-
 */
 
 #include "main.h"
@@ -138,7 +132,7 @@ static void cheat_main_vehicle(float time_diff)
 	cheat_handle_vehicle_breakdance(info, time_diff);
 	cheat_handle_repair_car(info, time_diff);
 	cheat_handle_fast_exit(info, time_diff);
-	cheat_handle_magnetWheels(info, time_diff);
+	cheat_handle_spiderWheels(info, time_diff);
 }
 
 // new gravity hook
@@ -217,9 +211,13 @@ void cheat_hook(HWND wnd)
 		   }
 	   }
 
-	   	// hook gravity OMG GANGSTAH... lol
+	   	// hook gravity OMG GANGSTAH
 		if(hookApplyGravity.Create((uint8_t*)(uint32_t)HOOKPOS_CPhysical_ApplyGravity, (uint8_t*)HOOK_CPhysical_ApplyGravity, DETOUR_TYPE_JMP, 5) == 0)
 			Log("Failed to hook gravity");
+
+
+		*(BYTE *)0xB7CB49 = 0; // game not paused
+		*(BYTE *)0xBA67A4 = 0; // menu not visible
 
    } /* end initialize state */
 

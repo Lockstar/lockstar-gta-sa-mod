@@ -34,6 +34,21 @@
 	LanceVorgin (his CDetour class) + z0mbie (ADE32)
 */
 
+/*
+Type:						Opcodes needed:
+DETOUR_TYPE_JMP:			5
+DETOUR_TYPE_PUSH_RET		6
+DETOUR_TYPE_NOP_JMP			6
+DETOUR_TYPE_NOP_NOP_JMP		7
+DETOUR_TYPE_STC_JC			7
+DETOUR_TYPE_CLC_JNC			7
+DETOUR_TYPE_OBS_ADD			12
+DETOUR_TYPE_OBS_STACKADD	13
+DETOUR_TYPE_OBS_ROR			13
+DETOUR_TYPE_OBS_XOR			14
+DETOUR_TYPE_OBS_ADDNOT		14
+*/
+
 #pragma once
 
 #pragma warning(disable: 4311)

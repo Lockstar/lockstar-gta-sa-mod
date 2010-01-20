@@ -19,15 +19,20 @@
 	You should have received a copy of the GNU General Public License
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
-	$LastChangedDate: 2009-12-14 01:12:56 -0600 (Mon, 14 Dec 2009) $
-	$LastChangedBy: futnucks $
-	$Revision: 31 $
-	$HeadURL: https://m0d-s0beit-sa.googlecode.com/svn/trunk/src/cheat_actor.cpp $
-	$Id: cheat_actor.cpp 31 2009-12-14 07:12:56Z futnucks $
-
 */
 
 #include "main.h"
+
+
+
+// new function to help converting from actor_info->base to CEntitySAInterface
+CEntitySAInterface* cheat_actor_GetCEntitySAInterface(actor_info *ainfo)
+{
+	return (CEntitySAInterface*)ainfo;
+}
+//*p_CEntitySAInterface = (CEntitySAInterface*)ainfo->base;
+
+
 
 void cheat_actor_teleport(struct actor_info *info, const float pos[3], int interior_id)
 {

@@ -434,8 +434,8 @@ static void ini_init(void)
    if((ent = ini_register_entry("vehicle_hop_speed", TYPE_FLOAT)) != NULL)
       ini_register_data(ent, &set.vehicle_hop_speed, "0.2");
 
-   	if((ent = ini_register_entry("key_magnetwheels", TYPE_KEY)) != NULL)
-		ini_register_data(ent, &set.key_magnetwheels, "np5");
+   	if((ent = ini_register_entry("key_spiderwheels", TYPE_KEY)) != NULL)
+		ini_register_data(ent, &set.key_spiderwheels, "np5");
 
    if((ent = ini_register_entry("handling_multiplier", TYPE_FLOAT)) != NULL)
       ini_register_data(ent, &set.handling_multiplier, "0.5");

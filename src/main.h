@@ -50,6 +50,7 @@
 #define RUNMODE_SAMP			1
 
 
+// API/SDK includes
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,8 +58,25 @@
 #include <float.h>
 #include <shellapi.h>
 #include <d3dx9.h>
+#include <Gdiplus.h>
 
+// typedefs / type classes
 #include "stdint.h"
+#include "RenderWare.h"
+#include "CVector.h"
+#include "CVector2D.h"
+#include "CMatrix.h"
+#include "CMatrix_Pad.h"
+
+// public classes
+#include "CColPoint.h"
+#include "CEntity.h"
+
+// SA classes
+#include "CColPointSA.h"
+#include "CEntitySA.h"
+
+// normal includes
 #include "patcher.h"
 #include "cheat.h"
 #include "ini.h"
@@ -68,13 +86,13 @@
 #include "cheat_generic.h"
 #include "cheat_actor.h"
 #include "cheat_vehicle.h"
+#include "cheat_weapon.h"
 #include "dumb_menu.h"
 #include "samp.h"
 #include "debug_classify.h"
 #include "scripting.h"
 #include "CDetour.h"
 #include "d3drender.h"
-#include "Gdiplus.h"
 #include "GTAfuncs.h"
 #include "proxyIDirect3D9.h"
 #include "proxyIDirect3DDevice9.h"

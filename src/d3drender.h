@@ -48,6 +48,51 @@ typedef struct d3dvertex_s { float x,y,z,rhw; DWORD color; float tu,tv; } d3dver
 #undef SAFE_RELEASE
 #define SAFE_RELEASE(d) if(d) { d->Release(); d=NULL; }
 
+#define D3DFVF_XYZ              0x002
+#define D3DFVF_RESERVED1        0x020
+#define D3DFVF_DIFFUSE          0x040
+#define D3DFVF_SPECULAR         0x080
+#define D3DFVF_TEX1             0x100
+#define D3DFVF_LVERTEX ( D3DFVF_XYZ | D3DFVF_RESERVED1 | D3DFVF_DIFFUSE | \
+                         D3DFVF_SPECULAR | D3DFVF_TEX1 )
+
+typedef float D3DVALUE, *LPD3DVALUE;
+
+typedef struct D3DLVERTEX {
+    union {
+    D3DVALUE     x;             /* Homogeneous coordinates */
+    D3DVALUE     dvX;
+    };
+    union {
+    D3DVALUE     y;
+    D3DVALUE     dvY;
+    };
+    union {
+    D3DVALUE     z;
+    D3DVALUE     dvZ;
+    };
+    DWORD        dwReserved;
+    union {
+    D3DCOLOR     color;         /* Vertex color */
+    D3DCOLOR     dcColor;
+    };
+    union {
+    D3DCOLOR     specular;      /* Specular component of vertex */
+    D3DCOLOR     dcSpecular;
+    };
+    union {
+    D3DVALUE     tu;            /* Texture coordinates */
+    D3DVALUE     dvTU;
+    };
+    union {
+    D3DVALUE     tv;
+    D3DVALUE     dvTV;
+    };
+} D3DLVERTEX, *LPD3DLVERTEX;
+
+
+
+
 class CD3DBaseRender
 {
 public:
@@ -133,6 +178,8 @@ public:
    void D3DBoxi(int x, int y, int w, int h, D3DCOLOR color, int maxW);
    void D3DBoxBorder(float x, float y, float w, float h, D3DCOLOR border_color, D3DCOLOR color);
    void D3DBoxBorderi(int x, int y, int w, int h, D3DCOLOR border_color, D3DCOLOR color);
+
+   bool DrawLine ( const D3DXVECTOR3& a, const D3DXVECTOR3& b, DWORD dwColor );
 
 private:
    D3DPRIMITIVETYPE        m_primType;

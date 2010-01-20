@@ -19,15 +19,19 @@
 	You should have received a copy of the GNU General Public License
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
-	$LastChangedDate: 2009-12-14 01:12:56 -0600 (Mon, 14 Dec 2009) $
-	$LastChangedBy: futnucks $
-	$Revision: 31 $
-	$HeadURL: https://m0d-s0beit-sa.googlecode.com/svn/trunk/src/cheat_vehicle.cpp $
-	$Id: cheat_vehicle.cpp 31 2009-12-14 07:12:56Z futnucks $
-
 */
 
 #include "main.h"
+
+
+// new function to help converting from vehicle_info->base to CEntitySAInterface
+CEntitySAInterface* cheat_vehicle_GetCEntitySAInterface(vehicle_info *vinfo)
+{
+	return (CEntitySAInterface*)vinfo;
+}
+//*p_CEntitySAInterface = (CEntitySAInterface*)vinfo->base;
+
+
 
 void cheat_vehicle_teleport(struct vehicle_info *info, const float pos[3], int interior_id)
 {
@@ -721,150 +725,39 @@ void cheat_handle_repair_car(struct vehicle_info *vehicle_info, float time_diff)
 
 
 
-int g_cheatVehicleMagnetWheels_Enabled = false;
+int g_cheatVehicleSpiderWheels_Enabled = false;
 
-float CVectorGetLength(VECTOR vecGravity)
+void GetMatrixForGravity ( const CVector& vecGravity, CMatrix& mat )
 {
-	traceLastFunc("CVectorGetLength()");
-	return sqrt( (vecGravity.X*vecGravity.X) + (vecGravity.Y*vecGravity.Y) + (vecGravity.Z*vecGravity.Z) );
-}
-
-VECTOR CVectorNormalize(VECTOR vecGravity) 
-{ 
-	traceLastFunc("CVectorNormalize()");
-	double t = CVectorGetLength(vecGravity);
-	if (t > FLOAT_EPSILON)
+	// Calculates a basis where the z axis is the inverse of the gravity
+	if ( vecGravity.Length () > 0.0001f )
 	{
-		double fX2 = vecGravity.X / t;
-		double fY2 = vecGravity.Y / t;
-		double fZ2 = vecGravity.Z / t;
-		vecGravity.X = (float)fX2;
-		vecGravity.Y = (float)fY2;
-		vecGravity.Z = (float)fZ2;
+		mat.vUp = -vecGravity;
+		mat.vUp.Normalize ();
+		if ( fabs(mat.vUp.fX) > 0.0001f || fabs(mat.vUp.fZ) > 0.0001f )
+		{
+			CVector y ( 0.0f, 1.0f, 0.0f );
+			mat.vFront = vecGravity;
+			mat.vFront.CrossProduct ( &y );
+			mat.vFront.CrossProduct ( &vecGravity );
+			mat.vFront.Normalize ();
+		}
+		else
+		{
+			mat.vFront = CVector ( 0.0f, 0.0f, vecGravity.fY );
+		}
+		mat.vRight = mat.vFront;
+		mat.vRight.CrossProduct ( &mat.vUp );
 	}
 	else
 	{
-		vecGravity.X = 0;
-		vecGravity.Y = 0;
-		vecGravity.Z = 0;
-	}
-	return vecGravity;
-}
-
-VECTOR VectorCrossProduct(VECTOR inputVector, VECTOR param)
-{
-	traceLastFunc("VectorCrossProduct()");
-	float _fX = inputVector.X, _fY = inputVector.Y, _fZ = inputVector.Z;
-	inputVector.X = _fY * param.Z - param.Y * _fZ;
-	inputVector.Y = _fZ * param.X - param.Z * _fX;
-	inputVector.Z = _fX * param.Y - param.X * _fY;
-	return inputVector;
-}
-
-MATRIX4X4 GetMatrixForGravity(VECTOR vecGravity)
-{
-	traceLastFunc("GetMatrixForGravity()");
-	MATRIX4X4 mat;
-    // Calculates a basis where the z axis is the inverse of the gravity
-    if ( CVectorGetLength(vecGravity) > 0.0001f )
-    {
-		mat.at.X = -vecGravity.X;
-		mat.at.Y = -vecGravity.Y;
-		mat.at.Z = -vecGravity.Z;
-        mat.at = CVectorNormalize(mat.at);
-		if ( fabs(mat.at.X) > 0.0001f || fabs(mat.at.Z) > 0.0001f )
-        {
-            VECTOR y_XProdTemp;// = (0.0f, 1.0f, 0.0f);
-			y_XProdTemp.X = 0.0f;
-			y_XProdTemp.Y = 1.0f;
-			y_XProdTemp.Z = 0.0f;
-            mat.up = vecGravity;
-            mat.up = VectorCrossProduct(mat.up, y_XProdTemp);
-            mat.up = VectorCrossProduct(mat.up, vecGravity);
-            mat.up = CVectorNormalize(mat.up);
-        }
-        else
-        {
-			mat.up.X = 0.0f;
-			mat.up.Y = 0.0f;
-			mat.up.Z = vecGravity.Y;
-        }
-		mat.right = mat.up;
-        mat.right = VectorCrossProduct(mat.right, mat.up);
-    }
-    else
-    {
 		// No gravity, use default axes
-		mat.right.X = 1.0f; // = VECTOR ( 1.0f, 0.0f, 0.0f );
-		mat.right.Y = 0.0f;
-		mat.right.Z = 0.0f;
-		mat.up.X = 0.0f; //    = VECTOR ( 0.0f, 1.0f, 0.0f );
-		mat.up.Y = 1.0f;
-		mat.up.Z = 0.0f;
-		mat.at.X = 0.0f; //    = VECTOR ( 0.0f, 0.0f, 1.0f );
-		mat.at.Y = 0.0f;
-		mat.at.X = 1.0f;
-    }
-	return mat;
+		mat.vRight = CVector ( 1.0f, 0.0f, 0.0f );
+		mat.vFront = CVector ( 0.0f, 1.0f, 0.0f );
+		mat.vUp    = CVector ( 0.0f, 0.0f, 1.0f );
+	}
 }
 
-MATRIX4X4 MatrixInvert(MATRIX4X4 inputMatrix)
-{
-	traceLastFunc("MatrixInvert()");
-	// Transpose the rotation matrix and negate the position
-	VECTOR vOldRight = inputMatrix.right, vOldFront = inputMatrix.up, vOldUp = inputMatrix.at;
-	inputMatrix.right.X = vOldRight.X; // vRight = (VECTOR) ( vOldRight.X, vOldFront.X, vOldUp.X );
-	inputMatrix.right.Y = vOldFront.X;
-	inputMatrix.right.Z = vOldUp.X;
-	inputMatrix.up.X = vOldRight.Y; // vFront = VECTOR ( vOldRight.Y, vOldFront.Y, vOldUp.Y );
-	inputMatrix.up.Y = vOldFront.Y; 
-	inputMatrix.up.Z = vOldUp.Y; 
-	inputMatrix.at.X = vOldRight.Z; // vUp = VECTOR ( vOldRight.Z, vOldFront.Z, vOldUp.Z );
-	inputMatrix.at.Y = vOldFront.Z;
-	inputMatrix.at.Z = vOldUp.Z;
-	inputMatrix.pos.X *= -1.0f;
-	inputMatrix.pos.Y *= -1.0f;
-	inputMatrix.pos.Z *= -1.0f;
-	return inputMatrix;
-}
-
-VECTOR VectorMuliplyMatrix(VECTOR vec, MATRIX4X4 mat)
-{
-	traceLastFunc("VectorMuliplyMatrix()");
-	vec.X = mat.right.X*vec.X + mat.up.X*vec.Y + mat.at.X*vec.Z;
-	vec.Y = mat.right.Y*vec.X + mat.up.Y*vec.Y + mat.at.Y*vec.Z;
-	vec.Z = mat.right.Z*vec.X + mat.up.Z*vec.Y + mat.at.Z*vec.Z;
-	return vec;
-}
-
-VECTOR VectorMultiplyFloat(VECTOR vec, float flt)
-{
-	traceLastFunc("VectorMultiplyFloat()");
-	vec.X *= flt;
-	vec.Y *= flt;
-	vec.Z *= flt;
-	return vec;
-}
-
-VECTOR VectorSubtractVector(VECTOR vecInOut, VECTOR vecToSubtract)
-{
-	traceLastFunc("VectorSubtractVector()");
-	vecInOut.X -= vecToSubtract.X;
-	vecInOut.Y -= vecToSubtract.Y;
-	vecInOut.Z -= vecToSubtract.X;
-	return vecInOut;
-}
-
-VECTOR VectorAddVector(VECTOR vecInOut, VECTOR vecToAdd)
-{
-	traceLastFunc("VectorAddVector()");
-	vecInOut.X += vecToAdd.X;
-	vecInOut.Y += vecToAdd.Y;
-	vecInOut.Z += vecToAdd.X;
-	return vecInOut;
-}
-
-VECTOR vecForDisp;
 void CPhysical_ApplyGravity(DWORD dwThis)
 {
 	traceLastFunc("CPhysical_ApplyGravity()");
@@ -889,22 +782,21 @@ void CPhysical_ApplyGravity(DWORD dwThis)
 		if(vinfo_self != NULL
 			&& vinfo_self == (vehicle_info*)dwThis
 			&& vinfo_self->passengers[0] == ainfo_self
-			&& g_cheatVehicleMagnetWheels_Enabled)
+			&& g_cheatVehicleSpiderWheels_Enabled)
 		{
+
 			// it's our vehicle, and we're driving, and magnet wheels is enabled - use the gravity vector
 
-			VECTOR vecGravity = cheat_state->vehicle.gravityVector;
-			VECTOR vecMoveSpeed = GTAfunc_GetMoveSpeed(vinfo_self);
+			CVector vecGravity = cheat_state->vehicle.gravityVector;
+			CVector vecMoveSpeed = GTAfunc_GetMoveSpeed(vinfo_self);
 
-			float gravityZcompensationMultiplier = vecGravity.Z - vecGravity.X;
-			vecMoveSpeed.Z += (fTimeStep * fGravity) * gravityZcompensationMultiplier;
+			//float gravityZcompensationMultiplier = vecGravity.fZ - vecGravity.fX;
+			//vecMoveSpeed.fZ += (fTimeStep * fGravity) * gravityZcompensationMultiplier;
 
-			//vecMoveSpeed += vecGravity * fTimeStep * fGravity;
-			vecGravity = VectorMultiplyFloat(vecGravity, fTimeStep * fGravity);
+			vecMoveSpeed += vecGravity * fTimeStep * fGravity;
+			//vecGravity = VectorMultiplyFloat(vecGravity, fTimeStep * fGravity);
+			//vecMoveSpeed = VectorAddVector(vecMoveSpeed, vecGravity);
 
-			vecForDisp = vecGravity;
-
-			vecMoveSpeed = VectorAddVector(vecMoveSpeed, vecGravity);
 			GTAfunc_SetMoveSpeed(vinfo_self, vecMoveSpeed);
 		}
 		else
@@ -933,79 +825,151 @@ MATRIX4X4
 	VECTOR pos;		// vPos
 */
 
-VECTOR cheat_vehicle_getPositionUnder(vehicle_info *vinfo)
+CVector cheat_vehicle_getPositionUnder(vehicle_info *vinfo)
 {
 	traceLastFunc("cheat_vehicle_getPositionUnder()");
-	VECTOR offsetVector;
+	CVector offsetVector;
 	float *matrix = vinfo->base.matrix;
-	offsetVector.X = 0 * matrix[0] + 0 * matrix[4] - 1 * matrix[8];
-    offsetVector.Y = 0 * matrix[1] + 0 * matrix[5] - 1 * matrix[9];
-    offsetVector.Z = 0 * matrix[2] + 0 * matrix[6] - 1 * matrix[10];
+	offsetVector.fX = 0 * matrix[0] + 0 * matrix[4] - 1 * matrix[8];
+    offsetVector.fY = 0 * matrix[1] + 0 * matrix[5] - 1 * matrix[9];
+    offsetVector.fZ = 0 * matrix[2] + 0 * matrix[6] - 1 * matrix[10];
 	return offsetVector;
 }
 
-void cheat_vehicle_setGravity(vehicle_info *vinfo, VECTOR pvecGravity)
+#ifdef M0D_DEV
+D3DXVECTOR3 vecGravColOrigin, vecGravColTarget, vecGravTargetNorm;
+CVector temp_vecGravTargetNorm;
+#endif
+
+void cheat_vehicle_setGravity(vehicle_info *vinfo, CVector pvecGravity)
 {
 	traceLastFunc("cheat_vehicle_setGravity()");
-	// 3:07:16 PM how you going
+
 /*
-// this crap is too annoying until we get the rotation setup properly
+// this crap is totally annoying until we get
+// a proper CCamera hook system to properly rotate this
+	// get CEntitySAInterface pointer
+	CEntitySAInterface *p_CEntitySAInterface = cheat_vehicle_GetCEntitySAInterface(vinfo);
+
 	//CCam* pCam = pGame->GetCamera ()->GetCam ( pGame->GetCamera ()->GetActiveCam () );
 	CCamSA *pCam = &g_CCamera.Cams[g_CCamera.internalInterface->ActiveCam];
 
-	//CMatrix matOld, matNew;
-	MATRIX4X4 matOld = GetMatrixForGravity(cheat_state->vehicle.gravityVector);
-	MATRIX4X4 matNew = GetMatrixForGravity(pvecGravity);
+	CMatrix matOld, matNew;
+	GetMatrixForGravity(cheat_state->vehicle.gravityVector, matOld);
+	GetMatrixForGravity(pvecGravity, matNew);
 
-	//CVector* pvecPosition = &m_pInterface->Placeable.matrix->vPos;
-	VECTOR pvecPosition = vinfo->base.matrixStruct->pos;
+	CVector *pvecPosition = &p_CEntitySAInterface->Placeable.matrix->vPos;
 
-	//matOld.Invert ();
-	matOld = MatrixInvert(matOld);
+	matOld.Invert ();
 
-	//5:08:18 PM lol cool
+	pCam->m_pInterface->m_aTargetHistoryPos[0] = matOld * (pCam->m_pInterface->m_aTargetHistoryPos[0] - *pvecPosition);
+	pCam->m_pInterface->m_aTargetHistoryPos[0] = matNew * pCam->m_pInterface->m_aTargetHistoryPos[0] + *pvecPosition;
 
-	//pCam->GetTargetHistoryPos () [ 0 ] = matOld * (pCam->GetTargetHistoryPos () [ 0 ] - *pvecPosition);
-	pCam->m_pInterface->m_aTargetHistoryPos[0] = VectorMuliplyMatrix( VectorSubtractVector(pCam->m_pInterface->m_aTargetHistoryPos[0],pvecPosition), matOld );
-	//pCam->GetTargetHistoryPos () [ 0 ] = matNew * pCam->GetTargetHistoryPos () [ 0 ] + *pvecPosition;
-	pCam->m_pInterface->m_aTargetHistoryPos[0] = VectorAddVector( VectorMuliplyMatrix(pCam->m_pInterface->m_aTargetHistoryPos[0],matNew), pvecPosition );
-
-	//pCam->GetTargetHistoryPos () [ 1 ] = matOld * (pCam->GetTargetHistoryPos () [ 1 ] - *pvecPosition);
-	pCam->m_pInterface->m_aTargetHistoryPos[1] = VectorMuliplyMatrix( VectorSubtractVector(pCam->m_pInterface->m_aTargetHistoryPos[1],pvecPosition), matOld );
-	//pCam->GetTargetHistoryPos () [ 1 ] = matNew * pCam->GetTargetHistoryPos () [ 1 ] + *pvecPosition;
-	pCam->m_pInterface->m_aTargetHistoryPos[1] = VectorAddVector( VectorMuliplyMatrix(pCam->m_pInterface->m_aTargetHistoryPos[1],matNew), pvecPosition );
+	pCam->m_pInterface->m_aTargetHistoryPos[1] = matOld * (pCam->m_pInterface->m_aTargetHistoryPos[1] - *pvecPosition);
+	pCam->m_pInterface->m_aTargetHistoryPos[1] = matNew * pCam->m_pInterface->m_aTargetHistoryPos[1] + *pvecPosition;
 */
 
+	// set the d-dang gravity
 	cheat_state->vehicle.gravityVector = pvecGravity;
+
+	//5:08:18 PM lol cool
 }
 
-void cheat_handle_magnetWheels(struct vehicle_info *vinfo, float time_diff)
+void cheat_handle_spiderWheels(struct vehicle_info *vinfo, float time_diff)
 {
-	traceLastFunc("cheat_handle_magnetWheels()");
-	// condition for setting/resetting magnetWheels should be here
-	// in addition to the call to it, if needed
+	traceLastFunc("cheat_handle_spiderWheels()");
 
-	// why in the fuck is this not working?!?
-	if(KEY_PRESSED(set.key_magnetwheels))
+	// 3:07:16 PM how you going
+
+	if(KEY_PRESSED(set.key_spiderwheels))
 	{
-		cheat_state->vehicle.magnetWheels_on ^= 1;
+		cheat_state->vehicle.spiderWheels_on ^= 1;
 	}
-	if (cheat_state->vehicle.magnetWheels_on)
+
+	if (cheat_state->vehicle.spiderWheels_on)
 	{
-		// update magnet wheels
-		VECTOR offsetVector = cheat_vehicle_getPositionUnder(vinfo);
-		// set the gravity
+		// update spider wheels
+		CVector offsetVector = cheat_vehicle_getPositionUnder(vinfo);
+
+		// setup variables
+		CVector vecOrigin, vecTarget;
+		CColPoint *pCollision = NULL;
+		CEntity *pCollisionEntity = NULL;
+		int checkDistanceMeters = 20;
+
+		// get CEntitySAInterface pointer
+		CEntitySAInterface *p_CEntitySAInterface = cheat_vehicle_GetCEntitySAInterface(vinfo);
+
+		// origin = our vehicle
+		vecOrigin = p_CEntitySAInterface->Placeable.matrix->vPos;
+		// target = vecOrigin + offsetVector * checkDistanceMeters
+		vecTarget = offsetVector * checkDistanceMeters;
+		vecTarget = vecTarget + vecOrigin;
+
+		// check for collision
+		bool bCollision = GTAfunc_ProcessLineOfSight(&vecOrigin, &vecTarget, &pCollision, &pCollisionEntity, 1, 0, 0, 1, 1, 0, 0, 0);
+
+		if (bCollision)
+		{
+			// set altered gravity vector
+			float fTimeStep = *(float *)0xB7CB5C;
+			CVector colGravTemp = -pCollision->GetInterface()->Normal;
+			CVector vehGravTemp = cheat_state->vehicle.gravityVector;
+			CVector newRotVector;
+			newRotVector = colGravTemp - vehGravTemp;
+			newRotVector *= 0.05f * fTimeStep;
+			offsetVector = vehGravTemp + newRotVector;
+#ifdef M0D_DEV
+			vecGravColOrigin = D3DXVECTOR3(vecOrigin.fX, vecOrigin.fY, vecOrigin.fZ);
+			vecGravColTarget.x = pCollision->GetInterface()->Position.fX;
+			vecGravColTarget.y = pCollision->GetInterface()->Position.fY;
+			vecGravColTarget.z = pCollision->GetInterface()->Position.fZ;
+			temp_vecGravTargetNorm = vecOrigin + offsetVector * checkDistanceMeters;
+			vecGravTargetNorm.x = temp_vecGravTargetNorm.fX;
+			vecGravTargetNorm.y = temp_vecGravTargetNorm.fY;
+			vecGravTargetNorm.z = temp_vecGravTargetNorm.fZ;
+#endif
+			pCollision->Destroy();
+		}
+		else
+		{
+			// set normal gravity vector
+			float fTimeStep = *(float *)0xB7CB5C;
+			CVector colGravTemp;
+			colGravTemp.fX = 0.0f;
+			colGravTemp.fY = 0.0f;
+			colGravTemp.fZ = -1.0f;
+			CVector vehGravTemp = cheat_state->vehicle.gravityVector;
+			CVector newRotVector;
+			newRotVector = colGravTemp - vehGravTemp;
+			newRotVector *= 0.05f * fTimeStep;
+			offsetVector = vehGravTemp + newRotVector;
+#ifdef M0D_DEV
+			vecGravColOrigin = D3DXVECTOR3(vecOrigin.fX, vecOrigin.fY, vecOrigin.fZ);
+			vecGravColTarget = D3DXVECTOR3(vecTarget.fX, vecTarget.fY, vecTarget.fZ);
+			temp_vecGravTargetNorm = vecOrigin + offsetVector * checkDistanceMeters;
+			vecGravTargetNorm.x = temp_vecGravTargetNorm.fX;
+			vecGravTargetNorm.y = temp_vecGravTargetNorm.fY;
+			vecGravTargetNorm.z = temp_vecGravTargetNorm.fZ;
+#endif
+		}
+
+		// set the gravity/camera
 		cheat_vehicle_setGravity(vinfo, offsetVector);
-		// set enabled
-		g_cheatVehicleMagnetWheels_Enabled = true;
+		// set spider wheels enabled
+		g_cheatVehicleSpiderWheels_Enabled = true;
 	}
-	else if (g_cheatVehicleMagnetWheels_Enabled)
+	else if (g_cheatVehicleSpiderWheels_Enabled)
 	{
-		// disable magnet wheels
-		cheat_state->vehicle.gravityVector.X = 0.0f;
-		cheat_state->vehicle.gravityVector.Y = 0.0f;
-		cheat_state->vehicle.gravityVector.Z = -1.0f;
-		// set disabled
-		g_cheatVehicleMagnetWheels_Enabled = false;
+		CVector offsetVector;
+		// disable spider wheels with normal gravity vector
+		offsetVector.fX = 0.0f;
+		offsetVector.fY = 0.0f;
+		offsetVector.fZ = -1.0f;
+
+		// set the gravity/camera
+		cheat_vehicle_setGravity(vinfo, offsetVector);
+		// set spider wheels disabled
+		g_cheatVehicleSpiderWheels_Enabled = false;
 	}
 }

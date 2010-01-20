@@ -2692,43 +2692,42 @@ HRESULT proxyIDirect3DDevice9::Reset(D3DPRESENT_PARAMETERS *pPresentationParamet
 	// since GTA is getting the state of the original device
 	hRes_orig_Reset = origIDirect3DDevice9->Reset(pPresentationParameters);
 
-	// check the pointers and wait 5 seconds if they are not good yet
-	short badPointerCount_g_pGTAPresent = 0;
-	bool badPointerBreak_g_pGTAPresent = false;
-	while (isBadPtr_writeAny(g_pGTAPresent, sizeof(D3DPRESENT_PARAMETERS))
-		&& !badPointerBreak_g_pGTAPresent)
-	{
-		badPointerCount_g_pGTAPresent++;
-		if (badPointerCount_g_pGTAPresent < 50)
-		{
-			Sleep(100);
-		}
-		else
-		{
-			Log("During D3D9 Reset(), g_pGTAPresent was bad for over 5 seconds. Continuing anyways.");
-			badPointerBreak_g_pGTAPresent = true;
-		}
-	}
-	short badPointerCount_pPresentationParameters = 0;
-	bool badPointerBreak_pPresentationParameters = false;
-	while (isBadPtr_writeAny(pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS))
-		&& !badPointerBreak_pPresentationParameters)
-	{
-		badPointerCount_pPresentationParameters++;
-		if (badPointerCount_pPresentationParameters < 50)
-		{
-			Sleep(100);
-		}
-		else
-		{
-			Log("During D3D9 Reset(), pPresentationParameters was bad for over 5 seconds. Continuing anyways.");
-			badPointerBreak_pPresentationParameters = true;
-		}
-	}
-
 	// handle the return from original Reset()
 	if (hRes_orig_Reset == D3D_OK)
 	{
+		// variable for checking the pointers
+		short badPointerCount_g_pGTAPresent = 0;
+		bool badPointerBreak_g_pGTAPresent = false;
+		short badPointerCount_pPresentationParameters = 0;
+		bool badPointerBreak_pPresentationParameters = false;
+		while (isBadPtr_writeAny(g_pGTAPresent, sizeof(D3DPRESENT_PARAMETERS))
+			&& !badPointerBreak_g_pGTAPresent)
+		{
+			badPointerCount_g_pGTAPresent++;
+			if (badPointerCount_g_pGTAPresent < 50)
+			{
+				Sleep(100);
+			}
+			else
+			{
+				Log("During D3D9 Reset(), g_pGTAPresent was bad for over 5 seconds. Continuing anyways.");
+				badPointerBreak_g_pGTAPresent = true;
+			}
+		}
+		while (isBadPtr_writeAny(pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS))
+			&& !badPointerBreak_pPresentationParameters)
+		{
+			badPointerCount_pPresentationParameters++;
+			if (badPointerCount_pPresentationParameters < 50)
+			{
+				Sleep(100);
+			}
+			else
+			{
+				Log("During D3D9 Reset(), pPresentationParameters was bad for over 5 seconds. Continuing anyways.");
+				badPointerBreak_pPresentationParameters = true;
+			}
+		}
 		// init our shit
 		while (!bD3DRenderInit)
 		{
@@ -2904,6 +2903,8 @@ HRESULT proxyIDirect3DDevice9::BeginScene(void)
 	return origIDirect3DDevice9->BeginScene();
 }
 
+extern D3DXVECTOR3 vecGravColOrigin, vecGravColTarget, vecGravTargetNorm;
+
 HRESULT proxyIDirect3DDevice9::EndScene(void)
 {
 	traceLastFunc("proxyIDirect3DDevice9::EndScene()");
@@ -2956,8 +2957,6 @@ HRESULT proxyIDirect3DDevice9::EndScene(void)
 		uint32_t color_enabled  = D3DCOLOR_ARGB(191, 63, 255, 63);
 		uint32_t color_disabled = D3DCOLOR_ARGB(191, 255, 255, 255);
 
-		// needed?
-		//CD3DBaseRender::BeginRender()
 		if(SUCCEEDED(render->BeginRender()))
 		{
 			static int game_inited;
@@ -3091,11 +3090,17 @@ pRakNet_NetTxRx_Hook_End:;
 					if(set.hud_indicator_inveh_stick) { HUD_TEXT_TGL(x, cheat_state->vehicle.stick ? color_enabled : color_disabled , "Stick"); }
 					if(set.hud_indicator_inveh_brkdance) { HUD_TEXT_TGL(x, cheat_state->vehicle.brkdance ? color_enabled : color_disabled , "BrkDance"); }
 					RenderVehicleHPBar();
+#ifdef M0D_DEV
+// fantastic shit
+render->DrawLine(vecGravColOrigin, vecGravColTarget, D3DCOLOR_ARGB(128, 255, 0, 0));
+render->DrawLine(vecGravColOrigin, vecGravTargetNorm, D3DCOLOR_ARGB(128, 0, 255, 0));
 
-					extern VECTOR vecForDisp;
-					_snprintf_s(buf, sizeof(buf), "vecForDisp: %0.4f %0.4f %0.4f", vecForDisp.X, vecForDisp.Y, vecForDisp.Z);
-					pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 30,
-						pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 40, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
+struct vehicle_info *vinfo_self = vehicle_info_get(VEHICLE_SELF, 0);
+_snprintf_s(buf, sizeof(buf), "gravityVector: %0.2f %0.2f %0.2f", cheat_state->vehicle.gravityVector.fX, cheat_state->vehicle.gravityVector.fY, cheat_state->vehicle.gravityVector.fZ);
+pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 20,
+	pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 50, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
+
+#endif
 				}
 				else if(cheat_state->state == CHEAT_STATE_ACTOR)
 				{

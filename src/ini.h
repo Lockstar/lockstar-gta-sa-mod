@@ -287,7 +287,7 @@ struct settings
    int key_vehicle_hop;
    float vehicle_hop_speed;
 
-   int key_magnetwheels;
+   int key_spiderwheels;
 
    float handling_multiplier;
 
