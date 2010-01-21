@@ -604,62 +604,64 @@ void cheat_handle_vehicle_engine(struct vehicle_info *vehicle_info, float time_d
 	}
 }
 
-void cheat_handle_vehicle_breakdance(struct vehicle_info *vehicle_info, float time_diff)
+void cheat_handle_vehicle_brakedance(struct vehicle_info *vehicle_info, float time_diff)
 {
 	if(cheat_state->vehicle.air_brake) return;
 	if(cheat_state->vehicle.stick) return;
 
 	static float velpos, velneg;
-	
+
 	if(KEY_PRESSED(set.key_brkd_toggle))
 	{
 		cheat_state->vehicle.brkdance ^= 1;
+	}
 
-		velpos = set.brkdance_velocity;
-		velneg = -set.brkdance_velocity;
-   }
+	if(cheat_state->vehicle.brkdance)
+	{
+		// we should probably actually be driving the vehicle
+		struct actor_info *actor = actor_info_get(ACTOR_SELF, 0);
+		if (actor == NULL) return; // we're not an actor? lulz
+		if (actor->state != ACTOR_STATE_DRIVING) return; // we're not driving?
+		if (actor->vehicle->passengers[1] == actor) return; // we're not passenger in an airplane?
 
-   if(cheat_state->vehicle.brkdance)
-   {
-	   // we should probably actually be driving the vehicle
-	   struct actor_info *actor = actor_info_get(ACTOR_SELF, 0);
-	   if (actor == NULL) return; // we're not an actor? lulz
-	   if (actor->state != ACTOR_STATE_DRIVING) return; // we're not driving?
-	   if (actor->vehicle->passengers[1] == actor) return; // we're not passenger in an airplane?
+		int iVehicleID = getPlayerVehicleGTAScriptingID(ACTOR_SELF);
 
-	   int iVehicleID = getPlayerVehicleGTAScriptingID(ACTOR_SELF);
+		float fTimeStep = *(float *)0xB7CB5C;
 
-	   if(KEY_DOWN(set.key_brkd_forward))
-	   {
-		   ScriptCommand(&apply_momentum_in_direction_XYZ,      iVehicleID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-		   ScriptCommand(&apply_rotory_pulse_about_an_axis_XYZ, iVehicleID, velneg, 0.0f, 0.0f);
-	   }
-	   else if(KEY_DOWN(set.key_brkd_backward))
-	   {
-		   ScriptCommand(&apply_momentum_in_direction_XYZ,      iVehicleID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-		   ScriptCommand(&apply_rotory_pulse_about_an_axis_XYZ, iVehicleID, velpos, 0.0f, 0.0f);
-	   }
-	   else if(KEY_DOWN(set.key_brkd_right))
-	   {
-		   ScriptCommand(&apply_momentum_in_direction_XYZ,      iVehicleID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-		   ScriptCommand(&apply_rotory_pulse_about_an_axis_XYZ, iVehicleID, 0.0f, velpos, 0.0f);
-	   }
-	   else if(KEY_DOWN(set.key_brkd_left))
-	   {
-		   ScriptCommand(&apply_momentum_in_direction_XYZ,      iVehicleID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-		   ScriptCommand(&apply_rotory_pulse_about_an_axis_XYZ, iVehicleID, 0.0f, velneg, 0.0f);
-	   }
-	   else if(KEY_DOWN(set.key_brkd_rightward))
-	   {
-		   ScriptCommand(&apply_momentum_in_direction_XYZ,      iVehicleID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-		   ScriptCommand(&apply_rotory_pulse_about_an_axis_XYZ, iVehicleID, 0.0f, 0.0f, velneg);
-	   }
-	   else if(KEY_DOWN(set.key_brkd_leftward))
-	   {
-		   ScriptCommand(&apply_momentum_in_direction_XYZ,      iVehicleID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-		   ScriptCommand(&apply_rotory_pulse_about_an_axis_XYZ, iVehicleID, 0.0f, 0.0f, velpos);
-	   }
-   }
+		velpos = set.brkdance_velocity * fTimeStep;
+		velneg = -set.brkdance_velocity * fTimeStep;
+
+		if(KEY_DOWN(set.key_brkd_forward))
+		{
+			ScriptCommand(&apply_momentum_in_direction_XYZ,      iVehicleID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+			ScriptCommand(&apply_rotory_pulse_about_an_axis_XYZ, iVehicleID, velneg, 0.0f, 0.0f);
+		}
+		else if(KEY_DOWN(set.key_brkd_backward))
+		{
+			ScriptCommand(&apply_momentum_in_direction_XYZ,      iVehicleID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+			ScriptCommand(&apply_rotory_pulse_about_an_axis_XYZ, iVehicleID, velpos, 0.0f, 0.0f);
+		}
+		else if(KEY_DOWN(set.key_brkd_right))
+		{
+			ScriptCommand(&apply_momentum_in_direction_XYZ,      iVehicleID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+			ScriptCommand(&apply_rotory_pulse_about_an_axis_XYZ, iVehicleID, 0.0f, velpos, 0.0f);
+		}
+		else if(KEY_DOWN(set.key_brkd_left))
+		{
+			ScriptCommand(&apply_momentum_in_direction_XYZ,      iVehicleID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+			ScriptCommand(&apply_rotory_pulse_about_an_axis_XYZ, iVehicleID, 0.0f, velneg, 0.0f);
+		}
+		else if(KEY_DOWN(set.key_brkd_rightward))
+		{
+			ScriptCommand(&apply_momentum_in_direction_XYZ,      iVehicleID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+			ScriptCommand(&apply_rotory_pulse_about_an_axis_XYZ, iVehicleID, 0.0f, 0.0f, velneg);
+		}
+		else if(KEY_DOWN(set.key_brkd_leftward))
+		{
+			ScriptCommand(&apply_momentum_in_direction_XYZ,      iVehicleID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+			ScriptCommand(&apply_rotory_pulse_about_an_axis_XYZ, iVehicleID, 0.0f, 0.0f, velpos);
+		}
+	}
 }
 
 void cheat_handle_fast_exit(struct vehicle_info *vehicle_info, float time_diff)
@@ -892,7 +894,9 @@ bool init_patchBikeFalloff(void)
 		}
 		else
 		{
-			Log("Couldn't init_patchBikeFalloff. You may fall off bikes while using SpiderWheels.  Put the 'Anti bike fall off' patch back into your INI to fix this problem.");
+			Log("Couldn't init_patchBikeFalloff.");
+			Log("You may fall off bikes while using SpiderWheels.");
+			Log("Put the 'Anti bike fall off' patch back into your INI to fix this problem.");
 		}
 	}
 	return m_SpiderWheels_falloffFound;

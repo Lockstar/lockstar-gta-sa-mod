@@ -725,7 +725,7 @@ static void ini_init(void)
    if((ent = ini_register_entry("anti_carjacking", TYPE_BOOL)) != NULL)
       ini_register_data(ent, &set.anti_carjacking, "true");
 
-   /* breakdance keys */
+   /* brakedance keys */
    if((ent = ini_register_entry("key_brkd_toggle", TYPE_KEY)) != NULL)
       ini_register_data(ent, &set.key_brkd_toggle, "p");
    if((ent = ini_register_entry("key_brkd_forward", TYPE_KEY)) != NULL)

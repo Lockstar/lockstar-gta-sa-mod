@@ -35,7 +35,7 @@ void cheat_handle_vehicle_brake(struct vehicle_info *info, float time_diff);
 void cheat_handle_vehicle_hop(struct vehicle_info *info, float time_diff);
 void cheat_vehicle_air_brake_set(int enabled);
 void cheat_handle_vehicle_engine(struct vehicle_info *vehicle_info, float time_diff);
-void cheat_handle_vehicle_breakdance(struct vehicle_info *vehicle_info, float time_diff);
+void cheat_handle_vehicle_brakedance(struct vehicle_info *vehicle_info, float time_diff);
 void cheat_handle_fast_exit(struct vehicle_info *vehicle_info, float time_diff);
 void cheat_handle_repair_car(struct vehicle_info *vehicle_info, float time_diff);
 void cheat_handle_spiderWheels(vehicle_info *vinfo, float time_diff);
