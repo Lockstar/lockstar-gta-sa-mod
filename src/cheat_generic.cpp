@@ -40,67 +40,72 @@ static struct patch_set patch_actor_hp = {
 
 int cheat_panic(void)
 { 
-   struct actor_info *actor_info = actor_info_get(ACTOR_SELF, ACTOR_ALIVE);
-   struct vehicle_info *vehicle_info = vehicle_info_get(VEHICLE_SELF, VEHICLE_ALIVE);
-   static int enabled;
-   static int pstate_actor_hp, pstate_map, pstate_d3dtext_hud;
-   static int pstate_ini[INI_PATCHES_MAX];
-   int i;
+	struct actor_info *actor_info = actor_info_get(ACTOR_SELF, ACTOR_ALIVE);
+	struct vehicle_info *vehicle_info = vehicle_info_get(VEHICLE_SELF, VEHICLE_ALIVE);
+	static int cheat_panic_enabled;
+	static int pstate_actor_hp, pstate_map, pstate_d3dtext_hud;
+	static int pstate_ini[INI_PATCHES_MAX];
+	int i;
 
-   if(KEY_PRESSED(set.key_panic))
-   {
-      enabled ^= 1;
+	if(KEY_PRESSED(set.key_panic))
+	{
+		cheat_panic_enabled ^= 1;
 
-      if(enabled)
-      {
-         if(actor_info != NULL)
-         {
-            actor_info->flags &= ~ACTOR_FLAGS_INVULNERABLE;
-            actor_info->weapon_slot = 0;
-         }
-         if(vehicle_info != NULL)
-         {
-            vehicle_info->flags &= ~VEHICLE_FLAGS_INVULNERABLE;
-            if(vehicle_info->hitpoints > 1000.0f)
-               vehicle_info->hitpoints = 1000.0f;
-         }
+		if(cheat_panic_enabled)
+		{
+			if(actor_info != NULL)
+			{
+				actor_info->flags &= ~ACTOR_FLAGS_INVULNERABLE;
+				actor_info->weapon_slot = 0;
+			}
+			if(vehicle_info != NULL)
+			{
+				vehicle_info->flags &= ~VEHICLE_FLAGS_INVULNERABLE;
+				if(vehicle_info->hitpoints > 1000.0f)
+					vehicle_info->hitpoints = 1000.0f;
+			}
 
-         pstate_d3dtext_hud = set.d3dtext_hud;
-         set.d3dtext_hud = 0;
+			// set vehicle gravity to normal
+			cheat_state->vehicle.gravityVector.fX = 0.0f;
+			cheat_state->vehicle.gravityVector.fY = 0.0f;
+			cheat_state->vehicle.gravityVector.fZ = -1.0f;
 
-         pstate_map = cheat_state->_generic.map;
-         cheat_state->_generic.map = 0;
-         cheat_state->_generic.menu = 0;
+			pstate_d3dtext_hud = set.d3dtext_hud;
+			set.d3dtext_hud = 0;
 
-         pstate_actor_hp = patch_actor_hp.installed;
+			pstate_map = cheat_state->_generic.map;
+			cheat_state->_generic.map = 0;
+			cheat_state->_generic.menu = 0;
 
-         patcher_remove(&patch_actor_hp);
+			pstate_actor_hp = patch_actor_hp.installed;
 
-         for(i=0; i<INI_PATCHES_MAX; i++)
-         {
-            pstate_ini[i] = set.patch[i].installed;
-            patcher_remove(&set.patch[i]);
-         }	
-      }
-      else
-      {
-         if(pstate_actor_hp)
-            patcher_remove(&patch_actor_hp);
+			patcher_remove(&patch_actor_hp);
 
-         set.d3dtext_hud = pstate_d3dtext_hud;
-         cheat_state->_generic.map = pstate_map;
+			for(i=0; i<INI_PATCHES_MAX; i++)
+			{
+				pstate_ini[i] = set.patch[i].installed;
+				patcher_remove(&set.patch[i]);
+			}	
+		}
+		else
+		{
+			if(pstate_actor_hp)
+				patcher_remove(&patch_actor_hp);
 
-         for(i=0; i<INI_PATCHES_MAX; i++)
-         {
-            if(pstate_ini[i])
-               patcher_install(&set.patch[i]);
-         }
+			set.d3dtext_hud = pstate_d3dtext_hud;
+			cheat_state->_generic.map = pstate_map;
 
-         cheat_state_text(NULL);
-      }
-   }
+			for(i=0; i<INI_PATCHES_MAX; i++)
+			{
+				if(pstate_ini[i])
+					patcher_install(&set.patch[i]);
+			}
 
-   return enabled;
+			cheat_state_text(NULL);
+		}
+	}
+
+	return cheat_panic_enabled;
 }
 
 /* XXX move to cheat_funcs.cpp? */
@@ -149,7 +154,7 @@ void cheat_handle_debug(HWND wnd)
 {
    static const int data_size[4] = { 1, 2, 4, 4 };
    struct debug_info *debug = &cheat_state->debug;
-   int move = 0, hist_chng = 0, i;
+   int move = 0, hist_chng = 0;
 
 
    if(!cheat_state->debug_enabled)
@@ -246,7 +251,7 @@ void cheat_handle_debug(HWND wnd)
    }
 
 
-   for(i=0; i<9; i++)
+   for(int i=0; i<9; i++)
       KEY_CONSUME(VK_NUMPAD1 + i);
    KEY_CONSUME(VK_MULTIPLY);
    KEY_CONSUME(VK_DIVIDE);

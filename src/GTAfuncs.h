@@ -19,21 +19,21 @@
 	You should have received a copy of the GNU General Public License
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
-	$LastChangedDate: 2010-01-05 01:40:59 -0600 (Tue, 05 Jan 2010) $
-	$LastChangedBy: futnucks $
-	$Revision: 43 $
-	$HeadURL: https://m0d-s0beit-sa.googlecode.com/svn/trunk/src/GTAfuncs.h $
-	$Id: GTAfuncs.h 43 2010-01-05 07:40:59Z futnucks $
-
 */
 
 
-// gta function addresses
+// model functions
 #define		ARRAY_ModelLoaded				0x8E4CD0
 #define		ARRAY_ModelInfo					0xA9B0C8
 #define		FUNC_CStreaming__HasModelLoaded	0x4044C0
 #define		FUNC_GetModelFlags				0x4044E0
 #define		FUNC_GetBoundingBox				0x4082F0
+#define		FUNC_RequestModel				0x4087e0
+#define		FUNC_RemoveModel				0x4089a0
+#define		FUNC_LoadAllRequestedModels		0x40ea10
+#define     FUNC_FlushRequestList			0x40E4E0
+
+// vehicle functions
 #define		FUNC_IsBoatModel				0x4c5a70
 #define		FUNC_IsCarModel					0x4c5aa0
 #define		FUNC_IsTrainModel				0x4c5ad0
@@ -46,27 +46,36 @@
 #define		FUNC_IsBmxModel					0x4c5c20
 #define		FUNC_IsTrailerModel				0x4c5c50
 #define		FUNC_IsVehicleModelType			0x4c5c80
-#define		FUNC_RequestModel				0x4087e0
-#define		FUNC_RemoveModel				0x4089a0
-#define		FUNC_LoadAllRequestedModels		0x40ea10
-#define     FUNC_FlushRequestList			0x40E4E0
 #define     FUNC_HasVehicleUpgradeLoaded	0x407820
 #define     FUNC_RequestMyVehicleUpgrade	0x408C70
 #define     FUNC_RequestAnyVehicleUpgrade	0x6E3290
 //#define		FUNC_CVehicle__SetRemapTexDictionary 0x6D0BC0
 #define		FUNC_CVehicle__GetRemapIndex	0x6D0B70
 #define		FUNC_CVehicle__SetRemap			0x6D0C00
+
+// new vehicle functions
+#define		FUNC_CVehicle_IsUpsideDown		0x6D1D90
+#define		FUNC_CVehicle_IsOnItsSide		0x6D1DD0
+#define		FUNC_CVehicle_RecalcOnRailDistance 0x6F6CC0
+
+
+// VideoMode functions
 #define		FUNC_SetCurrentVideoMode		0x745C70
 #define		FUNC_GetCurrentVideoMode		0x7F2D20
 #define		FUNC_GetNumVideoModes			0x7F2CC0
 #define		FUNC_GetVideoModeInfo			0x7F2CF0
-
-// new testing ish
 #define		FUNC_RwD3D9ChangeVideoMode		0x7F8640
 
+// entity gravity/movement functions
+#define		FUNC_GetMoveSpeed				0x404460
+
+// CWorld functions
+#define		FUNC_IsLineOfSightClear			0x56A490 // ##SA##
+#define		FUNC_ProcessLineOfSight			0x56BA00 // ##SA##
 
 // gta class addresses
 #define		CLASS_CMenuManager				0xBA6748
+
 
 
 // additional defines
@@ -241,9 +250,27 @@ void GTAfunc_removeVehicleUpgrade(vehicle_info *vinfo, int iModelID);
 int GTAfunc_vehicle_getRemapIndex(vehicle_info *vinfo);
 void GTAfunc_vehicle_setRemap(vehicle_info *vinfo, int iRemap);
 
+// vehicle position functions
+bool GTAfunc_IsUpsideDown(vehicle_info *vinfo);
+bool GTAfunc_IsOnItsSide(vehicle_info *vinfo);
+
 // game core funcs
 int GTAfunc_getNumVideoModes(void);
 VideoMode *GTAfunc_getVideoModeInfo(VideoMode *modeInfo, int modeIndex);
 int GTAfunc_getCurrentVideoMode(void);
 void GTAfunc_setCurrentVideoMode(int modeIndex);
 int GTAfunc_RwD3D9ChangeVideoMode(int modeIndex);
+
+// gravity functions
+CVector GTAfunc_GetMoveSpeed(vehicle_info *vinfo);
+VOID GTAfunc_SetMoveSpeed(vehicle_info *vinfo, CVector vecMoveSpeed);
+
+// CWorld functions
+bool GTAfunc_IsLineOfSightClear( CVector *vecStart, CVector *vecEnd,
+	bool bCheckBuildings, bool bCheckVehicles, bool bCheckPeds, bool bCheckObjects,
+	bool bCheckDummies, bool bSeeThroughStuff, bool bIgnoreSomeObjectsForCamera );
+bool GTAfunc_ProcessLineOfSight( CVector * vecStart, CVector * vecEnd,
+		CColPoint ** colCollision, CEntity ** CollisionEntity,
+		bool bCheckBuildings, bool bCheckVehicles, bool bCheckPeds,
+		bool bCheckObjects, bool bCheckDummies , bool bSeeThroughStuff,
+		bool bIgnoreSomeObjectsForCamera, bool bShootThroughStuff );

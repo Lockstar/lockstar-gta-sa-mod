@@ -19,16 +19,11 @@
 	You should have received a copy of the GNU General Public License
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
-	$LastChangedDate: 2010-01-05 01:40:59 -0600 (Tue, 05 Jan 2010) $
-	$LastChangedBy: futnucks $
-	$Revision: 43 $
-	$HeadURL: https://m0d-s0beit-sa.googlecode.com/svn/trunk/src/GTAfuncs.cpp $
-	$Id: GTAfuncs.cpp 43 2010-01-05 07:40:59Z futnucks $
-
 */
 
 
 #include "main.h"
+
 
 int GTAfunc_isModelLoaded(int iModelID)
 {
@@ -349,4 +344,153 @@ int GTAfunc_RwD3D9ChangeVideoMode(int modeIndex)
         call    dwFunc
         add     esp, 4
     }
+}
+
+CVector GTAfunc_GetMoveSpeed(vehicle_info *vinfo)
+{
+	CVector vecMoveSpeed;
+	DWORD dwFunc = FUNC_GetMoveSpeed;
+	DWORD dwThis = (DWORD)&vinfo->base;
+	DWORD dwReturn = 0;
+	__asm
+	{
+		mov		ecx, dwThis
+		call	dwFunc
+		mov		dwReturn, eax
+	}
+	memcpy_safe(&vecMoveSpeed, (void*)dwReturn, sizeof(CVector));
+	return vecMoveSpeed;
+}
+
+VOID GTAfunc_SetMoveSpeed(vehicle_info *vinfo, CVector vecMoveSpeed)
+{
+    DWORD dwFunc = FUNC_GetMoveSpeed;
+    DWORD dwThis = (DWORD)vinfo;
+    DWORD dwReturn = 0;
+    __asm
+    {
+        mov		ecx, dwThis
+        call	dwFunc
+        mov		dwReturn, eax
+    }
+    memcpy_safe((void*)dwReturn, &vecMoveSpeed, sizeof(CVector));
+}
+
+bool GTAfunc_IsUpsideDown(vehicle_info *vinfo)
+{
+	DWORD dwThis = (DWORD)vinfo;
+	DWORD dwFunc = FUNC_CVehicle_IsUpsideDown;
+	bool bReturn = false;
+	__asm
+	{
+		mov     ecx, dwThis
+		call    dwFunc
+		mov		bReturn, al
+	}
+	return bReturn;
+}
+
+bool GTAfunc_IsOnItsSide(vehicle_info *vinfo)
+{
+	DWORD dwThis = (DWORD)vinfo;
+	DWORD dwFunc = FUNC_CVehicle_IsOnItsSide;
+	bool bReturn = false;
+	__asm
+	{
+		mov     ecx, dwThis
+		call    dwFunc
+		mov		bReturn, al
+	}
+	return bReturn;
+}
+
+bool GTAfunc_IsLineOfSightClear( CVector *vecStart, CVector *vecEnd,
+	bool bCheckBuildings, bool bCheckVehicles, bool bCheckPeds, bool bCheckObjects,
+	bool bCheckDummies, bool bSeeThroughStuff, bool bIgnoreSomeObjectsForCamera )
+{
+	DWORD dwFunc = FUNC_IsLineOfSightClear;
+	bool bReturn = false;
+	__asm
+	{
+		push	bIgnoreSomeObjectsForCamera
+		push	bSeeThroughStuff
+		push	bCheckDummies
+		push	bCheckObjects
+		push	bCheckPeds
+		push	bCheckVehicles
+		push	bCheckBuildings
+		push	vecEnd
+		push	vecStart	
+		call	dwFunc
+		mov		bReturn, al
+		add		esp, 0x24
+	}
+	return bReturn;
+}
+
+
+bool GTAfunc_ProcessLineOfSight( CVector *vecStart, CVector *vecEnd,
+		CColPoint **colCollision, CEntity **CollisionEntity,
+		bool bCheckBuildings, bool bCheckVehicles, bool bCheckPeds,
+		bool bCheckObjects, bool bCheckDummies , bool bSeeThroughStuff,
+		bool bIgnoreSomeObjectsForCamera, bool bShootThroughStuff )
+{
+  	DWORD dwPadding[100]; // stops the function missbehaving and overwriting the return address
+    dwPadding [0] = 0;  // prevent the warning and eventual compiler optimizations from removing it
+
+	CColPointSA *pColPointSA = new CColPointSA();
+	CColPointSAInterface *pColPointSAInterface = pColPointSA->GetInterface();	
+
+	//DWORD targetEntity;
+    CEntitySAInterface *targetEntity = NULL;
+	bool bReturn = false;
+
+	DWORD dwFunc = FUNC_ProcessLineOfSight;
+	__asm
+	{
+		push	bShootThroughStuff
+		push	bIgnoreSomeObjectsForCamera
+		push	bSeeThroughStuff
+		push	bCheckDummies
+		push	bCheckObjects
+		push	bCheckPeds
+		push	bCheckVehicles
+		push	bCheckBuildings
+		lea		eax, targetEntity
+		push	eax
+		push	pColPointSAInterface	
+		push	vecEnd
+		push	vecStart	
+		call	dwFunc
+		mov		bReturn, al
+		add		esp, 0x30
+	}
+/*
+    if ( CollisionEntity )
+    {
+	    CPoolsSA * pPools = ((CPoolsSA *)pGame->GetPools());
+	    if(pPools)
+	    {
+		    if(targetEntity)
+		    {
+                switch (targetEntity->nType)
+                {
+                    case ENTITY_TYPE_PED:
+                        *CollisionEntity = pPools->GetPed((DWORD *)targetEntity);
+                        break;
+                    case ENTITY_TYPE_OBJECT:
+                        *CollisionEntity = pPools->GetObject((DWORD *)targetEntity);
+                        break;
+                    case ENTITY_TYPE_VEHICLE:
+                        *CollisionEntity = pPools->GetVehicle((DWORD *)targetEntity);
+				        break;
+                }
+		    }
+	    }
+    }
+*/
+    if (colCollision) *colCollision = pColPointSA;
+    else pColPointSA->Destroy();
+
+	return bReturn;
 }

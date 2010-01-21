@@ -19,24 +19,18 @@
 	You should have received a copy of the GNU General Public License
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
-	$LastChangedDate: 2010-01-05 01:40:59 -0600 (Tue, 05 Jan 2010) $
-	$LastChangedBy: futnucks $
-	$Revision: 43 $
-	$HeadURL: https://m0d-s0beit-sa.googlecode.com/svn/trunk/src/cheat.cpp $
-	$Id: cheat.cpp 43 2010-01-05 07:40:59Z futnucks $
-
 */
 
 #include "main.h"
 #include <psapi.h>
 
 /* Note that this is 100% C code, not C++. :p */
-
 #ifndef MIN
 #  define MIN(a,b)   ((a) > (b) ? (b) : (a))
 #endif
 
-float          *cam_matrix = (float *)0xB6F99C;
+// old camera thing, still used in RenderMapDot()
+float *cam_matrix = (float*)0xB6F99C;
 
 uint32_t       __time_current;
 struct pool    *pool_actor;
@@ -102,6 +96,7 @@ static void cheat_main_vehicle(float time_diff)
 		return;
 	}
 
+// this should have its own handler
 	if(set.anti_carjacking)
 	{
 		if(info->passengers[0] == actor_info_get(ACTOR_SELF, 0))
@@ -135,8 +130,24 @@ static void cheat_main_vehicle(float time_diff)
 	cheat_handle_vehicle_hop(info, time_diff);
 	cheat_handle_vehicle_engine(info, time_diff);
 	cheat_handle_vehicle_breakdance(info, time_diff);
-	cheat_handle_repair_car(info,time_diff);
-	cheat_handle_fast_exit(info,time_diff);
+	cheat_handle_repair_car(info, time_diff);
+	cheat_handle_fast_exit(info, time_diff);
+	cheat_handle_spiderWheels(info, time_diff);
+}
+
+// new gravity hook
+#define HOOKPOS_CPhysical_ApplyGravity	0x543081
+DWORD RETURN_CPhysical_ApplyGravity =	0x543093;
+CDetour hookApplyGravity;
+uint8_t _declspec(naked) HOOK_CPhysical_ApplyGravity(void)
+{
+    __asm
+    {
+        push esi
+        call CPhysical_ApplyGravity
+        add esp, 4
+        jmp RETURN_CPhysical_ApplyGravity
+    }
 }
 
 // the main daddyo
@@ -199,7 +210,17 @@ void cheat_hook(HWND wnd)
 				   patcher_install(&set.sampPatch[i]);
 		   }
 	   }
-   }
+
+	   	// hook gravity OMG GANGSTAH
+		if(hookApplyGravity.Create((uint8_t*)(uint32_t)HOOKPOS_CPhysical_ApplyGravity, (uint8_t*)HOOK_CPhysical_ApplyGravity, DETOUR_TYPE_JMP, 5) == 0)
+			Log("Failed to hook gravity");
+
+
+		*(BYTE *)0xB7CB49 = 0; // game not paused
+		*(BYTE *)0xBA67A4 = 0; // menu not visible
+
+   } /* end initialize state */
+
 
    cheat_state->state = CHEAT_STATE_NONE;
 
@@ -315,10 +336,13 @@ void cheat_hook(HWND wnd)
 
    if(cheat_state->state != CHEAT_STATE_NONE)
    {
-      // generic stuff
-      cheat_handle_weapon_disable();
-	  cheat_handle_money();
-      cheat_handle_weapon();
+		// setup new CCameraSA pointer
+		init_g_CCamera();
+
+		// generic stuff
+		cheat_handle_weapon_disable();
+		cheat_handle_money();
+		cheat_handle_weapon();
 
 //////////////////////////////////////////////////////////////////
 // this should be removed after reworking weapon cheat function //

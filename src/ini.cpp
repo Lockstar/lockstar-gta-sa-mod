@@ -19,12 +19,6 @@
 	You should have received a copy of the GNU General Public License
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
-	$LastChangedDate: 2009-12-18 09:06:33 -0600 (Fri, 18 Dec 2009) $
-	$LastChangedBy: jflmxy $
-	$Revision: 42 $
-	$HeadURL: https://m0d-s0beit-sa.googlecode.com/svn/trunk/src/ini.cpp $
-	$Id: ini.cpp 42 2009-12-18 15:06:33Z jflmxy $
-
 */
 
 #include "main.h"
@@ -434,6 +428,9 @@ static void ini_init(void)
    if((ent = ini_register_entry("vehicle_hop_speed", TYPE_FLOAT)) != NULL)
       ini_register_data(ent, &set.vehicle_hop_speed, "0.2");
 
+   	if((ent = ini_register_entry("key_spiderwheels", TYPE_KEY)) != NULL)
+		ini_register_data(ent, &set.key_spiderwheels, "np5");
+
    if((ent = ini_register_entry("handling_multiplier", TYPE_FLOAT)) != NULL)
       ini_register_data(ent, &set.handling_multiplier, "0.5");
 
@@ -635,7 +632,9 @@ static void ini_init(void)
    if((ent = ini_register_entry("hud_indicator_inveh_stick", TYPE_BOOL)) != NULL)
       ini_register_data(ent, &set.hud_indicator_inveh_stick, "true");
    if((ent = ini_register_entry("hud_indicator_inveh_brkdance", TYPE_BOOL)) != NULL)
-      ini_register_data(ent, &set.hud_indicator_inveh_brkdance, "false");
+      ini_register_data(ent, &set.hud_indicator_inveh_brkdance, "true");
+   if((ent = ini_register_entry("hud_indicator_inveh_spider", TYPE_BOOL)) != NULL)
+      ini_register_data(ent, &set.hud_indicator_inveh_spider, "true");
 
    if((ent = ini_register_entry("hud_indicator_onfoot_airbrk", TYPE_BOOL)) != NULL)
       ini_register_data(ent, &set.hud_indicator_onfoot_airbrk, "true");
@@ -645,7 +644,7 @@ static void ini_init(void)
       ini_register_data(ent, &set.hud_indicator_onfoot_aim, "true");
 
    if((ent = ini_register_entry("hud_indicator_pos", TYPE_BOOL)) != NULL)
-      ini_register_data(ent, &set.hud_indicator_pos, "true");
+      ini_register_data(ent, &set.hud_indicator_pos, "false");
    if((ent = ini_register_entry("hud_fps_draw", TYPE_BOOL)) != NULL)
       ini_register_data(ent, &set.hud_fps_draw, "true");
 
@@ -843,6 +842,8 @@ static void ini_init(void)
 
    if((ent = ini_register_entry("enable_clouds", TYPE_BOOL)) != NULL)
       ini_register_data(ent, &set.enable_clouds, "true");
+
+
 }
 
 int iGTAPatchesCount = 0;

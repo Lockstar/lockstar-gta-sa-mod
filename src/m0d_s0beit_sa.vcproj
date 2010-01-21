@@ -48,8 +48,10 @@
 				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="dxsdk_apr2005/Include/"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;M0D_S0BEIT_SA_PROXY_EXPORTS"
+				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32;NDEBUG;_WINDOWS;_USRDLL;M0D_S0BEIT_SA_PROXY_EXPORTS"
 				StringPooling="true"
 				ExceptionHandling="0"
 				RuntimeLibrary="0"
@@ -60,6 +62,8 @@
 				WarnAsError="false"
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="0"
+				CompileAs="0"
+				DisableSpecificWarnings="4995;4244;4996;4482;4409;4250;"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -123,11 +127,35 @@
 			>
 		</File>
 		<File
+			RelativePath=".\CColPoint.h"
+			>
+		</File>
+		<File
+			RelativePath=".\CColPointSA.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\CColPointSA.h"
+			>
+		</File>
+		<File
 			RelativePath=".\CDetour.cpp"
 			>
 		</File>
 		<File
 			RelativePath=".\CDetour.h"
+			>
+		</File>
+		<File
+			RelativePath=".\CEntity.h"
+			>
+		</File>
+		<File
+			RelativePath=".\CEntitySA.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\CEntitySA.h"
 			>
 		</File>
 		<File
@@ -168,6 +196,30 @@
 		</File>
 		<File
 			RelativePath=".\cheat_vehicle.h"
+			>
+		</File>
+		<File
+			RelativePath=".\cheat_weapon.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\cheat_weapon.h"
+			>
+		</File>
+		<File
+			RelativePath=".\CMatrix.h"
+			>
+		</File>
+		<File
+			RelativePath=".\CMatrix_Pad.h"
+			>
+		</File>
+		<File
+			RelativePath=".\CVector.h"
+			>
+		</File>
+		<File
+			RelativePath=".\CVector2D.h"
 			>
 		</File>
 		<File
@@ -260,6 +312,10 @@
 		</File>
 		<File
 			RelativePath=".\proxyIDirect3DDevice9.h"
+			>
+		</File>
+		<File
+			RelativePath=".\RenderWare.h"
 			>
 		</File>
 		<File

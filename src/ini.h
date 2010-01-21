@@ -19,12 +19,6 @@
 	You should have received a copy of the GNU General Public License
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
-	$LastChangedDate: 2009-12-18 09:06:33 -0600 (Fri, 18 Dec 2009) $
-	$LastChangedBy: jflmxy $
-	$Revision: 42 $
-	$HeadURL: https://m0d-s0beit-sa.googlecode.com/svn/trunk/src/ini.h $
-	$Id: ini.h 42 2009-12-18 15:06:33Z jflmxy $
-
 */
 
 #define INI_STRLEN_MAX         64 /* including null */
@@ -218,6 +212,7 @@ struct settings
    int hud_indicator_inveh_airbrk;
    int hud_indicator_inveh_stick;
    int hud_indicator_inveh_brkdance;
+   int hud_indicator_inveh_spider;
 
    int hud_indicator_onfoot_airbrk;
    int hud_indicator_onfoot_stick;
@@ -287,6 +282,8 @@ struct settings
    int key_vehicle_hop;
    float vehicle_hop_speed;
 
+   int key_spiderwheels;
+
    float handling_multiplier;
 
    int use_current_name;
@@ -330,7 +327,13 @@ struct settings
    int jpg_luminancetable;
 
    bool enable_clouds;
+
+///////////////////////////////////////////////
+// DO NOT PUT ANYTHING AFTER THIS, DUMB FUCK //
+   int __DUMMYFUCKER_DONOTDELETE;
 };
+///////////////////////////////////////////////
+
 
 extern struct settings set;
 

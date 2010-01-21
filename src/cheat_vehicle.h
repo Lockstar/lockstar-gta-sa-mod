@@ -19,12 +19,6 @@
 	You should have received a copy of the GNU General Public License
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
-	$LastChangedDate: 2009-12-14 01:12:56 -0600 (Mon, 14 Dec 2009) $
-	$LastChangedBy: futnucks $
-	$Revision: 31 $
-	$HeadURL: https://m0d-s0beit-sa.googlecode.com/svn/trunk/src/cheat_vehicle.h $
-	$Id: cheat_vehicle.h 31 2009-12-14 07:12:56Z futnucks $
-
 */
 
 void cheat_vehicle_teleport(struct vehicle_info *info, const float pos[3], int interior_id);
@@ -44,3 +38,7 @@ void cheat_handle_vehicle_engine(struct vehicle_info *vehicle_info, float time_d
 void cheat_handle_vehicle_breakdance(struct vehicle_info *vehicle_info, float time_diff);
 void cheat_handle_fast_exit(struct vehicle_info *vehicle_info, float time_diff);
 void cheat_handle_repair_car(struct vehicle_info *vehicle_info, float time_diff);
+void cheat_handle_spiderWheels(vehicle_info *vinfo, float time_diff);
+void CPhysical_ApplyGravity(DWORD dwThis);
+
+CEntitySAInterface* cheat_vehicle_GetCEntitySAInterface(vehicle_info *vinfo);

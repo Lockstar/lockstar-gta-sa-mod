@@ -763,3 +763,96 @@ void CD3DRender::D3DBoxBorderi(int x, int y, int w, int h, D3DCOLOR border_color
 {
    D3DBoxBorder((float)x, (float)y, (float)w, (float)h, border_color, color);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+bool CD3DRender::DrawLine ( const D3DXVECTOR3& a, const D3DXVECTOR3& b, DWORD dwColor )
+{
+   if(FAILED(CD3DBaseRender::BeginRender()))
+      return false;
+    
+	////////////////////////////////////////////////////
+	// Make sure we have a valid vertex buffer.
+	if ( m_pD3Dbuf == NULL )
+	{
+		return false;
+	}
+
+
+	m_pD3Ddev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG2);
+	//m_pD3Ddev->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+	m_pD3Ddev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG2);
+	//m_pD3Ddev->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
+
+	//m_pD3Ddev->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
+	//m_pD3Ddev->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+	//m_pDevice->SetRenderState ( D3DRS_ZENABLE, false );
+	//m_pDevice->SetRenderState ( D3DRS_LIGHTING, false );
+
+	D3DLVERTEX lineList[2];
+
+	// store FVF to restore original at the end of this function
+	DWORD fvf;
+	m_pD3Ddev->GetFVF(&fvf);
+	m_pD3Ddev->SetFVF(D3DFVF_LVERTEX);
+
+	//////////////////////////////////////////////////
+	// Lock the vertex buffer and copy in the verts.
+	m_pD3Dbuf->Lock( 0, 0, (void**)&lineList, 0 );
+	{
+        lineList[0].x = a.x;
+        lineList[0].y = a.y;
+        lineList[0].z = a.z;
+        lineList[0].color = dwColor;
+        lineList[0].specular = dwColor;
+
+        lineList[1].x = b.x;
+        lineList[1].y = b.y;
+        lineList[1].z = b.z;
+        lineList[1].color = dwColor;
+        lineList[1].specular = dwColor;
+	}
+	m_pD3Dbuf->Unlock();
+
+
+	////////////////////////////////////////////////////
+	// Draw!
+	m_pD3Ddev->DrawPrimitiveUP(D3DPT_LINESTRIP, 1, lineList, sizeof(lineList)/2 );
+
+	// reset states
+	m_pD3Ddev->SetTextureStageState(0, D3DTSS_COLOROP,                D3DTOP_MODULATE);
+	m_pD3Ddev->SetTextureStageState(0, D3DTSS_ALPHAOP,                D3DTOP_MODULATE);
+
+	// reset FVF
+	m_pD3Ddev->SetFVF(fvf);
+
+	CD3DBaseRender::EndRender();
+
+	return true;
+}

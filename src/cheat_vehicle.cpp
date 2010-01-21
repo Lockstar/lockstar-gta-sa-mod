@@ -19,15 +19,19 @@
 	You should have received a copy of the GNU General Public License
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
-	$LastChangedDate: 2009-12-14 01:12:56 -0600 (Mon, 14 Dec 2009) $
-	$LastChangedBy: futnucks $
-	$Revision: 31 $
-	$HeadURL: https://m0d-s0beit-sa.googlecode.com/svn/trunk/src/cheat_vehicle.cpp $
-	$Id: cheat_vehicle.cpp 31 2009-12-14 07:12:56Z futnucks $
-
 */
 
 #include "main.h"
+
+
+// new function to help converting from vehicle_info->base to CEntitySAInterface
+CEntitySAInterface* cheat_vehicle_GetCEntitySAInterface(vehicle_info *vinfo)
+{
+	return (CEntitySAInterface*)vinfo;
+}
+//*p_CEntitySAInterface = (CEntitySAInterface*)vinfo->base;
+
+
 
 void cheat_vehicle_teleport(struct vehicle_info *info, const float pos[3], int interior_id)
 {
@@ -684,5 +688,342 @@ void cheat_handle_repair_car(struct vehicle_info *vehicle_info, float time_diff)
 			int iVehicleID = getPlayerVehicleGTAScriptingID(ACTOR_SELF);
 			ScriptCommand(&repair_car, iVehicleID);
 		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+int g_cheatVehicleSpiderWheels_Enabled = false;
+
+void GetMatrixForGravity ( const CVector& vecGravity, CMatrix& mat )
+{
+	// Calculates a basis where the z axis is the inverse of the gravity
+	if ( vecGravity.Length () > 0.0001f )
+	{
+		mat.vUp = -vecGravity;
+		mat.vUp.Normalize ();
+		if ( fabs(mat.vUp.fX) > 0.0001f || fabs(mat.vUp.fZ) > 0.0001f )
+		{
+			CVector y ( 0.0f, 1.0f, 0.0f );
+			mat.vFront = vecGravity;
+			mat.vFront.CrossProduct ( &y );
+			mat.vFront.CrossProduct ( &vecGravity );
+			mat.vFront.Normalize ();
+		}
+		else
+		{
+			mat.vFront = CVector ( 0.0f, 0.0f, vecGravity.fY );
+		}
+		mat.vRight = mat.vFront;
+		mat.vRight.CrossProduct ( &mat.vUp );
+	}
+	else
+	{
+		// No gravity, use default axes
+		mat.vRight = CVector ( 1.0f, 0.0f, 0.0f );
+		mat.vFront = CVector ( 0.0f, 1.0f, 0.0f );
+		mat.vUp    = CVector ( 0.0f, 0.0f, 1.0f );
+	}
+}
+
+void CPhysical_ApplyGravity(DWORD dwThis)
+{
+	traceLastFunc("CPhysical_ApplyGravity()");
+	// dwThis should be coming from HOOK_CPhysical_ApplyGravity
+    DWORD dwType;
+    __asm
+    {
+        mov ecx, dwThis
+        mov eax, 0x46A2C0       // CEntity::GetType
+        call eax
+        mov dwType, eax
+    }
+
+    float fTimeStep = *(float *)0xB7CB5C;
+    float fGravity  = *(float *)0x863984;
+
+    if (dwType == 2)
+    {
+		// get our vehicle_info pointer to see if it's dwThis
+		struct vehicle_info *vinfo_self = vehicle_info_get(VEHICLE_SELF, 0);
+		struct actor_info *ainfo_self = actor_info_get(ACTOR_SELF, 0);
+		if(vinfo_self != NULL
+			&& vinfo_self == (vehicle_info*)dwThis
+			&& vinfo_self->passengers[0] == ainfo_self
+			&& g_cheatVehicleSpiderWheels_Enabled)
+		{
+
+			// it's our vehicle, and we're driving, and magnet wheels is enabled - use the gravity vector
+
+			CVector vecGravity = cheat_state->vehicle.gravityVector;
+			CVector vecMoveSpeed = GTAfunc_GetMoveSpeed(vinfo_self);
+
+			//float gravityZcompensationMultiplier = vecGravity.fZ - vecGravity.fX;
+			//vecMoveSpeed.fZ += (fTimeStep * fGravity) * gravityZcompensationMultiplier;
+
+			vecMoveSpeed += vecGravity * fTimeStep * fGravity;
+			//vecGravity = VectorMultiplyFloat(vecGravity, fTimeStep * fGravity);
+			//vecMoveSpeed = VectorAddVector(vecMoveSpeed, vecGravity);
+
+			GTAfunc_SetMoveSpeed(vinfo_self, vecMoveSpeed);
+		}
+		else
+		{
+			// it's not our vehicle, return regular gravity
+			*(float *)(dwThis + 0x4C) -= fTimeStep * fGravity;
+		}
+    }
+    else
+    {
+        // It's something else, apply regular downward gravity (+0x4C == m_vecMoveSpeed.fZ)
+        *(float *)(dwThis + 0x4C) -= fTimeStep * fGravity;
+    }
+}
+
+/*
+CMatrix
+	vRight = CVector ( 1.0f, 0.0f, 0.0f );
+	vFront = CVector ( 0.0f, 1.0f, 0.0f );
+	vUp    = CVector ( 0.0f, 0.0f, 1.0f );
+	vPos   = CVector ( 0.0f, 0.0f, 0.0f );
+MATRIX4X4
+	VECTOR right;	// vRight
+	VECTOR up;		// vFront
+	VECTOR at;		// vUp
+	VECTOR pos;		// vPos
+*/
+
+CVector cheat_vehicle_getPositionUnder(vehicle_info *vinfo)
+{
+	traceLastFunc("cheat_vehicle_getPositionUnder()");
+	CVector offsetVector;
+	float *matrix = vinfo->base.matrix;
+	offsetVector.fX = 0 * matrix[0] + 0 * matrix[4] - 1 * matrix[8];
+    offsetVector.fY = 0 * matrix[1] + 0 * matrix[5] - 1 * matrix[9];
+    offsetVector.fZ = 0 * matrix[2] + 0 * matrix[6] - 1 * matrix[10];
+	return offsetVector;
+}
+
+#ifdef M0D_DEV
+D3DXVECTOR3 vecGravColOrigin, vecGravColTarget, vecGravTargetNorm;
+CVector temp_vecGravTargetNorm;
+#endif
+
+void cheat_vehicle_setGravity(vehicle_info *vinfo, CVector pvecGravity)
+{
+	traceLastFunc("cheat_vehicle_setGravity()");
+
+/*
+// this crap is totally annoying until we get a
+// proper CCamera hook system to properly rotate this
+	// get CEntitySAInterface pointer
+	CEntitySAInterface *p_CEntitySAInterface = cheat_vehicle_GetCEntitySAInterface(vinfo);
+
+	//CCam* pCam = pGame->GetCamera ()->GetCam ( pGame->GetCamera ()->GetActiveCam () );
+	CCamSA *pCam = &g_CCamera.Cams[g_CCamera.internalInterface->ActiveCam];
+
+	CMatrix matOld, matNew;
+	GetMatrixForGravity(cheat_state->vehicle.gravityVector, matOld);
+	GetMatrixForGravity(pvecGravity, matNew);
+
+	CVector *pvecPosition = &p_CEntitySAInterface->Placeable.matrix->vPos;
+
+	matOld.Invert ();
+
+	pCam->m_pInterface->m_aTargetHistoryPos[0] = matOld * (pCam->m_pInterface->m_aTargetHistoryPos[0] - *pvecPosition);
+	pCam->m_pInterface->m_aTargetHistoryPos[0] = matNew * pCam->m_pInterface->m_aTargetHistoryPos[0] + *pvecPosition;
+
+	pCam->m_pInterface->m_aTargetHistoryPos[1] = matOld * (pCam->m_pInterface->m_aTargetHistoryPos[1] - *pvecPosition);
+	pCam->m_pInterface->m_aTargetHistoryPos[1] = matNew * pCam->m_pInterface->m_aTargetHistoryPos[1] + *pvecPosition;
+*/
+
+	// set the d-dang gravity
+	cheat_state->vehicle.gravityVector = pvecGravity;
+
+	//5:08:18 PM lol cool
+}
+
+struct patch_set *patchBikeFalloff_set = NULL;
+bool m_SpiderWheels_falloffFound = false;
+bool m_SpiderWheels_falloffEnabled = false;
+bool init_patchBikeFalloff(void)
+{
+	traceLastFunc("init_patchBikeFalloff()");
+
+	if (!m_SpiderWheels_falloffFound)
+	{
+		int patchBikeFalloff_ID = GTAPatchIDFinder(0x004BA3B9);
+		if (patchBikeFalloff_ID != -1)
+		{
+			patchBikeFalloff_set = &set.patch[patchBikeFalloff_ID];
+			m_SpiderWheels_falloffFound = true;
+		}
+		else
+		{
+			Log("Couldn't init_patchBikeFalloff. You may fall off bikes while using SpiderWheels.  Put the 'Anti bike fall off' patch back into your INI to fix this problem.");
+		}
+	}
+	return m_SpiderWheels_falloffFound;
+}
+
+void cheat_handle_spiderWheels(struct vehicle_info *vinfo, float time_diff)
+{
+	traceLastFunc("cheat_handle_spiderWheels()");
+
+	// 3:07:16 PM how you going
+
+	if(KEY_PRESSED(set.key_spiderwheels))
+	{
+		// init variables used to toggle patch
+		init_patchBikeFalloff();
+		// toggle the d-dang spiderz
+		cheat_state->vehicle.spiderWheels_on ^= 1;
+	}
+
+	if (cheat_state->vehicle.spiderWheels_on)
+	{
+		// update spider wheels
+		CVector offsetVector = cheat_vehicle_getPositionUnder(vinfo);
+
+		// setup variables
+		CVector vecOrigin, vecTarget;
+		CColPoint *pCollision = NULL;
+		CEntity *pCollisionEntity = NULL;
+		int checkDistanceMeters = 20;
+
+		// get CEntitySAInterface pointer
+		CEntitySAInterface *p_CEntitySAInterface = cheat_vehicle_GetCEntitySAInterface(vinfo);
+
+		// origin = our vehicle
+		vecOrigin = p_CEntitySAInterface->Placeable.matrix->vPos;
+		// target = vecOrigin + offsetVector * checkDistanceMeters
+		vecTarget = offsetVector * checkDistanceMeters;
+		vecTarget = vecTarget + vecOrigin;
+
+		// check for collision
+		bool bCollision = GTAfunc_ProcessLineOfSight(&vecOrigin, &vecTarget, &pCollision, &pCollisionEntity, 1, 0, 0, 1, 1, 0, 0, 0);
+
+		if (bCollision)
+		{
+			// set altered gravity vector
+			float fTimeStep = *(float *)0xB7CB5C;
+			CVector colGravTemp = -pCollision->GetInterface()->Normal;
+			CVector vehGravTemp = cheat_state->vehicle.gravityVector;
+			CVector newRotVector;
+			newRotVector = colGravTemp - vehGravTemp;
+			newRotVector *= 0.05f * fTimeStep;
+			offsetVector = vehGravTemp + newRotVector;
+#ifdef M0D_DEV
+/*
+			vecGravColOrigin = D3DXVECTOR3(vecOrigin.fX, vecOrigin.fY, vecOrigin.fZ);
+			vecGravColTarget.x = pCollision->GetInterface()->Position.fX;
+			vecGravColTarget.y = pCollision->GetInterface()->Position.fY;
+			vecGravColTarget.z = pCollision->GetInterface()->Position.fZ;
+			temp_vecGravTargetNorm = vecOrigin + offsetVector * checkDistanceMeters;
+			vecGravTargetNorm.x = temp_vecGravTargetNorm.fX;
+			vecGravTargetNorm.y = temp_vecGravTargetNorm.fY;
+			vecGravTargetNorm.z = temp_vecGravTargetNorm.fZ;
+*/
+#endif
+			pCollision->Destroy();
+		}
+		else
+		{
+			// set normal gravity vector
+			float fTimeStep = *(float *)0xB7CB5C;
+			CVector colGravTemp;
+			colGravTemp.fX = 0.0f;
+			colGravTemp.fY = 0.0f;
+			colGravTemp.fZ = -1.0f;
+			CVector vehGravTemp = cheat_state->vehicle.gravityVector;
+			CVector newRotVector;
+			newRotVector = colGravTemp - vehGravTemp;
+			newRotVector *= 0.05f * fTimeStep;
+			offsetVector = vehGravTemp + newRotVector;
+#ifdef M0D_DEV
+/*
+			vecGravColOrigin = D3DXVECTOR3(vecOrigin.fX, vecOrigin.fY, vecOrigin.fZ);
+			vecGravColTarget = D3DXVECTOR3(vecTarget.fX, vecTarget.fY, vecTarget.fZ);
+			temp_vecGravTargetNorm = vecOrigin + offsetVector * checkDistanceMeters;
+			vecGravTargetNorm.x = temp_vecGravTargetNorm.fX;
+			vecGravTargetNorm.y = temp_vecGravTargetNorm.fY;
+			vecGravTargetNorm.z = temp_vecGravTargetNorm.fZ;
+*/
+#endif
+		}
+
+		// install anti bike falloff patch if needed
+		if (!g_cheatVehicleSpiderWheels_Enabled)
+		{
+			//ds
+			if (m_SpiderWheels_falloffFound
+				&& !m_SpiderWheels_falloffEnabled
+				&& !patchBikeFalloff_set->installed)
+			{
+				patcher_install(patchBikeFalloff_set);
+				m_SpiderWheels_falloffEnabled = true;
+			}
+			// set spider wheels enabled
+			g_cheatVehicleSpiderWheels_Enabled = true;
+		}
+		// set the gravity/camera
+		cheat_vehicle_setGravity(vinfo, offsetVector);
+
+	}
+	else if (g_cheatVehicleSpiderWheels_Enabled)
+	{
+		CVector offsetVector;
+		// disable spider wheels with normal gravity vector
+		offsetVector.fX = 0.0f;
+		offsetVector.fY = 0.0f;
+		offsetVector.fZ = -1.0f;
+
+		// remove anti bike falloff patch if needed
+		if ( m_SpiderWheels_falloffFound
+			&& m_SpiderWheels_falloffEnabled)
+		{
+			if (patchBikeFalloff_set->installed || patchBikeFalloff_set->failed)
+			{
+				patcher_remove(patchBikeFalloff_set);
+			}
+			m_SpiderWheels_falloffEnabled = false;
+		}
+
+		// set the gravity/camera
+		cheat_vehicle_setGravity(vinfo, offsetVector);
+		// set spider wheels disabled
+		g_cheatVehicleSpiderWheels_Enabled = false;
 	}
 }

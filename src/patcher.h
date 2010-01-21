@@ -57,3 +57,4 @@ int patcher_install(struct patch_set *set);
 int patcher_remove(struct patch_set *set);
 int is_patch_installed(struct patch_set *patch);
 void patcher_free(struct patch_set *set);
+int GTAPatchIDFinder(DWORD patchChunk0Ptr);
