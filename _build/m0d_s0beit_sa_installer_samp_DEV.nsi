@@ -12,19 +12,19 @@
 !define /date COMPILE_TIME "%H-%M-%S"
 !define VERSION 'DEV'
 !define VERSION_DT '${VERSION}.${COMPILE_DATE}.${COMPILE_TIME}'
+!define VERSION_D '${VERSION}.${COMPILE_DATE}'
 
-; get SVN revision for development version message
-!system '".\get_svn_revision.bat"'
-!searchparse /ignorecase /noerrors /file ".\svnrev.txt" '' SVNREVTEMP
-!searchparse /ignorecase /noerrors /file ".\svnrev.txt" ':' SVNREVTEMP
-!ifndef SVNREVTEMP
-	!define SVNREV 'FAIL'
+; get Mercurial revision for development version message
+!system '".\get_hg_revision.bat"'
+!searchparse /ignorecase /noerrors /file ".\revision.txt" ': ' TRASHVAR ':' REVTEMP ' '
+!ifndef REVTEMP
+	!define REV 'FAIL'
 !else
-	!searchreplace /ignorecase SVNREV "${SVNREVTEMP}" "exported" "FAIL"
+	!searchreplace /ignorecase REV "${REVTEMP}" "exported" "FAIL"
 !endif
 
 Name "${NAME} ${MP} ${MP_VERSION} ${VERSION}"
-OutFile "..\_DEV_installers\${NAME}.${MP}.${VERSION_DT}.Setup.exe"
+OutFile "..\_DEV_installers\${NAME}.${VERSION_D}.Mercurial.${REV}.Setup.exe"
 SetCompressor /SOLID lzma
 CRCCheck force
 BrandingText /TRIMCENTER "Visit ${NAME} at Google Code, Click Here"
@@ -41,7 +41,7 @@ Function onGUIInit
 FunctionEnd
 
 Page directory
-DirText "Welcome to the installer for ${NAME} ${VERSION} for ${MP} ${MP_VERSION}.$\r$\n$\r$\nThis is a development version.$\r$\n$\r$\nCheck out ${NAME} at Google Code for the lastest versions and information.  Just click the link on the bottom left." "Please select your GTA San Andreas directory."
+DirText "Welcome to the installer for ${NAME} ${VERSION} for ${MP} ${MP_VERSION}.$\r$\n$\r$\nThis is a development version built from Mercurial revision ${REV}.$\r$\n$\r$\nCheck out ${NAME} at Google Code for the lastest versions and information.  Just click the link on the bottom left." "Please select your GTA San Andreas directory."
 InstallDirRegKey HKLM "SOFTWARE\Rockstar Games\GTA San Andreas\Installation" ExePath
 Function .onVerifyInstDir
 	IfFileExists $INSTDIR\gta_sa.exe +2
