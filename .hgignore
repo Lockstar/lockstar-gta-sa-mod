@@ -9,3 +9,4 @@ relre:.*[.]lib
 relre:.*[.]res
 relre:.*BuildLog[.]htm
 relre:.*[.]exp
+relre:_build[/]revision.txt
