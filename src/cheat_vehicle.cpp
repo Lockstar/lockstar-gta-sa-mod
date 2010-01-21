@@ -846,8 +846,8 @@ void cheat_vehicle_setGravity(vehicle_info *vinfo, CVector pvecGravity)
 	traceLastFunc("cheat_vehicle_setGravity()");
 
 /*
-// this crap is totally annoying until we get
-// a proper CCamera hook system to properly rotate this
+// this crap is totally annoying until we get a
+// proper CCamera hook system to properly rotate this
 	// get CEntitySAInterface pointer
 	CEntitySAInterface *p_CEntitySAInterface = cheat_vehicle_GetCEntitySAInterface(vinfo);
 
@@ -875,6 +875,29 @@ void cheat_vehicle_setGravity(vehicle_info *vinfo, CVector pvecGravity)
 	//5:08:18 PM lol cool
 }
 
+struct patch_set *patchBikeFalloff_set = NULL;
+bool m_SpiderWheels_falloffFound = false;
+bool m_SpiderWheels_falloffEnabled = false;
+bool init_patchBikeFalloff(void)
+{
+	traceLastFunc("init_patchBikeFalloff()");
+
+	if (!m_SpiderWheels_falloffFound)
+	{
+		int patchBikeFalloff_ID = GTAPatchIDFinder(0x004BA3B9);
+		if (patchBikeFalloff_ID != -1)
+		{
+			patchBikeFalloff_set = &set.patch[patchBikeFalloff_ID];
+			m_SpiderWheels_falloffFound = true;
+		}
+		else
+		{
+			Log("Couldn't init_patchBikeFalloff. You may fall off bikes while using SpiderWheels.  Put the 'Anti bike fall off' patch back into your INI to fix this problem.");
+		}
+	}
+	return m_SpiderWheels_falloffFound;
+}
+
 void cheat_handle_spiderWheels(struct vehicle_info *vinfo, float time_diff)
 {
 	traceLastFunc("cheat_handle_spiderWheels()");
@@ -883,6 +906,9 @@ void cheat_handle_spiderWheels(struct vehicle_info *vinfo, float time_diff)
 
 	if(KEY_PRESSED(set.key_spiderwheels))
 	{
+		// init variables used to toggle patch
+		init_patchBikeFalloff();
+		// toggle the d-dang spiderz
 		cheat_state->vehicle.spiderWheels_on ^= 1;
 	}
 
@@ -920,6 +946,7 @@ void cheat_handle_spiderWheels(struct vehicle_info *vinfo, float time_diff)
 			newRotVector *= 0.05f * fTimeStep;
 			offsetVector = vehGravTemp + newRotVector;
 #ifdef M0D_DEV
+/*
 			vecGravColOrigin = D3DXVECTOR3(vecOrigin.fX, vecOrigin.fY, vecOrigin.fZ);
 			vecGravColTarget.x = pCollision->GetInterface()->Position.fX;
 			vecGravColTarget.y = pCollision->GetInterface()->Position.fY;
@@ -928,6 +955,7 @@ void cheat_handle_spiderWheels(struct vehicle_info *vinfo, float time_diff)
 			vecGravTargetNorm.x = temp_vecGravTargetNorm.fX;
 			vecGravTargetNorm.y = temp_vecGravTargetNorm.fY;
 			vecGravTargetNorm.z = temp_vecGravTargetNorm.fZ;
+*/
 #endif
 			pCollision->Destroy();
 		}
@@ -945,19 +973,34 @@ void cheat_handle_spiderWheels(struct vehicle_info *vinfo, float time_diff)
 			newRotVector *= 0.05f * fTimeStep;
 			offsetVector = vehGravTemp + newRotVector;
 #ifdef M0D_DEV
+/*
 			vecGravColOrigin = D3DXVECTOR3(vecOrigin.fX, vecOrigin.fY, vecOrigin.fZ);
 			vecGravColTarget = D3DXVECTOR3(vecTarget.fX, vecTarget.fY, vecTarget.fZ);
 			temp_vecGravTargetNorm = vecOrigin + offsetVector * checkDistanceMeters;
 			vecGravTargetNorm.x = temp_vecGravTargetNorm.fX;
 			vecGravTargetNorm.y = temp_vecGravTargetNorm.fY;
 			vecGravTargetNorm.z = temp_vecGravTargetNorm.fZ;
+*/
 #endif
 		}
 
+		// install anti bike falloff patch if needed
+		if (!g_cheatVehicleSpiderWheels_Enabled)
+		{
+			//ds
+			if (m_SpiderWheels_falloffFound
+				&& !m_SpiderWheels_falloffEnabled
+				&& !patchBikeFalloff_set->installed)
+			{
+				patcher_install(patchBikeFalloff_set);
+				m_SpiderWheels_falloffEnabled = true;
+			}
+			// set spider wheels enabled
+			g_cheatVehicleSpiderWheels_Enabled = true;
+		}
 		// set the gravity/camera
 		cheat_vehicle_setGravity(vinfo, offsetVector);
-		// set spider wheels enabled
-		g_cheatVehicleSpiderWheels_Enabled = true;
+
 	}
 	else if (g_cheatVehicleSpiderWheels_Enabled)
 	{
@@ -966,6 +1009,17 @@ void cheat_handle_spiderWheels(struct vehicle_info *vinfo, float time_diff)
 		offsetVector.fX = 0.0f;
 		offsetVector.fY = 0.0f;
 		offsetVector.fZ = -1.0f;
+
+		// remove anti bike falloff patch if needed
+		if ( m_SpiderWheels_falloffFound
+			&& m_SpiderWheels_falloffEnabled)
+		{
+			if (patchBikeFalloff_set->installed || patchBikeFalloff_set->failed)
+			{
+				patcher_remove(patchBikeFalloff_set);
+			}
+			m_SpiderWheels_falloffEnabled = false;
+		}
 
 		// set the gravity/camera
 		cheat_vehicle_setGravity(vinfo, offsetVector);

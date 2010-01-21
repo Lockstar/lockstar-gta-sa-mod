@@ -172,3 +172,20 @@ void patcher_free(struct patch_set *patch)
    }
 }
 
+int GTAPatchIDFinder(DWORD patchChunk0Ptr)
+{
+   struct patch_set *patch;// = &set.patch[item->id];
+   int foundPatchID = -1;
+
+   for (int i = 0; i < INI_PATCHES_MAX; i++)\
+   {
+	   patch = &set.patch[i];
+	   if ((DWORD)patch->chunk[0].ptr == patchChunk0Ptr)
+	   {
+		  foundPatchID = i;
+		  break;
+	   }
+   }
+
+   return foundPatchID;
+}

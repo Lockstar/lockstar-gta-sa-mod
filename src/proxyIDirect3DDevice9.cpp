@@ -3089,9 +3089,11 @@ pRakNet_NetTxRx_Hook_End:;
 					if(set.hud_indicator_inveh_airbrk) { HUD_TEXT_TGL(x, cheat_state->vehicle.air_brake ? color_enabled : color_disabled , "AirBrk"); }
 					if(set.hud_indicator_inveh_stick) { HUD_TEXT_TGL(x, cheat_state->vehicle.stick ? color_enabled : color_disabled , "Stick"); }
 					if(set.hud_indicator_inveh_brkdance) { HUD_TEXT_TGL(x, cheat_state->vehicle.brkdance ? color_enabled : color_disabled , "BrkDance"); }
+					if(set.hud_indicator_inveh_spider) { HUD_TEXT_TGL(x, cheat_state->vehicle.spiderWheels_on ? color_enabled : color_disabled , "Spider"); }
 					RenderVehicleHPBar();
 #ifdef M0D_DEV
 // fantastic shit
+/*
 render->DrawLine(vecGravColOrigin, vecGravColTarget, D3DCOLOR_ARGB(128, 255, 0, 0));
 render->DrawLine(vecGravColOrigin, vecGravTargetNorm, D3DCOLOR_ARGB(128, 0, 255, 0));
 
@@ -3099,7 +3101,7 @@ struct vehicle_info *vinfo_self = vehicle_info_get(VEHICLE_SELF, 0);
 _snprintf_s(buf, sizeof(buf), "gravityVector: %0.2f %0.2f %0.2f", cheat_state->vehicle.gravityVector.fX, cheat_state->vehicle.gravityVector.fY, cheat_state->vehicle.gravityVector.fZ);
 pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 20,
 	pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 50, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
-
+*/
 #endif
 				}
 				else if(cheat_state->state == CHEAT_STATE_ACTOR)
