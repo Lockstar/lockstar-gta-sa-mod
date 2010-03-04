@@ -427,14 +427,14 @@ HRESULT CD3DFont::Initialize(IDirect3DDevice9 *pD3Ddev)
 
 HRESULT CD3DFont::Invalidate()
 {
-	CD3DBaseRender::Invalidate();
 	m_isReady = false;
 
-	m_pRender->Invalidate();
-	SAFE_RELEASE(m_pD3DstateDraw);
-	SAFE_RELEASE(m_pD3DstateNorm);
 	SAFE_RELEASE(m_pD3Dtex);
 	SAFE_RELEASE(m_pD3Dbuf);
+	//SAFE_RELEASE(m_pD3DstateDraw);
+	//SAFE_RELEASE(m_pD3DstateNorm);
+	m_pRender->Invalidate();
+	//CD3DBaseRender::Invalidate();
 
 	return S_OK;
 }
@@ -573,15 +573,13 @@ HRESULT CD3DRender::Initialize(IDirect3DDevice9 *pD3Ddev)
 
 HRESULT CD3DRender::Invalidate()
 {
-	CD3DBaseRender::Invalidate();
-	
-	SAFE_RELEASE(m_pD3DstateDraw);
-	SAFE_RELEASE(m_pD3DstateNorm);
 	SAFE_RELEASE(m_pD3Dbuf);
 	SAFE_RELEASE(m_texture);
-
-	m_canRender = false;
 	m_pVertex = NULL;
+	//SAFE_RELEASE(m_pD3DstateDraw);
+	//SAFE_RELEASE(m_pD3DstateNorm);
+	CD3DBaseRender::Invalidate();
+	m_canRender = false;
 
 	return S_OK;
 }

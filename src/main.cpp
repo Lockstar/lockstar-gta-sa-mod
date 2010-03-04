@@ -83,7 +83,7 @@ void Log(const char *fmt, ...)
    }
 
    GetLocalTime(&time);
-   fprintf(g_flLog, "[%02d:%02d:%02d.%02d] ", time.wHour, time.wMinute, time.wSecond,time.wMilliseconds);
+   fprintf(g_flLog, "[%02d:%02d:%02d.%03d] ", time.wHour, time.wMinute, time.wSecond,time.wMilliseconds);
    va_start(ap, fmt);
    vfprintf(g_flLog, fmt, ap);
    va_end(ap);
@@ -100,7 +100,7 @@ void Log(const char *fmt, ...)
    }
 
    GetLocalTime(&time);
-   fprintf(g_flLogAll, "[%02d-%02d-%02d || %02d:%02d:%02d.%02d] ", time.wDay, time.wMonth, time.wYear,
+   fprintf(g_flLogAll, "[%02d-%02d-%02d || %02d:%02d:%02d.%03d] ", time.wDay, time.wMonth, time.wYear,
 	   time.wHour, time.wMinute, time.wSecond,time.wMilliseconds);
    va_start(ap, fmt);
    vfprintf(g_flLogAll, fmt, ap);

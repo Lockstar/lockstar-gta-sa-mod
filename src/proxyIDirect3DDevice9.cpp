@@ -140,6 +140,8 @@ HBITMAP PornographyGetPorn(void)
 {
 	// RenderTargetSurface.
 	IDirect3DSurface9* pRenderTargetSurface = NULL;
+	// Multisample TransferTargetSurface.
+	IDirect3DSurface9* pTransferTargetSurface = NULL;
 	// DestinationTargetSurface
 	IDirect3DSurface9* pDestinationTargetSurface = NULL;
 	// DisplayMode
@@ -148,7 +150,11 @@ HBITMAP PornographyGetPorn(void)
 	HWND m_hWnd = pPresentParam.hDeviceWindow;
 
 	// make sure we have the original device
-	if (origIDirect3DDevice9 == NULL) goto getpornfail;
+	if (origIDirect3DDevice9 == NULL)
+	{
+		Log("PornographyGetPorn() fail, origIDirect3DDevice9 == NULL");
+		goto getpornfail;
+	}
 
 	// Get the client rectangle
 	RECT rc;
@@ -157,7 +163,11 @@ HBITMAP PornographyGetPorn(void)
 	ClientToScreen(m_hWnd, LPPOINT(&rc.right));
 
 	// Display Mode (d3dDipMode)
-	if(FAILED(origIDirect3DDevice9->GetDisplayMode(D3DADAPTER_DEFAULT, &d3dDipMode))) goto getpornfail;
+	if (FAILED(origIDirect3DDevice9->GetDisplayMode(D3DADAPTER_DEFAULT, &d3dDipMode)))
+	{
+		Log("PornographyGetPorn() fail, GetDisplayMode() fail.");
+		goto getpornfail;
+	}
 
 	// calculate correct D3DFormat
 	D3DFORMAT m_D3DFMT;
@@ -177,25 +187,76 @@ HBITMAP PornographyGetPorn(void)
 	else
 	{
 		// pray this works, but we shouldn't ever get this
+		Log("WTF, your format is: %d", d3dDipMode.Format);
 		m_D3DFMT = D3DFMT_A8R8G8B8;
 		m_CaptureBitCount = 32;
 	}
 
 	//GetDestinationTargetSurface
-	if(FAILED(origIDirect3DDevice9->CreateOffscreenPlainSurface(
+	if (FAILED(origIDirect3DDevice9->CreateOffscreenPlainSurface(
 		(rc.right - rc.left),
 		(rc.bottom - rc.top),
 		m_D3DFMT,
-		D3DPOOL_SYSTEMMEM,
+		D3DPOOL_SYSTEMMEM, // D3DPOOL_DEFAULT D3DPOOL_SYSTEMMEM
 		&pDestinationTargetSurface,
-		NULL)))
+		NULL // HANDLE* pSharedHandle
+		)))
+	{
+		Log("PornographyGetPorn() fail, CreateOffscreenPlainSurface() fail.");
 		goto getpornfail;
+	}
 
 	// GetRenderTargetSurface ASAP
-	if(FAILED(origIDirect3DDevice9->GetRenderTarget(0, &pRenderTargetSurface))) goto getpornfail;
+	if (FAILED(origIDirect3DDevice9->GetRenderTarget(0, &pRenderTargetSurface)))
+	{
+		Log("PornographyGetPorn() fail, GetRenderTarget() fail.");
+		goto getpornfail;
+	}
 
-	//copy RenderTargetSurface -> DestTarget, and release pRenderTargetSurface
-	if(FAILED(origIDirect3DDevice9->GetRenderTargetData(pRenderTargetSurface, pDestinationTargetSurface))) goto getpornfail;
+	// code to handle multisampled video modes like... i dunno... anti-aliasing :P
+	D3DSURFACE_DESC pRendTargetDesc;
+	pRenderTargetSurface->GetDesc(&pRendTargetDesc);
+	if (pRendTargetDesc.MultiSampleType != D3DMULTISAMPLE_NONE)
+	{
+		if (FAILED(origIDirect3DDevice9->CreateRenderTarget(
+			  (rc.right - rc.left),
+			  (rc.bottom - rc.top),
+			  m_D3DFMT,
+			  D3DMULTISAMPLE_NONE,
+			  0, // DWORD MultisampleQuality
+			  0, // BOOL Lockable
+			  &pTransferTargetSurface,
+			  NULL // HANDLE* pSharedHandle
+			)))
+		{
+			Log("PornographyGetPorn() fail, CreateRenderTarget() fail.");
+			goto getpornfail;
+		}
+		if (FAILED(origIDirect3DDevice9->StretchRect(
+			pRenderTargetSurface,
+			NULL,
+			pTransferTargetSurface,
+			NULL,
+			D3DTEXF_NONE
+			)))
+		{
+			Log("PornographyGetPorn() fail, StretchRect() fail.");
+			goto getpornfail;
+		}
+		// make the target surface our transfered surface
+		SAFE_RELEASE(pRenderTargetSurface);
+		pRenderTargetSurface = pTransferTargetSurface;
+	}
+
+	//copy RenderTargetSurface -> DestTarget, and release target surfaces
+	if (FAILED(
+		origIDirect3DDevice9->GetRenderTargetData(pRenderTargetSurface, pDestinationTargetSurface)
+		))
+	{
+		Log("PornographyGetPorn() fail, GetRenderTargetData() fail.");
+		goto getpornfail;
+	}
+	SAFE_RELEASE(pTransferTargetSurface);
 	SAFE_RELEASE(pRenderTargetSurface);
 
 	// create HDC device
@@ -216,11 +277,14 @@ HBITMAP PornographyGetPorn(void)
 
 	//Create a lock on the DestinationTargetSurface
 	D3DLOCKED_RECT lockedRC;
-	if(FAILED(pDestinationTargetSurface->LockRect(
+	if (FAILED(pDestinationTargetSurface->LockRect(
 		&lockedRC,
 		NULL,
 		D3DLOCK_NO_DIRTY_UPDATE|D3DLOCK_READONLY|D3DLOCK_NOSYSLOCK)))
+	{
+		Log("PornographyGetPorn() fail, LockRect() fail.");
 		goto getpornfail;
+	}
 
 	// create the HBITMAP we'll return and populate it with lockedRC.pBits
 	HBITMAP hbm = CreateBitmap(
@@ -232,23 +296,28 @@ HBITMAP PornographyGetPorn(void)
 	);
 
 	// unlock & release the RECT
-	if(FAILED(pDestinationTargetSurface->UnlockRect())) goto getpornfail;
+	if (FAILED(pDestinationTargetSurface->UnlockRect()))
+	{
+		Log("PornographyGetPorn() fail, UnlockRect() fail.");
+		goto getpornfail;
+	}
 	SAFE_RELEASE(pDestinationTargetSurface);
 
 	// select the HBITMAP into the HDC, converting format to A8R8G8B8 if needed
 	SelectObject(hCaptureDC, hbm);
 
 	// release the leftovers
-	DeleteDC(hCaptureDC);
+	if (hCaptureDC) DeleteDC(hCaptureDC);
 
 	// return the 32bit HBITMAP
 	return hbm;
 
 getpornfail:
 	// release everything
-	DeleteObject(hbm);
-	DeleteDC(hCaptureDC);
+	if (hbm) DeleteObject(hbm);
+	if (hCaptureDC) DeleteDC(hCaptureDC);
 	SAFE_RELEASE(pRenderTargetSurface);
+	SAFE_RELEASE(pTransferTargetSurface);
 	SAFE_RELEASE(pDestinationTargetSurface);
 	return 0;
 }
@@ -314,7 +383,7 @@ DWORD WINAPI PornographyMasterControl(LPVOID trash)
 	SYSTEMTIME m_systemTime;
 	GetLocalTime(&m_systemTime);
 
-	if(g_SAMP != NULL)
+	if(g_SAMP)
 	{
 		sprintf(m_PornoName, "screenshots\\sa-mp_%04d-%02d-%02d_%02d-%02d-%02d.jpg",
 			m_systemTime.wYear, m_systemTime.wMonth, m_systemTime.wDay,
@@ -335,21 +404,23 @@ DWORD WINAPI PornographyMasterControl(LPVOID trash)
 	};
 
 	// clean up after the bastards
-	DeleteObject(hardcorePorn);
-	DeleteObject(g0tP0rn);
-	GdiplusShutdown(gdiplusToken);
+	if (hardcorePorn) DeleteObject(hardcorePorn);
+	if (g0tP0rn) DeleteObject(g0tP0rn);
+	if (gdiplusToken) GdiplusShutdown(gdiplusToken);
 
 	// we're done ere innit'
 	isPornographyMasterControlRunning = false;
 	isPornographyStuntCockReady = false;
 	g_lastPornographyTickCount = GetTickCount();
 	ExitThread(0);
+	return 1;
 fail1:
-	DeleteObject(g0tP0rn);
-	GdiplusShutdown(gdiplusToken);
+	if (g0tP0rn) DeleteObject(g0tP0rn);
+	if (gdiplusToken) GdiplusShutdown(gdiplusToken);
 	isPornographyMasterControlRunning = false;
 	isPornographyStuntCockReady = false;
 	ExitThread(0);
+	return 0;
 }
 
 bool Pornography()
@@ -2969,6 +3040,7 @@ HRESULT proxyIDirect3DDevice9::EndScene(void)
 			{
 				if(game_inited) if(!gta_menu_active()) pD3DFontFixed->PrintShadow(0.0f, 0.0f, D3DCOLOR_ARGB(255, 0, 255, 0), NAME);
 			}
+/*
 			if(g_SAMP != NULL && g_SAMP->pRakNet != NULL)
 			{
 				uint32_t iBitsSent, iBitsRecv;
@@ -3001,6 +3073,7 @@ HRESULT proxyIDirect3DDevice9::EndScene(void)
 					pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 20, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
 pRakNet_NetTxRx_Hook_End:;
 			}
+*/
 #endif // M0D_DEV
 
 			if(set.d3dtext_hud)

@@ -620,13 +620,34 @@ struct vehicle_info
 {
    #pragma pack(1)
 	struct object_base base;
-	// can't put classes with constructors into unions
-	// until we're compiling with C++0x, dammit
-	//CEntitySAInterface m_CEntitySAInterface;
+	/*
+	union
+	{
+		struct object_base base;
+		struct
+		{
+			CEntitySAInterface m_CEntitySAInterface;
+		};
+	};
+	*/
    uint8_t             flags;                     /* 66 - flags */
    uint8_t             __unknown_67;              /* 67 */
-   float               speed[3];                  /* 68 */
-   float               spin[3];                   /* 80 */
+	union /* 68 */
+	{
+		struct
+		{
+			CVector			m_SpeedVec;
+		};
+		float			speed[3];
+	};
+	union /* 80 */
+	{
+		struct
+		{
+			CVector			m_SpinVec;
+		};
+		float			spin[3];
+	};
    uint8_t             __unknown_92[44];          /* 92 */
 
 	// handling should start here
@@ -725,9 +746,24 @@ struct vehicle_info
    uint32_t            door_status;               /* 1272 - car door status (1:Opened 2:Locked) */
    uint8_t             __unknown_1276[148];       /* 1276 */
    uint8_t             vehicle_type;              /* 1424 - VEHICLE_TYPE_* */
-   uint8_t             __unknown_1425[20];        /* 1425 */
-   uint8_t             car_tire_status[4];        /* 1445 - LF, LR, RF, RR, 0 = ok, 1 = flat, 2 = landing gear up */
-   uint8_t             __unknown_1449[83];        /* 1449 */
+   uint8_t             __unknown_1425[19];        /* 1425 */
+
+	union
+	{
+		struct
+		{
+			float		m_fTrainSpeed;				/* 1444 - Train speed along rails */
+			float		m_fTrainRailDistance;		/* 1448 - Distance along rail starting from first rail node (determines train position when on rails) */
+		};
+		struct
+		{
+			uint8_t		__unknown_1444;				/* 1444 */
+			uint8_t		car_tire_status[4];			/* 1445 - LF, LR, RF, RR, 0 = ok, 1 = flat, 2 = landing gear up */
+			uint8_t		__unknown_1449[4];			/* 1449 */
+		};
+	};
+
+   uint8_t             __unknown_1453[79];        /* 1449 */
    struct detachable   detachable_bike1[1];       /* 1532 - bike/motorcycle part */
    uint8_t             __unknown_1576[52];        /* 1576 */
    uint8_t             bike_tire_status[2];       /* 1628 Front, Rear, 0 = ok, 1 = flat */

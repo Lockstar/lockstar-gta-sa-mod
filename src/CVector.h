@@ -19,22 +19,32 @@
 #include <math.h>
 
 #define FLOAT_EPSILON 0.0001f
+#define isfinite  _finite
 
 /**
  * CVector Structure used to store a 3D vertex.
  */
 class CVector
 {
+private:
+
+	bool IsNearZeroFloat( const float param )
+	{
+		if(!isfinite(param))
+			return 1;
+		return (fabs(param) < 0.001);
+	}
+
 public:
 	float fX, fY, fZ;
-	
+
 	CVector ()
 	{
 		this->fX = 0;
 		this->fY = 0;
 		this->fZ = 0;
 	};
-	
+
 	CVector ( float fX, float fY, float fZ) 
 	{ 
 		this->fX = fX;
@@ -76,6 +86,21 @@ public:
         fY = _fZ * param->fX - param->fZ * _fX;
         fZ = _fX * param->fY - param->fX * _fY;
     }
+
+
+
+
+
+	bool IsNearZero( void ) 
+	{
+		if(!isfinite(fX) || !isfinite(fY) || !isfinite(fZ))
+			return 1;
+		return (IsNearZeroFloat(fX) && IsNearZeroFloat(fY) && IsNearZeroFloat(fZ));
+	}
+
+
+
+
 
     CVector operator + ( const CVector& vecRight ) const
     {

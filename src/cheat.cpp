@@ -215,9 +215,13 @@ void cheat_hook(HWND wnd)
 		if(hookApplyGravity.Create((uint8_t*)(uint32_t)HOOKPOS_CPhysical_ApplyGravity, (uint8_t*)HOOK_CPhysical_ApplyGravity, DETOUR_TYPE_JMP, 5) == 0)
 			Log("Failed to hook gravity");
 
-
-		*(BYTE *)0xB7CB49 = 0; // game not paused
-		*(BYTE *)0xBA67A4 = 0; // menu not visible
+		// LOOK WHAT I CAN DO!
+		if (g_SAMP)
+		{
+			*(BYTE *)0xB7CB49 = 0; // game not paused
+			*(BYTE *)0xBA67A4 = 0; // menu not visible
+			g_pCSettingsSAInterface->activateMenu = 0; // menu not visible?
+		}
 
    } /* end initialize state */
 

@@ -351,29 +351,33 @@ void cheat_handle_vehicle_hop(struct vehicle_info *info, float time_diff)
 
 void cheat_handle_vehicle_brake(struct vehicle_info *info, float time_diff)
 {
-   float speed;
-   struct vehicle_info *temp;
+	float speed;
+	struct vehicle_info *temp;
 
-   if(KEY_DOWN(set.key_brake_mod))
-   {
-      for(temp = info; temp != NULL; temp = temp->trailer)
-      {
-         speed = vect3_length(temp->speed);
-         vect3_normalize(temp->speed, temp->speed);
+	if(KEY_DOWN(set.key_brake_mod))
+	{
+		for(temp = info; temp != NULL; temp = temp->trailer)
+		{
+			speed = vect3_length(temp->speed);
+			vect3_normalize(temp->speed, temp->speed);
+			speed -= time_diff * set.brake_mult;
 
-         speed -= time_diff * set.brake_mult;
-         if(speed < 0.0f)
-            speed = 0.0f;
+			if(speed < 0.0f)
+				speed = 0.0f;
 
-         if(vect3_near_zero(temp->speed))
-            vect3_zero(temp->speed);
-         else
-            vect3_mult(temp->speed, speed, temp->speed);
+			if(vect3_near_zero(temp->speed))
+				vect3_zero(temp->speed);
+			else
+			{
+				if(temp->vehicle_type == VEHICLE_TYPE_TRAIN)
+					temp->m_fTrainSpeed *= speed;
+				vect3_mult(temp->speed, speed, temp->speed);
+			}
 
-         if(!set.trailer_support)
-            break;
-      }
-   }
+			if(!set.trailer_support)
+				break;
+		}
+	}
 }
 
 void cheat_handle_vehicle_nitro(struct vehicle_info *info, float time_diff)
@@ -411,6 +415,8 @@ void cheat_handle_vehicle_nitro(struct vehicle_info *info, float time_diff)
 			{
 				vect3_normalize(temp->speed, temp->speed);
 				vect3_mult(temp->speed, speed, temp->speed);
+				if(temp->vehicle_type == VEHICLE_TYPE_TRAIN)
+					temp->m_fTrainSpeed *= (speed*3);
 				if(vect3_near_zero(temp->speed))
 					vect3_zero(temp->speed);
 			}
@@ -440,13 +446,15 @@ void cheat_handle_vehicle_nitro(struct vehicle_info *info, float time_diff)
 
 void cheat_handle_vehicle_quick_turn_180(struct vehicle_info *info, float time_diff)
 {
-   if(KEY_PRESSED(set.key_quick_turn_180))
-   {
-      /* simply invert the X and Y axis.. */
-      vect3_invert(&info->base.matrix[4*0], &info->base.matrix[4*0]);
-      vect3_invert(&info->base.matrix[4*1], &info->base.matrix[4*1]);
-      vect3_invert(info->speed, info->speed);
-   }
+	if(KEY_PRESSED(set.key_quick_turn_180))
+	{
+		/* simply invert the X and Y axis.. */
+		vect3_invert(&info->base.matrix[4*0], &info->base.matrix[4*0]);
+		vect3_invert(&info->base.matrix[4*1], &info->base.matrix[4*1]);
+		vect3_invert(info->speed, info->speed);
+		if(info->vehicle_type == VEHICLE_TYPE_TRAIN)
+			info->m_fTrainSpeed = -info->m_fTrainSpeed;
+	}
 }
 
 //MATRIX4X4
@@ -478,27 +486,15 @@ void cheat_handle_vehicle_quick_turn_left(struct vehicle_info *vinfo, float time
 		float *heading_matrix = vinfo->base.matrix;
 		MATRIX4X4 *heading_matrix4x4 = vinfo->base.matrixStruct;
 		// rotate on z axis
-		float heading_vector_zrotate[4] = { 0.0f, 0.0f, -90.0f, 0.0f };
+		CVector posUnder = cheat_vehicle_getPositionUnder(vinfo);
+		float heading_vector_zrotate[3] = { posUnder.fX, posUnder.fY, posUnder.fZ };
 		float heading_theta = M_PI / 2.0f;
 		vect3_normalize(heading_vector_zrotate, heading_vector_zrotate);
 		matrix_vect3_rotate(heading_matrix, heading_vector_zrotate, heading_theta, heading_matrix);
-		// compensate pitch & yaw
-		float pitch = heading_matrix4x4->up.Z;
-		float roll = heading_matrix4x4->right.Z;
-		heading_matrix4x4->up.Z = -roll;
-		heading_matrix4x4->right.Z = pitch;
-
 		// do new speed
-		float *speed_vector = vinfo->speed;
-		if(!vect3_near_zero(speed_vector))
+		if (!vinfo->m_SpeedVec.IsNearZero())
 		{
-			float speed_vector_return[4];
-			float speed_theta = 1.0f;
-			//
-			vect3_copy(speed_vector, speed_vector_return);
-			speed_vector_return[1] = speed_vector[0];
-			speed_vector_return[0] = -speed_vector[1];
-			vect3_copy(speed_vector_return, speed_vector);
+			vinfo->m_SpeedVec.CrossProduct(&posUnder);
 		}
 	}
 }
@@ -511,27 +507,16 @@ void cheat_handle_vehicle_quick_turn_right(struct vehicle_info *vinfo, float tim
 		float *heading_matrix = vinfo->base.matrix;
 		MATRIX4X4 *heading_matrix4x4 = vinfo->base.matrixStruct;
 		// rotate on z axis
-		float heading_zvectrotate[4] = { 0.0f, 0.0f, 90.0f, 0.0f };
+		CVector posUnder = cheat_vehicle_getPositionUnder(vinfo);
+		posUnder = -posUnder;
+		float heading_zvectrotate[4] = { posUnder.fX, posUnder.fY, posUnder.fZ };
 		float heading_theta = M_PI / 2.0f;
 		vect3_normalize(heading_zvectrotate, heading_zvectrotate);
 		matrix_vect3_rotate(heading_matrix, heading_zvectrotate, heading_theta, heading_matrix);
-		// compensate pitch & yaw
-		float pitch = heading_matrix4x4->up.Z;
-		float roll = heading_matrix4x4->right.Z;
-		heading_matrix4x4->up.Z = roll;
-		heading_matrix4x4->right.Z = -pitch;
-
 		// do new speed
-		float *speed_vector = vinfo->speed;
-		if(!vect3_near_zero(speed_vector))
+		if (!vinfo->m_SpeedVec.IsNearZero())
 		{
-			float speed_vector_return[4];
-			float speed_theta = 1.0f;
-			//
-			vect3_copy(speed_vector, speed_vector_return);
-			speed_vector_return[1] = -speed_vector[0];
-			speed_vector_return[0] = speed_vector[1];
-			vect3_copy(speed_vector_return, speed_vector);
+			vinfo->m_SpeedVec.CrossProduct(&posUnder);
 		}
 	}
 }
@@ -776,29 +761,20 @@ void CPhysical_ApplyGravity(DWORD dwThis)
     float fTimeStep = *(float *)0xB7CB5C;
     float fGravity  = *(float *)0x863984;
 
-    if (dwType == 2)
+    if (dwType == 2
+		&& g_cheatVehicleSpiderWheels_Enabled)
     {
 		// get our vehicle_info pointer to see if it's dwThis
 		struct vehicle_info *vinfo_self = vehicle_info_get(VEHICLE_SELF, 0);
 		struct actor_info *ainfo_self = actor_info_get(ACTOR_SELF, 0);
 		if(vinfo_self != NULL
 			&& vinfo_self == (vehicle_info*)dwThis
-			&& vinfo_self->passengers[0] == ainfo_self
-			&& g_cheatVehicleSpiderWheels_Enabled)
+			&& vinfo_self->passengers[0] == ainfo_self)
 		{
-
 			// it's our vehicle, and we're driving, and magnet wheels is enabled - use the gravity vector
-
 			CVector vecGravity = cheat_state->vehicle.gravityVector;
 			CVector vecMoveSpeed = GTAfunc_GetMoveSpeed(vinfo_self);
-
-			//float gravityZcompensationMultiplier = vecGravity.fZ - vecGravity.fX;
-			//vecMoveSpeed.fZ += (fTimeStep * fGravity) * gravityZcompensationMultiplier;
-
 			vecMoveSpeed += vecGravity * fTimeStep * fGravity;
-			//vecGravity = VectorMultiplyFloat(vecGravity, fTimeStep * fGravity);
-			//vecMoveSpeed = VectorAddVector(vecMoveSpeed, vecGravity);
-
 			GTAfunc_SetMoveSpeed(vinfo_self, vecMoveSpeed);
 		}
 		else
