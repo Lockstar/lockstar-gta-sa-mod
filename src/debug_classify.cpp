@@ -55,8 +55,15 @@ static const struct classify_table classify_table_actor[] =
    47,   1,    "Interior ID",
    66,   1,    "Flags",
    68,   12,   "Speed vector",
+   80,   12,   "Spin vector",
+   92,   12,   "Speed vector for collisions",
+   104,  12,   "Spin vector for collisions",
+   216,  4,    "Collision Timer (?)",
+   220,  4,    "Pointer to current collision object",
+   236,  12,   "Last Collision Coords",
    356,  12,   "Step vector (last foot step)",
-   1148, 4,    "Unknown pointer to animation struct",
+   368,  12,   "Step vector (before last foot step",
+   1148, 4,    "Pointer to ped intelligence struct",
    1244, 4,    "runspeed",
    1300, 4,    "X angle",
    1328, 4,    "State",
@@ -65,7 +72,7 @@ static const struct classify_table classify_table_actor[] =
    1348, 4,    "Max hitpoints (?)",
    1368, 4,    "Z angle",
    1372, 4,    "Z angle (again)",
-   1384, 4,    "Pointer to vehicle (on contact)",
+   1384, 4,    "Pointer to vehicle (if on top)",
    1412, 4,    "Pointer to building (on contact)",
    1420, 4,    "Pointer to vehicle (if driving)",
    1440, 364,  "Weapon data",
@@ -87,6 +94,8 @@ static const struct classify_table classify_table_vehicle[] =
    66,   1,    "Flags",
    68,   12,   "Speed vector",
    80,   12,   "Spin vector",
+   92,   12,   "Speed vector for collisions",
+   104,  12,   "Spin vector for collisions",
    140,  4,    "Mass",
    144,  4,    "Turn mass",
    148,  4,    "Grip divider",
@@ -94,8 +103,13 @@ static const struct classify_table classify_table_vehicle[] =
    152,  4,    "Mass to grip multiplier",
    160,  4,    "Grip level (normalized)",
    164,  12,   "Center of mass vector",
-   216,  20,   "Collision related(?)",
-   236,  20,   "Last collision coordinates",
+   188,  4,    "Last TOUCHED object",
+   192,  4,    "Last collided object",
+   216,  4,    "Collision timer (?)",
+   220,  4,    "Pointer to current collision object",
+   224,  12,   "Collision Something",
+   236,  12,   "Last collision coordinates",
+   304,  3,    "Light reflection related (?)",
    477,  1,    "In vehicle",
    502,  1,    "Car horn",
    503,  1,    "Siren",
@@ -117,13 +131,18 @@ static const struct classify_table classify_table_vehicle[] =
    1220, 4,    "Armor",
    1272, 4,    "Door status",
    1300, 1,    "Car horn (writeable)",
+   1420, 4,    "Steering",
    1424, 4,    "Vehicle class",
+   1444, 1,    "Boat sound level",
    1445, 4,    "Car tire status",
-   1532, 44*1, "Detachables (bike)",
+   1449, 6,    "Door status",
+   1456, 1,    "Light status",
+   1532, 44*1, "Detachables (bike, car, boat)",
    1628, 2,    "Bike tire status",
    1632, 44*4, "Detachables (bike, boat)",
    1828, 44*4, "Detachables (car, heli, plane)",
    2020, 4*4,  "Suspension height",
+   2404, 4,    "Gas pedal",
    -1, -1, NULL
 };
 
@@ -137,6 +156,44 @@ static const struct classify_table classify_table_building[] =
    -1, -1, NULL
 };
 
+static const struct classify_table classify_table_object[] =
+{
+   0,    4,    "Virtual method table",
+   20,   4,    "Pointer to transformation matrix for Model",
+   24,   4,    "Pointer to transformation matrix?",
+   34,   2,    "Model ID",
+   36,   4,    "Collision related",
+   44,   2,    "Timer",
+   47,   1,    "Interior ID",
+   60,   2,    "Collision Timer",
+   64,   1,    "Flags",
+   67,   1,    "Flags",
+   75,   4,    "Physical Height (not model/texture height)",
+   176,  2,    "Position related",
+   252,  4,    "Pointer to actor object is attached to",
+   264,  4,    "Height Difference to actor attached to",
+   272,  4,    "Rotation/pitch - Attached Objects",
+   276,  4,    "Rotation/roll - Attached Objects",
+   348,  4,    "Texture scale",
+   -1, -1, NULL
+};
+
+static const struct classify_table classify_table_ped_intelligence[] =
+{
+   0,    4,    "Actor",
+   8,	 4,	   "Task falling",
+   16,   4,    "Active animation task",
+   20,   4,    "Unknown task",
+   24,   4,    "Animation task",
+   40,   4,    "Passive task",
+   44,   4,    "Unknown task",
+   48,   8,    "Actor",
+   64,   4,    "Event fall",
+   108,  4,    "Actor",
+   116,  4,    "Pointer to Event",
+   -1,  -1,    NULL
+};
+
 static const struct classify_pool classify_pool[] =
 {
    { (void *)0x00B74484, 8,    "ptr node single",  NULL },
@@ -145,7 +202,7 @@ static const struct classify_pool classify_pool[] =
    { (void *)0x00B74490, 1988, "peds",             classify_table_actor },
    { (void *)0x00B74494, 2584, "vehicles",         classify_table_vehicle },
    { (void *)0x00B74498, 56,   "buildings",        classify_table_building },
-   { (void *)0x00B7449C, 412,  "objects",          NULL },
+   { (void *)0x00B7449C, 412,  "objects",          classify_table_object },
    { (void *)0x00B744A0, 56,   "dummys",           NULL },
    { (void *)0x00B744A4, 48,   "col model",        NULL },
    { (void *)0x00B744A8, 128,  "task",             NULL },
@@ -154,7 +211,7 @@ static const struct classify_pool classify_pool[] =
    { (void *)0x00B744B4, 420,  "patrol route",     NULL },
    { (void *)0x00B744B8, 36,   "node route",       NULL },
    { (void *)0x00B744BC, 32,   "task allocator",   NULL },
-   { (void *)0x00B744C0, 660,  "ped intelligence", NULL },
+   { (void *)0x00B744C0, 660,  "ped intelligence", classify_table_ped_intelligence },
    { (void *)0x00B744C4, 196,  "ped attractors",   NULL },
    { NULL, 0, NULL, NULL }
 };

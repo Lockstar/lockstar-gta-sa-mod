@@ -130,6 +130,8 @@ static void cheat_main_vehicle(float time_diff)
 	cheat_handle_vehicle_hop(info, time_diff);
 	cheat_handle_vehicle_engine(info, time_diff);
 	cheat_handle_vehicle_brakedance(info, time_diff);
+	cheat_handle_blinking_carlights(info, time_diff);
+	cheat_handle_vehicle_keepTrailer(info, time_diff);
 	cheat_handle_repair_car(info, time_diff);
 	cheat_handle_fast_exit(info, time_diff);
 	cheat_handle_spiderWheels(info, time_diff);

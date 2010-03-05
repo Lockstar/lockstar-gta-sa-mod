@@ -522,6 +522,44 @@ bool isBadPtr_writeAny(void *pointer, ULONG size)
 
 
 
+uint32_t GetFromPool(DWORD value, DWORD Pool, DWORD function){
+	uint32_t retval;
+	__asm{
+		mov ecx, Pool //[Pool] doesnt seem to work when using inline?
+		mov ecx, [ecx]
+		push value
+		call function
+		mov retval, eax
+	}
+	return retval;
+}
+
+inline int ScriptCarId(struct vehicle_info *car){
+	return (int)GetFromPool((DWORD)car,VEHICLE_POOL_POINTER,FUNC_GET_CAR_ID);
+}
+
+inline int ScriptActorId(struct actor_info *actor){
+	return (int)GetFromPool((DWORD)actor,ACTOR_POOL_POINTER,FUNC_GET_ACTOR_ID);
+}
+
+inline int ScriptObjectId(struct object_info *object){
+	return (int)GetFromPool((DWORD)object,OBJECT_POOL_POINTER,FUNC_GET_OBJECT_ID);
+}
+
+inline struct vehicle_info *GetVehicleByGtaId(int car_id){
+	return (vehicle_info*)GetFromPool((DWORD)car_id,VEHICLE_POOL_POINTER,FUNC_GET_CAR_STRUCT);
+}
+
+inline struct actor_info *GetActorByGtaId(int actor_id){
+	return (actor_info*)GetFromPool((DWORD)actor_id,ACTOR_POOL_POINTER,FUNC_GET_ACTOR_STRUCT);
+}
+
+inline struct object_info *GetObjectByGtaId(int object_id){
+	return (object_info*)GetFromPool((DWORD)object_id,OBJECT_POOL_POINTER,FUNC_GET_OBJECT_STRUCT);
+}
+
+
+
 
 void gta_weather_state_set(int state)
 {

@@ -52,6 +52,15 @@
 #define VEHICLE_EMPTY            0x02
 #define VEHICLE_OCCUPIED		 0x04
 
+#define FUNC_GET_CAR_ID 0x424160
+#define FUNC_GET_CAR_STRUCT 0x4048E0
+#define FUNC_GET_ACTOR_ID 0x4442D0
+#define FUNC_GET_ACTOR_STRUCT 0x404910
+#define FUNC_GET_OBJECT_ID 0x465070
+#define FUNC_GET_OBJECT_STRUCT 0x465040
+#define FUNC_GET_COL_MODEL_STRUCT 0x40FB80
+#define FUNC_GET_BUILDING_STRUCT 0x403FA0
+
 struct weapon_entry
 {
    int id;
@@ -98,6 +107,13 @@ bool isBadPtr_readAny(void *pointer, ULONG size);
 bool isBadPtr_writeAny(void *pointer, ULONG size);
 
 
+uint32_t GetFromPool(DWORD value, DWORD Pool, DWORD function);
+extern inline int ScriptCarId(struct vehicle_info *mecar);
+extern inline int ScriptActorId(struct actor_info *meactor);
+extern inline int ScriptObjectId(struct object_info *object);
+extern inline struct vehicle_info *GetVehicleByGtaId(int car_id);
+extern inline struct actor_info *GetActorByGtaId(int actor_id);
+extern inline struct object_info *GetObjectByGtaId(int object_id);
 
 
 void gta_weather_state_set(int state);

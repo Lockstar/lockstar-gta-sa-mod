@@ -385,6 +385,12 @@ static void ini_init(void)
    if((ent = ini_register_entry("warp_use_speed", TYPE_BOOL)) != NULL)
       ini_register_data(ent, &set.warp_use_speed, "true");
 
+   //blinking car lights, keep trailer
+   if((ent = ini_register_entry("key_blinking_car_lights", TYPE_KEY)) != NULL)
+	   ini_register_data(ent, &set.key_blinking_car_lights, "&0");
+   if((ent = ini_register_entry("key_keep_trailer", TYPE_KEY)) != NULL)
+	   ini_register_data(ent, &set.key_keep_trailer, "&0");
+
    // repair car
    if((ent = ini_register_entry("key_repair_car", TYPE_KEY)) != NULL)
       ini_register_data(ent, &set.key_repair_car, "&0");

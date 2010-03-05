@@ -79,7 +79,8 @@
 #define ID_CHEAT_TELETEXTS		150
 #define ID_CHEAT_GAME_SPEED		160
 #define ID_CHEAT_HANDLING		170
-#define ID_CHEAT_NOCOLS			180
+#define	ID_CHEAT_KEEP_TRAILER	180
+#define ID_CHEAT_NOCOLS			190
 
 #define ID_CHEAT_INVULN_ACTOR		 0
 #define ID_CHEAT_INVULN_VEHICLE		 1
@@ -927,6 +928,7 @@ static int menu_callback_cheats(int op, struct menu_item *item)
 	  case ID_CHEAT_MAP:			return cheat_state->_generic.map;
 	  case ID_CHEAT_TELETEXTS:		return cheat_state->_generic.teletext;
       case ID_CHEAT_GAME_SPEED:		return 0;
+	  case ID_CHEAT_KEEP_TRAILER:	return cheat_state->vehicle.keep_trailer_attached;
 	  case ID_CHEAT_NOCOLS:			return cheat_state->_generic.nocols_enabled;
       }
       break;
@@ -990,6 +992,10 @@ static int menu_callback_cheats(int op, struct menu_item *item)
                info->armor = 100.0f;
          }
          break;
+
+      case ID_CHEAT_KEEP_TRAILER:
+		  cheat_state->vehicle.keep_trailer_attached ^= 1;
+		  break;
 
 	  case ID_CHEAT_NOCOLS:
 		  cheat_state->_generic.nocols_enabled ^= 1;
@@ -1781,11 +1787,15 @@ static int menu_callback_interiors(int op, struct menu_item *item)
 {
    if(op == MENU_OP_SELECT)
    {
-	   sampPatchDisableInteriorUpdate(1);
-	   sendSetInterior(interiors_list[item->id].interior_id);
+	   if(g_SAMP != NULL)
+	   {
+			sampPatchDisableInteriorUpdate(1);
+			sendSetInterior(interiors_list[item->id].interior_id);
+	   }
 	   cheat_state_text("Teleported to: %s.", interiors_list[item->id].interior_name);
 	   cheat_teleport(interiors_list[item->id].pos, interiors_list[item->id].interior_id);
-	   sampPatchDisableInteriorUpdate(0);
+	   if(g_SAMP != NULL)
+			sampPatchDisableInteriorUpdate(0);
       return 1;
    }
 
@@ -2258,7 +2268,7 @@ void menu_maybe_init(void)
    menu_item_add(menu_cheats, menu_cheats_handling,      "Change vehicle handling", ID_CHEAT_HANDLING,   MENU_COLOR_DEFAULT, NULL);
    menu_item_add(menu_cheats, menu_cheats_money,         "Money",                   ID_CHEAT_MONEY,      MENU_COLOR_DEFAULT, NULL);
    menu_item_add(menu_cheats, menu_cheats_inv,           "Invulnerable",            ID_CHEAT_INVULN,     MENU_COLOR_DEFAULT, NULL);
-   menu_item_add(menu_cheats, NULL,                      "Restore health",				ID_CHEAT_HP,         MENU_COLOR_DEFAULT, NULL);
+   menu_item_add(menu_cheats, NULL,                      "Restore health",			ID_CHEAT_HP,         MENU_COLOR_DEFAULT, NULL);
    menu_item_add(menu_cheats, NULL,                      "Restore armor",           ID_CHEAT_ARMOR,      MENU_COLOR_DEFAULT, NULL);
    menu_item_add(menu_cheats, menu_cheats_weather,       "Freeze weather",          ID_NONE,             MENU_COLOR_DEFAULT, NULL);
    menu_item_add(menu_cheats, menu_cheats_time,          "Freeze time",             ID_NONE,             MENU_COLOR_DEFAULT, NULL);
@@ -2270,6 +2280,7 @@ void menu_maybe_init(void)
    menu_item_add(menu_cheats, NULL,                      "Go to nearest empty car", ID_CHEAT_WARP_NEAR,  MENU_COLOR_DEFAULT, NULL);
    menu_item_add(menu_cheats, NULL,                      "Give Jetpack",            ID_CHEAT_JETPACK,    MENU_COLOR_DEFAULT, NULL);
    menu_item_add(menu_cheats, NULL,                      "Unlock vehicles",         ID_CHEAT_UNLOCK,     MENU_COLOR_DEFAULT, NULL);
+   menu_item_add(menu_cheats, NULL,						 "Keep trailers attached",	ID_CHEAT_KEEP_TRAILER,MENU_COLOR_DEFAULT,NULL);
    menu_item_add(menu_cheats, NULL,                      "Toggle vehicle collisions", ID_CHEAT_NOCOLS,   MENU_COLOR_DEFAULT, NULL);
 
 

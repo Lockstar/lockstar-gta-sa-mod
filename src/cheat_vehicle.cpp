@@ -33,6 +33,87 @@ CEntitySAInterface* cheat_vehicle_GetCEntitySAInterface(vehicle_info *vinfo)
 
 
 
+// new function to jump into vehicles without jacking (also for single player)
+void vehicleJumper(int iVehicleID)
+{
+	traceLastFunc("vehicleJumper()");
+
+	// can't touch this
+	if (iVehicleID == VEHICLE_SELF) return;
+
+	// get vehicle_info
+	struct vehicle_info *pVehicle = vehicle_info_get(iVehicleID, 0);
+	// check that the vehicle is legit
+	if (isBadPtr_GTA_pVehicleInfo(pVehicle)) return;
+	// if SAMP is loaded, check if the vehicle is streamed in
+	if(g_SAMP != NULL)
+	{
+		int iVehicleSAMPID = getSAMPVehicleIDFromGTAVehicle(pVehicle);
+		if (isBadPtr_SAMP_iVehicleID(iVehicleSAMPID)) return;
+	}
+
+	if (pVehicle->hitpoints == 0.0f) {
+		cheat_state_text("Vehicle is destroyed");
+		return;
+	}
+	if (cheat_state->actor.air_brake) {
+		cheat_state_text("On foot airbrake must be disabled");
+		return;
+	}
+	if (cheat_state->actor.stick) {
+		cheat_state_text("On foot stick must be disabled");
+		return;
+	}
+	if (!pVehicle->base.bUsesCollision) {
+		cheat_state_text("Can't get in a vehicle that doesn't have collisions enabled.");
+		return;
+	}
+	if (!pVehicle->base.bIsVisible)
+	{
+		cheat_state_text("Vehicle is not visible.");
+		return;
+	}
+	struct actor_info *self = actor_info_get(ACTOR_SELF, 0);
+	if(self != NULL && pVehicle->base.interior_id != self->base.interior_id)
+	{
+		cheat_state_text("Vehicle is in another interior.");
+		return;
+	}
+
+	int iGTAVehicleID;
+	iGTAVehicleID = ScriptCarId(pVehicle);
+
+	if(pVehicle->passengers[0] == self)
+		return;
+
+	// put into first available seat
+	if (pVehicle->passengers[0] == NULL) {
+		ScriptCommand(&put_actor_in_car, ScriptActorId(self), iGTAVehicleID);
+		ScriptCommand(&restore_camera_with_jumpcut);
+		ScriptCommand(&set_camera_directly_behind);
+		ScriptCommand(&restore_camera_with_jumpcut);
+		return;
+	}
+
+	const int seat_count = gta_vehicle_get_by_id(pVehicle->base.model_alt_id)->passengers;
+	if (seat_count > 0) {
+		for (int seat = 1; seat <= seat_count; seat++) {
+			if(pVehicle->passengers[seat] == NULL) {
+				ScriptCommand(&put_actor_in_car_passenger, ScriptActorId(self), iGTAVehicleID, seat-1);
+				ScriptCommand(&restore_camera_with_jumpcut);
+				ScriptCommand(&set_camera_directly_behind);
+				ScriptCommand(&restore_camera_with_jumpcut);
+				return;
+			}
+		}
+	}
+
+	// no seats left, oh well
+	cheat_state_text("No seats left to teleport into.");
+	return;
+}
+
+
 void cheat_vehicle_teleport(struct vehicle_info *info, const float pos[3], int interior_id)
 {
    if(info == NULL)
@@ -369,8 +450,14 @@ void cheat_handle_vehicle_brake(struct vehicle_info *info, float time_diff)
 				vect3_zero(temp->speed);
 			else
 			{
-				if(temp->vehicle_type == VEHICLE_TYPE_TRAIN)
-					temp->m_fTrainSpeed *= speed;
+				if(temp->vehicle_type == VEHICLE_TYPE_TRAIN){
+					if(temp->m_fTrainSpeed <= 0.05f && temp->m_fTrainSpeed >= -0.05f)
+						temp->m_fTrainSpeed = 0.0f;
+					else if(temp->m_fTrainSpeed < 0.0f)
+						temp->m_fTrainSpeed += time_diff * set.brake_mult;
+					else
+						temp->m_fTrainSpeed -= time_diff * set.brake_mult;
+				}
 				vect3_mult(temp->speed, speed, temp->speed);
 			}
 
@@ -413,10 +500,14 @@ void cheat_handle_vehicle_nitro(struct vehicle_info *info, float time_diff)
 		{
 			if(!vect3_near_zero(temp->speed))
 			{
+				if(temp->vehicle_type == VEHICLE_TYPE_TRAIN){
+					if(temp->m_fTrainSpeed < 0.0f && temp->m_fTrainSpeed > -set.nitro_high)
+						temp->m_fTrainSpeed -= set.nitro_high * time_diff;
+					else if(temp->m_fTrainSpeed < set.nitro_high)
+						temp->m_fTrainSpeed += set.nitro_high * time_diff;
+				}
 				vect3_normalize(temp->speed, temp->speed);
 				vect3_mult(temp->speed, speed, temp->speed);
-				if(temp->vehicle_type == VEHICLE_TYPE_TRAIN)
-					temp->m_fTrainSpeed *= (speed*3);
 				if(vect3_near_zero(temp->speed))
 					vect3_zero(temp->speed);
 			}
@@ -453,7 +544,22 @@ void cheat_handle_vehicle_quick_turn_180(struct vehicle_info *info, float time_d
 		vect3_invert(&info->base.matrix[4*1], &info->base.matrix[4*1]);
 		vect3_invert(info->speed, info->speed);
 		if(info->vehicle_type == VEHICLE_TYPE_TRAIN)
-			info->m_fTrainSpeed = -info->m_fTrainSpeed;
+		{
+			for(struct vehicle_info *temp = info; temp != NULL; temp = temp->m_train_next_carriage)
+			{
+				if(!g_SAMP){
+					temp->m_trainFlags.bDirection ^= 1;
+					if(info->m_train_next_carriage == temp && info->base.model_alt_id == 538)
+					{//avoid brown streak bug
+						if(temp->m_fDistanceToNextCarriage == 16.5f)
+							temp->m_fDistanceToNextCarriage = 20.8718f;
+						else temp->m_fDistanceToNextCarriage = -16.5f;
+					}
+					temp->m_fDistanceToNextCarriage *= -1;
+				}
+				temp->m_fTrainSpeed = -info->m_fTrainSpeed;
+			}
+		}
 	}
 }
 
@@ -609,7 +715,7 @@ void cheat_handle_vehicle_brakedance(struct vehicle_info *vehicle_info, float ti
 		if (actor->state != ACTOR_STATE_DRIVING) return; // we're not driving?
 		if (actor->vehicle->passengers[1] == actor) return; // we're not passenger in an airplane?
 
-		int iVehicleID = getPlayerVehicleGTAScriptingID(ACTOR_SELF);
+		int iVehicleID = ScriptCarId(vehicle_info);
 
 		float fTimeStep = *(float *)0xB7CB5C;
 
@@ -649,12 +755,137 @@ void cheat_handle_vehicle_brakedance(struct vehicle_info *vehicle_info, float ti
 	}
 }
 
+DWORD time_last_carblink = GetTickCount();
+void cheat_handle_blinking_carlights(struct vehicle_info *vehicle_info, float time_diff)
+{
+	traceLastFunc("cheat_handle_blinking_carlights()");
+	//cant get it to sync at daylight (?)
+
+	static int turn_light = 0;
+
+	if(KEY_PRESSED(set.key_blinking_car_lights)){
+		vehicle_info->lights = 0;//reset lights
+
+		if(turn_light == 0)turn_light = 1;
+		else if(turn_light == 1)turn_light = 2;
+		else if(turn_light == 2)turn_light = 3;
+		else turn_light = 0;
+	}
+	if(turn_light == 0)return;//off
+	if(turn_light == 3){//stroboscope
+		if(vehicle_info->lights >= 0x46 || (vehicle_info->lights <= 0x39 && vehicle_info->lights >= 0x6))
+			vehicle_info->lights = 0;
+
+		if(vehicle_info->lights >= 0x40)
+			vehicle_info->lights -= 0x40;
+		else vehicle_info->lights += 0x40;
+
+		if(vehicle_info->lights%0x40 == 0)
+			vehicle_info->lights += 1;
+		else if(vehicle_info->lights%0x40 == 1)
+			vehicle_info->lights += 3;
+		else if(vehicle_info->lights%0x40 == 4)
+			vehicle_info->lights += 1;
+		else
+			vehicle_info->lights = 0x41;
+	}
+
+	static int left_right = 0;
+
+	if((GetTickCount()-250) < time_last_carblink)
+		return;
+
+	int class_id = gta_vehicle_get_by_id(vehicle_info->base.model_alt_id)->class_id;
+	if( vehicle_info->vehicle_type != VEHICLE_TYPE_CAR
+		|| class_id == VEHICLE_CLASS_TRAILER
+		|| class_id == VEHICLE_CLASS_AIRPLANE
+		|| class_id == VEHICLE_CLASS_HELI)//lol at bikes
+		return;
+
+	struct actor_info *actor_self = actor_info_get(ACTOR_SELF, ACTOR_ALIVE);
+	if(vehicle_info->passengers[0] != actor_self)
+		return;
+
+	ScriptCommand(&set_car_lights,ScriptCarId(vehicle_info),2);//not synced
+
+	if(turn_light == 1){//turn light
+		if(left_right == 0){
+			if(vehicle_info->steer_angles[0] <= -0.01f){
+				vehicle_info->lights = 4;
+			}else if(vehicle_info->steer_angles[0] >= 0.01f){
+				vehicle_info->lights = 1;
+			}
+			left_right = 1;
+		}else{
+			vehicle_info->lights = 0;
+			left_right = 0;
+		}
+	}
+	
+	else{//'random' car light blinking - same as strobo just slow
+		if(vehicle_info->lights >= 0x46 || (vehicle_info->lights <= 0x39 && vehicle_info->lights >= 0x6))
+			vehicle_info->lights = 0;
+
+		if(vehicle_info->lights >= 0x40)
+			vehicle_info->lights -= 0x40;
+		else vehicle_info->lights += 0x40;
+
+		if(vehicle_info->lights%0x40 == 0)
+			vehicle_info->lights += 1;
+		else if(vehicle_info->lights%0x40 == 1)
+			vehicle_info->lights += 3;
+		else if(vehicle_info->lights%0x40 == 4)
+			vehicle_info->lights += 1;
+		else
+			vehicle_info->lights = 0x41;
+	}
+	time_last_carblink = GetTickCount();
+	return;
+}
+
+void cheat_handle_vehicle_keepTrailer(struct vehicle_info *vehicle_info, float time_diff)
+{
+	traceLastFunc("cheat_handle_vehicle_keepTrailer()");
+
+	if(KEY_PRESSED(set.key_keep_trailer))
+		cheat_state->vehicle.keep_trailer_attached ^= 1;
+	if(cheat_state->vehicle.keep_trailer_attached != 1)
+		return;
+
+	static struct vehicle_info *myveh_old;
+	static struct vehicle_info *mytrailer_old;
+	if(vehicle_info == myveh_old){
+		if(vehicle_info->trailer != NULL){
+			mytrailer_old = vehicle_info->trailer;
+			return;
+		}else if(mytrailer_old != NULL){	
+			DWORD car = ScriptCarId(mytrailer_old);
+			if(car == NULL)return;
+
+			if(vect3_dist(vehicle_info->base.coords,mytrailer_old->base.coords) <= 9.0f){
+				vehicle_info->trailer = mytrailer_old;
+				ScriptCommand(&put_trailer_on_cab, car, ScriptCarId(vehicle_info));
+			}else{
+				mytrailer_old = NULL;
+			}
+		}
+	}else if(vehicle_info->trailer != NULL){
+		myveh_old = vehicle_info;
+		mytrailer_old = vehicle_info->trailer;
+	}else{
+		myveh_old = vehicle_info;
+		mytrailer_old = NULL;
+	}
+	return;
+}
+
 void cheat_handle_fast_exit(struct vehicle_info *vehicle_info, float time_diff)
 {
 	if(KEY_PRESSED(set.key_fast_exit))
 	{
 		float *coord = (cheat_state->state == CHEAT_STATE_VEHICLE) ? cheat_state->vehicle.coords : cheat_state->actor.coords;
-		ScriptCommand(&remove_actor_from_car_and_put_at,1,coord[0],coord[1] + 2.0f,coord[2]);
+		struct actor_info *self = actor_info_get(ACTOR_SELF, ACTOR_ALIVE);
+		ScriptCommand(&remove_actor_from_car_and_put_at,ScriptActorId(self),coord[0],coord[1] + 2.0f,coord[2]);
 	}
 }
 
@@ -672,7 +903,7 @@ void cheat_handle_repair_car(struct vehicle_info *vehicle_info, float time_diff)
 			&& self->vehicle->passengers[0] == self)
 		{
 			// fix the vehicle
-			int iVehicleID = getPlayerVehicleGTAScriptingID(ACTOR_SELF);
+			int iVehicleID = ScriptCarId(veh_self);
 			ScriptCommand(&repair_car, iVehicleID);
 		}
 	}

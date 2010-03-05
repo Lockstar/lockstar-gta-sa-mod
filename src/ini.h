@@ -112,6 +112,9 @@ struct settings
    float warp_speed;
    int warp_use_speed;
 
+   int key_blinking_car_lights;
+   int key_keep_trailer;
+
    int key_repair_car;
 
    int key_nitro;

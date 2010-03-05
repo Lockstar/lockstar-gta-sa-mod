@@ -35,6 +35,8 @@
 #define VEHICLE_POOL_POINTER  0x00B74494
 #define VEHICLE_POINTER_SELF  0x00B6F980
 #define VEHICLE_SELF          -1
+#define OBJECT_POOL_POINTER   0x00B7449C
+#define BUILDING_POOL_POINTER 0x00B74498
 
 // CPed actor states
 #define ACTOR_STATE_DRIVING   50
@@ -201,6 +203,7 @@ struct cheat_state_vehicle
    int		hp_minimum_on;
    int		hp_damage_reduce_on;
    int		hp_regen_on;
+   int		keep_trailer_attached;
    int		brkdance;
    int		is_engine_on;
    int		infNOS_toggle_on;
@@ -321,18 +324,37 @@ struct detachable
    uint8_t  __unknown_28[16];
 };
 
+/* was at ped_intelligence +44
 struct animation_aim
 {
    #pragma pack(1)
    uint8_t  __unknown_0[8];
    float    *matrix;
-};
+};*/
 
-struct animation
+//only tested with dance + drinking anim
+struct ped_intelligence//animation - actor_info +1148
 {
    #pragma pack(1)
-   uint8_t              __unknown_0[44];
-   struct animation_aim *animation_aim;
+   struct actor_info *actor;			/* 0 - Acting Actor*/
+   uint8_t			__unknown_4[4];		/* 4 */
+   void				*task_fall;			/* 8 - Task set when falling */
+   uint8_t			__unknown_12[4];	/* 12 */
+   void			*active_animation_task;	/* 16 - Task being Active */
+   void				 *unknown_task;		/* 20 */
+   void				 *anim;				/* 24 - Animation (for drinking only one frame)*/
+   uint8_t			__unknown_28[12];	/* 28 */
+   void				 *passive_task;		/* 40 - Passive Task (Holding something in hand) */
+   void				 *unknown2_task;	/* 44 - Set when normal walking/Jetpack, else NULL */
+   struct actor_info *actor_;			/* 48 - Acting Actor .. */
+   struct actor_info *actor__;			/* 52 - Acting Actor .. */
+   uint8_t			__unknown_56[8];	/* 56 */
+   DWORD			pointer_event_fall;	/* 64 - Pointer to event (falling) */
+   uint8_t			__unknown_68[40];	/* 68 */
+   struct actor_info *actor___;			/* 108 - Acting Actor .. */
+   uint8_t			__unknown_112[4];	/* 112 */
+   DWORD			pointer_event;		/* 116 - Pointer to Event (just a frame long), longer for jumping*/
+   uint8_t			__unknown_120[539]; /* end at 659 */
 };
 
 struct weapon
@@ -439,20 +461,40 @@ struct actor_info
    uint8_t           __unknown_67[1];     /* 67 */
    float             speed[3];            /* 68 */
    float             spin[3];             /* 80 */
-   uint8_t           __unknown_92[120];   /* 92 */
+   float			 speed_rammed[3];	  /* 92 */
+   float			 spin_rammed[3];	  /* 104 */
+   uint8_t           __unknown_116[60];   /* 116 */
+   void              *__unknown_176;      /* 176 - pointer to a "entry node info" pool item */
+   void              *__unknown_180;      /* 180 - pointer to a "ptr node Double" pool item */
+   //collision data
+   DWORD			 collision_flags;	  /* 184 - 2nd byte = currently colliding 1/0, or actively
+										  running against (0x2), 3rd byte = type colliding with
+										  (1 = road, 4=pavement, 35 = object, 3f=car).. unsure about 3rd byte*/
+   void              *last_touched_object;  /* 188 - You can touch roads - those are considered buildings */
+   void              *last_collided_object; /* 192 - pointer to object last collided with (on foot, not jetpack) */
+   uint8_t			 __unknown_196[16];	  /* 196 */
+
    float             speed_z;             /* 212 */
-   uint8_t           __unknown_216[132];  /* 216 */
+
+   float			 collision_time_216;  /* 216 - collision timer? */
+   void              *collision_thing;    /* 220 - pointer to current thing colliding with */
+   uint8_t			 collision_something[12]; /* 224 - related to collision */
+   float			 collision_last_coord[3]; /* 236 - coordination of last collision */
+   //end of collision data
+
+   uint8_t           __unknown_248[100];  /* 248 */
    uint8_t			 animation_state;	  /* 348 */
    uint8_t			 __unknown_349[7];	  /* 349 */
    float             step_pos[3];         /* 356 - coordinates, last foot step */
-   uint8_t           __unknown_368[764];  /* 368 */
+   float			 step_pos_before[3];  /* 368 - coordinates, foot step before last one */
+   uint8_t           __unknown_380[752];  /* 380 */
    uint8_t           player_check;        /* 1132 */
    uint8_t           jump_state;		  /* 1133 */
    uint8_t           __unknown_1134[2];   /* 1134 */
    uint32_t			 invuln_flags;		  /* 1136 */
    uint32_t			 __unk_flags;		  /* 1140 */
    uint8_t           __unknown_1144[4];   /* 1144 */
-   struct animation  *animation;          /* 1148 */
+   struct ped_intelligence  *animation;   /* 1148 - Ped Intelligence */
    uint8_t           __unknown_1152[92];  /* 1152 */
    float             runspeed;            /* 1244 */
    uint8_t           __unknown_1248[36];  /* 1248 */
@@ -470,10 +512,11 @@ struct actor_info
    float             z_angle;             /* 1368 */
    float             z_angle2;            /* 1372 - same value as z_angle */
    uint8_t           __unknown_1376[8];   /* 1376 */
-   struct vehicle_info *vehicle_contact;  /* 1384 */
-   uint8_t           __unknown_1388[24];  /* 1388 */
-   void              *building_contact;   /* 1412 */
-   uint8_t           __unknown_1392[4];   /* 1416 */
+   struct vehicle_info *vehicle_contact;  /* 1384 - standing on top of vehicle */
+   float			vehicle_contact_dist[3]; /* 1388 - distance to the middle of the car standing on */
+   uint8_t           __unknown_1400[12];  /* 1400 - somehow related to vehicle_contact */
+   void              *item_contact;		  /* 1412 - standing on top of vehicle/object/building/...*/
+   uint8_t           __unknown_1416[4];   /* 1416 */
    struct vehicle_info *vehicle;          /* 1420 */
    uint8_t           __unknown_1424[8];   /* 1424 */
    uint8_t			 actor_lock;		  /* 1432 */
@@ -564,6 +607,25 @@ public:
 	unsigned char bUsedForReplay: 1; // This car is controlled by replay and should be removed when replay is done.
 };
 
+struct CTrainFlags
+{
+    unsigned char unknown1 : 3;
+    unsigned char bIsTheChainEngine : 1; // Only the first created train on the chain gets this set to true, others get it set to false.
+    unsigned char unknown2 : 1; // This is always set to true in mission trains construction.
+    unsigned char bIsAtNode : 1;
+    unsigned char bDirection : 1;
+    unsigned char unknown3 : 1; // If the mission train was placed at the node, this is set to false in construction.
+ 
+    unsigned char bIsDerailed : 1;
+    unsigned char unknown4 : 1 ;
+    unsigned char bIsDrivenByBrownSteak : 1;
+    unsigned char unknown5 : 5;
+ 
+    unsigned char unknown6 : 8;
+ 
+    unsigned char unknown7 : 8;
+};
+
 class CTransmissionSAInterface
 {
 public:
@@ -648,7 +710,10 @@ struct vehicle_info
 		};
 		float			spin[3];
 	};
-   uint8_t             __unknown_92[44];          /* 92 */
+   float			   speed_rammed[3];			  /* 92 - speed from collision, will be added to speed[3] */
+   float			   spin_rammed[3];			  /* 104 - spin from collision, will be added to spin[3] */
+   uint8_t             __unknown_116[20];          /* 116 */
+
 
 	// handling should start here
 	uint8_t				__unknown_136[4];			/* 136 */
@@ -659,14 +724,18 @@ struct vehicle_info
 	float				fTurnMass;					/* 156 - 0.05 or 0.1 */
    float               grip_level_norm;           /* 160 - normalized grip level */
    float               center_of_mass[3];         /* 164 - center of mass */
-   void                *__unknown_176;            /* 176 - pointer to a "entry node info" pool item */
-   void                *__unknown_180;            /* 180 - pointer to a "ptr node Double" pool item */
-   uint8_t             __unknown_184[4];          /* 184 */
-   void                *__unknown_188;            /* 188 - pointer to a "building" pool item */
-   void                *__unknown_192;            /* 192 - pointer to a "building" pool item */
+   void              *__unknown_176;			  /* 176 - pointer to a "entry node info" pool item */
+   void              *__unknown_180;              /* 180 - pointer to a "ptr node Double" pool item */
+
+   //collision data
+   DWORD			 collision_flags;	  /* 184 - 2nd byte = currently colliding 1/0, or actively
+										  running against (0x02), being moved/rammed (0x03), 1st byte = 0, if noone inside and colliding
+										  with actor, else ever 0x0a*/
+   void                *last_touched_object;      /* 188 - You can touch roads - those are considered buildings */
+   void                *last_collided_object;     /* 192 - pointer to last collided object.. not for ALL collisions?!? */
    uint8_t             __unknown_196[20];         /* 196 */
-   float               collision_something;       /* 216 */
-	uint8_t				__unknown_220[4];			/* 220 - probably collision stuff */
+   float               collision_something;       /* 216 - collision timer?*/
+	void				*collision_current_obj;	/* 220 - pointer to current thing colliding with */
 	// end of handling should be here
 	uint8_t				__unknown_224[12];			/* 224 */
    float               collision_position[3];     /* 236 - last collision coordinates */
@@ -754,20 +823,53 @@ struct vehicle_info
 		{
 			float		m_fTrainSpeed;				/* 1444 - Train speed along rails */
 			float		m_fTrainRailDistance;		/* 1448 - Distance along rail starting from first rail node (determines train position when on rails) */
+			float		m_fDistanceToNextCarriage;  /* 1452 - Distance to Carriage being infront of this */
 		};
 		struct
 		{
-			uint8_t		__unknown_1444;				/* 1444 */
+			uint8_t		boat_sound_level;			/* 1444 */
 			uint8_t		car_tire_status[4];			/* 1445 - LF, LR, RF, RR, 0 = ok, 1 = flat, 2 = landing gear up */
-			uint8_t		__unknown_1449[4];			/* 1449 */
+			uint8_t		door_damage_status[6];		/* 1449 - damage status of doors, 0 = ok, 2 = damaged, 3 = open free, 4 = lost */
 		};
 	};
-
-   uint8_t             __unknown_1453[79];        /* 1449 */
-   struct detachable   detachable_bike1[1];       /* 1532 - bike/motorcycle part */
-   uint8_t             __unknown_1576[52];        /* 1576 */
+   uint8_t				lights;						/* 1456 - Light status, 0 = no dmg, 1 = front left dmg, 4 = front right dmg, 5 = front dmg, ...+0x40 = ...+back dmg */
+   uint8_t				__unknown_1457[7];			/* 1457 - 1475 related to doorHood (byte??)*/
+   CTrainFlags			m_trainFlags;				/* 1464 */
+   uint8_t				__unknown_1468[8];			/* 1468 */
+   float				doorHood_dist;				/* 1476 - positive = open */
+   uint8_t				__unknown_1480[4];			/* 1480 - detachable related*/
+   float				doorHood_dist_two;			/* 1484 - positive = open*/
+   uint8_t				__unknown_1488[4];			/* 1488 */
+   struct vehicle_info *m_train_next_carriage;		/* 1492 */
+   uint8_t				__unknown_1496[4];			/* 1496 */
+   float				doorTrunk_dist;				/* 1500 - negative = open */
+   uint8_t				__unknown_1504[4];			/* 1504 */
+   float				doorTrunk_dist_two;			/* 1508 - negative = open */
+   uint8_t				__unknown_1512[12];			/* 1512 */
+   float				doorOne_dist;				/* 1524 - also for movable part of boats (marquis)*/
+   uint8_t				__unknown_1528[4];			/* 1528 */
+   union{
+		struct detachable   detachable_bike1[1];    /* 1532 - bike/motorcycle/car part */
+		struct{
+			float		doorOne_dist_two;			/* 1532 - negative = open */
+			uint8_t		__unknown_1536[12];			/* 1536 */
+			float		doorTwo_dist;				/* 1548 - positive = open */
+			uint8_t		__unknown_1552[4];			/* 1552 */
+			float		doorTwo_dist_two;			/* 1556  - positive = open */
+			uint8_t		__unknown_1560[12];			/* 1560 */
+			float		doorThree_dist;				/* 1572 - negative = open */
+			uint8_t		__unknown_1576[4];			/* 1576 */
+			float		doorThree_dist_two;			/* 1580 - negative = open */
+			uint8_t		__unknown_1584[12];			/* 1584 */
+			float		doorFour_dist;				/* 1596 - positive = open */
+			uint8_t		__unknown_1600[6];			/* 1600 */
+			float		doorFour_dist_two;			/* 1606 - positive = open */
+		};
+   };
+   uint8_t             __unknown_1610[18];        /* 1610 */
    uint8_t             bike_tire_status[2];       /* 1628 Front, Rear, 0 = ok, 1 = flat */
    uint8_t             __unknown_1630[2];         /* 1630 */
+   //maybe also door positions in here, like in 15xx?
    struct detachable   detachable_bike2[4];       /* 1632 - bike/motorcycle and boat parts */
    uint8_t             __unknown_1808[20];        /* 1808 */
    struct detachable   detachable_car[4];         /* 1828 - car/helicopter/airplane parts */
@@ -786,7 +888,20 @@ struct object_info
 {
    #pragma pack(1)
    struct object_base base;
-
+   uint8_t			__unknown_66;			/* 66 */
+   uint8_t			flags;					/* 67 - collision and ...? */
+   uint8_t			__unknown_68[7];		/* 68 */
+   float			physical_height;		/* 75 - normally max. 0.2 (bigger value = more 'ouch' when jumping), different results for different objects? */
+   uint8_t			__unknown_79[173];		/* 79 - first value changing when last movement was going up or going down*/
+   struct actor_info *actor;				/* 252 - pointer to Actor Object is attached to, 0 when not attached */
+   uint8_t			__unknown_256[8];		/* 256 */
+   float			height_to_actor;		/* 264 - when attached height difference to actor, else 0*/
+   uint8_t			__unknown_268[4];		/* 268 */
+   float			pitch;					/* 272 - rotation, pitch */
+   float			roll;					/* 276 - rotation, roll */
+   uint8_t			__unknown_280[68];		/* 280 */
+   float			scale;					/* 348 - Scale */
+   uint8_t			__unknown_352[59];		/* 352 */
 };
 
 struct checkpoint

@@ -408,7 +408,6 @@ int getSAMPVehicleIDFromGTAVehicle(struct vehicle_info *pVehicle);
 uint32_t getPedGTAScriptingIDFromPlayerID(int iPlayerID);
 uint32_t getVehicleGTAScriptingIDFromVehicleID(int iVehicleID);
 
-void vehicleJumper(int iVehicleID);
 int samp_vehicle_find_nearest(int flags);
 
 void addToChatWindow(char* text, D3DCOLOR textColor);
