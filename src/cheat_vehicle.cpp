@@ -755,128 +755,193 @@ void cheat_handle_vehicle_brakedance(struct vehicle_info *vehicle_info, float ti
 	}
 }
 
-DWORD time_last_carblink = GetTickCount();
-void cheat_handle_blinking_carlights(struct vehicle_info *vehicle_info, float time_diff)
+void cheat_handle_blinking_carlights(struct vehicle_info *vinfo, float time_diff)
 {
 	traceLastFunc("cheat_handle_blinking_carlights()");
-	//cant get it to sync at daylight (?)
 
-	static int turn_light = 0;
-
-	if(KEY_PRESSED(set.key_blinking_car_lights)){
-		vehicle_info->lights = 0;//reset lights
-
-		if(turn_light == 0)turn_light = 1;
-		else if(turn_light == 1)turn_light = 2;
-		else if(turn_light == 2)turn_light = 3;
-		else turn_light = 0;
-	}
-	if(turn_light == 0)return;//off
-	if(turn_light == 3){//stroboscope
-		if(vehicle_info->lights >= 0x46 || (vehicle_info->lights <= 0x39 && vehicle_info->lights >= 0x6))
-			vehicle_info->lights = 0;
-
-		if(vehicle_info->lights >= 0x40)
-			vehicle_info->lights -= 0x40;
-		else vehicle_info->lights += 0x40;
-
-		if(vehicle_info->lights%0x40 == 0)
-			vehicle_info->lights += 1;
-		else if(vehicle_info->lights%0x40 == 1)
-			vehicle_info->lights += 3;
-		else if(vehicle_info->lights%0x40 == 4)
-			vehicle_info->lights += 1;
-		else
-			vehicle_info->lights = 0x41;
+	if (KEY_PRESSED(set.key_blinking_car_lights))
+	{
+		// reset lights damage
+		vinfo->lights_status_rear = false;
+		vinfo->lights_status_frontLeft = false;
+		vinfo->lights_status_frontRight = false;
+		// increment lights state
+		cheat_state->vehicle.blinking_carlights_state++;
+		// set it back down to zero if over the max
+		if (cheat_state->vehicle.blinking_carlights_state > 3) cheat_state->vehicle.blinking_carlights_state = 0;
+		// reset turn state
+		cheat_state->vehicle.blinking_carlights_turnstate = 0;
 	}
 
-	static int left_right = 0;
-
-	if((GetTickCount()-250) < time_last_carblink)
+	// return if lights state is 0/off
+	if (!cheat_state->vehicle.blinking_carlights_state)
 		return;
 
-	int class_id = gta_vehicle_get_by_id(vehicle_info->base.model_alt_id)->class_id;
-	if( vehicle_info->vehicle_type != VEHICLE_TYPE_CAR
+	// setup variables for next blinking lights modes
+	struct actor_info *actor_self = actor_info_get(ACTOR_SELF, ACTOR_ALIVE);
+	if (vinfo->passengers[0] != actor_self)
+		return;
+	int class_id = gta_vehicle_get_by_id(vinfo->base.model_alt_id)->class_id;
+	if (vinfo->vehicle_type != VEHICLE_TYPE_CAR
 		|| class_id == VEHICLE_CLASS_TRAILER
 		|| class_id == VEHICLE_CLASS_AIRPLANE
-		|| class_id == VEHICLE_CLASS_HELI)//lol at bikes
+		|| class_id == VEHICLE_CLASS_HELI) // lol at bikes
 		return;
+	// enables car lights any time of day, not synced
+	ScriptCommand(&set_car_lights, ScriptCarId(vinfo), 2);
 
-	struct actor_info *actor_self = actor_info_get(ACTOR_SELF, ACTOR_ALIVE);
-	if(vehicle_info->passengers[0] != actor_self)
-		return;
 
-	ScriptCommand(&set_car_lights,ScriptCarId(vehicle_info),2);//not synced
+	// switch is faster than multiple if/else statements
+	switch(cheat_state->vehicle.blinking_carlights_state)
+	{
+	case 1:
+		// turn lights
 
-	if(turn_light == 1){//turn light
-		if(left_right == 0){
-			if(vehicle_info->steer_angles[0] <= -0.01f){
-				vehicle_info->lights = 4;
-			}else if(vehicle_info->steer_angles[0] >= 0.01f){
-				vehicle_info->lights = 1;
+		// blink rate limiter
+		if ((GetTickCount()-250) < cheat_state->vehicle.blinking_carlights_lastblink)
+			return;
+		if (cheat_state->vehicle.blinking_carlights_turnstate == 0)
+		{
+			if (vinfo->steer_angles[0] <= -0.01f)
+			{
+				vinfo->lights_status_frontLeft = false;
+				vinfo->lights_status_frontRight = true;
 			}
-			left_right = 1;
-		}else{
-			vehicle_info->lights = 0;
-			left_right = 0;
+			else if (vinfo->steer_angles[0] >= 0.01f)
+			{
+				vinfo->lights_status_frontLeft = true;
+				vinfo->lights_status_frontRight = false;
+			}
+			cheat_state->vehicle.blinking_carlights_turnstate = 1;
 		}
-	}
-	
-	else{//'random' car light blinking - same as strobo just slow
-		if(vehicle_info->lights >= 0x46 || (vehicle_info->lights <= 0x39 && vehicle_info->lights >= 0x6))
-			vehicle_info->lights = 0;
-
-		if(vehicle_info->lights >= 0x40)
-			vehicle_info->lights -= 0x40;
-		else vehicle_info->lights += 0x40;
-
-		if(vehicle_info->lights%0x40 == 0)
-			vehicle_info->lights += 1;
-		else if(vehicle_info->lights%0x40 == 1)
-			vehicle_info->lights += 3;
-		else if(vehicle_info->lights%0x40 == 4)
-			vehicle_info->lights += 1;
 		else
-			vehicle_info->lights = 0x41;
+		{
+			vinfo->lights_status_frontLeft = false;
+			vinfo->lights_status_frontRight = false;
+			cheat_state->vehicle.blinking_carlights_turnstate = 0;
+		}
+		break;
+	case 2:
+		// police style lights
+
+		// blink rate limiter
+		if ((GetTickCount()-150) < cheat_state->vehicle.blinking_carlights_lastblink)
+			return;
+
+		// rear lights
+		if (vinfo->lights_status_rear)
+			vinfo->lights_status_rear = false;
+		else
+			vinfo->lights_status_rear = true;
+
+		// front lights
+		switch (cheat_state->vehicle.blinking_carlights_turnstate)
+		{
+		case 0:
+			vinfo->lights_status_frontLeft = true;
+			vinfo->lights_status_frontRight = false;
+			break;
+		case 1:
+			vinfo->lights_status_frontLeft = false;
+			vinfo->lights_status_frontRight = true;
+			break;
+		case 2:
+			vinfo->lights_status_frontLeft = true;
+			vinfo->lights_status_frontRight = true;
+			break;
+		case 3:
+			vinfo->lights_status_frontLeft = false;
+			vinfo->lights_status_frontRight = true;
+			break;
+		case 4:
+			vinfo->lights_status_frontLeft = true;
+			vinfo->lights_status_frontRight = false;
+			break;
+		case 5:
+			vinfo->lights_status_frontLeft = true;
+			vinfo->lights_status_frontRight = true;
+			break;
+		}
+
+		// increment/reset turnstate
+		cheat_state->vehicle.blinking_carlights_turnstate++;
+		if (cheat_state->vehicle.blinking_carlights_turnstate > 5)
+			cheat_state->vehicle.blinking_carlights_turnstate = 0;
+		break;
+	case 3:
+		// stroboscope
+
+		// blink rate limiter
+		if ((GetTickCount()-25) < cheat_state->vehicle.blinking_carlights_lastblink)
+			return;
+
+		// rear lights
+		if (vinfo->lights_status_rear)
+		{
+			vinfo->lights_status_rear = false;
+			vinfo->lights_status_frontLeft = true;
+			vinfo->lights_status_frontRight = true;
+		}
+		else
+		{
+			vinfo->lights_status_rear = true;
+			vinfo->lights_status_frontLeft = false;
+			vinfo->lights_status_frontRight = false;
+		}
+		break;
 	}
-	time_last_carblink = GetTickCount();
-	return;
+
+	// reset counter
+	cheat_state->vehicle.blinking_carlights_lastblink = GetTickCount();
+
+	// not needed for the end of a void returning function
+	//return;
 }
 
-void cheat_handle_vehicle_keepTrailer(struct vehicle_info *vehicle_info, float time_diff)
+void cheat_handle_vehicle_keepTrailer(struct vehicle_info *vinfo, float time_diff)
 {
 	traceLastFunc("cheat_handle_vehicle_keepTrailer()");
 
-	if(KEY_PRESSED(set.key_keep_trailer))
+	if (KEY_PRESSED(set.key_keep_trailer))
 		cheat_state->vehicle.keep_trailer_attached ^= 1;
-	if(cheat_state->vehicle.keep_trailer_attached != 1)
+	if (!cheat_state->vehicle.keep_trailer_attached)
 		return;
 
 	static struct vehicle_info *myveh_old;
 	static struct vehicle_info *mytrailer_old;
-	if(vehicle_info == myveh_old){
-		if(vehicle_info->trailer != NULL){
-			mytrailer_old = vehicle_info->trailer;
+	if (vinfo == myveh_old)
+	{
+		if (vinfo->trailer != NULL)
+		{
+			mytrailer_old = vinfo->trailer;
 			return;
-		}else if(mytrailer_old != NULL){	
+		}
+		else if (mytrailer_old != NULL)
+		{	
 			DWORD car = ScriptCarId(mytrailer_old);
-			if(car == NULL)return;
+			if (car == NULL) return;
 
-			if(vect3_dist(vehicle_info->base.coords,mytrailer_old->base.coords) <= 9.0f){
-				vehicle_info->trailer = mytrailer_old;
-				ScriptCommand(&put_trailer_on_cab, car, ScriptCarId(vehicle_info));
-			}else{
+			if (vect3_dist(vinfo->base.coords,mytrailer_old->base.coords) <= 9.0f)
+			{
+				vinfo->trailer = mytrailer_old;
+				ScriptCommand(&put_trailer_on_cab, car, ScriptCarId(vinfo));
+			}
+			else
+			{
 				mytrailer_old = NULL;
 			}
 		}
-	}else if(vehicle_info->trailer != NULL){
-		myveh_old = vehicle_info;
-		mytrailer_old = vehicle_info->trailer;
-	}else{
-		myveh_old = vehicle_info;
+	}
+	else if (vinfo->trailer != NULL)
+	{
+		myveh_old = vinfo;
+		mytrailer_old = vinfo->trailer;
+	}
+	else
+	{
+		myveh_old = vinfo;
 		mytrailer_old = NULL;
 	}
-	return;
 }
 
 void cheat_handle_fast_exit(struct vehicle_info *vehicle_info, float time_diff)

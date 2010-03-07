@@ -209,7 +209,9 @@ struct cheat_state_vehicle
    int		infNOS_toggle_on;
    int		spiderWheels_on;
    CVector	gravityVector;
-   //VECTOR	gravityVector;
+   int		blinking_carlights_state;
+   int		blinking_carlights_turnstate;
+   DWORD	blinking_carlights_lastblink;
 };
 
 struct cheat_state_teleport
@@ -832,7 +834,16 @@ struct vehicle_info
 			uint8_t		door_damage_status[6];		/* 1449 - damage status of doors, 0 = ok, 2 = damaged, 3 = open free, 4 = lost */
 		};
 	};
-   uint8_t				lights;						/* 1456 - Light status, 0 = no dmg, 1 = front left dmg, 4 = front right dmg, 5 = front dmg, ...+0x40 = ...+back dmg */
+
+	// light damage states
+	//uint8_t			lights;						/* 1456 - Light status, 0 = no dmg, 1 = front left dmg, 4 = front right dmg, 5 = front dmg, ...+0x40 = ...+back dmg */
+	unsigned char lights_status_frontLeft: 1;
+	unsigned char __unknown_lights_status_2: 1;
+	unsigned char lights_status_frontRight: 1;
+	unsigned char __unknown_lights_status_4: 3;
+	unsigned char lights_status_rear: 1;
+	// end of light damage states
+
    uint8_t				__unknown_1457[7];			/* 1457 - 1475 related to doorHood (byte??)*/
    CTrainFlags			m_trainFlags;				/* 1464 */
    uint8_t				__unknown_1468[8];			/* 1468 */
