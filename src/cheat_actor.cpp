@@ -53,6 +53,52 @@ static struct patch_set patch_gta_auto_aim = {
 	  }
 };
 
+void cheat_handle_actor_nocols(struct actor_info *info)
+{
+	if(!cheat_state->_generic.nocols_enabled && !cheat_state->_generic.nocols_toggled)
+		return;
+
+	if(cheat_state->_generic.nocols_toggled && 
+		(GetTickCount()-2000) > cheat_state->_generic.nocols_change_tick){
+		cheat_state->_generic.nocols_enabled = 1;
+	}
+	if(!cheat_state->_generic.nocols_toggled)
+	{
+		cheat_state->_generic.nocols_enabled = 0;
+	}
+
+	//need to force the player into car while nocols activated (safety checks by gta)
+	uint8_t *enter_exit_key = (uint8_t*)0xB73476;
+	if(cheat_state->_generic.nocols_enabled && *enter_exit_key == 0xff){
+		int id = vehicle_find_nearest(VEHICLE_ALIVE|VEHICLE_EMPTY);
+		struct vehicle_info *near_veh = vehicle_info_get(id, VEHICLE_ALIVE|VEHICLE_EMPTY);
+		if(near_veh != NULL && gta_vehicle_get_by_id(near_veh->base.model_alt_id)->class_id 
+			!= VEHICLE_CLASS_TRAILER && near_veh->hitpoints > 250.0f)
+		{
+			ScriptCommand(&enter_car_as_driver,ScriptActorId(info),
+				ScriptCarId(near_veh),1999);//actor,car,maximum time (ms)
+		//	cheat_state->_generic.nocols_enabled = 0;
+		//	cheat_state->_generic.nocols_change_tick = GetTickCount();
+		//	return;
+		}
+	}
+	if(cheat_state->_generic.nocols_enabled && (DWORD)info->animation->active_animation_task != NULL)
+	{
+		//check if task enter car as * is currently executed (task_info + 0xC = vehicle pointer)
+		struct vehicle_info *veh;
+		uint32_t vehiclePointer = ((uint32_t)info->animation->active_animation_task + 0xC);
+		//i hate pointers pointing to some pointer pointing somewhere
+		veh = (vehicle_info*)(*(uint32_t *)(vehiclePointer));
+		if(!isBadPtr_GTA_pVehicleInfo(veh))
+		{
+			cheat_state->_generic.nocols_enabled = 0;
+			//had some problems when entering as passenger, so giving 2seconds time to enter
+			cheat_state->_generic.nocols_change_tick = GetTickCount();
+			return;
+		}
+	}
+}
+
 void cheat_handle_actor_autoaim(struct actor_info *info, float time_diff)
 {
    if(KEY_PRESSED(set.key_autoaim))

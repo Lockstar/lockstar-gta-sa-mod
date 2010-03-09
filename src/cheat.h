@@ -208,7 +208,7 @@ struct cheat_state_vehicle
    int		is_engine_on;
    int		infNOS_toggle_on;
    int		spiderWheels_on;
-   CVector	gravityVector;
+//   CVector	gravityVector;
    int		blinking_carlights_state;
    int		blinking_carlights_turnstate;
    DWORD	blinking_carlights_lastblink;
@@ -258,6 +258,8 @@ struct cheat_state_generic
    int interior_patch_enabled;
 
    int nocols_enabled;
+   int nocols_toggled;
+   DWORD nocols_change_tick;
 };
 
 struct cheat_state_hooks
@@ -334,7 +336,6 @@ struct animation_aim
    float    *matrix;
 };*/
 
-//only tested with dance + drinking anim
 struct ped_intelligence//animation - actor_info +1148
 {
    #pragma pack(1)
@@ -356,7 +357,14 @@ struct ped_intelligence//animation - actor_info +1148
    struct actor_info *actor___;			/* 108 - Acting Actor .. */
    uint8_t			__unknown_112[4];	/* 112 */
    DWORD			pointer_event;		/* 116 - Pointer to Event (just a frame long), longer for jumping*/
-   uint8_t			__unknown_120[539]; /* end at 659 */
+   uint8_t			__unknown_120[104]; /* 120 */
+   struct vehicle_info *nearest_car[16];/* 224 - nearest cars (need to be in a grenade-throw range) */
+   struct vehicle_info *nearest_car_;	/* 288 - nearest car */
+   uint8_t			__unknown_292[12];	/* 292 */
+   struct actor_info *nearest_actor[16];/* 304 - nearest actors */
+   struct actor_info *nearest_actor_;	/* 368 */
+   uint8_t			__unknown_372[287]; /* 372*/
+   /* end at 659 */
 };
 
 struct weapon
@@ -714,8 +722,10 @@ struct vehicle_info
 	};
    float			   speed_rammed[3];			  /* 92 - speed from collision, will be added to speed[3] */
    float			   spin_rammed[3];			  /* 104 - spin from collision, will be added to spin[3] */
-   uint8_t             __unknown_116[20];          /* 116 */
-
+ 
+   //uint8_t             __unknown_116[20];          /* 116 */
+   float				fuck_up[3];				/* 116 - didnt fuck it up/works fine.. change to pointer to own car related stuff? */
+   uint8_t				__fuckupunknown[8];		/* 128 - using fuck_up so we wont have to create more trash than needed */
 
 	// handling should start here
 	uint8_t				__unknown_136[4];			/* 136 */
@@ -811,7 +821,7 @@ struct vehicle_info
 	uint8_t				__unknown_1213[3];			/* 1213 */
 
    float               hitpoints;                 /* 1216 */
-   float               armor;                     /* 1220 */
+   void				   *pulling_truck;            /* 1220 - vehicle_info - pulling truck */
    struct vehicle_info *trailer;                  /* 1224 - pointer to the currently attached trailer; 0 if theres no trailer */
    uint8_t             __unknown_1228[44];        /* 1228 */
    uint32_t            door_status;               /* 1272 - car door status (1:Opened 2:Locked) */
@@ -824,7 +834,7 @@ struct vehicle_info
 		struct
 		{
 			float		m_fTrainSpeed;				/* 1444 - Train speed along rails */
-			float		m_fTrainRailDistance;		/* 1448 - Distance along rail starting from first rail node (determines train position when on rails) */
+			float		m_fTrainRailDistance;		/* 1448 - Distance along rail starting from first rail node (determines train position when on rails) -max 18106 */
 			float		m_fDistanceToNextCarriage;  /* 1452 - Distance to Carriage being infront of this */
 		};
 		struct

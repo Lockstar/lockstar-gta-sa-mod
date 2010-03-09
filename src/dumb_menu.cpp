@@ -929,7 +929,7 @@ static int menu_callback_cheats(int op, struct menu_item *item)
 	  case ID_CHEAT_TELETEXTS:		return cheat_state->_generic.teletext;
       case ID_CHEAT_GAME_SPEED:		return 0;
 	  case ID_CHEAT_KEEP_TRAILER:	return cheat_state->vehicle.keep_trailer_attached;
-	  case ID_CHEAT_NOCOLS:			return cheat_state->_generic.nocols_enabled;
+	  case ID_CHEAT_NOCOLS:			return cheat_state->_generic.nocols_toggled;
       }
       break;
 
@@ -998,7 +998,7 @@ static int menu_callback_cheats(int op, struct menu_item *item)
 		  break;
 
 	  case ID_CHEAT_NOCOLS:
-		  cheat_state->_generic.nocols_enabled ^= 1;
+		  cheat_state->_generic.nocols_toggled ^= 1;
          break;
 
       default:
@@ -1762,7 +1762,8 @@ static int menu_callback_vehicles_instant(int op, struct menu_item *item)
 		  return 0;
 	  }
 
-	  vehicleJumper(id);
+	  int jump_id = (int)(((DWORD)g_Vehicles->pGTA_Vehicle[id]) - (DWORD)pool_vehicle->start)/2584;
+	  vehicleJumper(jump_id);
 
       return 1;
    }

@@ -66,9 +66,10 @@ int cheat_panic(void)
 			}
 
 			// set vehicle gravity to normal
-			cheat_state->vehicle.gravityVector.fX = 0.0f;
-			cheat_state->vehicle.gravityVector.fY = 0.0f;
-			cheat_state->vehicle.gravityVector.fZ = -1.0f;
+			vect3_zero(vehicle_info->fuck_up);
+//			cheat_state->vehicle.gravityVector.fX = 0.0f;
+//			cheat_state->vehicle.gravityVector.fY = 0.0f;
+//			cheat_state->vehicle.gravityVector.fZ = -1.0f;
 
 			pstate_d3dtext_hud = set.d3dtext_hud;
 			set.d3dtext_hud = 0;
@@ -491,6 +492,8 @@ void cheat_handle_hp(struct vehicle_info *vehicle_info, struct actor_info *actor
             {
                temp->flags |= VEHICLE_FLAGS_INVULNERABLE;    /* invulnerable to most things */
                temp->flags &= ~2;                            /* make sure we're not frozen :p */
+			   if(temp->pulling_truck != NULL) temp->hitpoints = 1000.0f;
+						//invulnerable flags dont seem to work for trailers
             }
             else
             {

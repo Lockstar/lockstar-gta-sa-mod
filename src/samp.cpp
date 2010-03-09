@@ -441,7 +441,12 @@ int getPlayerSAMPVehicleID(int iPlayerID)
 	if(g_Players == NULL && g_Vehicles == NULL) return 0;
 	if(g_Players->pRemotePlayer[iPlayerID] == NULL) return 0;
 	if(g_Vehicles->pSAMP_Vehicle[g_Players->pRemotePlayer[iPlayerID]->sVehicleID] == NULL) return 0;
-	return g_Players->pRemotePlayer[iPlayerID]->sVehicleID;
+
+	int ret_id = (int)(((DWORD)g_Players->pRemotePlayer[iPlayerID]->pSAMP_Vehicle->pGTA_Vehicle) - 
+		(DWORD)pool_vehicle->start)/2584;
+
+	return ret_id;
+//	return g_Players->pRemotePlayer[iPlayerID]->sVehicleID; -- sVehicleID = some samp intern vehicle id?
 }
 
 

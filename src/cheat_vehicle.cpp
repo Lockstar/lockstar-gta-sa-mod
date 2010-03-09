@@ -348,6 +348,7 @@ void cheat_handle_vehicle_air_brake(struct vehicle_info *info, float time_diff)
 void cheat_handle_vehicle_warp(struct vehicle_info *info, float time_diff)
 {
    static struct vehicle_state state;
+   static float raildist;
    static uint32_t warp_time = 0;
    static int warping = 0;
 
@@ -361,6 +362,7 @@ void cheat_handle_vehicle_warp(struct vehicle_info *info, float time_diff)
       else
       {
          vehicle_state_restore(info, &state);
+		 if(info->vehicle_type == VEHICLE_TYPE_TRAIN)info->m_fTrainRailDistance = raildist;
       }
    }
 
@@ -388,6 +390,7 @@ void cheat_handle_vehicle_warp(struct vehicle_info *info, float time_diff)
       }
 
       vehicle_state_store(info, &state);
+	  if(info->vehicle_type == VEHICLE_TYPE_TRAIN)raildist = info->m_fTrainRailDistance;
       warp_time = 0;
       for(temp = info; temp != NULL; temp = temp->trailer)
       {
@@ -398,12 +401,16 @@ void cheat_handle_vehicle_warp(struct vehicle_info *info, float time_diff)
       }
    }
 
+   if(KEY_DOWN(set.key_warp_mod) && info->vehicle_type == VEHICLE_TYPE_TRAIN)
+	   info->m_fTrainSpeed = set.warp_speed;
+
    if(KEY_RELEASED(set.key_warp_mod))
    {
       struct vehicle_info *temp;
 
       warp_time = time_get();
       vehicle_state_restore(info, &state);
+	  if(info->vehicle_type == VEHICLE_TYPE_TRAIN)info->m_fTrainRailDistance = raildist;
       for(temp = info; temp != NULL; temp = temp->trailer)
       {
          temp->collision_something = 0.0f;
@@ -540,9 +547,13 @@ void cheat_handle_vehicle_quick_turn_180(struct vehicle_info *info, float time_d
 	if(KEY_PRESSED(set.key_quick_turn_180))
 	{
 		/* simply invert the X and Y axis.. */
-		vect3_invert(&info->base.matrix[4*0], &info->base.matrix[4*0]);
-		vect3_invert(&info->base.matrix[4*1], &info->base.matrix[4*1]);
-		vect3_invert(info->speed, info->speed);
+		for(struct vehicle_info *temp = info; temp != NULL; temp = temp->trailer)
+		{
+				vect3_invert(&temp->base.matrix[4*0], &temp->base.matrix[4*0]);
+				vect3_invert(&temp->base.matrix[4*1], &temp->base.matrix[4*1]);
+				vect3_invert(temp->speed, temp->speed);
+				if(!cheat_state->vehicle.keep_trailer_attached || !set.trailer_support)break;
+		}
 		if(info->vehicle_type == VEHICLE_TYPE_TRAIN)
 		{
 			for(struct vehicle_info *temp = info; temp != NULL; temp = temp->m_train_next_carriage)
@@ -588,19 +599,24 @@ void cheat_handle_vehicle_quick_turn_left(struct vehicle_info *vinfo, float time
 {
 	if(KEY_PRESSED(set.key_quick_turn_left))
 	{
-		// do new heading
-		float *heading_matrix = vinfo->base.matrix;
-		MATRIX4X4 *heading_matrix4x4 = vinfo->base.matrixStruct;
-		// rotate on z axis
-		CVector posUnder = cheat_vehicle_getPositionUnder(vinfo);
-		float heading_vector_zrotate[3] = { posUnder.fX, posUnder.fY, posUnder.fZ };
-		float heading_theta = M_PI / 2.0f;
-		vect3_normalize(heading_vector_zrotate, heading_vector_zrotate);
-		matrix_vect3_rotate(heading_matrix, heading_vector_zrotate, heading_theta, heading_matrix);
-		// do new speed
-		if (!vinfo->m_SpeedVec.IsNearZero())
-		{
-			vinfo->m_SpeedVec.CrossProduct(&posUnder);
+		struct vehicle_info *temp;
+		for(temp = vinfo; temp != NULL; temp = temp->trailer)
+        {
+			// do new heading
+			float *heading_matrix = temp->base.matrix;
+			MATRIX4X4 *heading_matrix4x4 = temp->base.matrixStruct;
+			// rotate on z axis
+			CVector posUnder = cheat_vehicle_getPositionUnder(temp);
+			float heading_vector_zrotate[3] = { posUnder.fX, posUnder.fY, posUnder.fZ };
+			float heading_theta = M_PI / 2.0f;
+			vect3_normalize(heading_vector_zrotate, heading_vector_zrotate);
+			matrix_vect3_rotate(heading_matrix, heading_vector_zrotate, heading_theta, heading_matrix);
+			// do new speed
+			if (!temp->m_SpeedVec.IsNearZero())
+			{
+				temp->m_SpeedVec.CrossProduct(&posUnder);
+			}
+			if(!cheat_state->vehicle.keep_trailer_attached || !set.trailer_support)break;
 		}
 	}
 }
@@ -609,20 +625,25 @@ void cheat_handle_vehicle_quick_turn_right(struct vehicle_info *vinfo, float tim
 {
 	if(KEY_PRESSED(set.key_quick_turn_right))
 	{
-		// do new heading
-		float *heading_matrix = vinfo->base.matrix;
-		MATRIX4X4 *heading_matrix4x4 = vinfo->base.matrixStruct;
-		// rotate on z axis
-		CVector posUnder = cheat_vehicle_getPositionUnder(vinfo);
-		posUnder = -posUnder;
-		float heading_zvectrotate[4] = { posUnder.fX, posUnder.fY, posUnder.fZ };
-		float heading_theta = M_PI / 2.0f;
-		vect3_normalize(heading_zvectrotate, heading_zvectrotate);
-		matrix_vect3_rotate(heading_matrix, heading_zvectrotate, heading_theta, heading_matrix);
-		// do new speed
-		if (!vinfo->m_SpeedVec.IsNearZero())
-		{
-			vinfo->m_SpeedVec.CrossProduct(&posUnder);
+		struct vehicle_info *temp;
+		for(temp = vinfo; temp != NULL; temp = temp->trailer)
+        {
+			// do new heading
+			float *heading_matrix = temp->base.matrix;
+			MATRIX4X4 *heading_matrix4x4 = temp->base.matrixStruct;
+			// rotate on z axis
+			CVector posUnder = cheat_vehicle_getPositionUnder(temp);
+			posUnder = -posUnder;
+			float heading_zvectrotate[4] = { posUnder.fX, posUnder.fY, posUnder.fZ };
+			float heading_theta = M_PI / 2.0f;
+			vect3_normalize(heading_zvectrotate, heading_zvectrotate);
+			matrix_vect3_rotate(heading_matrix, heading_zvectrotate, heading_theta, heading_matrix);
+			// do new speed
+			if (!temp->m_SpeedVec.IsNearZero())
+			{
+				temp->m_SpeedVec.CrossProduct(&posUnder);
+			}
+			if(!cheat_state->vehicle.keep_trailer_attached || !set.trailer_support)break;
 		}
 	}
 }
@@ -751,6 +772,15 @@ void cheat_handle_vehicle_brakedance(struct vehicle_info *vehicle_info, float ti
 		{
 			ScriptCommand(&apply_momentum_in_direction_XYZ,      iVehicleID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 			ScriptCommand(&apply_rotory_pulse_about_an_axis_XYZ, iVehicleID, 0.0f, 0.0f, velpos);
+		}else
+			iVehicleID = -1;
+
+		if(set.trailer_support && iVehicleID != -1)
+		{
+			for(struct vehicle_info *temp = vehicle_info; temp != NULL; temp = temp->trailer)
+			{
+				vect3_copy(vehicle_info->spin,temp->spin);
+			}
 		}
 	}
 }
@@ -895,7 +925,8 @@ void cheat_handle_blinking_carlights(struct vehicle_info *vinfo, float time_diff
 	cheat_state->vehicle.blinking_carlights_lastblink = GetTickCount();
 
 	// not needed for the end of a void returning function
-	//return;
+	//but it looks nice
+	return;
 }
 
 void cheat_handle_vehicle_keepTrailer(struct vehicle_info *vinfo, float time_diff)
@@ -905,6 +936,10 @@ void cheat_handle_vehicle_keepTrailer(struct vehicle_info *vinfo, float time_dif
 	if (KEY_PRESSED(set.key_keep_trailer))
 		cheat_state->vehicle.keep_trailer_attached ^= 1;
 	if (!cheat_state->vehicle.keep_trailer_attached)
+		return;
+
+	struct actor_info *self = actor_info_get(ACTOR_SELF,ACTOR_ALIVE);
+	if(self == NULL || vinfo->passengers[0] != self)
 		return;
 
 	static struct vehicle_info *myveh_old;
@@ -921,10 +956,26 @@ void cheat_handle_vehicle_keepTrailer(struct vehicle_info *vinfo, float time_dif
 			DWORD car = ScriptCarId(mytrailer_old);
 			if (car == NULL) return;
 
-			if (vect3_dist(vinfo->base.coords,mytrailer_old->base.coords) <= 9.0f)
+			if(vect3_dist(vinfo->base.coords,mytrailer_old->base.coords) <= 9.0f)
 			{
+				if(!cheat_state->vehicle.air_brake){
+					//unflip()
+					float a = atan2f(vinfo->base.matrix[4*1+0], vinfo->base.matrix[4*1+1]);
+					float *m = vinfo->base.matrix;
+					float matrix[16] = {
+					cosf(a),		-sinf(a),		0.0f,		0.0f,		// right
+					sinf(a),		cosf(a),		0.0f,		0.0f,		// attitude
+					0.0f,			0.0f,			1.0f,		0.0f,		// up
+					m[4*3+0],		m[4*3+1],		m[4*3+2],	1.0f		// position
+					};
+					matrix_copy(matrix, vinfo->base.matrix);
+					vect3_zero(vinfo->speed_rammed);
+					vect3_zero(vinfo->spin_rammed);
+				}
 				vinfo->trailer = mytrailer_old;
 				ScriptCommand(&put_trailer_on_cab, car, ScriptCarId(vinfo));
+				cheat_state->_generic.nocols_enabled = 1;
+				cheat_state->_generic.nocols_change_tick = GetTickCount();
 			}
 			else
 			{
@@ -967,9 +1018,16 @@ void cheat_handle_repair_car(struct vehicle_info *vehicle_info, float time_diff)
 		if(self->state == ACTOR_STATE_DRIVING
 			&& self->vehicle->passengers[0] == self)
 		{
-			// fix the vehicle
-			int iVehicleID = ScriptCarId(veh_self);
-			ScriptCommand(&repair_car, iVehicleID);
+			struct vehicle_info *temp;
+			//fix the vehicle
+			for(temp = vehicle_info; temp != NULL; temp = temp->trailer)
+			{
+				int iVehicleID = ScriptCarId(temp);
+				ScriptCommand(&repair_car, iVehicleID);
+
+				if(!set.trailer_support)
+					break;
+			}
 		}
 	}
 }
@@ -1068,10 +1126,29 @@ void CPhysical_ApplyGravity(DWORD dwThis)
 			&& vinfo_self->passengers[0] == ainfo_self)
 		{
 			// it's our vehicle, and we're driving, and magnet wheels is enabled - use the gravity vector
-			CVector vecGravity = cheat_state->vehicle.gravityVector;
+			CVector vecGravity;//cheat_state->vehicle.gravityVector;
+			vecGravity.fX = vinfo_self->fuck_up[0];
+			vecGravity.fY = vinfo_self->fuck_up[1];
+			vecGravity.fZ = vinfo_self->fuck_up[2];
 			CVector vecMoveSpeed = GTAfunc_GetMoveSpeed(vinfo_self);
 			vecMoveSpeed += vecGravity * fTimeStep * fGravity;
 			GTAfunc_SetMoveSpeed(vinfo_self, vecMoveSpeed);
+		}else if(vinfo_self != NULL && vinfo_self->trailer != NULL){
+			//check if its our trailer
+			for(struct vehicle_info *temp = vinfo_self->trailer; temp != NULL; temp = temp->trailer){
+				if(temp == (vehicle_info*)dwThis){
+					CVector vecGravity;
+					vecGravity.fX = temp->fuck_up[0];//cheat_state->vehicle.gravityVector;
+					vecGravity.fY = temp->fuck_up[1];
+					vecGravity.fZ = temp->fuck_up[2];
+					CVector vecMoveSpeed = GTAfunc_GetMoveSpeed(temp);
+					vecMoveSpeed += vecGravity * fTimeStep * fGravity;
+					GTAfunc_SetMoveSpeed(temp, vecMoveSpeed);
+				}else if(temp->trailer == NULL){
+					//isnt part of our vehicle, return regular gravity
+					*(float *)(dwThis + 0x4C) -= fTimeStep * fGravity;
+				}
+			}
 		}
 		else
 		{
@@ -1144,7 +1221,10 @@ void cheat_vehicle_setGravity(vehicle_info *vinfo, CVector pvecGravity)
 */
 
 	// set the d-dang gravity
-	cheat_state->vehicle.gravityVector = pvecGravity;
+//	cheat_state->vehicle.gravityVector = pvecGravity;
+	vinfo->fuck_up[0] = pvecGravity.fX;
+	vinfo->fuck_up[1] = pvecGravity.fY;
+	vinfo->fuck_up[2] = pvecGravity.fZ;
 
 	//5:08:18 PM lol cool
 }
@@ -1180,7 +1260,7 @@ void cheat_handle_spiderWheels(struct vehicle_info *vinfo, float time_diff)
 
 	// 3:07:16 PM how you going
 
-	if(KEY_PRESSED(set.key_spiderwheels))
+	if(KEY_PRESSED(set.key_spiderwheels) && vinfo->pulling_truck == NULL)
 	{
 		// init variables used to toggle patch
 		init_patchBikeFalloff();
@@ -1216,7 +1296,10 @@ void cheat_handle_spiderWheels(struct vehicle_info *vinfo, float time_diff)
 			// set altered gravity vector
 			float fTimeStep = *(float *)0xB7CB5C;
 			CVector colGravTemp = -pCollision->GetInterface()->Normal;
-			CVector vehGravTemp = cheat_state->vehicle.gravityVector;
+			CVector vehGravTemp; //= cheat_state->vehicle.gravityVector;
+			vehGravTemp.fX = vinfo->fuck_up[0];
+			vehGravTemp.fY = vinfo->fuck_up[1];
+			vehGravTemp.fZ = vinfo->fuck_up[2];
 			CVector newRotVector;
 			newRotVector = colGravTemp - vehGravTemp;
 			newRotVector *= 0.05f * fTimeStep;
@@ -1243,7 +1326,10 @@ void cheat_handle_spiderWheels(struct vehicle_info *vinfo, float time_diff)
 			colGravTemp.fX = 0.0f;
 			colGravTemp.fY = 0.0f;
 			colGravTemp.fZ = -1.0f;
-			CVector vehGravTemp = cheat_state->vehicle.gravityVector;
+			CVector vehGravTemp; //= cheat_state->vehicle.gravityVector;
+			vehGravTemp.fX = vinfo->fuck_up[0];
+			vehGravTemp.fY = vinfo->fuck_up[1];
+			vehGravTemp.fZ = vinfo->fuck_up[2];
 			CVector newRotVector;
 			newRotVector = colGravTemp - vehGravTemp;
 			newRotVector *= 0.05f * fTimeStep;
