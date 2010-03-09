@@ -715,8 +715,10 @@ void cheat_handle_stick(struct vehicle_info *vehicle_info, struct actor_info *ac
          }
          else if(actor_info != NULL)
 		 {
-			 actor_info->player_check = 0x03;
-			 actor_info->jump_state = 0x20;
+			 // new pedFlags
+			 actor_info->pedFlags.bIsStanding = true;
+			 actor_info->pedFlags.bWasStanding = true;
+			 actor_info->pedFlags.bStayInSamePlace = true;
 		 }
       }
    }

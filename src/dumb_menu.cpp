@@ -1396,8 +1396,8 @@ static int menu_callback_vehicles_sub(int op, struct menu_item *item)
          if(cheat_state->_generic.vehicles_warp_invert)
          {
             vect3_copy(&self->base.matrix[4*3], pos);
-            pos[0] += sinf(-self->z_angle) * 5.0f;
-            pos[1] += cosf(-self->z_angle) * 5.0f;
+            pos[0] += sinf(-self->fCurrentRotation) * 5.0f;
+            pos[1] += cosf(-self->fCurrentRotation) * 5.0f;
             pos[2] += 0.5f;
             cheat_vehicle_teleport(info, pos, gta_interior_id_get());
 

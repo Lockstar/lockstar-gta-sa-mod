@@ -19,12 +19,6 @@
 	You should have received a copy of the GNU General Public License
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
-	$LastChangedDate: 2010-01-05 01:40:59 -0600 (Tue, 05 Jan 2010) $
-	$LastChangedBy: futnucks $
-	$Revision: 43 $
-	$HeadURL: https://m0d-s0beit-sa.googlecode.com/svn/trunk/src/proxyIDirect3DDevice9.cpp $
-	$Id: proxyIDirect3DDevice9.cpp 43 2010-01-05 07:40:59Z futnucks $
-
 */
 
 #include "main.h"
@@ -2845,7 +2839,7 @@ HRESULT proxyIDirect3DDevice9::Present(CONST RECT *pSourceRect, CONST RECT *pDes
 	//origIDirect3DDevice9->SetTransform(D3DTS_PROJECTION, projMatrix);
 
 	// get original function to return
-	return origIDirect3DDevice9->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
+	return origIDirect3DDevice9->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);;
 }
 
 HRESULT proxyIDirect3DDevice9::GetBackBuffer(UINT iSwapChain, UINT iBackBuffer, D3DBACKBUFFER_TYPE Type, IDirect3DSurface9 **ppBackBuffer)
@@ -3164,18 +3158,6 @@ pRakNet_NetTxRx_Hook_End:;
 					if(set.hud_indicator_inveh_brkdance) { HUD_TEXT_TGL(x, cheat_state->vehicle.brkdance ? color_enabled : color_disabled , "BrkDance"); }
 					if(set.hud_indicator_inveh_spider) { HUD_TEXT_TGL(x, cheat_state->vehicle.spiderWheels_on ? color_enabled : color_disabled , "Spider"); }
 					RenderVehicleHPBar();
-#ifdef M0D_DEV
-// fantastic shit
-/*
-render->DrawLine(vecGravColOrigin, vecGravColTarget, D3DCOLOR_ARGB(128, 255, 0, 0));
-render->DrawLine(vecGravColOrigin, vecGravTargetNorm, D3DCOLOR_ARGB(128, 0, 255, 0));
-
-struct vehicle_info *vinfo_self = vehicle_info_get(VEHICLE_SELF, 0);
-_snprintf_s(buf, sizeof(buf), "gravityVector: %0.2f %0.2f %0.2f", cheat_state->vehicle.gravityVector.fX, cheat_state->vehicle.gravityVector.fY, cheat_state->vehicle.gravityVector.fZ);
-pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 20,
-	pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 50, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
-*/
-#endif
 				}
 				else if(cheat_state->state == CHEAT_STATE_ACTOR)
 				{
@@ -3183,6 +3165,27 @@ pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLe
 					if(set.hud_indicator_onfoot_stick) { HUD_TEXT_TGL(x, cheat_state->actor.stick ? color_enabled : color_disabled , "Stick"); }
 					if(set.hud_indicator_onfoot_aim) { HUD_TEXT_TGL(x, cheat_state->actor.autoaim ? color_enabled : color_disabled , "Aim"); }
 					RenderPedHPBar();
+#ifdef M0D_DEV
+// fantastic shit
+/**/
+render->DrawLine(vecGravColOrigin, vecGravColTarget, D3DCOLOR_ARGB(128, 255, 0, 0));
+render->DrawLine(vecGravColOrigin, vecGravTargetNorm, D3DCOLOR_ARGB(128, 0, 255, 0));
+
+struct actor_info *ainfo_self = actor_info_get(ACTOR_SELF, 0);
+_snprintf_s(buf, sizeof(buf), "gravityVector: %0.2f %0.2f %0.2f", cheat_state->actor.gravityVector.fX, cheat_state->actor.gravityVector.fY, cheat_state->actor.gravityVector.fZ);
+pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 20,
+	pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 50, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
+
+
+_snprintf_s(buf, sizeof(buf), "CPools Ped Count: %d", pGameInterface->GetPools()->GetPedCount());
+pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 25,
+	pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 40, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
+
+_snprintf_s(buf, sizeof(buf), "CPools Vehicle Count: %d", pGameInterface->GetPools()->GetVehicleCount());
+pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 25,
+	pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 30, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
+
+#endif
 				}
 
 				if(cheat_state->state != CHEAT_STATE_NONE)

@@ -24,5 +24,6 @@
 void cheat_actor_teleport(struct actor_info *info, const float pos[3], int interior_id);
 void cheat_handle_actor_autoaim(struct actor_info *info, float time_diff);
 void cheat_handle_actor_air_brake(struct actor_info *info, float time_diff);
+void cheat_handle_spiderFeet(struct actor_info *ainfo, float time_diff);
 
 CEntitySAInterface* cheat_actor_GetCEntitySAInterface(actor_info *ainfo);

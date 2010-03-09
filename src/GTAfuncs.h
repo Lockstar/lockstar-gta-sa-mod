@@ -60,10 +60,10 @@
 
 
 // VideoMode functions
-#define		FUNC_SetCurrentVideoMode		0x745C70
-#define		FUNC_GetCurrentVideoMode		0x7F2D20
-#define		FUNC_GetNumVideoModes			0x7F2CC0
-#define		FUNC_GetVideoModeInfo			0x7F2CF0
+#define		GFUNC_SetCurrentVideoMode		0x745C70
+#define		GFUNC_GetCurrentVideoMode		0x7F2D20
+#define		GFUNC_GetNumVideoModes			0x7F2CC0
+#define		GFUNC_GetVideoModeInfo			0x7F2CF0
 #define		FUNC_RwD3D9ChangeVideoMode		0x7F8640
 
 // entity gravity/movement functions
@@ -86,106 +86,6 @@
 ////////////////////////
 // structures & enums //
 ////////////////////////
-
-enum VideoModeFlag // RwVideoModeFlag
-{
-    rwVIDEOMODEEXCLUSIVE    = 0x0001, /**<Exclusive (i.e. full-screen) */
-    rwVIDEOMODEINTERLACE    = 0x0002, /**<Interlaced                   */
-    rwVIDEOMODEFFINTERLACE  = 0x0004, /**<Flicker Free Interlaced      */
-
-    /* Platform specific video mode flags. */
-
-    rwVIDEOMODE_PS2_FSAASHRINKBLIT    = 0x0100,
-    /**< \if sky2
-     *   Full-screen antialiasing mode 0
-     *   \endif
-     */
-    rwVIDEOMODE_PS2_FSAAREADCIRCUIT   = 0x0200,
-    /**< \if sky2
-     *   Full-screen antialiasing mode 1
-     *   \endif
-     */
-
-    rwVIDEOMODE_XBOX_WIDESCREEN       = 0x0100,
-    /**< \if xbox
-     *   Wide screen.
-     *   \endif
-     */
-    rwVIDEOMODE_XBOX_PROGRESSIVE      = 0x0200,
-    /**< \if xbox
-     *   Progressive.
-     *   \endif
-     */
-    rwVIDEOMODE_XBOX_FIELD            = 0x0400,
-    /**< \if xbox
-     *   Field rendering.
-     *   \endif
-     */
-    rwVIDEOMODE_XBOX_10X11PIXELASPECT = 0x0800,
-    /**< \if xbox
-     *   The frame buffer is centered on the display.
-     *   On a TV that is 704 pixels across, this would leave 32 pixels of black
-     *   border on the left and 32 pixels of black border on the right.
-     *   \endif
-     */
-
-    rwVIDEOMODEFLAGFORCEENUMSIZEINT = RWFORCEENUMSIZEINT
-};
-
-struct VideoMode //RwVideoMode
-{
-    int             width;   /**< Width  */
-    int             height;  /**< Height */
-    int             depth;   /**< Depth  */
-    VideoModeFlag   flags;   /**< Flags  */
-    int             refRate; /**< Approximate refresh rate */
-    int             format;  /**< Raster format \ see RwRasterFormat */
-};
-
-struct CSettingsSAInterface // see code around 0x57CE9A for where these are
-{
-	uint8_t		__unknown_h0[0x4];		// 0x0
-	float		fStatsScrollSpeed;		// 0x4
-	uint8_t		__unknown_h8[0x1C];		// 0x8
-	uint8_t		drawRadar;				// 0x24 // 1 - only player blip and north, 2 - no radar
-	uint8_t		__unknown_h25[0xE];		// 0x25
-	uint8_t		activateMenu;			// 0x33
-	uint8_t		menuAccessWidescreen;	// 0x34
-	uint8_t		__unknown_h35[0x7];		// 0x35
-	float		fBrightness;			// 0x3C
-	float		fDrawDistance;			// 0x40
-	bool		bSubtitles;				// 0x44
-	bool		__boolPad_h45[5];		// 0x45
-	bool		bLegend;				// 0x4A
-	bool		bUseWideScreen;			// 0x4B
-	bool		bFrameLimiter;			// 0x4C
-	bool		bAutoRetune;			// 0x4D
-	bool		__boolPad_h4E;			// 0x4E
-	uint8_t		ucSfxVolume;			// 0x4F
-	uint8_t		ucRadioVolume;			// 0x50
-	uint8_t		ucRadioEq;				// 0x51
-	uint8_t		ucRadioStation;			// 0x52
-	uint8_t		__unknown_h53[0x6];		// 0x53
-	uint8_t		drawRadarOrMap;			// 0x59
-	uint8_t		__unknown_h5A[0x57];	// 0x5A
-	bool		bInvertPadX1;			// 0xB1
-	bool		bInvertPadY1;			// 0xB2
-	bool		bInvertPadX2;			// 0xB3
-	bool		bInvertPadY2;			// 0xB4
-	bool		bSwapPadAxis1;			// 0xB5
-	bool		bSwapPadAxis2;			// 0xB6
-	uint8_t		__unknown_hB7[0x19];	// 0xB7
-	bool		bUseKeyboardAndMouse;	// 0xD0
-	uint8_t		__unknown_hD1[3];		// 0xD1
-	int			dwVideoMode;			// 0xD4
-	int			dwPrevVideoMode;		// 0xD8
-	uint8_t		__unknown_hDC[4];		// 0xDC
-	int			mousePosLeftA;			// 0xE0
-	int			mousePosTopA;			// 0xE4
-	// nothing else mapped till the end
-	uint8_t		__unknown_hE8[0x1A90];	// 0xE8
-	// the end							// 0x1B78
-};
 
 struct RsInputDevice
 {
@@ -262,15 +162,15 @@ void GTAfunc_setCurrentVideoMode(int modeIndex);
 int GTAfunc_RwD3D9ChangeVideoMode(int modeIndex);
 
 // gravity functions
-CVector GTAfunc_GetMoveSpeed(vehicle_info *vinfo);
-VOID GTAfunc_SetMoveSpeed(vehicle_info *vinfo, CVector vecMoveSpeed);
+CVector GTAfunc_GetMoveSpeed(object_base *entity);
+VOID GTAfunc_SetMoveSpeed(object_base *vinfo, CVector vecMoveSpeed);
 
 // CWorld functions
 bool GTAfunc_IsLineOfSightClear( CVector *vecStart, CVector *vecEnd,
 	bool bCheckBuildings, bool bCheckVehicles, bool bCheckPeds, bool bCheckObjects,
 	bool bCheckDummies, bool bSeeThroughStuff, bool bIgnoreSomeObjectsForCamera );
 bool GTAfunc_ProcessLineOfSight( CVector * vecStart, CVector * vecEnd,
-		CColPoint ** colCollision, CEntity ** CollisionEntity,
+		CColPoint ** colCollision, CEntitySAInterface ** CollisionEntity,
 		bool bCheckBuildings, bool bCheckVehicles, bool bCheckPeds,
 		bool bCheckObjects, bool bCheckDummies , bool bSeeThroughStuff,
 		bool bIgnoreSomeObjectsForCamera, bool bShootThroughStuff );

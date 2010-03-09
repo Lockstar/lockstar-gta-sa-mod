@@ -181,8 +181,11 @@ void cheat_handle_actor_air_brake(struct actor_info *info, float time_diff)
       {
          vect3_copy(orig_pos, &info->base.matrix[4*3]);
          vect3_zero(info->speed);
-		 info->player_check = 0x03;
-		 info->jump_state = 0x20;
+
+		 // new pedFlags
+		 info->pedFlags.bIsStanding = true;
+		 info->pedFlags.bWasStanding = true;
+		 info->pedFlags.bStayInSamePlace = true;
       }
    }
    else
@@ -257,4 +260,186 @@ void cheat_handle_actor_air_brake(struct actor_info *info, float time_diff)
 
       vect3_copy(&matrix[4*3], orig_pos);
    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#ifdef M0D_DEV
+D3DXVECTOR3 vecGravColOrigin, vecGravColTarget, vecGravTargetNorm;
+CVector temp_vecGravTargetNorm;
+#endif
+
+CVector cheat_actor_getPositionUnder(actor_info *ainfo)
+{
+	traceLastFunc("cheat_vehicle_getPositionUnder()");
+	CVector offsetVector;
+	float *matrix = ainfo->base.matrix;
+	offsetVector.fX = 0 * matrix[0] + 0 * matrix[4] - 1 * matrix[8];
+    offsetVector.fY = 0 * matrix[1] + 0 * matrix[5] - 1 * matrix[9];
+    offsetVector.fZ = 0 * matrix[2] + 0 * matrix[6] - 1 * matrix[10];
+	return offsetVector;
+}
+
+void cheat_actor_setGravity(actor_info *ainfo, CVector pvecGravity)
+{
+	traceLastFunc("cheat_actor_setGravity()");
+
+	// set the d-dang gravity
+	cheat_state->actor.gravityVector = pvecGravity;
+
+	ainfo->base.m_CMatrix->vFront.fZ = pvecGravity.fX;
+	ainfo->base.m_CMatrix->vRight.fZ = pvecGravity.fY;
+
+	ainfo->base.m_CMatrix->vUp.fZ = -pvecGravity.fZ;
+
+	// surf on yourself, lawlz
+	//ainfo->vehicle_contact = (vehicle_info*)ainfo;
+
+	//ainfo->pedFlags.bResetWalkAnims = false;
+	//ainfo->pedFlags.bStillOnValidPoly = false;
+	//ainfo->pedFlags.bUpdateMatricesRequired = true;
+	//ainfo->pedFlags.bUpdateAnimHeading = true;
+	//ainfo->pedFlags.bWasStanding = false;
+	//ainfo->pedFlags.bDonePositionOutOfCollision = true;
+	//ainfo->pedFlags.bIsNearCar = true;
+
+	//ainfo->base.m_CMatrix->vUp = -pvecGravity;
+	//if (ainfo->base.m_CMatrixPre != NULL)
+	//	ainfo->base.m_CMatrixPre->vUp = pvecGravity;
+}
+
+
+void cheat_handle_spiderFeet(struct actor_info *ainfo, float time_diff)
+{
+	traceLastFunc("cheat_handle_spiderFeet()");
+
+	if(KEY_PRESSED(set.key_spiderfeet))
+	{
+		// toggle the d-dang spiderz
+		cheat_state->actor.spiderFeet_on ^= 1;
+	}
+
+	if (1==1)//cheat_state->actor.spiderFeet_on)
+	{
+		// get "down" facing vector
+		CVector offsetVector = cheat_actor_getPositionUnder(ainfo);
+
+		// setup variables
+		CVector vecOrigin, vecTarget;
+		CColPoint *pCollision = NULL;
+		CEntitySAInterface *pCollisionEntity = NULL;
+		int checkDistanceMeters = 20;
+
+		// get CEntitySAInterface pointer
+		CEntitySAInterface *p_CEntitySAInterface = cheat_actor_GetCEntitySAInterface(ainfo);
+
+		// origin = our actor
+		vecOrigin = p_CEntitySAInterface->Placeable.matrix->vPos;
+		// target = vecOrigin + offsetVector * checkDistanceMeters
+		vecTarget = offsetVector * checkDistanceMeters;
+		vecTarget = vecTarget + vecOrigin;
+
+		// check for collision
+		bool bCollision = GTAfunc_ProcessLineOfSight(&vecOrigin, &vecTarget, &pCollision, &pCollisionEntity, 1, 0, 0, 1, 1, 0, 0, 0);
+
+		if (bCollision)
+		{
+			// set altered gravity vector
+			float fTimeStep = *(float *)0xB7CB5C;
+			CVector colGravTemp = -pCollision->GetInterface()->Normal;
+			CVector vehGravTemp = cheat_state->actor.gravityVector;
+			CVector newRotVector;
+			newRotVector = colGravTemp - vehGravTemp;
+			newRotVector *= 0.05f * fTimeStep;
+			offsetVector = vehGravTemp + newRotVector;
+#ifdef M0D_DEV
+/**/
+			vecGravColOrigin = D3DXVECTOR3(vecOrigin.fX, vecOrigin.fY, vecOrigin.fZ);
+			vecGravColTarget.x = pCollision->GetInterface()->Position.fX;
+			vecGravColTarget.y = pCollision->GetInterface()->Position.fY;
+			vecGravColTarget.z = pCollision->GetInterface()->Position.fZ;
+			temp_vecGravTargetNorm = vecOrigin + offsetVector * checkDistanceMeters;
+			vecGravTargetNorm.x = temp_vecGravTargetNorm.fX;
+			vecGravTargetNorm.y = temp_vecGravTargetNorm.fY;
+			vecGravTargetNorm.z = temp_vecGravTargetNorm.fZ;
+
+#endif
+			pCollision->Destroy();
+		}
+		else
+		{
+			// set normal gravity vector
+			float fTimeStep = *(float *)0xB7CB5C;
+			CVector colGravTemp;
+			colGravTemp.fX = 0.0f;
+			colGravTemp.fY = 0.0f;
+			colGravTemp.fZ = -1.0f;
+			CVector vehGravTemp = cheat_state->actor.gravityVector;
+			CVector newRotVector;
+			newRotVector = colGravTemp - vehGravTemp;
+			newRotVector *= 0.05f * fTimeStep;
+			offsetVector = vehGravTemp + newRotVector;
+#ifdef M0D_DEV
+/**/
+			vecGravColOrigin = D3DXVECTOR3(vecOrigin.fX, vecOrigin.fY, vecOrigin.fZ);
+			vecGravColTarget = D3DXVECTOR3(vecTarget.fX, vecTarget.fY, vecTarget.fZ);
+			temp_vecGravTargetNorm = vecOrigin + offsetVector * checkDistanceMeters;
+			vecGravTargetNorm.x = temp_vecGravTargetNorm.fX;
+			vecGravTargetNorm.y = temp_vecGravTargetNorm.fY;
+			vecGravTargetNorm.z = temp_vecGravTargetNorm.fZ;
+
+#endif
+		}
+
+		// set the gravity/camera
+		cheat_actor_setGravity(ainfo, offsetVector);
+	}
+	else if (cheat_state->actor.spiderFeet_Enabled)
+	{
+		CVector offsetVector;
+		// disable spider wheels with normal gravity vector
+		offsetVector.fX = 0.0f;
+		offsetVector.fY = 0.0f;
+		offsetVector.fZ = -1.0f;
+
+		// set the gravity/camera
+		cheat_actor_setGravity(ainfo, offsetVector);
+		// set spider wheels disabled
+		cheat_state->actor.spiderFeet_Enabled = false;
+	}
 }

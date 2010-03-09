@@ -83,6 +83,7 @@ static void cheat_main_actor(float time_diff)
 	cheat_handle_actor_air_brake(info, time_diff);
 	cheat_handle_stick(NULL, info, time_diff);
 	cheat_handle_actor_autoaim(info, time_diff);
+	cheat_handle_spiderFeet(info, time_diff);
 }
 
 static void cheat_main_vehicle(float time_diff)
@@ -137,23 +138,9 @@ static void cheat_main_vehicle(float time_diff)
 	cheat_handle_spiderWheels(info, time_diff);
 }
 
-// new gravity hook
-#define HOOKPOS_CPhysical_ApplyGravity	0x543081
-DWORD RETURN_CPhysical_ApplyGravity =	0x543093;
-CDetour hookApplyGravity;
-uint8_t _declspec(naked) HOOK_CPhysical_ApplyGravity(void)
-{
-    __asm
-    {
-        push esi
-        call CPhysical_ApplyGravity
-        add esp, 4
-        jmp RETURN_CPhysical_ApplyGravity
-    }
-}
-
 // the main daddyo
 extern bool isRequestingScreenshot;
+int m_InitStages = 0;
 void cheat_hook(HWND wnd)
 {
    traceLastFunc("cheat_hook()");
@@ -178,15 +165,15 @@ void cheat_hook(HWND wnd)
       cheat_state->_generic.weapon               = set.weapon_enabled;
       cheat_state->_generic.vehicles_unlock      = false;
       cheat_state->_generic.vehicles_warp_invert = true;
-      cheat_state->actor.invulnerable           = true;
-      cheat_state->vehicle.invulnerable         = true;
-      cheat_state->vehicle.hp_tire_support      = true;
-      cheat_state->vehicle.hp_minimum_on        = 1;
-      cheat_state->vehicle.hp_damage_reduce_on  = 1;
-      cheat_state->vehicle.hp_regen_on          = 1;
-	  cheat_state->actor.hp_regen_on			= 1;
-      cheat_state->vehicle.brkdance				= 0;
-      cheat_state->game_speed                   = 1.0f;
+      cheat_state->actor.invulnerable            = true;
+      cheat_state->vehicle.invulnerable          = true;
+      cheat_state->vehicle.hp_tire_support       = true;
+      cheat_state->vehicle.hp_minimum_on         = 1;
+      cheat_state->vehicle.hp_damage_reduce_on   = 1;
+      cheat_state->vehicle.hp_regen_on           = 1;
+	  cheat_state->actor.hp_regen_on			 = 1;
+      cheat_state->vehicle.brkdance				 = 0;
+      cheat_state->game_speed                    = 1.0f;
 
 	  // esp states
 	  cheat_state->render_player_tags			= set.esp_players_defaulton;
@@ -213,100 +200,113 @@ void cheat_hook(HWND wnd)
 		   }
 	   }
 
-	   	// hook gravity OMG GANGSTAH
-		if(hookApplyGravity.Create((uint8_t*)(uint32_t)HOOKPOS_CPhysical_ApplyGravity, (uint8_t*)HOOK_CPhysical_ApplyGravity, DETOUR_TYPE_JMP, 5) == 0)
-			Log("Failed to hook gravity");
-
-		// LOOK WHAT I CAN DO!
-		if (g_SAMP)
-		{
-			*(BYTE *)0xB7CB49 = 0; // game not paused
-			*(BYTE *)0xBA67A4 = 0; // menu not visible
-			g_pCSettingsSAInterface->activateMenu = 0; // menu not visible?
-		}
-
    } /* end initialize state */
 
 
    cheat_state->state = CHEAT_STATE_NONE;
 
-   /* set up actor pool */
+   /* setup & refresh actor pool */
    pool_actor = *(struct pool **)ACTOR_POOL_POINTER;
    if(pool_actor == NULL)          return;
    if(pool_actor->start == NULL)   return;
    if(pool_actor->size <= 0)       return;
 
-   /* set up vehicle pool */
+   /* setup & refresh vehicle pool */
    pool_vehicle = *(struct pool **)VEHICLE_POOL_POINTER;
    if(pool_vehicle == NULL)          return;
    if(pool_vehicle->start == NULL)   return;
    if(pool_vehicle->size <= 0)       return;
 
+//////////////////////////////////////////
+// looks like we have pools so continue //
+//////////////////////////////////////////
+
    actor_info = actor_info_get(ACTOR_SELF, ACTOR_ALIVE);
    vehicle_info = vehicle_info_get(VEHICLE_SELF, 0);
 
-   /* no vehicle, and no actor. exit. */
-   if(vehicle_info == NULL && actor_info == NULL)
-   {
-      if(cheat_state->actor.air_brake   || cheat_state->actor.stick ||
-         cheat_state->vehicle.air_brake || cheat_state->vehicle.stick)
-      {
-         cheat_state->actor.air_brake = 0;
-         cheat_vehicle_air_brake_set(0);
-         cheat_state->actor.stick = 0;
-         cheat_state->vehicle.stick = 0;
-         cheat_state_text("Air brake / stick disabled");
-      }
-   }
-   else
-   {
-      if(vehicle_info == NULL)
-      {
-         if(cheat_state->vehicle.air_brake || cheat_state->vehicle.stick)
-         {
-            cheat_vehicle_air_brake_set(0);
-            cheat_state->vehicle.stick = 0;
-            cheat_state_text("Air brake / stick disabled");
-         }
-         cheat_state->state = CHEAT_STATE_ACTOR;
-		 // reset infinite NOS toggle state
-		 if (cheat_state->vehicle.infNOS_toggle_on)
-		 {
-			 cheat_state->vehicle.infNOS_toggle_on = false;
-			 patcher_remove(&patch_vehicle_inf_NOS);
-		 }
-      }
-      else
-      {
-         if(cheat_state->actor.air_brake || cheat_state->actor.stick)
-         {
-            cheat_state->actor.air_brake = 0;
-            cheat_state->actor.stick = 0;
-            cheat_state_text("Air brake / stick disabled");
-         }
-         cheat_state->state = CHEAT_STATE_VEHICLE;
-      }
-	   // load all the weapon models
-	   loadAllWeaponModels();
-   }
+	/* no vehicle, and no actor. exit. */
+	if(vehicle_info == NULL && actor_info == NULL)
+	{
+		if(cheat_state->actor.air_brake
+			|| cheat_state->actor.stick
+			|| cheat_state->vehicle.air_brake
+			|| cheat_state->vehicle.stick)
+		{
+			cheat_state->actor.air_brake = 0;
+			cheat_vehicle_air_brake_set(0);
+			cheat_state->actor.stick = 0;
+			cheat_state->vehicle.stick = 0;
+			cheat_state_text("Air brake / stick disabled");
+		}
+	}
+	else
+	{
+		if(vehicle_info == NULL)
+		{
+			if(cheat_state->vehicle.air_brake || cheat_state->vehicle.stick)
+			{
+				cheat_vehicle_air_brake_set(0);
+				cheat_state->vehicle.stick = 0;
+				cheat_state_text("Air brake / stick disabled");
+			}
+			cheat_state->state = CHEAT_STATE_ACTOR;
+			// reset infinite NOS toggle state
+			if (cheat_state->vehicle.infNOS_toggle_on)
+			{
+				cheat_state->vehicle.infNOS_toggle_on = false;
+				patcher_remove(&patch_vehicle_inf_NOS);
+			}
+		}
+		else
+		{
+			if(cheat_state->actor.air_brake || cheat_state->actor.stick)
+			{
+				cheat_state->actor.air_brake = 0;
+				cheat_state->actor.stick = 0;
+				cheat_state_text("Air brake / stick disabled");
+			}
+			cheat_state->state = CHEAT_STATE_VEHICLE;
+		}
 
+		// load all the weapon models
+		loadAllWeaponModels();
+
+		if (m_InitStages == 0)
+		{
+			// LOOK WHAT I CAN DO!
+			pGame = new CGameSA();
+			pGameInterface = (CGame*)pGame;
+			//pGameInterface->Initialize(); // all this does so far is disable modshops and pay&sprays
+			pGameInterface->StartGame();
+
+			//pGameInterface->InitLocalPlayer(); // crashes, don't use
+			// we have to add ourself to the pool first so that we are always the 1st ped
+			pGameInterface->GetPools()->AddPed((DWORD*)actor_info);
+			
+
+			// install all startup hooks
+			cheat_hookers_installhooks();
+
+			m_InitStages++;
+		}
+   }
 
    if(set.d3dtext_chat)
    {
 	   if(g_Chat != NULL && g_Chat->iChatWindowMode)
 	   {
-		   //Log("Disabling SA:MP chat text.");
-		   g_Chat->iChatWindowMode = 0;
-		   set.d3dtext_chat = 0;
+			//Log("Disabling SA:MP chat text.");
+			g_Chat->iChatWindowMode = 0;
+			set.d3dtext_chat = 0;
 	   }
    }
    if(set.d3dtext_kill)
    {
 	   if(g_DeathList != NULL && g_DeathList->iEnabled)
 	   {
-		   //Log("Disabling SA:MP kill list.");
-		   g_DeathList->iEnabled = 0;
-		   set.d3dtext_kill = 0;
+			//Log("Disabling SA:MP kill list.");
+			g_DeathList->iEnabled = 0;
+			set.d3dtext_kill = 0;
 	   }
    }
 
@@ -342,9 +342,6 @@ void cheat_hook(HWND wnd)
 
    if(cheat_state->state != CHEAT_STATE_NONE)
    {
-		// setup new CCameraSA pointer
-		init_g_CCamera();
-
 		// generic stuff
 		cheat_handle_weapon_disable();
 		cheat_handle_money();

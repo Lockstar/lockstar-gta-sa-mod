@@ -19,19 +19,12 @@
 	You should have received a copy of the GNU General Public License
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
-	$LastChangedDate: 2009-12-18 09:06:33 -0600 (Fri, 18 Dec 2009) $
-	$LastChangedBy: jflmxy $
-	$Revision: 42 $
-	$HeadURL: https://m0d-s0beit-sa.googlecode.com/svn/trunk/src/samp.h $
-	$Id: samp.h 42 2009-12-18 15:06:33Z jflmxy $
-
 */
 
 #define SAMP_PLAYER_MAX							500
 #define SAMP_VEHICLE_MAX						2000
 #define SAMP_PICKUP_MAX							2048
 #define SAMP_OBJECTS_MAX						254
-#define MAX_PICKUPS								2048
 #define MAX_3DTEXT								1024
 #define MAX_PLAYER_NAME							29
 

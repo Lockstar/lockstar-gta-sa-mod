@@ -19,13 +19,11 @@
 	You should have received a copy of the GNU General Public License
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
-	$LastChangedDate: 2010-01-05 01:40:59 -0600 (Tue, 05 Jan 2010) $
-	$LastChangedBy: futnucks $
-	$Revision: 43 $
-	$HeadURL: https://m0d-s0beit-sa.googlecode.com/svn/trunk/src/main.h $
-	$Id: main.h 43 2010-01-05 07:40:59Z futnucks $
-
 */
+
+#ifndef __MODMAIN_H
+#define __MODMAIN_H
+
 
 #define WIN32_LEAN_AND_MEAN
 #define _CRT_SECURE_NO_WARNINGS 1
@@ -50,6 +48,14 @@
 #define RUNMODE_SAMP			1
 
 
+// let's do a precompiled header, why not
+#pragma message("Compiling precompiled header.\n")
+#pragma warning (disable:4409)
+#pragma warning (disable:4250)
+/* unreferenced formal parameter */
+#pragma warning (disable:4100)
+
+
 // API/SDK includes
 #include <windows.h>
 #include <stdio.h>
@@ -59,25 +65,116 @@
 #include <shellapi.h>
 #include <d3dx9.h>
 #include <Gdiplus.h>
+#include <assert.h>
+#include <algorithm>
+#include <list>
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
 
-// typedefs / type classes
+// typedefs/classes for legacy
+#include "stddefs.h"
 #include "stdint.h"
-#include "RenderWare.h"
 #include "CVector.h"
 #include "CVector2D.h"
 #include "CMatrix.h"
 #include "CMatrix_Pad.h"
 
-// public classes
-#include "CColPoint.h"
-#include "CEntity.h"
+// additional setup includes
+#include "mta_extras.h"
 
-// SA classes
-#include "CColPointSA.h"
+
+// public SA classes
+// try to always include these in the private class's header
+#include "SharedUtil.h"
+#include <game/CGame.h>
+#include <game/CWanted.h>
+//#include <ijsify.h>
+#include "SString.h"
+
+// private SA classes
 #include "CEntitySA.h"
+#include "Common.h"
+#include "CGameSA.h"
+#include "CWorldSA.h"
+#include "CPoolsSA.h"
+#include "CClockSA.h"
+#include "CFontSA.h"
+#include "CRadarSA.h"
+#include "CMenuManagerSA.h"
+#include "CCameraSA.h"
+#include "CCheckpointsSA.h"
+#include "CRenderWareSA.h"
+#include "CCoronasSA.h"
+#include "CPickupsSA.h"
+#include "CPathFindSA.h"
+#include "CWeaponInfoSA.h"
+#include "CExplosionManagerSA.h"
+#include "CFireManagerSA.h"
+#include "CHandlingManagerSA.h"
+#include "CHudSA.h"
+#include "C3DMarkersSA.h"
+#include "CStatsSA.h"
+#include "CTheCarGeneratorsSA.h"
+#include "CPadSA.h"
+#include "CAERadioTrackManagerSA.h"
+#include "CWeatherSA.h"
+#include "CTextSA.h"
+#include "CPedSA.h"
+#include "CPedSoundSA.h"
+#include "CAudioSA.h"
+#include "CPlayerInfoSA.h"
+#include "CPopulationSA.h"
+#include "CSettingsSA.h"
+#include "CCarEnterExitSA.h"
+#include "COffsets.h"
+#include "CControllerConfigManagerSA.h"
+#include "CProjectileInfoSA.h"
+#include "CEventListSA.h"
+#include "CGaragesSA.h"
+#include "CTasksSA.h"
+#include "CEventDamageSA.h"
+#include "CEventGunShotSA.h"
+#include "CEventGroupSA.h"
+#include "CAnimManagerSA.h"
+#include "CStreamingSA.h"
+#include "CVisibilityPluginsSA.h"
+#include "CKeyGenSA.h"
+#include "CRopesSA.h"
+#include "CFxSA.h"
+#include "HookSystem.h"
+#include "CModelInfoSA.h"
+#include "CPedModelInfoSA.h"
+#include "CColPointSA.h"
+#include "CCivilianPedSA.h"
+#include "CAnimBlendAssociationSA.h"
+#include "CAnimBlendAssocGroupSA.h"
+#include "CAnimBlendHierarchySA.h"
+#include "CAnimBlendSequenceSA.h"
+#include "CAnimBlendStaticAssociationSA.h"
+#include "CAnimBlockSA.h"
+#include "CAutomobileSA.h"
+#include "CBikeSA.h"
+#include "CBoatSA.h"
+#include "CBmxSA.h"
+#include "CQuadBikeSA.h"
+#include "CMonsterTruckSA.h"
+#include "CPlaneSA.h"
+#include "CTrailerSA.h"
+#include "CPlayerPedSA.h"
+#include "CCivilianPedSA.h"
+#include "CObjectSA.h"
+#include "CBuildingSA.h"
+#include "CRestartSA.h"
+#include "CWaterManagerSA.h"
+#include "CPedDamageResponseSA.h"
+#include "CPedDamageResponseCalculatorSA.h"
+
 
 // normal includes
 #include "patcher.h"
+#include "CDetour.h"
 #include "cheat.h"
 #include "ini.h"
 #include "keyhook.h"
@@ -86,32 +183,20 @@
 #include "cheat_generic.h"
 #include "cheat_actor.h"
 #include "cheat_vehicle.h"
-#include "cheat_weapon.h"
+#include "cheat_hookers.h"
 #include "dumb_menu.h"
 #include "samp.h"
 #include "debug_classify.h"
 #include "scripting.h"
-#include "CDetour.h"
 #include "d3drender.h"
 #include "GTAfuncs.h"
 #include "proxyIDirect3D9.h"
 #include "proxyIDirect3DDevice9.h"
 
-
-
-/* warning C4100: 'foo' : unreferenced formal parameter */
-#pragma warning(disable:4100)
-
-#define snprintf  _snprintf
-#define vsnprintf _vsnprintf
-#define isfinite  _finite
-
 void traceLastFunc(const char *szFunc);
 void Log(const char *fmt, ...);
 void LogChatbox(bool bLast, const char *fmt, ...);
 void setDebugPointer(void *ptr);
-
-void init_g_CCamera(void);
 
 // externals
 extern HMODULE g_hDllModule;
@@ -124,4 +209,10 @@ extern CSettingsSAInterface *g_pCSettingsSAInterface;
 extern D3DPRESENT_PARAMETERS *g_pGTAPresent;
 extern RsGlobalType *g_RsGlobal;
 extern CCameraSA g_CCamera;
+
+// new MTA externals
+extern CGame *pGameInterface;
+
 // externals
+
+#endif

@@ -45,21 +45,9 @@ D3DPRESENT_PARAMETERS *g_pGTAPresent = (D3DPRESENT_PARAMETERS*)0xC9C040;
 RsGlobalType *g_RsGlobal = (RsGlobalType*)0xC17040;
 
 
-// new half-assed CCamera init
-CCameraSA g_CCamera;
-int is_init_g_CCamera = false;
-void init_g_CCamera(void)
-{
-	if (!is_init_g_CCamera)
-	{
-		traceLastFunc("init_g_CCamera()");
-		g_CCamera.internalInterface = (CCameraSAInterface*)CLASS_CCamera;
-		if (isBadPtr_writeAny(g_CCamera.internalInterface, sizeof(CCameraSAInterface))) return;
-		for(int i = 0; i<MAX_CAMS;i++)
-			g_CCamera.Cams[i].m_pInterface = (CCamSAInterface*)&g_CCamera.internalInterface->Cams[i];
-		is_init_g_CCamera = true;
-	}
-}
+// new MTA main global variables
+CGameSA *pGame = NULL;
+CGame *pGameInterface = NULL;
 
 
 void traceLastFunc(const char *szFunc)
@@ -208,7 +196,6 @@ gtaload_log_out:;
 static int init(void)
 {
    traceLastFunc("init()");
-   char filename[MAX_PATH];
 
 	if(g_hOrigDll == NULL)
 	{
@@ -227,7 +214,7 @@ static int init(void)
 		// Hello World
 		Log("Initializing %s", NAME);
 
-		// log windows version for idiots that forget to report it
+		// log windows version for people that forget to report it
 		int osPlatform = (int)*(DWORD*)GTAvar_osPlatform;
 		int osVer = (int)*(DWORD*)GTAvar_osVer;
 		int winVer = (int)*(DWORD*)GTAvar_winVer;
@@ -236,9 +223,9 @@ static int init(void)
 			Log("OS: Windows Version %d.%d.%d", winMajor, winVer, osVer);
 		else
 			Log("OS: Not Windows (%d.%d.%d)", winMajor, winVer, osVer);
-		int D3D9UseVersion = (int)*(DWORD*)GTAvar__D3D9UseVersion;
 
 		/*
+		int D3D9UseVersion = (int)*(DWORD*)GTAvar__D3D9UseVersion;
 		Log("D3D9UseVersion: %d", D3D9UseVersion);
 		int DXVersion = (int)*(DWORD*)GTAvar__DXVersion;
 		Log("DXVersion: %d", DXVersion);
@@ -258,7 +245,7 @@ static int init(void)
 			Log("CPU Supports SSE2: %d", CPUSupportsSSE2);
 		*/
 
-#pragma warning(disable:4127)
+#pragma warning (disable:4127)
 
 		if(sizeof(struct vehicle_info) != 2584)
 		{
@@ -272,7 +259,7 @@ static int init(void)
 			return 0;
 		}
 
-#pragma warning(default:4127)
+#pragma warning (default:4127)
 
 		ini_load();
 		if(!set.i_have_edited_the_ini_file)
@@ -286,9 +273,14 @@ static int init(void)
 			return 0;
 		}
 
+		// get SAMP and set g_dwSAMP_Addr
 		getSamp();
+
+		// setup SCM thread
 		InitScripting();
 
+		// get actual d3d9.dll and proxy original D3D9Device
+		char filename[MAX_PATH];
 		GetSystemDirectory(filename, (UINT)(MAX_PATH - strlen("\\d3d9.dll") - 1));
 		strlcat(filename, "\\d3d9.dll", sizeof(filename));
 		g_hOrigDll = LoadLibrary(filename);
@@ -306,6 +298,7 @@ static int init(void)
 		}
 
 #ifdef M0D_DEV
+		// startup information
 		CDetour api;
 		if(api.Create((uint8_t *)(uint32_t )0x53DED0, (uint8_t *)gtaload_log, DETOUR_TYPE_JMP, 5) == 0)
 			Log("Failed to hook gtaload_log");
@@ -477,7 +470,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 		g_hDllModule = hModule;
 		SetUnhandledExceptionFilter(unhandledExceptionFilter);
 		break;
-	
+
 	case DLL_PROCESS_DETACH:
 
 		if(g_hOrigDll != NULL)
@@ -518,7 +511,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 
 		break;
 	}
-	
-	return TRUE;
+
+	return true;
 }
 

@@ -73,28 +73,6 @@ enum eClientVehicleType
     CLIENTVEHICLE_TRAILER
 };
 
-// types of vehicle mod upgrades
-enum eVehicleUpgradePosn
-{
-    VEHICLE_UPGRADE_POSN_BONET = 0,
-    VEHICLE_UPGRADE_POSN_VENT,
-    VEHICLE_UPGRADE_POSN_SPOILER,
-    VEHICLE_UPGRADE_POSN_SIDESKIRT,
-    VEHICLE_UPGRADE_POSN_FRONT_BULLBARS,
-    VEHICLE_UPGRADE_POSN_REAR_BULLBARS,
-    VEHICLE_UPGRADE_POSN_HEADLIGHTS,
-    VEHICLE_UPGRADE_POSN_ROOF,
-    VEHICLE_UPGRADE_POSN_NITRO,
-    VEHICLE_UPGRADE_POSN_HYDRAULICS,
-    VEHICLE_UPGRADE_POSN_STEREO,
-    VEHICLE_UPGRADE_POSN_UNKNOWN,
-    VEHICLE_UPGRADE_POSN_WHEELS,
-    VEHICLE_UPGRADE_POSN_EXHAUST,
-    VEHICLE_UPGRADE_POSN_FRONT_BUMPER,
-    VEHICLE_UPGRADE_POSN_REAR_BUMPER,
-    VEHICLE_UPGRADE_POSN_MISC,
-};
-
 // upgrade model ids
 #define VEHICLEUPGRADE_NITRO_5X 1008
 #define VEHICLEUPGRADE_NITRO_2X 1009
@@ -113,13 +91,6 @@ enum eVehicleUpgradePosn
 #define TELEPORT_MAX          10
 #define TELEPORT_HIST_MAX     10
 #define STATIC_TELEPORT_MAX   200
-
-// camera defines
-#define CLASS_CCamera 0xB6F028 // ##SA##
-#define MAX_CAMS 3
-#define NUMBER_OF_VECTORS_FOR_AVERAGE 2
-#define CAM_NUM_TARGET_HISTORY 4
-#define FLOAT_EPSILON 0.0001f
 
 
 
@@ -182,13 +153,16 @@ typedef struct _MATRIX4X4
 
 struct cheat_state_actor
 {
-   float coords[3];
-   int   invulnerable;
-   int   air_brake;
-   int   air_brake_slowmo;
-   int   stick;
-   int   autoaim;
-   int   hp_regen_on;
+   float	coords[3];
+   int		invulnerable;
+   int		air_brake;
+   int		air_brake_slowmo;
+   int		stick;
+   int		autoaim;
+   int		hp_regen_on;
+   int		spiderFeet_Enabled;
+   int		spiderFeet_on;
+   CVector	gravityVector;
 };
 
 struct cheat_state_vehicle
@@ -207,6 +181,7 @@ struct cheat_state_vehicle
    int		brkdance;
    int		is_engine_on;
    int		infNOS_toggle_on;
+   int		spiderWheels_Enabled;
    int		spiderWheels_on;
    CVector	gravityVector;
    int		blinking_carlights_state;
@@ -326,13 +301,6 @@ struct detachable
    uint8_t  __unknown_28[16];
 };
 
-/* was at ped_intelligence +44
-struct animation_aim
-{
-   #pragma pack(1)
-   uint8_t  __unknown_0[8];
-   float    *matrix;
-};*/
 
 //only tested with dance + drinking anim
 struct ped_intelligence//animation - actor_info +1148
@@ -358,6 +326,7 @@ struct ped_intelligence//animation - actor_info +1148
    DWORD			pointer_event;		/* 116 - Pointer to Event (just a frame long), longer for jumping*/
    uint8_t			__unknown_120[539]; /* end at 659 */
 };
+
 
 struct weapon
 {
@@ -385,14 +354,16 @@ struct object_base
 	float		coords[3];				// 4
 	union {
 		// is MTA right?
-		float		m_heading;				// 16
+		float			m_heading;			// 16
 		// and are we wrong?
-		float		*preMatrix;			// 16, a part of CPlaceable
-		MATRIX4X4	*preMatrixStruct;	// 16, a part of CPlaceable
+		CMatrix_Padded	*m_CMatrixPre;		// 16, a part of CPlaceable
+		float			*preMatrix;			// 16, a part of CPlaceable
+		MATRIX4X4		*preMatrixStruct;	// 16, a part of CPlaceable
 	};
 	union {
-		float		*matrix;			// 20
-		MATRIX4X4	*matrixStruct;		// 20
+		CMatrix_Padded	*m_CMatrix;			// 20
+		float			*matrix;			// 20
+		MATRIX4X4		*matrixStruct;		// 20
 	};
 
 	RpClump			*m_pRwObject;		// 24
@@ -475,9 +446,7 @@ struct actor_info
    void              *last_touched_object;  /* 188 - You can touch roads - those are considered buildings */
    void              *last_collided_object; /* 192 - pointer to object last collided with (on foot, not jetpack) */
    uint8_t			 __unknown_196[16];	  /* 196 */
-
    float             speed_z;             /* 212 */
-
    float			 collision_time_216;  /* 216 - collision timer? */
    void              *collision_thing;    /* 220 - pointer to current thing colliding with */
    uint8_t			 collision_something[12]; /* 224 - related to collision */
@@ -490,20 +459,25 @@ struct actor_info
    float             step_pos[3];         /* 356 - coordinates, last foot step */
    float			 step_pos_before[3];  /* 368 - coordinates, foot step before last one */
    uint8_t           __unknown_380[752];  /* 380 */
-   uint8_t           player_check;        /* 1132 */
-   uint8_t           jump_state;		  /* 1133 */
-   uint8_t           __unknown_1134[2];   /* 1134 */
-   uint32_t			 invuln_flags;		  /* 1136 */
-   uint32_t			 __unk_flags;		  /* 1140 */
-   uint8_t           __unknown_1144[4];   /* 1144 */
-   struct ped_intelligence  *animation;   /* 1148 - Ped Intelligence */
+
+	CPedFlags		pedFlags;				/* 1132 */
+
+	// this should be updated with the new classes
+	//CPedIntelligenceSAInterface *pPedIntelligence; /* 1148 */
+	//CPlayerPedDataSAInterface *pPlayerData; /* 1152 */
+
+	ped_intelligence		*animation;		/* 1148 - Ped Intelligence */
+
+
    uint8_t           __unknown_1152[92];  /* 1152 */
    float             runspeed;            /* 1244 */
    uint8_t           __unknown_1248[36];  /* 1248 */
    uint16_t			 muzzle_flash;        /* 1284 */
-   uint8_t			 __unknown_1286[14];  /* 1286 */
-   float             x_angle;             /* 1300 - x_angle / z_angle */
-   uint8_t           __unknown_1304[24];  /* 1304 */
+   uint8_t			 __unknown_1286[6];  /* 1286 */
+
+   CPedIKSAInterface	pedIK;				/* 1292 - Inverse Kinematics */
+   uint8_t				__unknown_1324[4];	/* 1324 */
+
    uint32_t          state;               /* 1328 - ACTOR_STATE_* */
    uint32_t          mstate;              /* 1332 - ACTOR_MSTATE_* */
    uint8_t           __unknown_1336[8];   /* 1336 */
@@ -511,15 +485,26 @@ struct actor_info
    float             hitpoints_max;       /* 1348 - hmm, does not seem to be right.. it's set to "100.1318519" or something like that */
    float             armor;               /* 1352 */
    uint8_t           __unknown_1356[12];  /* 1356 */
-   float             z_angle;             /* 1368 */
-   float             z_angle2;            /* 1372 - same value as z_angle */
-   uint8_t           __unknown_1376[8];   /* 1376 */
-   struct vehicle_info *vehicle_contact;  /* 1384 - standing on top of vehicle */
+
+	float				fCurrentRotation;	/* 1368 */
+	float				fTargetRotation;	/* 1372 */
+	float				fRotationSpeed;		/* 1376 */
+
+   uint8_t           __unknown_1376[4];   /* 1376 */
+
+	CEntitySAInterface	*pContactEntity;	/* 1384 - touching a CEntitySAInterface */
+
    float			vehicle_contact_dist[3]; /* 1388 - distance to the middle of the car standing on */
    uint8_t           __unknown_1400[12];  /* 1400 - somehow related to vehicle_contact */
    void              *item_contact;		  /* 1412 - standing on top of vehicle/object/building/...*/
    uint8_t           __unknown_1416[4];   /* 1416 */
-   struct vehicle_info *vehicle;          /* 1420 */
+
+	union
+	{
+		//CEntitySAInterface	*CurrentObjective;	/* 1420 - usually current vehicle's entity */
+		struct vehicle_info *vehicle;
+	};
+
    uint8_t           __unknown_1424[8];   /* 1424 */
    uint8_t			 actor_lock;		  /* 1432 */
    uint8_t			 __unknown_1433[7];   /* 1433 */
@@ -535,150 +520,6 @@ struct actor_info
    struct actor_info *weapon_hit_by;      /* 1892 - last hit by this object (usually an actor) */
    uint8_t           __unknown_1889[92];  /* 1896 */
 };                                        /* 1988 */
-
-class CVehicleFlags
-{
-public:
-	// byte 1
-	unsigned char bIsLawEnforcer: 1; // Is this guy chasing the player at the moment
-	unsigned char bIsAmbulanceOnDuty: 1; // Ambulance trying to get to an accident
-	unsigned char bIsFireTruckOnDuty: 1; // Firetruck trying to get to a fire
-	unsigned char bIsLocked: 1; // Is this guy locked by the script (cannot be removed)
-	unsigned char bEngineOn: 1; // For sound purposes. Parked cars have their engines switched off (so do destroyed cars)
-	unsigned char bIsHandbrakeOn: 1; // How's the handbrake doing ?
-	unsigned char bLightsOn: 1; // Are the lights switched on ?
-	unsigned char bFreebies: 1; // Any freebies left in this vehicle ?
-	// byte 2
-	unsigned char bIsVan: 1; // Is this vehicle a van (doors at back of vehicle)
-	unsigned char bIsBus: 1; // Is this vehicle a bus
-	unsigned char bIsBig: 1; // Is this vehicle a bus
-	unsigned char bLowVehicle: 1; // Need this for sporty type cars to use low getting-in/out anims
-	unsigned char bComedyControls: 1; // Will make the car hard to control (hopefully in a funny way)
-	unsigned char bWarnedPeds: 1; // Has scan and warn peds of danger been processed?
-	unsigned char bCraneMessageDone: 1; // A crane message has been printed for this car allready
-	unsigned char bTakeLessDamage: 1; // This vehicle is stronger (takes about 1/4 of damage)
-	// byte 3
-	unsigned char bIsDamaged: 1; // This vehicle has been damaged and is displaying all its components
-	unsigned char bHasBeenOwnedByPlayer : 1;// To work out whether stealing it is a crime
-	unsigned char bFadeOut: 1; // Fade vehicle out
-	unsigned char bIsBeingCarJacked: 1; // Fade vehicle out
-	unsigned char bCreateRoadBlockPeds : 1;// If this vehicle gets close enough we will create peds (coppers or gang members) round it
-	unsigned char bCanBeDamaged: 1; // Set to FALSE during cut scenes to avoid explosions
-	unsigned char bOccupantsHaveBeenGenerated : 1; // Is true if the occupants have already been generated. (Shouldn't happen again)
-	unsigned char bGunSwitchedOff: 1; // Level designers can use this to switch off guns on boats
-	// byte 4
-	unsigned char bVehicleColProcessed : 1;// Has ProcessEntityCollision been processed for this car?
-	unsigned char bIsCarParkVehicle: 1; // Car has been created using the special CAR_PARK script command
-	unsigned char bHasAlreadyBeenRecorded : 1; // Used for replays
-	unsigned char bPartOfConvoy: 1;
-	unsigned char bHeliMinimumTilt: 1; // This heli should have almost no tilt really
-	unsigned char bAudioChangingGear: 1; // sounds like vehicle is changing gear
-	unsigned char bIsDrowning: 1; // is vehicle occupants taking damage in water (i.e. vehicle is dead in water)
-	unsigned char bTyresDontBurst: 1; // If this is set the tyres are invincible
-	// byte 5
-	unsigned char bCreatedAsPoliceVehicle : 1; // True if this guy was created as a police vehicle (enforcer, policecar, miamivice car etc)
-	unsigned char bRestingOnPhysical: 1; // Dont go static cause car is sitting on a physical object that might get removed
-	unsigned char bParking: 1;
-	unsigned char bCanPark: 1;
-	unsigned char bFireGun: 1; // Does the ai of this vehicle want to fire it's gun?
-	unsigned char bDriverLastFrame: 1; // Was there a driver present last frame ?
-	unsigned char bNeverUseSmallerRemovalRange: 1;// Some vehicles (like planes) we don't want to remove just behind the camera.
-	unsigned char bIsRCVehicle: 1; // Is this a remote controlled (small) vehicle. True whether the player or AI controls it.
-	// byte 6
-	unsigned char bAlwaysSkidMarks: 1; // This vehicle leaves skidmarks regardless of the wheels' states.
-	unsigned char bEngineBroken: 1; // Engine doesn't work. Player can get in but the vehicle won't drive
-	unsigned char bVehicleCanBeTargetted : 1;// The ped driving this vehicle can be targetted, (for Torenos plane mission)
-	unsigned char bPartOfAttackWave: 1; // This car is used in an attack during a gang war
-	unsigned char bWinchCanPickMeUp: 1; // This car cannot be picked up by any ropes.
-	unsigned char bImpounded: 1; // Has this vehicle been in a police impounding garage
-	unsigned char bVehicleCanBeTargettedByHS  : 1;// Heat seeking missiles will not target this vehicle.
-	unsigned char bSirenOrAlarm: 1; // Set to TRUE if siren or alarm active, else FALSE
-	// byte 7
-	unsigned char bHasGangLeaningOn: 1;
-	unsigned char bGangMembersForRoadBlock : 1;// Will generate gang members if NumPedsForRoadBlock > 0
-	unsigned char bDoesProvideCover: 1; // If this is false this particular vehicle can not be used to take cover behind.
-	unsigned char bMadDriver: 1; // This vehicle is driving like a lunatic
-	unsigned char bUpgradedStereo: 1; // This vehicle has an upgraded stereo
-	unsigned char bConsideredByPlayer: 1; // This vehicle is considered by the player to enter
-	unsigned char bPetrolTankIsWeakPoint : 1;// If false shootong the petrol tank will NOT Blow up the car
-	unsigned char bDisableParticles: 1; // Disable particles from this car. Used in garage.
-	// byte 8
-	unsigned char bHasBeenResprayed: 1; // Has been resprayed in a respray garage. Reset after it has been checked.
-	unsigned char bUseCarCheats: 1; // If this is true will set the car cheat stuff up in ProcessControl()
-	unsigned char bDontSetColourWhenRemapping : 1;// If the texture gets remapped we don't want to change the colour with it.
-	unsigned char bUsedForReplay: 1; // This car is controlled by replay and should be removed when replay is done.
-};
-
-struct CTrainFlags
-{
-    unsigned char unknown1 : 3;
-    unsigned char bIsTheChainEngine : 1; // Only the first created train on the chain gets this set to true, others get it set to false.
-    unsigned char unknown2 : 1; // This is always set to true in mission trains construction.
-    unsigned char bIsAtNode : 1;
-    unsigned char bDirection : 1;
-    unsigned char unknown3 : 1; // If the mission train was placed at the node, this is set to false in construction.
- 
-    unsigned char bIsDerailed : 1;
-    unsigned char unknown4 : 1 ;
-    unsigned char bIsDrivenByBrownSteak : 1;
-    unsigned char unknown5 : 5;
- 
-    unsigned char unknown6 : 8;
- 
-    unsigned char unknown7 : 8;
-};
-
-class CTransmissionSAInterface
-{
-public:
-    float           fUnknown  [18];                 // +44
-    unsigned char   ucDriveType         :8;         // +116
-    unsigned char   ucEngineType        :8;         // +117
-    unsigned char   ucNumberOfGears     :8;         // +118
-    unsigned char   ucUnknown           :8;         // +119
-    unsigned int    uiHandlingFlags;                // +120
-    float           fEngineAccelleration;           // +124     (value in handling.cfg * 0x86A950)
-    float           fEngineInertia;                 // +128
-    float           fMaxVelocity;                   // +132
-    float           fUnknown2 [3];                  // +136
-};
-
-struct tHandlingDataSA
-{
-	uint8_t			__unknown_0[4];					// +0
-	float           fMass;                          // +4
-	float			__unknown_8;					// +8	Automatically calculated
-	float           fTurnMass;                      // +12
-	float           fDragCoeff;                     // +16
-	VECTOR			vecCenterOfMass;				// +20
-	unsigned int    uiPercentSubmerged;             // +32
-	float			__unknown_36;					// +36	Automatically calculated
-	float           fTractionMultiplier;            // +40
-	//uint8_t			transmission[104];				// +44
-	CTransmissionSAInterface Transmission;			// +44
-	float           fBrakeDecelleration;            // +148
-	float           fBrakeBias;                     // +152
-	bool            bABS;                           // +156
-	float           fSteeringLock;                  // +160
-	float           fTractionLoss;                  // +164
-	float           fTractionBias;                  // +168
-	float           fSuspensionForceLevel;          // +172
-	float           fSuspensionDamping;             // +176
-	float           fSuspensionHighSpdDamping;      // +180
-	float           fSuspensionUpperLimit;          // +184
-	float           fSuspensionLowerLimit;          // +188
-	float           fSuspensionFrontRearBias;       // +192
-	float           fSuspensionAntidiveMultiplier;  // +196
-	float           fCollisionDamageMultiplier;     // +200
-	unsigned int    uiModelFlags;                   // +204
-	unsigned int    uiHandlingFlags;                // +208
-	float           fSeatOffsetDistance;            // +212
-	unsigned int    uiMonetary;						// +216
-	unsigned char   ucHeadLight: 8;					// +220
-	unsigned char   ucTailLight: 8;					// +221
-	unsigned char   ucAnimGroup: 8;					// +222
-	unsigned char   ucUnused: 8;					// +223
-};
 
 struct vehicle_info
 {
@@ -948,463 +789,11 @@ static struct patch_set patch_vehicle_inf_NOS = {
 
 
 
-
-struct CCamSAInterface // 568 bytes?
-{
-	bool	bBelowMinDist; //used for follow ped mode
-	bool	bBehindPlayerDesired; //used for follow ped mode
-	bool 	m_bCamLookingAtVector;
-	bool 	m_bCollisionChecksOn;
-	bool	m_bFixingBeta; //used for camera on a string
-	bool 	m_bTheHeightFixerVehicleIsATrain;
-	bool 	LookBehindCamWasInFront;
-	bool 	LookingBehind;
-	bool 	LookingLeft; // 32
-	bool 	LookingRight;
-	bool 	ResetStatics; //for interpolation type stuff to work
-	bool 	Rotating;
-
-	short	Mode;					// CameraMode
-	unsigned int  m_uiFinishTime; // 52
-	
-	int 	m_iDoCollisionChecksOnFrameNum; 
-	int 	m_iDoCollisionCheckEveryNumOfFrames;
-	int 	m_iFrameNumWereAt;	// 64
-	int 	m_iRunningVectorArrayPos;
-	int 	m_iRunningVectorCounter;
-	int 	DirectionWasLooking;
-	
-	float 	f_max_role_angle; //=DEGTORAD(5.0f);	
-	float 	f_Roll; //used for adding a slight roll to the camera in the
-	float 	f_rollSpeed; //camera on a string mode
-	float 	m_fSyphonModeTargetZOffSet;
-	float 	m_fAmountFractionObscured;
-	float 	m_fAlphaSpeedOverOneFrame; // 100
-	float 	m_fBetaSpeedOverOneFrame;
-	float 	m_fBufferedTargetBeta;
-	float 	m_fBufferedTargetOrientation;
-	float	m_fBufferedTargetOrientationSpeed;
-	float 	m_fCamBufferedHeight;
-	float 	m_fCamBufferedHeightSpeed;
-	float 	m_fCloseInPedHeightOffset;
-	float 	m_fCloseInPedHeightOffsetSpeed; // 132
-	float 	m_fCloseInCarHeightOffset;
-	float 	m_fCloseInCarHeightOffsetSpeed;
-	float 	m_fDimensionOfHighestNearCar;		
-	float	m_fDistanceBeforeChanges;
-	float 	m_fFovSpeedOverOneFrame;
-	float 	m_fMinDistAwayFromCamWhenInterPolating;
-	float 	m_fPedBetweenCameraHeightOffset;
-	float 	m_fPlayerInFrontSyphonAngleOffSet; // 164
-	float	m_fRadiusForDead;
-	float	m_fRealGroundDist; //used for follow ped mode
-	float 	m_fTargetBeta;
-	float 	m_fTimeElapsedFloat;	
-	float 	m_fTilt;
-	float 	m_fTiltSpeed;
-
-	float   m_fTransitionBeta;
-	float 	m_fTrueBeta;
-	float 	m_fTrueAlpha; // 200
-	float	m_fInitialPlayerOrientation; //used for first person
-
-	float	Alpha;
-	float	AlphaSpeed;
-	float	FOV;
-    float	FOVSpeed;
-	float	Beta;
-	float	BetaSpeed;
-	float	Distance; // 232
-	float	DistanceSpeed;
-	float 	CA_MIN_DISTANCE;
-	float 	CA_MAX_DISTANCE;
-	float	SpeedVar;
-	float	m_fCameraHeightMultiplier; //used by TwoPlayer_Separate_Cars_TopDown
-	
-	// ped onfoot zoom distance
-	float m_fTargetZoomGroundOne;
-	float m_fTargetZoomGroundTwo; // 256
-	float m_fTargetZoomGroundThree;
-	// ped onfoot alpha angle offset
-	float m_fTargetZoomOneZExtra;
-	float m_fTargetZoomTwoZExtra;
-	float m_fTargetZoomTwoInteriorZExtra; //extra one for interior
-	float m_fTargetZoomThreeZExtra;
-	
-	float m_fTargetZoomZCloseIn;
-	float m_fMinRealGroundDist;
-	float m_fTargetCloseInDist;
-
-	// For targetting in cooperative mode.
-	float	Beta_Targeting; // 292
-	float	X_Targetting, Y_Targetting;
-	int	CarWeAreFocussingOn; //which car is closer to the camera in 2 player cooperative mode with separate cars.
-	float	CarWeAreFocussingOnI; //interpolated version
-	
-	float m_fCamBumpedHorz; // 312
-	float m_fCamBumpedVert;
-	int	m_nCamBumpedTime; // 320
-	static int CAM_BUMPED_SWING_PERIOD;
-	static int CAM_BUMPED_END_TIME;
-	static float CAM_BUMPED_DAMP_RATE;
-	static float CAM_BUMPED_MOVE_MULT;
-
-	CVector m_cvecSourceSpeedOverOneFrame; // 324
-	CVector m_cvecTargetSpeedOverOneFrame; // 336
-	CVector m_cvecUpOverOneFrame; // 348
-	
-	CVector m_cvecTargetCoorsForFudgeInter; // 360
-	CVector m_cvecCamFixedModeVector; // 372
-	CVector m_cvecCamFixedModeSource; // 384
-  	CVector m_cvecCamFixedModeUpOffSet; // 396
-	CVector m_vecLastAboveWaterCamPosition; //408  //helper for when the player has gone under the water
-
-	CVector m_vecBufferedPlayerBodyOffset; // 420
-
-	// The three vectors that determine this camera for this frame
-	CVector	Front;	// 432											// Direction of looking in
-	CVector	Source;													// Coors in world space
-	CVector	SourceBeforeLookBehind;
-	CVector	Up;														// Just that
-	CVector	m_arrPreviousVectors[NUMBER_OF_VECTORS_FOR_AVERAGE];	// used to average stuff
-
-	CVector m_aTargetHistoryPos[CAM_NUM_TARGET_HISTORY];
-	DWORD m_nTargetHistoryTime[CAM_NUM_TARGET_HISTORY];
-	DWORD m_nCurrentHistoryPoints;
-
-	object_base *CamTargetEntity; // CEntitySAInterface
-/*
-//protected:
-	float 		m_fCameraDistance;
-	float 		m_fIdealAlpha;
-	float 		m_fPlayerVelocity;
-	//CVector TempRight;
-	CAutomobileSAInterface	*m_pLastCarEntered; // So interpolation works
-	CPedSAInterface			*m_pLastPedLookedAt;// So interpolation works 
-	bool		m_bFirstPersonRunAboutActive;
-*/
-};
-
-struct CCameraSAInterface 
-{
-	// CPlaceable
-	CPlaceableSAInterface	Placeable;
-	// End CPlaceable
-
-	//move these out the class, have decided to set up a mirrored enumerated type thingy at the top
-	bool 	m_bAboveGroundTrainNodesLoaded;
-	bool 	m_bBelowGroundTrainNodesLoaded;
-	bool 	m_bCamDirectlyBehind;	
-	bool 	m_bCamDirectlyInFront;	
-  	bool	m_bCameraJustRestored;
-	bool 	m_bcutsceneFinished;
-	bool 	m_bCullZoneChecksOn;
-	bool 	m_bFirstPersonBeingUsed; // To indicate if the m_bFirstPersonBeingUsed viewer is being used.
-	bool	m_bJustJumpedOutOf1stPersonBecauseOfTarget;
-	bool 	m_bIdleOn;
-	bool  	m_bInATunnelAndABigVehicle;
-	bool 	m_bInitialNodeFound;
-    bool 	m_bInitialNoNodeStaticsSet;
-	bool   	m_bIgnoreFadingStuffForMusic;
-	bool  	m_bPlayerIsInGarage;
-	bool	m_bPlayerWasOnBike;
-	bool  	m_bJustCameOutOfGarage;
-	bool 	m_bJustInitalised;//Just so the speed thingy doesn't go mad right at the start
-    unsigned char 	m_bJust_Switched;//Variable to indicate that we have jumped somewhere, Raymond needs this for the audio engine
-	bool 	m_bLookingAtPlayer;
-	bool 	m_bLookingAtVector;
-	bool 	m_bMoveCamToAvoidGeom;
-	bool 	m_bObbeCinematicPedCamOn;
-	bool 	m_bObbeCinematicCarCamOn;
-	bool 	m_bRestoreByJumpCut;
-	bool   	m_bUseNearClipScript;
-	bool 	m_bStartInterScript;
-	unsigned char 	m_bStartingSpline;
-	bool 	m_bTargetJustBeenOnTrain; //this variable is needed to be able to restore the camera
-	bool 	m_bTargetJustCameOffTrain;
-    bool 	m_bUseSpecialFovTrain;
-	bool    m_bUseTransitionBeta;
-	bool 	m_bUseScriptZoomValuePed;
-	bool 	m_bUseScriptZoomValueCar;
-	bool 	m_bWaitForInterpolToFinish;
-	bool	m_bItsOkToLookJustAtThePlayer; //Used when interpolating
-	bool 	m_bWantsToSwitchWidescreenOff;	
-	bool 	m_WideScreenOn;	
-	bool	m_1rstPersonRunCloseToAWall;
-	bool	m_bHeadBob;
-	bool 	m_bVehicleSuspenHigh;
-	bool 	m_bEnable1rstPersonCamCntrlsScript; 
-	bool 	m_bAllow1rstPersonWeaponsCamera;
-	bool	m_bCooperativeCamMode;
-	bool	m_bAllowShootingWith2PlayersInCar;
-	bool	m_bDisableFirstPersonInCar;
-	static bool	m_bUseMouse3rdPerson;
-//#ifndef FINALBUILD
-	bool 	bStaticFrustum;
-//#endif
-
-	// for debug keyboard stuff
-//#ifndef MASTER
-	unsigned char display_kbd_debug;
-	float kbd_fov_value;
-//#endif // MASTER
-
-		// The following fields allow the level designers to specify the camera for 2 player games.
-	short	m_ModeForTwoPlayersSeparateCars;
-	short	m_ModeForTwoPlayersSameCarShootingAllowed;
-	short	m_ModeForTwoPlayersSameCarShootingNotAllowed;
-	short	m_ModeForTwoPlayersNotBothInCar;
-
-	bool 	m_bGarageFixedCamPositionSet;
-    bool 	m_vecDoingSpecialInterPolation;
-	bool 	m_bScriptParametersSetForInterPol;
-
-	
-	bool 	m_bFading;//to indicate that we are fading 
-	bool 	m_bMusicFading;
-	bool 	m_bMusicFadedOut;
-
-	bool 	m_bFailedCullZoneTestPreviously;
-	bool 	m_FadeTargetIsSplashScreen;//used as hack for fading 
-	bool 	WorldViewerBeingUsed; // To indicate if the world viewer is being used.										 
-
-	
-	unsigned char	m_uiTransitionJUSTStarted;	// This is the first frame of a transition.
-	unsigned char	m_uiTransitionState;		// 0:one mode 1:transition
-	unsigned char	ActiveCam;				// Which one at the moment (0 or 1)
-										// Their is a fudge at the end when the renderware matrix will receive either
-										// the active camera or the worldviewer camera
-	unsigned int	m_uiCamShakeStart;			// When did the camera shake start.
-	unsigned int 	m_uiFirstPersonCamLastInputTime;
- 	unsigned int 	m_uiLongestTimeInMill;
-  	unsigned int 	m_uiNumberOfTrainCamNodes;
-    unsigned int 	m_uiTimeLastChange;
-	unsigned int 	m_uiTimeWeLeftIdle_StillNoInput;
-	unsigned int  m_uiTimeWeEnteredIdle;
-	unsigned int	m_uiTimeTransitionStart;	// When was the transition started ?
-	unsigned int	m_uiTransitionDuration;		// How long does the transition take ?
-	unsigned int	m_uiTransitionDurationTargetCoors;
-	int 	m_BlurBlue;
-	int 	m_BlurGreen;
-	int 	m_BlurRed;
-	int 	m_BlurType;
-	int 	m_iWorkOutSpeedThisNumFrames;//duh	
-	int 	m_iNumFramesSoFar; //counter
-	int 	m_iCurrentTrainCamNode;//variable indicating which camera node we are at for the train
-  	int 	m_motionBlur;//to indicate that we are fading
-
-	int 	m_imotionBlurAddAlpha;
-	int 	m_iCheckCullZoneThisNumFrames; 
-	int 	m_iZoneCullFrameNumWereAt;
-	int 	WhoIsInControlOfTheCamera; //to discern between obbe and scripts
-
-
-//	float	CarZoomIndicator;
-//	float 	CarZoomValue;
-//	float	CarZoomValueSmooth;
-//	float 	m_fCarZoomValueScript;
-//	float 	PedZoomIndicator;
-//	float	m_fPedZoomValue;
-//	float	m_fPedZoomValueSmooth;
-//	float 	m_fPedZoomValueScript;
-	int	m_nCarZoom; 				// store zoom index
-	float 	m_fCarZoomBase;				// store base zoom distance from index
-	float	m_fCarZoomTotal;			// store total zoom after modded by camera modes
-	float	m_fCarZoomSmoothed;			// buffered version of the var above
-	float 	m_fCarZoomValueScript;
-	int 	m_nPedZoom;					// store zoom index
-	float	m_fPedZoomBase;				// store base zoom distance from index
-	float	m_fPedZoomTotal;			// store total zoom after modded by camera modes
-	float	m_fPedZoomSmoothed;			// buffered version of the var above
-	float 	m_fPedZoomValueScript;
-
-
-	float	CamFrontXNorm, CamFrontYNorm;
-	float	DistanceToWater;
-	float	HeightOfNearestWater;
-	float 	FOVDuringInter;
-	float	LODDistMultiplier;	// This takes into account the FOV and the standard LOD multiplier Smaller aperture->bigger LOD multipliers.
-	float 	GenerationDistMultiplier;	// This takes into account the FOV but noy the standard LOD multiplier
-
-	float 	m_fAlphaSpeedAtStartInter;
-  	float	m_fAlphaWhenInterPol;
-	float 	m_fAlphaDuringInterPol;
-	float   m_fBetaDuringInterPol;
-	float 	m_fBetaSpeedAtStartInter;
-  	float 	m_fBetaWhenInterPol;
-	float 	m_fFOVWhenInterPol;
-	float 	m_fFOVSpeedAtStartInter;
-	float 	m_fStartingBetaForInterPol;
-	float 	m_fStartingAlphaForInterPol;
-  	float   m_PedOrientForBehindOrInFront;
-
-	float 	m_CameraAverageSpeed; //this is an average depending on how many frames we work it out
-	float 	m_CameraSpeedSoFar; //this is a running total
-	float	m_fCamShakeForce;			// How severe is the camera shake.
-    float 	m_fFovForTrain;
-	float 	m_fFOV_Wide_Screen;
-
-	float  	m_fNearClipScript;
-	float	m_fOldBetaDiff;			// Needed for interpolation between 2 modes
-	float 	m_fPositionAlongSpline;//Variable used to indicate how far along the spline we are 0-1 for started to completed respectively
-	float 	m_ScreenReductionPercentage;
-	float 	m_ScreenReductionSpeed;
-	float 	m_AlphaForPlayerAnim1rstPerson;
-	
-	float	Orientation;			// The orientation of the camera. Used for peds walking.
-	float	PlayerExhaustion;		// How tired is player (inaccurate sniping) 0.0f-1.0f
-					// The following things are used by the sound code to
-					// play reverb depending on the surroundings. From a point
-					// in front of the camera the disance is measured to the
-					// nearest obstacle (building)
-	float	SoundDistUp; //, SoundDistLeft, SoundDistRight;		// These ones are buffered and should be used by the audio
-	float	SoundDistUpAsRead; //, SoundDistLeftAsRead, SoundDistRightAsRead;
-	float	SoundDistUpAsReadOld; //, SoundDistLeftAsReadOld, SoundDistRightAsReadOld;
-					// Very rough distance to the nearest water for the sound to use
-					// Front vector X&Y normalised to 1. Used by loads of stuff.
-
-	
-	float	m_fAvoidTheGeometryProbsTimer;
-	short	m_nAvoidTheGeometryProbsDirn;
-	
-	float 	m_fWideScreenReductionAmount;//0 for not reduced 1 for fully reduced (Variable for Les)
-	float   m_fStartingFOVForInterPol;
-	
-		// These ones are static so that they don't get cleared in CCamera::Init()
-	static	float m_fMouseAccelHorzntl;// acceleration multiplier for 1st person controls
-	static	float m_fMouseAccelVertical;// acceleration multiplier for 1st person controls
-	static	float m_f3rdPersonCHairMultX;
-	static	float m_f3rdPersonCHairMultY;
-
-	CCamSAInterface	Cams[3];	// The actual cameras (usually only one of the two is active)
-								// And to complicate this we have a third camera, this camera is 
-								// used for debugging when we want to have a look at the world.
-								// We can't change the camera mode because other objects depend on their
-
-	// #########################################//
-	// DATA NOT UPDATED FOR SA  BELOW HERE!!!!! //
-	// #########################################//
-	
-/*
-some day we might actually need some of this?
-
-	CGarageSAInterface *pToGarageWeAreIn;
-	CGarageSAInterface *pToGarageWeAreInForHackAvoidFirstPerson;
-	CQueuedMode m_PlayerMode;
-	// The higher priority player camera mode. This one is used
-	// for the sniper mode and rocket launcher mode.
-	// This one overwrites the m_PlayerMode above.
-	CQueuedMode PlayerWeaponMode;
-	CVector m_PreviousCameraPosition; //needed to work out speed
-	CVector m_RealPreviousCameraPosition; // This cane be used by stuff outside the camera code. The one above is the same as the current coordinates outwidth the camera code.
-										// an active camera for range finding etc
-	CVector m_cvecAimingTargetCoors;		// Coors to look at with Gordons aiming thing
-	// The player camera that is waiting to be used
-	// This camera can replace the default camera where this is
-	// needed (in tricky situations like tunnels for instance)
-	CVector m_vecFixedModeVector;
-	CVector m_vecFixedModeSource;
-	CVector m_vecFixedModeUpOffSet;
-	CVector m_vecCutSceneOffset;
-	CVector m_cvecStartingSourceForInterPol;
-	CVector m_cvecStartingTargetForInterPol;
-	CVector m_cvecStartingUpForInterPol;
-	CVector m_cvecSourceSpeedAtStartInter;
-	CVector m_cvecTargetSpeedAtStartInter;
-	CVector m_cvecUpSpeedAtStartInter;
-	CVector m_vecSourceWhenInterPol;
-	CVector m_vecTargetWhenInterPol;
-	CVector m_vecUpWhenInterPol;
-	CVector m_vecClearGeometryVec;
-	CVector m_vecGameCamPos;
-	CVector SourceDuringInter, TargetDuringInter, UpDuringInter;
-
-
-	CVector m_vecAttachedCamOffset; // for attaching the camera to a ped or vehicle (set by level designers for use in cutscenes)
-	CVector m_vecAttachedCamLookAt;	
-	FLOAT m_fAttachedCamAngle; // for giving the attached camera a tilt.
-
-	// RenderWare camera pointer
-	DWORD * m_pRwCamera; // was RwCamera *
-	///stuff for cut scenes
-	CEntitySAInterface *pTargetEntity;
-	CEntitySAInterface *pAttachedEntity;
-	//CVector CutScene; 
-	CCamPathSplines m_arrPathArray[MAX_NUM_OF_SPLINETYPES]; //These only get created when the script calls the load splines function
-	// maybe this shouldn't be here depends if GTA_TRAIN is defined (its not)
-	//CTrainCamNode 	m_arrTrainCamNode[MAX_NUM_OF_NODES];
-
-	bool m_bMirrorActive;
-	bool m_bResetOldMatrix;
-
-//	protected:
-	CMatrix_Padded m_cameraMatrix;
-	CMatrix_Padded m_cameraMatrixOld;
-	CMatrix_Padded m_viewMatrix;
-	CMatrix_Padded m_matInverse;
-	CMatrix_Padded m_matMirrorInverse;
-	CMatrix_Padded m_matMirror;
-
-	CVector m_vecFrustumNormals[4];
-	CVector m_vecFrustumWorldNormals[4];
-	CVector m_vecFrustumWorldNormals_Mirror[4];
-
-	FLOAT m_fFrustumPlaneOffsets[4];
-	FLOAT m_fFrustumPlaneOffsets_Mirror[4];
-
-	CVector m_vecRightFrustumNormal;
-	CVector m_vecBottomFrustumNormal;
-	CVector m_vecTopFrustumNormal;
-
-	CVector m_vecOldSourceForInter;
-	CVector m_vecOldFrontForInter;
-	CVector m_vecOldUpForInter;
-	FLOAT 	m_vecOldFOVForInter;
-	FLOAT 	m_fFLOATingFade;//variable representing the FLOAT version of CDraw::Fade. Necessary to stop loss of precision
-	FLOAT 	m_fFLOATingFadeMusic;
-	FLOAT 	m_fTimeToFadeOut;
-	FLOAT 	m_fTimeToFadeMusic;
-	FLOAT	m_fTimeToWaitToFadeMusic;
-	FLOAT   m_fFractionInterToStopMoving; 
-	FLOAT 	m_fFractionInterToStopCatchUp;
-	FLOAT   m_fFractionInterToStopMovingTarget; 
-	FLOAT 	m_fFractionInterToStopCatchUpTarget;
-
-	FLOAT 	m_fGaitSwayBuffer;
-	FLOAT   m_fScriptPercentageInterToStopMoving;
-	FLOAT   m_fScriptPercentageInterToCatchUp;
-	DWORD	m_fScriptTimeForInterPolation;
-
-
-	short 	m_iFadingDirection;
-	int 	m_iModeObbeCamIsInForCar;
-	short 	m_iModeToGoTo;
-	short 	m_iMusicFadingDirection;
-	short 	m_iTypeOfSwitch;
-
-	DWORD 	m_uiFadeTimeStarted;
-	DWORD 	m_uiFadeTimeStartedMusic;
-*/
-};
-
-struct CCamSA
-{
-	CCamSAInterface*    m_pInterface;
-};
-
-struct CCameraSA
-{
-	CCameraSAInterface *internalInterface;
-	CCamSA Cams[MAX_CAMS]; // 0x4
-};
-
-
-
 /* __time_current is set in cheat_hook(). the time is "cached".
    by doing this we save some CPU time, and we get a constant time */
 #define time_get() __time_current
-
 extern uint32_t            __time_current;
+
 
 extern struct pool         *pool_actor;
 extern struct pool         *pool_vehicle;

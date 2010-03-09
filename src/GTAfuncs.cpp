@@ -290,7 +290,7 @@ void GTAfunc_vehicle_setRemap(vehicle_info *vinfo, int iRemap)
 int GTAfunc_getNumVideoModes(void)
 {
     int uiReturn = 0;
-	DWORD dwFunc = FUNC_GetNumVideoModes;
+	DWORD dwFunc = GFUNC_GetNumVideoModes;
     __asm
     {
         call    dwFunc
@@ -301,7 +301,7 @@ int GTAfunc_getNumVideoModes(void)
 
 VideoMode *GTAfunc_getVideoModeInfo(VideoMode *modeInfo, int modeIndex)
 {
-	DWORD dwFunc = FUNC_GetVideoModeInfo;
+	DWORD dwFunc = GFUNC_GetVideoModeInfo;
     __asm
     {
         push    modeIndex
@@ -315,7 +315,7 @@ VideoMode *GTAfunc_getVideoModeInfo(VideoMode *modeInfo, int modeIndex)
 int GTAfunc_getCurrentVideoMode(void)
 {
     int uiReturn = 0;
-	DWORD dwFunc = FUNC_GetCurrentVideoMode;
+	DWORD dwFunc = GFUNC_GetCurrentVideoMode;
     __asm
     {
         call    dwFunc
@@ -326,7 +326,7 @@ int GTAfunc_getCurrentVideoMode(void)
 
 void GTAfunc_setCurrentVideoMode(int modeIndex)
 {
-	DWORD dwFunc = FUNC_SetCurrentVideoMode;
+	DWORD dwFunc = GFUNC_SetCurrentVideoMode;
     __asm
     {
         push    modeIndex
@@ -346,11 +346,11 @@ int GTAfunc_RwD3D9ChangeVideoMode(int modeIndex)
     }
 }
 
-CVector GTAfunc_GetMoveSpeed(vehicle_info *vinfo)
+CVector GTAfunc_GetMoveSpeed(object_base *entity)
 {
 	CVector vecMoveSpeed;
 	DWORD dwFunc = FUNC_GetMoveSpeed;
-	DWORD dwThis = (DWORD)&vinfo->base;
+	DWORD dwThis = (DWORD)entity;
 	DWORD dwReturn = 0;
 	__asm
 	{
@@ -362,10 +362,10 @@ CVector GTAfunc_GetMoveSpeed(vehicle_info *vinfo)
 	return vecMoveSpeed;
 }
 
-VOID GTAfunc_SetMoveSpeed(vehicle_info *vinfo, CVector vecMoveSpeed)
+VOID GTAfunc_SetMoveSpeed(object_base *entity, CVector vecMoveSpeed)
 {
     DWORD dwFunc = FUNC_GetMoveSpeed;
-    DWORD dwThis = (DWORD)vinfo;
+    DWORD dwThis = (DWORD)entity;
     DWORD dwReturn = 0;
     __asm
     {
@@ -430,7 +430,7 @@ bool GTAfunc_IsLineOfSightClear( CVector *vecStart, CVector *vecEnd,
 
 
 bool GTAfunc_ProcessLineOfSight( CVector *vecStart, CVector *vecEnd,
-		CColPoint **colCollision, CEntity **CollisionEntity,
+		CColPoint **colCollision, CEntitySAInterface **CollisionEntity,
 		bool bCheckBuildings, bool bCheckVehicles, bool bCheckPeds,
 		bool bCheckObjects, bool bCheckDummies , bool bSeeThroughStuff,
 		bool bIgnoreSomeObjectsForCamera, bool bShootThroughStuff )
@@ -489,6 +489,9 @@ bool GTAfunc_ProcessLineOfSight( CVector *vecStart, CVector *vecEnd,
 	    }
     }
 */
+	// hacky method to point to CEntitySA instead of the above
+	//*CollisionEntity = targetEntity;
+
     if (colCollision) *colCollision = pColPointSA;
     else pColPointSA->Destroy();
 
