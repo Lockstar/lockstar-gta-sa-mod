@@ -1718,10 +1718,6 @@
 				>
 			</File>
 		</Filter>
-		<Filter
-			Name="IncludesSA"
-			>
-		</Filter>
 		<File
 			RelativePath=".\m0d_s0beit_sa.def"
 			>

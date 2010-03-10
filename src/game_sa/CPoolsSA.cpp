@@ -154,7 +154,7 @@ CVehicle* CPoolsSA::AddVehicle ( DWORD* pGameInterface )
     return pVehicle;
 }
 
-void CPoolsSA::RemoveVehicle ( unsigned long ulID, bool )
+void CPoolsSA::RemoveVehicle ( unsigned long ulID, bool bDelete )
 {
 	DEBUG_TRACE("void CPoolsSA::RemoveVehicle ( unsigned long ulID, bool )");
 
@@ -184,6 +184,10 @@ void CPoolsSA::RemoveVehicle ( unsigned long ulID, bool )
         {
             m_vehiclePool.map.erase ( iter );
         }
+
+// added by m0d Team
+		if ( ! bDelete )
+			pVehicleSA->SetDoNotRemoveFromGameWhenDeleted (true);
 
         // Delete it from memory
         delete pVehicleSA;
@@ -661,7 +665,7 @@ CPed* CPoolsSA::AddPed ( DWORD* pGameInterface )
             {
                 // Create it
                 pPed = new CPlayerPedSA ( pInterface );
-                if ( ! AddPedToPool ( pPed ) )
+				if ( ! AddPedToPool ( pPed ) )
                 {
                     delete pPed;
                     pPed = NULL;
@@ -907,6 +911,11 @@ void CPoolsSA::DeleteAllPeds ( )
     m_pedPool.map.clear ();
 }
 
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//                                   ENTITIES POOL                                      //
+//////////////////////////////////////////////////////////////////////////////////////////
+
 CEntity * CPoolsSA::GetEntity ( DWORD* pGameInterface )
 {
     if ( pGameInterface )
@@ -923,6 +932,10 @@ CEntity * CPoolsSA::GetEntity ( DWORD* pGameInterface )
     return NULL;
 }
 
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//                                  BUILDINGS POOL                                      //
+//////////////////////////////////////////////////////////////////////////////////////////
 
 CBuilding * CPoolsSA::AddBuilding ( DWORD dwModelID )
 {
@@ -945,6 +958,10 @@ CBuilding * CPoolsSA::AddBuilding ( DWORD dwModelID )
 	return NULL;
 }
 
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//                                     TRAINS POOL                                      //
+//////////////////////////////////////////////////////////////////////////////////////////
 
 CVehicle* CPoolsSA::AddTrain ( CVector * vecPosition, DWORD dwModels[], int iSize, bool bDirection )
 {
@@ -1044,6 +1061,9 @@ CVehicle* CPoolsSA::AddTrain ( CVector * vecPosition, DWORD dwModels[], int iSiz
     return trainHead;
 }
 
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
 
 char szOutput[1024];
 

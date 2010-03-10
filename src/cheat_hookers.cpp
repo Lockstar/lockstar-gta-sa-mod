@@ -23,12 +23,19 @@
 
 #include "main.h"
 
+
 // ---------------------------------------------------
 
+
+CVector *GravityNormal = new CVector(0.0, 0.0, -1.0);
+
+
+// ---------------------------------------------------
+
+
 // new gravity hook
-//CDetour *hookApplyGravity = new CDetour;
-#define HOOKPOS_CPhysical_ApplyGravity	0x543081
-DWORD RETURN_CPhysical_ApplyGravity =	0x543093;
+#define HOOKPOS_CPhysical_ApplyGravity 0x543081
+DWORD RETURN_CPhysical_ApplyGravity = 0x543093;
 
 void CPhysical_ApplyGravity(DWORD dwThis)
 {
@@ -46,30 +53,33 @@ void CPhysical_ApplyGravity(DWORD dwThis)
     float fTimeStep = *(float *)0xB7CB5C;
     float fGravity  = *(float *)0x863984;
 
-    if (dwType == 2
-		&& cheat_state->vehicle.spiderWheels_Enabled)
-    {
-		// get our vehicle_info pointer to see if it's dwThis
-		struct vehicle_info *vinfo_self = vehicle_info_get(VEHICLE_SELF, 0);
-		struct actor_info *ainfo_self = actor_info_get(ACTOR_SELF, 0);
-		if(vinfo_self != NULL
-			&& vinfo_self == (vehicle_info*)dwThis
-			&& vinfo_self->passengers[0] == ainfo_self)
+	if (dwType == 2)
+	{
+		// It's a vehicle
+		CVehicle* pVehicle = pGameInterface->GetPools()->GetVehicle( (DWORD *)dwThis );
+		if ( pVehicle
+			&& ( pVehicle->IsPassenger(pGameInterface->GetPools()->GetPedFromRef(CPOOLS_PED_SELF_REF))
+				|| pVehicle->GetDriver() == pGameInterface->GetPools()->GetPedFromRef(CPOOLS_PED_SELF_REF)
+				)
+			)
 		{
-			// it's our CVehicleSA, and we're driving, and SpiderWheels is enabled - use the gravity vector
-			CVector vecGravity = cheat_state->vehicle.gravityVector;
-			CVector vecMoveSpeed = GTAfunc_GetMoveSpeed(&vinfo_self->base);
+			// We're in the vehicle, use our gravity vector
+			CVector vecGravity, vecMoveSpeed;
+			pVehicle->GetGravity ( &vecGravity );
+			pVehicle->GetMoveSpeed ( &vecMoveSpeed );
 			vecMoveSpeed += vecGravity * fTimeStep * fGravity;
-			GTAfunc_SetMoveSpeed(&vinfo_self->base, vecMoveSpeed);
+			pVehicle->SetMoveSpeed ( &vecMoveSpeed );
 		}
 		else
 		{
-			// it's not our vehicle, return regular gravity
+			// apply regular downward gravity
 			*(float *)(dwThis + 0x4C) -= fTimeStep * fGravity;
 		}
-    }
+	}
+	/*
 	else if (dwType == 3)
 	{
+		// SpiderFeet, not working yet when touching ground
 		struct actor_info *ainfo_self = actor_info_get(ACTOR_SELF, 0);
 		if (dwThis == (DWORD)ainfo_self)
 		{
@@ -81,13 +91,14 @@ void CPhysical_ApplyGravity(DWORD dwThis)
 		}
 		else
 		{
-			// It's not us, apply regular downward gravity
+			// apply regular downward gravity
 			*(float *)(dwThis + 0x4C) -= fTimeStep * fGravity;
 		}
 	}
+	*/
     else
     {
-        // It's something else, apply regular downward gravity (+0x4C == m_vecMoveSpeed.fZ)
+        // apply regular downward gravity (+0x4C == m_vecMoveSpeed.fZ)
         *(float *)(dwThis + 0x4C) -= fTimeStep * fGravity;
     }
 }
@@ -103,64 +114,9 @@ uint8_t _declspec(naked) HOOK_CPhysical_ApplyGravity(void)
     }
 }
 
-// ---------------------------------------------------
-
-// Trailer Break Tow Link hook
-CVehicleSAInterface * towingVehicle;
-DWORD HOOKPOS_Trailer_BreakTowLink = 0x6E0027;
-
-bool CallBreakTowLinkHandler ( CVehicleSAInterface * vehicle )
-{
-	// need to get the CPools setup ASAP!!!
-    // CVehicle *pVehicle = pGameInterface->GetPools()->GetVehicle((DWORD *)vehicle);
-
-	actor_info *ainfo = actor_info_get(ACTOR_SELF, ACTOR_ALIVE);
-	vehicle_info *vinfo = vehicle_info_get(VEHICLE_SELF, 0);
-
-	if (vinfo != NULL
-		&& vinfo->passengers[0] == ainfo
-		&& vinfo->trailer == (vehicle_info*)vehicle)
-	{
-		// return false to prevent the trailer from being able to disconnect
-		return true;
-	}
-
-    return true;
-}
-
-void _declspec(naked) HOOK_Trailer_BreakTowLink(void)
-{
-	_asm
-	{
-		mov     towingVehicle, ecx
-		pushad
-	}
-
-	if ( CallBreakTowLinkHandler ( towingVehicle ) )
-	{
-		_asm
-		{
-			popad
-			call    dword ptr [edx+0xF8]
-		}
-	}
-	else
-	{
-		_asm
-		{
-			popad
-		}
-	}
-
-	_asm
-	{
-		mov     ecx, HOOKPOS_Trailer_BreakTowLink
-		add     ecx, 6
-		jmp     ecx
-	}
-}
 
 // ---------------------------------------------------
+
 
 CMatrix gravcam_matGravity;
 CMatrix gravcam_matInvertGravity;
@@ -239,7 +195,9 @@ fail:
     }
 }
 
+
 // ---------------------------------------------------
+
 
 void _cdecl VehicleCamTargetZTweak ( CVector* pvecCamTarget, float fTargetZTweak )
 {
@@ -274,7 +232,9 @@ void _declspec(naked) HOOK_VehicleCamTargetZTweak ()
     }
 }
 
+
 // ---------------------------------------------------
+
 
 void _cdecl VehicleCamLookDir1 ( DWORD dwCam, DWORD pVehicleInterface )
 {
@@ -300,7 +260,9 @@ void _declspec(naked) HOOK_VehicleCamLookDir1 ()
     }
 }
 
+
 // ---------------------------------------------------
+
 
 bool _cdecl VehicleCamLookDir2 ( DWORD dwCam )
 {
@@ -331,7 +293,9 @@ void _declspec(naked) HOOK_VehicleCamLookDir2 ()
     }
 }
 
+
 // ---------------------------------------------------
+
 
 void _cdecl VehicleCamHistory ( DWORD dwCam, CVector* pvecTarget, float fTargetTheta, float fRadius, float fZoom )
 {
@@ -359,7 +323,9 @@ void _declspec(naked) HOOK_VehicleCamHistory ()
     }
 }
 
+
 // ---------------------------------------------------
+
 
 void _cdecl VehicleCamUp ( DWORD dwCam )
 {
@@ -397,7 +363,9 @@ docustom:
     }
 }
 
+
 // ---------------------------------------------------
+
 
 void _cdecl VehicleCamEnd ( DWORD pVehicleInterface )
 {
@@ -424,7 +392,9 @@ void _declspec(naked) HOOK_VehicleCamEnd ()
     }
 }
 
+
 // ---------------------------------------------------
+
 
 void _cdecl VehicleLookBehind ( DWORD dwCam, CVector* pvecEntityPos, float fDistance )
 {
@@ -459,7 +429,9 @@ void _declspec(naked) HOOK_VehicleLookBehind ()
     }
 }
 
+
 // ---------------------------------------------------
+
 
 void _cdecl VehicleLookAside ( DWORD dwCam, CVector* pvecEntityPos, float fDirectionFactor, float fDistance )
 {
@@ -486,20 +458,124 @@ void _declspec(naked) HOOK_VehicleLookAside ()
     }
 }
 
+
+// ---------------------------------------------------
+
+
+void _cdecl CVehicle_constructor_hook ( CVehicleSAInterface * vehicle )
+{
+	// create & add new CVehicle to CPools
+	CVehicle *CVeh = pGame->GetPools()->AddVehicle((DWORD*)vehicle);
+	CVeh->SetGravity(GravityNormal);
+}
+
+#define HOOKPOS_CVehicle_constructor 0x6D6259
+DWORD RETURN_CVehicle_constructor =	0x6D6263;
+void _declspec(naked) HOOK_CVehicle_constructor()
+{
+	__asm
+	{
+		// perform over-written asm
+		mov fs:0, ecx
+		add esp, 10h
+		// call handler
+		push eax
+		call CVehicle_constructor_hook
+		add esp, 4h
+		// return
+		jmp RETURN_CVehicle_constructor
+	}
+}
+
+void _cdecl CVehicle_destructor_hook ( CVehicleSAInterface * vehicle )
+{
+	// remove CVehicle from CPools and delete
+	CVehicle *CVeh_toDelete = pGame->GetPools()->GetVehicle((DWORD*)vehicle);
+	pGame->GetPools()->RemoveVehicle(CVeh_toDelete, false);
+}
+
+#define HOOKPOS_CVehicle_destructor 0x6E2B40
+DWORD RETURN_CVehicle_destructor = 0x6E2B47;
+void _declspec(naked) HOOK_CVehicle_destructor()
+{
+	__asm
+	{
+		// call handler
+		push ecx
+		call CVehicle_destructor_hook
+		pop ecx
+		// perform over-written asm
+		push 0FFFFFFFFh
+		push 848826h
+		// return
+		jmp RETURN_CVehicle_destructor
+	}
+}
+
+
 // ---------------------------------------------------
 
 
+void _cdecl CPed_constructor_hook ( CPedSAInterface * ped )
+{
+	// create & add new CPed to CPools
+	pGame->GetPools()->AddPed((DWORD*)ped);
+}
 
+#define HOOKPOS_CPed_constructor 0x5E8606
+DWORD RETURN_CPed_constructor =	0x5E8610;
+void _declspec(naked) HOOK_CPed_constructor()
+{
+	__asm
+	{
+		// perform over-written asm
+		mov fs:0, ecx
+		add esp, 28h
+		// call handler
+		push eax
+		call CPed_constructor_hook
+		//pop eax
+		add esp, 4h
+		// return
+		jmp RETURN_CPed_constructor
+	}
+}
 
+void _cdecl CPed_destructor_hook ( CPedSAInterface * ped )
+{
+	// remove CPed from CPools and delete
+	CPed *CPed_toDelete = pGame->GetPools()->GetPed((DWORD*)ped);
+	pGame->GetPools()->RemovePed(CPed_toDelete, false);
+}
+
+#define HOOKPOS_CPed_destructor 0x5E8620
+DWORD RETURN_CPed_destructor = 0x5E8627;
+void _declspec(naked) HOOK_CPed_destructor()
+{
+	__asm
+	{
+		// call handler
+		push ecx
+		call CPed_destructor_hook
+		pop ecx
+		// perform over-written asm
+		push 0FFFFFFFFh
+		push 83DA5Ah
+		// return
+		jmp RETURN_CPed_destructor
+	}
+}
 
 
 // ---------------------------------------------------
+// ---------------------------------------------------
+// ---------------------------------------------------
+
 
 // hook installers
 void cheat_hookers_installhooks(void)
 {
 	// hooks
-	HookInstall(HOOKPOS_Trailer_BreakTowLink, (DWORD)HOOK_Trailer_BreakTowLink, 6);
 	HookInstall(HOOKPOS_VehicleCamStart, (DWORD)HOOK_VehicleCamStart, 6);
 	HookInstall(HOOKPOS_VehicleCamTargetZTweak, (DWORD)HOOK_VehicleCamTargetZTweak, 8);
 	HookInstall(HOOKPOS_VehicleCamLookDir1, (DWORD)HOOK_VehicleCamLookDir1, 5);
@@ -509,6 +585,10 @@ void cheat_hookers_installhooks(void)
 	HookInstall(HOOKPOS_VehicleLookBehind, (DWORD)HOOK_VehicleLookBehind, 6);
 	HookInstall(HOOKPOS_VehicleLookAside, (DWORD)HOOK_VehicleLookAside, 6);
 	HookInstall(HOOKPOS_CPhysical_ApplyGravity, (DWORD)HOOK_CPhysical_ApplyGravity, 6);
+	HookInstall(HOOKPOS_CVehicle_constructor, (DWORD)HOOK_CVehicle_constructor, 6);
+	HookInstall(HOOKPOS_CVehicle_destructor, (DWORD)HOOK_CVehicle_destructor, 6);
+	HookInstall(HOOKPOS_CPed_constructor, (DWORD)HOOK_CPed_constructor, 6);
+	HookInstall(HOOKPOS_CPed_destructor, (DWORD)HOOK_CPed_destructor, 6);
 	// calls
 	HookInstallCall(CALL_VehicleCamUp, (DWORD)HOOK_VehicleCamUp);
 	HookInstallCall(CALL_VehicleLookBehindUp, (DWORD)HOOK_VehicleCamUp);

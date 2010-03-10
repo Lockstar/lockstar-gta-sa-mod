@@ -19,12 +19,6 @@
 	You should have received a copy of the GNU General Public License
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
-	$LastChangedDate: 2009-12-15 09:05:03 -0600 (Tue, 15 Dec 2009) $
-	$LastChangedBy: futnucks $
-	$Revision: 35 $
-	$HeadURL: https://m0d-s0beit-sa.googlecode.com/svn/trunk/src/cheat_funcs.cpp $
-	$Id: cheat_funcs.cpp 35 2009-12-15 15:05:03Z futnucks $
-
 */
 
 #include "main.h"

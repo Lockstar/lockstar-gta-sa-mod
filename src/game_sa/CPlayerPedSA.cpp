@@ -99,12 +99,16 @@ CPlayerPedSA::CPlayerPedSA ( CPlayerPedSAInterface * pPlayer )
 	// based on CPlayerPed::SetupPlayerPed (R*)
 	this->SetInterface((CEntitySAInterface *)pPlayer);
 	this->Init();
+
 	CPoolsSA * pools = (CPoolsSA *)pGame->GetPools();
 	this->internalID =  pools->GetPedRef ( (DWORD *)this->GetInterface () );
 	this->SetType ( PLAYER_PED );
 
     m_bIsLocal = true;
     m_pData = GetPlayerPedInterface ()->pPlayerData;
+// added by m0d Team
+	if (!m_pData)
+		m_pData = new CPlayerPedDataSAInterface;
     m_pWanted = NULL;
 
     GetPlayerPedInterface ()->pedFlags.bCanBeShotInVehicle = true;
@@ -120,7 +124,6 @@ CPlayerPedSA::CPlayerPedSA ( CPlayerPedSAInterface * pPlayer )
 	GetPlayerPedInterface ()->pedFlags.bTestForShotInVehicle = true;
     // Stop remote players targeting the local (need to stop them targeting eachother too)
     GetPlayerPedInterface ()->pedFlags.bNeverEverTargetThisPed = true;
-
 }
 
 

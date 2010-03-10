@@ -3034,40 +3034,6 @@ HRESULT proxyIDirect3DDevice9::EndScene(void)
 			{
 				if(game_inited) if(!gta_menu_active()) pD3DFontFixed->PrintShadow(0.0f, 0.0f, D3DCOLOR_ARGB(255, 0, 255, 0), NAME);
 			}
-/*
-			if(g_SAMP != NULL && g_SAMP->pRakNet != NULL)
-			{
-				uint32_t iBitsSent, iBitsRecv;
-				__asm
-				{
-					mov ecx, g_dwSAMP_Addr
-					add ecx, SAMP_INFO_OFFSET
-					mov ecx, dword ptr [ecx]
-					test ecx, ecx
-					je pRakNet_NetTxRx_Hook_End
-					mov ecx, dword ptr [ecx+0x2C]
-					test ecx, ecx
-					je pRakNet_NetTxRx_Hook_End
-					mov edx, dword ptr [ecx]
-					test edx, edx
-					je pRakNet_NetTxRx_Hook_End
-					mov eax, dword ptr [ecx-0x6B6]
-					test eax, eax
-					je pRakNet_NetTxRx_Hook_End
-					call dword ptr [edx+0xCC]
-					mov ecx, dword ptr [eax+0x34]
-					mov iBitsSent, ecx
-					mov ecx, dword ptr [eax+0x94]
-					mov iBitsRecv, ecx
-				} // __asm
-				iBitsSent = (iBitsSent / 8);
-				iBitsRecv = (iBitsRecv / 8);
-				_snprintf_s(buf, sizeof(buf), "Bytes sent: %u || Bytes received: %u", iBitsSent, iBitsRecv);
-				pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 2,
-					pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 20, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
-pRakNet_NetTxRx_Hook_End:;
-			}
-*/
 #endif // M0D_DEV
 
 			if(set.d3dtext_hud)
@@ -3176,7 +3142,13 @@ _snprintf_s(buf, sizeof(buf), "gravityVector: %0.2f %0.2f %0.2f", cheat_state->a
 pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 20,
 	pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 50, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
 
-
+#endif
+				} // end CHEAT_STATE_ACTOR
+				if(cheat_state->state != CHEAT_STATE_NONE)
+				{
+#ifdef M0D_DEV
+// fantastic shit
+/**/
 _snprintf_s(buf, sizeof(buf), "CPools Ped Count: %d", pGameInterface->GetPools()->GetPedCount());
 pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 25,
 	pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 40, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
@@ -3186,10 +3158,6 @@ pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLe
 	pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 30, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
 
 #endif
-				}
-
-				if(cheat_state->state != CHEAT_STATE_NONE)
-				{
 					if(set.hud_indicator_pos)
 					{
 						float *coord = (cheat_state->state == CHEAT_STATE_VEHICLE) ?
@@ -3199,7 +3167,7 @@ pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLe
 						_snprintf_s(buf, sizeof(buf), "  %.2f, %.2f, %.2f  %d", coord[0], coord[1], coord[2], gta_interior_id_get() );
 						HUD_TEXT(x, color_text, buf);
 					}
-				}
+				} // end != CHEAT_STATE_NONE
 
 				if(cheat_state->text_time > 0 && time_get() - cheat_state->text_time < MSEC_TO_TIME(3000))
 				{
