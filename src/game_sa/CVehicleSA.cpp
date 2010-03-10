@@ -116,7 +116,7 @@ CVehicleSA::~CVehicleSA()
 	DEBUG_TRACE("CVehicleSA::~CVehicleSA()");
 	if(!this->BeingDeleted)
 	{
-		if ( (DWORD)m_pInterface->vtbl != VTBL_CPlaceable )
+		if ( !DoNotRemoveFromGame && (DWORD)m_pInterface->vtbl != VTBL_CPlaceable )
 		{
             GetVehicleInterface ()->m_pVehicle = NULL;
 

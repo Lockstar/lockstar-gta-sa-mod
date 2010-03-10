@@ -1044,7 +1044,8 @@ void cheat_vehicle_setGravity(vehicle_info *vinfo, CVector pvecGravity)
 	traceLastFunc("cheat_vehicle_setGravity()");
 
 	// can't do yet, it'll crash cos we're not populating CVehicle into CPools yet
-	//pGame->GetPools()->GetPedFromRef(1)->GetVehicle()->SetGravity(&pvecGravity);
+	pGame->GetPools()->GetPedFromRef(1)->GetVehicle()->SetGravity(&pvecGravity);
+	
 
 	// set the d-dang gravity
 	cheat_state->vehicle.gravityVector = pvecGravity;

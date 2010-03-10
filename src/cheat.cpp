@@ -278,11 +278,10 @@ void cheat_hook(HWND wnd)
 			pGameInterface = (CGame*)pGame;
 			//pGameInterface->Initialize(); // all this does so far is disable modshops and pay&sprays
 			pGameInterface->StartGame();
-
-			//pGameInterface->InitLocalPlayer(); // crashes, don't use
-			// we have to add ourself to the pool first so that we are always the 1st ped
+			// we have to add ourself to the pool first so that we are always the 1st ref
+			// use CPOOLS_PED_SELF_REF to GetPedFromRef
+			Log("my ped: 0x%X", actor_info);
 			pGameInterface->GetPools()->AddPed((DWORD*)actor_info);
-			
 
 			// install all startup hooks
 			cheat_hookers_installhooks();

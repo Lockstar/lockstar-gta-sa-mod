@@ -93,6 +93,13 @@ enum eClientVehicleType
 #define STATIC_TELEPORT_MAX   200
 
 
+/////////////////////////////
+// MTA/R* Specific Defines //
+/////////////////////////////
+
+#define CPOOLS_PED_SELF_REF 1
+
+
 
 /////////////////////////////////////
 // RenderWare Variables & Pointers //

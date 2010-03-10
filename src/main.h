@@ -50,10 +50,14 @@
 
 // let's do a precompiled header, why not
 #pragma message("Compiling precompiled header.\n")
+// illegal instruction size
 #pragma warning (disable:4409)
+// 'class1' : inherits 'class2::member' via dominance
 #pragma warning (disable:4250)
-/* unreferenced formal parameter */
+// unreferenced formal parameter
 #pragma warning (disable:4100)
+// handler not registered as safe handler
+#pragma warning (disable:4733)
 
 
 // API/SDK includes
