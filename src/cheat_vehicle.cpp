@@ -1033,59 +1033,10 @@ void cheat_handle_repair_car(struct vehicle_info *vehicle_info, float time_diff)
 }
 
 
+// ---------------------------------------------------------
+// ---------------------------------------------------------
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-			CVector vecGravity = cheat_state->vehicle.gravityVector;
-			vecGravity.fX = vinfo_self->fuck_up[0];
-			vecGravity.fY = vinfo_self->fuck_up[1];
-			vecGravity.fZ = vinfo_self->fuck_up[2];
-		}else if(vinfo_self != NULL && vinfo_self->trailer != NULL){
-			//check if its our trailer
-			for(struct vehicle_info *temp = vinfo_self->trailer; temp != NULL; temp = temp->trailer){
-				if(temp == (vehicle_info*)dwThis){
-					CVector vecGravity;
-					vecGravity.fX = temp->fuck_up[0];//cheat_state->vehicle.gravityVector;
-					vecGravity.fY = temp->fuck_up[1];
-					vecGravity.fZ = temp->fuck_up[2];
-					CVector vecMoveSpeed = GTAfunc_GetMoveSpeed(temp);
-					vecMoveSpeed += vecGravity * fTimeStep * fGravity;
-					GTAfunc_SetMoveSpeed(temp, vecMoveSpeed);
-				}else if(temp->trailer == NULL){
-					//isnt part of our vehicle, return regular gravity
-					*(float *)(dwThis + 0x4C) -= fTimeStep * fGravity;
-				}
-			}
 /*
 CMatrix
 	vRight = CVector ( 1.0f, 0.0f, 0.0f );
