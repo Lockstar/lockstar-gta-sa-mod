@@ -597,7 +597,7 @@ void cheat_handle_vehicle_quick_turn_left(struct vehicle_info *vinfo, float time
 			float *heading_matrix = temp->base.matrix;
 			MATRIX4X4 *heading_matrix4x4 = temp->base.matrixStruct;
 			// rotate on z axis
-			CVehicle *cveh = pGameInterface->GetPools()->GetVehicle((DWORD*)vinfo);
+			CVehicle *cveh = pGameInterface->GetPools()->GetVehicle((DWORD*)temp);
 			CVector posUnder = cheat_vehicle_getPositionUnder(cveh);
 			float heading_vector_zrotate[3] = { posUnder.fX, posUnder.fY, posUnder.fZ };
 			float heading_theta = M_PI / 2.0f;
@@ -624,7 +624,7 @@ void cheat_handle_vehicle_quick_turn_right(struct vehicle_info *vinfo, float tim
 			float *heading_matrix = temp->base.matrix;
 			MATRIX4X4 *heading_matrix4x4 = temp->base.matrixStruct;
 			// rotate on z axis
-			CVehicle *cveh = pGameInterface->GetPools()->GetVehicle((DWORD*)vinfo);
+			CVehicle *cveh = pGameInterface->GetPools()->GetVehicle((DWORD*)temp);
 			CVector posUnder = cheat_vehicle_getPositionUnder(cveh);
 			posUnder = -posUnder;
 			float heading_zvectrotate[4] = { posUnder.fX, posUnder.fY, posUnder.fZ };
@@ -945,15 +945,18 @@ void cheat_handle_vehicle_keepTrailer(struct vehicle_info *vinfo, float time_dif
 			return;
 		}
 		else if (mytrailer_old != NULL)
-		{	
+		{
 			DWORD car = ScriptCarId(mytrailer_old);
-			if (car == NULL) return;
+			if (car == NULL)
+				return;
 
-			if(vect3_dist(vinfo->base.coords,mytrailer_old->base.coords) <= 9.0f)
+			CVector distance = vinfo->base.m_CMatrix->vPos - mytrailer_old->base.m_CMatrix->vPos;
+			if (distance.Length() <= 11.0f)
 			{
-				if(!cheat_state->vehicle.air_brake)
+				if (!cheat_state->vehicle.air_brake)
 				{
 					//unflip()
+					// this should be reworked to consider custom gravity
 					float a = atan2f(vinfo->base.matrix[4*1+0], vinfo->base.matrix[4*1+1]);
 					float *m = vinfo->base.matrix;
 					float matrix[16] = {
@@ -966,15 +969,21 @@ void cheat_handle_vehicle_keepTrailer(struct vehicle_info *vinfo, float time_dif
 					vect3_zero(vinfo->speed_rammed);
 					vect3_zero(vinfo->spin_rammed);
 				}
-				vinfo->trailer = mytrailer_old;
+				// not sure this is needed, works fine without it
+				//vinfo->trailer = mytrailer_old;
+				// re-attach trailer
 				ScriptCommand(&put_trailer_on_cab, car, ScriptCarId(vinfo));
-				cheat_state->_generic.nocols_enabled = 1;
-				cheat_state->_generic.nocols_change_tick = GetTickCount();
+				// this won't work using these here because those are actually toggled during that handler
+				// you'll have to explicitly toggle the collisions on the trailer
+				//cheat_state->_generic.nocols_enabled = 1;
+				//cheat_state->_generic.nocols_change_tick = GetTickCount();
+			/**/
 			}
 			else
 			{
 				mytrailer_old = NULL;
 			}
+			
 		}
 	}
 	else if (vinfo->trailer != NULL)
