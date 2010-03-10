@@ -304,7 +304,6 @@ void cheat_hook(HWND wnd)
 			pGameInterface->StartGame();
 			// we have to add ourself to the pool first so that we are always the 1st ref
 			// use CPOOLS_PED_SELF_REF to GetPedFromRef
-			Log("my ped: 0x%X", actor_info);
 			pGameInterface->GetPools()->AddPed((DWORD*)actor_info);
 
 			// install all startup hooks
