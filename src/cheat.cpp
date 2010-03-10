@@ -84,7 +84,7 @@ static void cheat_main_actor(float time_diff)
 	cheat_handle_stick(NULL, info, time_diff);
 	cheat_handle_actor_autoaim(info, time_diff);
 	cheat_handle_actor_nocols(info);
-	cheat_handle_spiderFeet(info, time_diff);
+	//cheat_handle_spiderFeet(info, time_diff);
 }
 
 static void cheat_main_vehicle(float time_diff)
@@ -113,6 +113,7 @@ static void cheat_main_vehicle(float time_diff)
 	}
 	
 	//Making the vehicle instant jumping and the trailer attaching easier
+	// this should be built into the appropriate handler
 	if(cheat_state->_generic.nocols_toggled){
 		int veh_id = vehicle_find_nearest(NULL);
 		struct vehicle_info *veh = vehicle_info_get(veh_id, 0);
@@ -156,10 +157,7 @@ static void cheat_main_vehicle(float time_diff)
 	cheat_handle_vehicle_keepTrailer(info, time_diff);
 	cheat_handle_repair_car(info, time_diff);
 	cheat_handle_fast_exit(info, time_diff);
-	//cheat_handle_spiderWheels(info, time_diff);
-	for(struct vehicle_info *temp = info; temp != NULL; temp = temp->trailer){
-		cheat_handle_spiderWheels(temp, time_diff);
-	}
+	cheat_handle_spiderWheels(temp, time_diff);
 }
 
 // the main daddyo

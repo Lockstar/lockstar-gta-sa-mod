@@ -48,7 +48,7 @@ bool bD3DRenderInit;
 bool bD3DWindowModeSet;
 bool g_isRequestingWindowModeToggle;
 bool g_isRequesting_RwD3D9ChangeVideoMode;
-float fps;
+
 
 IDirect3DTexture9* tLoadingLogo;
 ID3DXSprite* sLoadingLogo;
@@ -2333,20 +2333,30 @@ void texturesInitResources(IDirect3DDevice9* pDevice, D3DPRESENT_PARAMETERS* pPr
 	// ret
 }
 
+float fps1, fps2, fps3, fps4;
+uint32_t fps_time = GetTickCount();
+int fpsFrameCounter;
 float getFPS(void)
 {
-	static uint32_t fps_time1 = GetTickCount();
-	uint32_t fps_time2 = GetTickCount();
-
-	if(fps_time2 - fps_time1 >= 200)
+	// increment frame counter
+	fpsFrameCounter++;
+	// get fps
+	if ( (GetTickCount() - 250) > fps_time )
 	{
-		fps_time1 = GetTickCount();
-		fps = *(float *)0xB7CB50;
+		// for averaging
+		fps4 = fps3;
+		fps3 = fps2;
+		fps2 = fps1;
+		// set new FPS
+		fps1 = ( (fpsFrameCounter*4) + fps2 + fps3 + fps4) / 4.0;
+		// reset counter
+		fpsFrameCounter = 0;
+		// reset tick
+		fps_time = GetTickCount();
 	}
 
-	if(fps > 500.0f) return 0.0f;
-
-	return fps;
+	if(fps1 > 500.0f) return 0.0f;
+	return fps1;
 }
 
 
@@ -3060,17 +3070,8 @@ HRESULT proxyIDirect3DDevice9::EndScene(void)
 							HUD_TEXT(x, D3DCOLOR_ARGB(127, 255, 255, 255), NAME);
 						}
 					}
-					else
-					{
-						if ((sLoadingLogo) && (tLoadingLogo) && !gta_menu_active())
-						{
-							sLoadingLogo->Begin(D3DXSPRITE_ALPHABLEND);
-							sLoadingLogo->Draw(tLoadingLogo,NULL,NULL,&posLoadingLogo,0xFFFFFFFF);
-							sLoadingLogo->End();
-						}
-
-					}
-
+					// startup logo was here, but damn it works better without it
+					// we should figure out why that is some time
 				}
 				else
 				{
@@ -3102,15 +3103,25 @@ HRESULT proxyIDirect3DDevice9::EndScene(void)
 
 					if(set.hud_fps_draw)
 					{
+						float m_FPS = getFPS();
+						int m_FPS_int = (int)m_FPS;
 						uint32_t color_fps = D3DCOLOR_XRGB(200, 200, 0);
-						if((int)getFPS() >= 23)
+						if(m_FPS_int >= 23)
 							color_fps = D3DCOLOR_XRGB(0, 200, 0);
-						else if((int)getFPS() >= 13 && (int)getFPS <= 22)
+						else if(m_FPS_int >= 13 && m_FPS_int <= 22)
 							color_fps = D3DCOLOR_XRGB(200, 200, 0);
-						else if((int)getFPS() <= 12)
+						else if(m_FPS_int <= 12)
 							color_fps = D3DCOLOR_XRGB(200, 0, 0);
-
-						_snprintf_s(buf, sizeof(buf), "%0.2f (%d)", getFPS(), *(int*)0xC1704C );
+						if ( pGameInterface
+							&& pGameInterface->GetSettings()->IsFrameLimiterEnabled()
+							)
+						{
+							_snprintf_s ( buf, sizeof(buf), "%0.0f (%d)", m_FPS, *(int*)0xC1704C );
+						}
+						else
+						{
+							_snprintf_s ( buf, sizeof(buf), "%0.0f", m_FPS );
+						}
 						pD3DFont->PrintShadow(pPresentParam.BackBufferWidth - pD3DFont->DrawLength(buf) - 2,
 							pPresentParam.BackBufferHeight - pD3DFont->DrawHeight() - 2, color_fps, buf);
 					}	
@@ -3133,7 +3144,7 @@ HRESULT proxyIDirect3DDevice9::EndScene(void)
 					RenderPedHPBar();
 #ifdef M0D_DEV
 // fantastic shit
-/**/
+/*
 render->DrawLine(vecGravColOrigin, vecGravColTarget, D3DCOLOR_ARGB(128, 255, 0, 0));
 render->DrawLine(vecGravColOrigin, vecGravTargetNorm, D3DCOLOR_ARGB(128, 0, 255, 0));
 
@@ -3141,14 +3152,14 @@ struct actor_info *ainfo_self = actor_info_get(ACTOR_SELF, 0);
 _snprintf_s(buf, sizeof(buf), "gravityVector: %0.2f %0.2f %0.2f", cheat_state->actor.gravityVector.fX, cheat_state->actor.gravityVector.fY, cheat_state->actor.gravityVector.fZ);
 pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 20,
 	pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 50, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
-
+*/
 #endif
 				} // end CHEAT_STATE_ACTOR
 				if(cheat_state->state != CHEAT_STATE_NONE)
 				{
 #ifdef M0D_DEV
 // fantastic shit
-/**/
+/*
 _snprintf_s(buf, sizeof(buf), "CPools Ped Count: %d", pGameInterface->GetPools()->GetPedCount());
 pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 25,
 	pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 40, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
@@ -3156,7 +3167,7 @@ pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLe
 _snprintf_s(buf, sizeof(buf), "CPools Vehicle Count: %d", pGameInterface->GetPools()->GetVehicleCount());
 pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 25,
 	pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 30, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
-
+*/
 #endif
 					if(set.hud_indicator_pos)
 					{

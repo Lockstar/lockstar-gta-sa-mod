@@ -50,16 +50,20 @@ void CPhysical_ApplyGravity(DWORD dwThis)
         mov dwType, eax
     }
 
-    float fTimeStep = *(float *)0xB7CB5C;
-    float fGravity  = *(float *)0x863984;
+	float fTimeStep = *(float *)0xB7CB5C;
+	float fGravity  = *(float *)0x863984;
 
 	if (dwType == 2)
 	{
 		// It's a vehicle
-		CVehicle* pVehicle = pGameInterface->GetPools()->GetVehicle( (DWORD *)dwThis );
+		CVehicle *pVehicle = pGameInterface->GetPools()->GetVehicle( (DWORD *)dwThis );
+		CPed *pPedSelf = pGameInterface->GetPools()->GetPedFromRef(CPOOLS_PED_SELF_REF);
 		if ( pVehicle
-			&& ( pVehicle->IsPassenger(pGameInterface->GetPools()->GetPedFromRef(CPOOLS_PED_SELF_REF))
-				|| pVehicle->GetDriver() == pGameInterface->GetPools()->GetPedFromRef(CPOOLS_PED_SELF_REF)
+			/**/
+			&& ( pVehicle->GetDriver() == pPedSelf
+				|| ( pVehicle->GetTowedByVehicle() && pVehicle->GetTowedByVehicle()->GetDriver() == pPedSelf )
+				|| pVehicle->IsPassenger(pPedSelf)
+				|| ( pVehicle->GetTowedByVehicle() && pVehicle->GetTowedByVehicle()->IsPassenger(pPedSelf) )
 				)
 			)
 		{
@@ -69,6 +73,10 @@ void CPhysical_ApplyGravity(DWORD dwThis)
 			pVehicle->GetMoveSpeed ( &vecMoveSpeed );
 			vecMoveSpeed += vecGravity * fTimeStep * fGravity;
 			pVehicle->SetMoveSpeed ( &vecMoveSpeed );
+			if (pVehicle->GetTowedVehicle())
+			{
+				//ds
+			}
 		}
 		else
 		{

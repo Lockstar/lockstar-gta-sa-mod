@@ -190,7 +190,6 @@ struct cheat_state_vehicle
    int		infNOS_toggle_on;
    int		spiderWheels_Enabled;
    int		spiderWheels_on;
-//   CVector	gravityVector;
    int		blinking_carlights_state;
    int		blinking_carlights_turnstate;
    DWORD	blinking_carlights_lastblink;
@@ -572,8 +571,10 @@ struct vehicle_info
    float			   spin_rammed[3];			  /* 104 - spin from collision, will be added to spin[3] */
  
    //uint8_t             __unknown_116[20];          /* 116 */
+
+// what does this contain?  fuck_up is not very descriptive, and the description says it doesn't fuck up?  huh?
    float				fuck_up[3];				/* 116 - didnt fuck it up/works fine.. change to pointer to own car related stuff? */
-   uint8_t				__fuckupunknown[8];		/* 128 - using fuck_up so we wont have to create more trash than needed */
+   uint8_t				__unknown_128[8];		/* 128 - using fuck_up so we wont have to create more trash than needed */
 
 	// handling should start here
 	uint8_t				__unknown_136[4];			/* 136 */
