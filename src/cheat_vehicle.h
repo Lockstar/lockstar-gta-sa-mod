@@ -44,6 +44,5 @@ void cheat_handle_fast_exit(struct vehicle_info *vehicle_info, float time_diff);
 void cheat_handle_repair_car(struct vehicle_info *vehicle_info, float time_diff);
 void cheat_handle_spiderWheels(vehicle_info *vinfo, float time_diff);
 void CPhysical_ApplyGravity(DWORD dwThis);
-CVector cheat_vehicle_getPositionUnder(vehicle_info *vinfo);
+CVector cheat_vehicle_getPositionUnder(CVehicle *cveh);
 
-CEntitySAInterface* cheat_vehicle_GetCEntitySAInterface(vehicle_info *vinfo);
