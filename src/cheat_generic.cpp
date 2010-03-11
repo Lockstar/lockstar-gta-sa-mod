@@ -19,12 +19,6 @@
 	You should have received a copy of the GNU General Public License
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
-	$LastChangedDate: 2009-12-18 09:06:33 -0600 (Fri, 18 Dec 2009) $
-	$LastChangedBy: jflmxy $
-	$Revision: 42 $
-	$HeadURL: https://m0d-s0beit-sa.googlecode.com/svn/trunk/src/cheat_generic.cpp $
-	$Id: cheat_generic.cpp 42 2009-12-18 15:06:33Z jflmxy $
-
 */
 
 #include "main.h"
@@ -66,7 +60,6 @@ int cheat_panic(void)
 			}
 
 			// set vehicle gravity to normal
-			vect3_zero(vehicle_info->fuck_up);
 //			cheat_state->vehicle.gravityVector.fX = 0.0f;
 //			cheat_state->vehicle.gravityVector.fY = 0.0f;
 //			cheat_state->vehicle.gravityVector.fZ = -1.0f;

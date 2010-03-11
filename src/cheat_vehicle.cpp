@@ -55,10 +55,6 @@ void vehicleJumper(int iVehicleID)
 		cheat_state_text("On foot stick must be disabled");
 		return;
 	}
-	if (!pVehicle->base.bUsesCollision) {
-		cheat_state_text("Can't get in a vehicle that doesn't have collisions enabled.");
-		return;
-	}
 	if (!pVehicle->base.bIsVisible)
 	{
 		cheat_state_text("Vehicle is not visible.");
@@ -76,6 +72,14 @@ void vehicleJumper(int iVehicleID)
 
 	if(pVehicle->passengers[0] == self)
 		return;
+
+	if (!pVehicle->base.bUsesCollision) {
+		//cheat_state_text("Can't get in a vehicle that doesn't have collisions enabled.");
+		cheat_state_text("I do as you command.");
+		cheat_state->_generic.nocols_enabled = 0;
+		cheat_state->_generic.nocols_change_tick = GetTickCount();
+		pVehicle->base.bUsesCollision = 1;
+	}
 
 	// put into first available seat
 	if (pVehicle->passengers[0] == NULL) {
@@ -134,6 +138,24 @@ void cheat_vehicle_teleport(struct vehicle_info *info, const float pos[3], int i
    }
 }
 
+//Making the vehicle instant jumping and the trailer attaching easier
+void cheat_handle_vehicle_nocols(struct vehicle_info *info)
+{
+	if(cheat_state->_generic.nocols_toggled){
+		cheat_state->_generic.nocols_enabled = 1;
+	}else if(cheat_state->_generic.nocols_enabled){
+		//for dumb_menu vehicle jumping and trailer attaching
+		int veh_id = vehicle_find_nearest(NULL);
+		struct vehicle_info *veh = vehicle_info_get(veh_id, 0);
+		float dist[3] = {0.0f, 0.0f, 0.0f};
+		if(veh != NULL)
+			vect3_vect3_sub(&info->base.matrix[4*3], &veh->base.matrix[4*3], dist);
+		if((info->trailer != NULL && (GetTickCount() - 500) > cheat_state->_generic.nocols_change_tick)
+			|| (info->trailer == NULL && vect3_length(dist)>=10.0f))
+			cheat_state->_generic.nocols_enabled = 0;
+	}
+	return;
+}
 
 void cheat_handle_vehicle_unflip(struct vehicle_info *info, float time_diff)
 {
@@ -947,11 +969,10 @@ void cheat_handle_vehicle_keepTrailer(struct vehicle_info *vinfo, float time_dif
 		else if (mytrailer_old != NULL)
 		{
 			DWORD car = ScriptCarId(mytrailer_old);
-			if (car == NULL)
-				return;
+			if (car == NULL)return;
 
 			CVector distance = vinfo->base.m_CMatrix->vPos - mytrailer_old->base.m_CMatrix->vPos;
-			if (distance.Length() <= 11.0f)
+			if (distance.Length() <= 20.0f)
 			{
 				if (!cheat_state->vehicle.air_brake)
 				{
@@ -969,14 +990,10 @@ void cheat_handle_vehicle_keepTrailer(struct vehicle_info *vinfo, float time_dif
 					vect3_zero(vinfo->speed_rammed);
 					vect3_zero(vinfo->spin_rammed);
 				}
-				// not sure this is needed, works fine without it
-				//vinfo->trailer = mytrailer_old;
 				// re-attach trailer
 				ScriptCommand(&put_trailer_on_cab, car, ScriptCarId(vinfo));
-				// this won't work using these here because those are actually toggled during that handler
-				// you'll have to explicitly toggle the collisions on the trailer
-				//cheat_state->_generic.nocols_enabled = 1;
-				//cheat_state->_generic.nocols_change_tick = GetTickCount();
+				cheat_state->_generic.nocols_enabled = 1;
+				cheat_state->_generic.nocols_change_tick = GetTickCount();
 			/**/
 			}
 			else

@@ -19,12 +19,6 @@
 	You should have received a copy of the GNU General Public License
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
-	$LastChangedDate: 2010-01-05 01:40:59 -0600 (Tue, 05 Jan 2010) $
-	$LastChangedBy: futnucks $
-	$Revision: 43 $
-	$HeadURL: https://m0d-s0beit-sa.googlecode.com/svn/trunk/src/proxyIDirect3D9.cpp $
-	$Id: proxyIDirect3D9.cpp 43 2010-01-05 07:40:59Z futnucks $
-
 */
 
 #include "main.h"

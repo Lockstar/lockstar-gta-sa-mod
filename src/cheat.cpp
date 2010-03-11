@@ -111,29 +111,9 @@ static void cheat_main_vehicle(float time_diff)
 			}
 		}
 	}
-	
-	//Making the vehicle instant jumping and the trailer attaching easier
-	// this should be built into the appropriate handler
-	if(cheat_state->_generic.nocols_toggled){
-		int veh_id = vehicle_find_nearest(NULL);
-		struct vehicle_info *veh = vehicle_info_get(veh_id, 0);
-		if(veh == NULL){
-			cheat_state->_generic.nocols_enabled = 0;
-		}else{
-			cheat_state->_generic.nocols_enabled = 1;
-		}
-	}else if(cheat_state->_generic.nocols_enabled){
-		int veh_id = vehicle_find_nearest(NULL);
-		struct vehicle_info *veh = vehicle_info_get(veh_id, 0);
-		float dist[3] = {0.0f, 0.0f, 0.0f};
-		if(veh != NULL)
-			vect3_vect3_sub(&info->base.matrix[4*3], &veh->base.matrix[4*3], dist);
-		if((info->trailer != NULL && (GetTickCount() - 250) > cheat_state->_generic.nocols_change_tick)
-			|| vect3_length(dist)>=10.0f)
-			cheat_state->_generic.nocols_enabled = 0;
-	}
 
 	vect3_copy(&info->base.matrix[4*3], cheat_state->vehicle.coords);
+	cheat_handle_vehicle_nocols(info);
 	cheat_handle_teleport(info, NULL, time_diff);
 	cheat_handle_freeze_vehicles(info, NULL);
 	cheat_handle_hp(info, NULL, time_diff);
