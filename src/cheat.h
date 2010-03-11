@@ -570,12 +570,7 @@ struct vehicle_info
    float			   speed_rammed[3];			  /* 92 - speed from collision, will be added to speed[3] */
    float			   spin_rammed[3];			  /* 104 - spin from collision, will be added to spin[3] */
  
-   //uint8_t             __unknown_116[20];          /* 116 */
-
-// what does this contain?  fuck_up is not very descriptive, and the description says it doesn't fuck up?  huh?
-   float				fuck_up[3];				/* 116 - didnt fuck it up/works fine.. change to pointer to own car related stuff? */
-   uint8_t				__unknown_128[8];		/* 128 - using fuck_up so we wont have to create more trash than needed */
-
+   uint8_t             __unknown_116[20];          /* 116 */
 	// handling should start here
 	uint8_t				__unknown_136[4];			/* 136 */
    float               mass;                      /* 140 - vehicle mass from handling.cfg */

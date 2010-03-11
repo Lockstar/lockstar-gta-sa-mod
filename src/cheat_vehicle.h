@@ -24,6 +24,7 @@
 void vehicleJumper(int iVehicleID);
 
 void cheat_vehicle_teleport(struct vehicle_info *info, const float pos[3], int interior_id);
+void cheat_handle_vehicle_nocols(struct vehicle_info *info);
 void cheat_handle_vehicle_unflip(struct vehicle_info *info, float time_diff);
 void cheat_handle_vehicle_air_brake(struct vehicle_info *info, float time_diff);
 void cheat_handle_vehicle_warp(struct vehicle_info *info, float time_diff);

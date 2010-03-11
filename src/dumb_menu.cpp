@@ -19,12 +19,6 @@
 	You should have received a copy of the GNU General Public License
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
-	$LastChangedDate: 2010-01-05 01:40:59 -0600 (Tue, 05 Jan 2010) $
-	$LastChangedBy: futnucks $
-	$Revision: 43 $
-	$HeadURL: https://m0d-s0beit-sa.googlecode.com/svn/trunk/src/dumb_menu.cpp $
-	$Id: dumb_menu.cpp 43 2010-01-05 07:40:59Z futnucks $
-
 */
 
 #include "main.h"
@@ -195,6 +189,7 @@
 #define ID_MENU_SPECIAL_ACTION_SMOKE_CIGGY				21
 #define ID_MENU_SPECIAL_ACTION_DRINK_WINE				22
 #define ID_MENU_SPECIAL_ACTION_DRINK_SPRUNK				23
+#define ID_MENU_SPECIAL_ACTION_URINATE					68
 
 
 
@@ -1828,6 +1823,7 @@ static int menu_callback_specialaction(int op, struct menu_item *item)
 		case ID_MENU_SPECIAL_ACTION_SMOKE_CIGGY: if(specialaction == ID_MENU_SPECIAL_ACTION_SMOKE_CIGGY) return 1; break;
 		case ID_MENU_SPECIAL_ACTION_DRINK_WINE: if(specialaction == ID_MENU_SPECIAL_ACTION_DRINK_WINE) return 1; break;
 		case ID_MENU_SPECIAL_ACTION_DRINK_SPRUNK: if(specialaction == ID_MENU_SPECIAL_ACTION_DRINK_SPRUNK) return 1; break;
+		case ID_MENU_SPECIAL_ACTION_URINATE:	if(specialaction == ID_MENU_SPECIAL_ACTION_URINATE) return 1; break;
 		}
 
 		return 0;
@@ -2533,7 +2529,7 @@ void menu_maybe_init(void)
 	menu_item_add(menu_specialaction, NULL, "Hands Up", ID_MENU_SPECIAL_ACTION_HANDSUP, MENU_COLOR_DEFAULT, NULL);
 	menu_item_add(menu_specialaction, NULL, "Use Cellphone", ID_MENU_SPECIAL_ACTION_USECELLPHONE, MENU_COLOR_DEFAULT, NULL);
 	menu_item_add(menu_specialaction, NULL, "Stop Use Cellphone", ID_MENU_SPECIAL_ACTION_STOPUSECELLPHONE, MENU_COLOR_DEFAULT, NULL);
-
+	menu_item_add(menu_specialaction, NULL, "Urinate", ID_MENU_SPECIAL_ACTION_URINATE, MENU_COLOR_DEFAULT, NULL);
 
 
    /* main menu -> sampmisc -> fake weapon */

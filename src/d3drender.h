@@ -19,12 +19,6 @@
 	You should have received a copy of the GNU General Public License
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
-	$LastChangedDate: 2009-12-14 01:12:56 -0600 (Mon, 14 Dec 2009) $
-	$LastChangedBy: futnucks $
-	$Revision: 31 $
-	$HeadURL: https://m0d-s0beit-sa.googlecode.com/svn/trunk/src/d3drender.h $
-	$Id: d3drender.h 31 2009-12-14 07:12:56Z futnucks $
-
 */
 
 #ifndef _D3DRENDER_H
