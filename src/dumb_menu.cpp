@@ -990,10 +990,10 @@ static int menu_callback_cheats ( int op, struct menu_item *item )
 			return cheat_state->_generic.vehicles_unlock;
 
 		case ID_CHEAT_WEATHER:
-			return( set.force_weather == (int)(UINT_PTR) item->data );
+			return ( set.force_weather == (int)(UINT_PTR) item->data );
 
 		case ID_CHEAT_TIME:
-			return( set.force_hour == (int)(UINT_PTR) item->data );
+			return ( set.force_hour == (int)(UINT_PTR) item->data );
 
 		case ID_CHEAT_HP:
 			return 0;
@@ -1746,13 +1746,13 @@ static int menu_callback_sampmisc ( int op, struct menu_item *item )
 				return 0;
 
 			case ID_MENU_SAMPMISC_SPOOF_WEAPON:
-				return( cheat_state->_generic.spoof_weapon == (int)(UINT_PTR) item->data );
+				return ( cheat_state->_generic.spoof_weapon == (int)(UINT_PTR) item->data );
 
 			case ID_MENU_SAMPMISC_SAMP_INFO_LIST:
 				return cheat_state->player_info_list;
 
 			case ID_MENU_SAMPMISC_CHAT_TEXT:
-				return( g_Chat == NULL ) ? 0 : !g_Chat->iChatWindowMode;
+				return ( g_Chat == NULL ) ? 0 : !g_Chat->iChatWindowMode;
 
 			case ID_MENU_SAMPMISC_CHAT_TEXTLINES:
 				return 0;

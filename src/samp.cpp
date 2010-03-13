@@ -183,7 +183,7 @@ D3DCOLOR samp_color_get ( int id )
 	}
 
 	color_table = ( D3DCOLOR * ) ( (uint8_t *)g_dwSAMP_Addr + SAMP_COLOR_OFFSET );
-	return( color_table[id] >> 8 ) | 0xFF000000;
+	return ( color_table[id] >> 8 ) | 0xFF000000;
 }
 
 D3DCOLOR samp_color_get_trans ( int id, DWORD trans )
@@ -208,7 +208,7 @@ D3DCOLOR samp_color_get_trans ( int id, DWORD trans )
 	}
 
 	color_table = ( D3DCOLOR * ) ( (uint8_t *)g_dwSAMP_Addr + SAMP_COLOR_OFFSET );
-	return( color_table[id] >> 8 ) | trans;
+	return ( color_table[id] >> 8 ) | trans;
 }
 
 extern int	joining_server, iShowVehicles;

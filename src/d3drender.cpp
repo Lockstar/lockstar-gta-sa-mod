@@ -666,7 +666,7 @@ HRESULT CD3DRender::End ()
 HRESULT CD3DRender::D3DColor ( DWORD color )
 {
 	m_color = color;
-	return( m_canRender ? S_OK : E_FAIL );
+	return ( m_canRender ? S_OK : E_FAIL );
 	return S_OK;
 }
 

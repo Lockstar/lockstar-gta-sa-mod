@@ -456,12 +456,12 @@ void _declspec ( naked ) HOOK_CVehicle_constructor ()
 	{
 		// perform over-written asm
 		mov fs : 0, ecx
-		add esp, 10 h
+		add esp, 0x10
 
 		// call handler
 		push eax
 		call CVehicle_constructor_hook
-		add esp, 4 h
+		add esp, 0x4
 
 		// return
 		jmp RETURN_CVehicle_constructor
@@ -487,8 +487,8 @@ void _declspec ( naked ) HOOK_CVehicle_destructor ()
 		pop ecx
 
 		// perform over-written asm
-		push 0F FFFFFFFh
-		push 848826 h
+		push 0x0FFFFFFFF
+		push 0x848826
 
 		// return
 		jmp RETURN_CVehicle_destructor
@@ -510,14 +510,14 @@ void _declspec ( naked ) HOOK_CPed_constructor ()
 	{
 		// perform over-written asm
 		mov fs : 0, ecx
-		add esp, 28 h
+		add esp, 0x28
 
 		// call handler
 		push eax
 		call CPed_constructor_hook
 
 		//pop eax
-		add esp, 4 h
+		add esp, 0x4
 
 		// return
 		jmp RETURN_CPed_constructor
@@ -543,8 +543,8 @@ void _declspec ( naked ) HOOK_CPed_destructor ()
 		pop ecx
 
 		// perform over-written asm
-		push 0F FFFFFFFh
-		push 83 DA5Ah
+		push 0x0FFFFFFFF
+		push 0x83DA5A
 
 		// return
 		jmp RETURN_CPed_destructor

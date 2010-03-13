@@ -33,7 +33,7 @@ int near_zero ( float v )
 {
 	if ( !isfinite (v) )
 		return 1;
-	return( fabs (v) < 0.001 );
+	return ( fabs (v) < 0.001 );
 }
 
 void vect2_normalize ( const float in[2], float out[2] )
@@ -56,7 +56,7 @@ int vect2_near_zero ( const float in[2] )
 {
 	if ( !isfinite (in[0]) || !isfinite (in[1]) )
 		return 1;
-	return( near_zero (in[0]) && near_zero (in[1]) );
+	return ( near_zero (in[0]) && near_zero (in[1]) );
 }
 
 void vect3_zero ( float out[3] )
@@ -140,7 +140,7 @@ int vect3_near_zero ( const float in[3] )
 {
 	if ( !isfinite (in[0]) || !isfinite (in[1]) || !isfinite (in[2]) )
 		return 1;
-	return( near_zero (in[0]) && near_zero (in[1]) && near_zero (in[2]) );
+	return ( near_zero (in[0]) && near_zero (in[1]) && near_zero (in[2]) );
 }
 
 void vect3_copy ( const float in[3], float out[3] )
@@ -180,7 +180,7 @@ void matrix_copy ( const float in[16], float out[16] )
 
 float vect3_dot_product ( const float in1[3], const float in2[3] )
 {
-	return( in1[0] * in2[0] + in1[1] * in2[1] + in1[2] * in2[2] );
+	return ( in1[0] * in2[0] + in1[1] * in2[1] + in1[2] * in2[2] );
 }
 
 void vect3_cross_product ( const float in1[3], const float in2[3], float out[3] )

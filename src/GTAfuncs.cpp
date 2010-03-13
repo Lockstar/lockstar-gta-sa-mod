@@ -67,7 +67,7 @@ bool GTAfunc_IsUpgradeAvailable ( int m_dwModelID, eVehicleUpgradePosn posn )
 		mov ecx, [ecx + 0x5C]
 		shl eax, 5
 		push esi
-		mov esi, [ecx + eax + 0 D0h]
+		mov esi, [ecx + eax + 0x0D0]
 		xor edx, edx
 		test esi, esi
 		setnl dl
@@ -123,7 +123,7 @@ bool GTAfunc_vehicle_iModelID_IsCar ( int m_dwModelID )
 		add esp, 4
 	}
 
-	return( bool ) bReturn;
+	return ( bool ) bReturn;
 }
 
 bool GTAfunc_vehicle_iModelID_IsBike ( int m_dwModelID )
@@ -139,7 +139,7 @@ bool GTAfunc_vehicle_iModelID_IsBike ( int m_dwModelID )
 		add esp, 4
 	}
 
-	return( bool ) bReturn;
+	return ( bool ) bReturn;
 }
 
 bool GTAfunc_vehicle_iModelID_IsPlane ( int m_dwModelID )
@@ -155,7 +155,7 @@ bool GTAfunc_vehicle_iModelID_IsPlane ( int m_dwModelID )
 		add esp, 4
 	}
 
-	return( bool ) bReturn;
+	return ( bool ) bReturn;
 }
 
 bool GTAfunc_vehicle_iModelID_IsHeli ( int m_dwModelID )
@@ -171,7 +171,7 @@ bool GTAfunc_vehicle_iModelID_IsHeli ( int m_dwModelID )
 		add esp, 4
 	}
 
-	return( bool ) bReturn;
+	return ( bool ) bReturn;
 }
 
 bool GTAfunc_vehicle_iModelID_IsBoat ( int m_dwModelID )
@@ -187,7 +187,7 @@ bool GTAfunc_vehicle_iModelID_IsBoat ( int m_dwModelID )
 		add esp, 4
 	}
 
-	return( bool ) bReturn;
+	return ( bool ) bReturn;
 }
 
 bool GTAfunc_vehicle_iModelID_IsQuadBike ( int m_dwModelID )
@@ -203,7 +203,7 @@ bool GTAfunc_vehicle_iModelID_IsQuadBike ( int m_dwModelID )
 		add esp, 4
 	}
 
-	return( bool ) bReturn;
+	return ( bool ) bReturn;
 }
 
 bool GTAfunc_vehicle_iModelID_IsBmx ( int m_dwModelID )
@@ -219,7 +219,7 @@ bool GTAfunc_vehicle_iModelID_IsBmx ( int m_dwModelID )
 		add esp, 4
 	}
 
-	return( bool ) bReturn;
+	return ( bool ) bReturn;
 }
 
 bool GTAfunc_vehicle_iModelID_IsMonsterTruck ( int m_dwModelID )
@@ -235,7 +235,7 @@ bool GTAfunc_vehicle_iModelID_IsMonsterTruck ( int m_dwModelID )
 		add esp, 4
 	}
 
-	return( bool ) bReturn;
+	return ( bool ) bReturn;
 }
 
 bool GTAfunc_vehicle_iModelID_IsTrailer ( int m_dwModelID )
@@ -251,7 +251,7 @@ bool GTAfunc_vehicle_iModelID_IsTrailer ( int m_dwModelID )
 		add esp, 4
 	}
 
-	return( bool ) bReturn;
+	return ( bool ) bReturn;
 }
 
 bool GTAfunc_vehicle_iModelID_IsTrain ( int m_dwModelID )
@@ -267,7 +267,7 @@ bool GTAfunc_vehicle_iModelID_IsTrain ( int m_dwModelID )
 		add esp, 4
 	}
 
-	return( bool ) bReturn;
+	return ( bool ) bReturn;
 }
 
 // re-enable annoying performance warning

@@ -74,9 +74,6 @@
 // gta class addresses
 #define CLASS_CMenuManager	0xBA6748
 
-// additional defines
-#define RWFORCEENUMSIZEINT	( (int)((~((unsigned int)0)) >> 1) )
-
 ////////////////////////
 
 // structures & enums //

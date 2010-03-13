@@ -226,7 +226,7 @@ int keyhook_key_down ( int v )
 	if ( key_table[v].consume )
 		return 0;
 	else
-		return( key_table[v].count & 1 ) ^ key_table[v].flip;
+		return ( key_table[v].count & 1 ) ^ key_table[v].flip;
 }
 
 int keyhook_key_up ( int v )

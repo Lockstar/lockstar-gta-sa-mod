@@ -57,7 +57,7 @@ void *CDetour::Create ( BYTE *orig, const BYTE *det, int iPatchType, int len )
 	if ( !Detour (jmp, orig, det, iPatchType, len) )
 		return 0;
 
-	return( jmp - len );
+	return ( jmp - len );
 }
 
 void *CDetour::Create ( char *dllName, char *apiName, const BYTE *det, int iPatchType, int len )
@@ -93,7 +93,7 @@ void *CDetour::Create ( char *dllName, char *apiName, const BYTE *det, int iPatc
 	if ( !Detour (jmp, orig, det, iPatchType, len) )
 		return 0;
 
-	return( jmp - len );
+	return ( jmp - len );
 }
 
 bool CDetour::Detour ( BYTE * &jmp, BYTE * &orig, const BYTE * &det, int iPatchType, int len )
