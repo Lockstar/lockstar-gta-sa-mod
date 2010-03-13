@@ -37,45 +37,40 @@
  * Several of these are taken from glib:
  *    http://developer.gnome.org/doc/API/glib/glib-windows-compatability-functions.html
  */
-
 #ifndef SPARSEHASH_WINDOWS_PORT_H_
 #define SPARSEHASH_WINDOWS_PORT_H_
 
 #include "config.h"
 
 #ifdef WIN32
-
-#define WIN32_LEAN_AND_MEAN  /* We always want minimal includes */
+#define WIN32_LEAN_AND_MEAN /* We always want minimal includes */
 #include <windows.h>
-#include <io.h>              /* because we so often use open/close/etc */
+#include <io.h> /* because we so often use open/close/etc */
 #include <string>
 
 // 4996: Yes, we're ok using the "unsafe" functions like _vsnprintf and fopen
 // 4127: We use "while (1)" sometimes: yes, we know it's a constant
-#pragma warning(disable:4996 4127)
-
+#pragma warning( disable : 4996 4127 )
 
 // file I/O
-#define PATH_MAX 1024
-#define access  _access
-#define getcwd  _getcwd
-#define open    _open
-#define read    _read
-#define write   _write
-#define lseek   _lseek
-#define close   _close
-#define unlink  _unlink
-#define popen   _popen
-#define pclose  _pclose
+#define PATH_MAX	1024
+#define access		_access
+#define getcwd		_getcwd
+#define open		_open
+#define read		_read
+#define write		_write
+#define lseek		_lseek
+#define close		_close
+#define unlink		_unlink
+#define popen		_popen
+#define pclose		_pclose
 
-#define strdup  _strdup
+#define strdup		_strdup
 
 // We can't just use _snprintf as a drop-in replacement, because it
 // doesn't always NUL-terminate. :-(
-extern int snprintf(char *str, size_t size, const char *format, ...);
+extern int			snprintf ( char *str, size_t size, const char *format, ... );
 
-extern std::string TmpFile(const char* basename); // used in hashtable_unittest
-
-#endif  /* WIN32 */
-
-#endif  /* SPARSEHASH_WINDOWS_PORT_H_ */
+extern std::string	TmpFile ( const char *basename );	// used in hashtable_unittest
+#endif /* WIN32 */
+#endif /* SPARSEHASH_WINDOWS_PORT_H_ */

@@ -22,7 +22,7 @@
 #include "CObjectSA.h"
 #include "CBuildingSA.h"
 
-#include <google/dense_hash_map>
+#include <google/dense_hash_map.h>
 
 class CEntryInfoNodePoolSA : public CEntryInfoNodePool
 {
@@ -138,6 +138,8 @@ private:
         }
     };
 
+// changed by m0d Team to allow iterating through these externally
+public:
     // Pools
     typedef SPoolData < CVehicleSA, CVehicleSAInterface, MAX_VEHICLES > vehiclePool_t;
     typedef SPoolData < CPedSA, CPedSAInterface, MAX_PEDS > pedPool_t;
@@ -146,6 +148,7 @@ private:
     pedPool_t       m_pedPool;
     objectPool_t    m_objectPool;
 
+private:
     CBuildingSA*    Buildings [ MAX_BUILDINGS ];
     unsigned long   m_ulBuildingCount;
 
