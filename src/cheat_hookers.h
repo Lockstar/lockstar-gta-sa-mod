@@ -20,6 +20,5 @@
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
 */
-
 // install hooks
-void cheat_hookers_installhooks(void);
+void	cheat_hookers_installhooks ( void );

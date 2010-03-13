@@ -20,10 +20,8 @@
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
 */
-
 #ifndef __MODMAIN_H
 #define __MODMAIN_H
-
 
 #define WIN32_LEAN_AND_MEAN
 #define _CRT_SECURE_NO_WARNINGS 1
@@ -31,34 +29,35 @@
 // main switch for development or release build
 #define M0D_DEV
 
-#define M0D_NAME "m0d_s0beit_sa"
-#define M0D_VERSION "v4.1.0.0"
-#define SAMP_VERSION "SA:MP 0.3a"
+#define M0D_NAME		"m0d_s0beit_sa"
+#define M0D_VERSION		"v4.1.0.0"
+#define SAMP_VERSION	"SA:MP 0.3a"
 
 #ifdef M0D_DEV
-  #define NAME "" M0D_NAME "-dev" " " M0D_VERSION " (" __DATE__" " "" __TIME__")"
- #else
-  #define NAME "" M0D_NAME "" " " M0D_VERSION ""
+#define NAME	""M0D_NAME "-dev"" "M0D_VERSION " ("__DATE__ " """__TIME__ ")"
+#else
+#define NAME	""M0D_NAME """ "M0D_VERSION ""
 #endif
-
-#define INI_FILE "m0d_s0beit_sa.ini"
-#define RAW_TEX_FILE "m0d_s0beit_sa.raw"
+#define INI_FILE				"m0d_s0beit_sa.ini"
+#define RAW_TEX_FILE			"m0d_s0beit_sa.raw"
 
 #define RUNMODE_SINGLEPLAYER	0
 #define RUNMODE_SAMP			1
 
-
 // let's do a precompiled header, why not
-#pragma message("Compiling precompiled header.\n")
-// illegal instruction size
-#pragma warning (disable:4409)
-// 'class1' : inherits 'class2::member' via dominance
-#pragma warning (disable:4250)
-// unreferenced formal parameter
-#pragma warning (disable:4100)
-// handler not registered as safe handler
-#pragma warning (disable:4733)
+#pragma message( "Compiling precompiled header.\n" )
 
+// illegal instruction size
+#pragma warning( disable : 4409 )
+
+// 'class1' : inherits 'class2::member' via dominance
+#pragma warning( disable : 4250 )
+
+// unreferenced formal parameter
+#pragma warning( disable : 4100 )
+
+// handler not registered as safe handler
+#pragma warning( disable : 4733 )
 
 // API/SDK includes
 #include <windows.h>
@@ -88,12 +87,12 @@
 // additional setup includes
 #include "mta_extras.h"
 
-
 // public SA classes
 // try to always include these in the private class's header
 #include "SharedUtil.h"
 #include <game/CGame.h>
 #include <game/CWanted.h>
+
 //#include <ijsify.h>
 #include "SString.h"
 
@@ -175,7 +174,6 @@
 #include "CPedDamageResponseSA.h"
 #include "CPedDamageResponseCalculatorSA.h"
 
-
 // normal includes
 #include "patcher.h"
 #include "CDetour.h"
@@ -197,26 +195,25 @@
 #include "proxyIDirect3D9.h"
 #include "proxyIDirect3DDevice9.h"
 
-void traceLastFunc(const char *szFunc);
-void Log(const char *fmt, ...);
-void LogChatbox(bool bLast, const char *fmt, ...);
-void setDebugPointer(void *ptr);
+void							traceLastFunc ( const char *szFunc );
+void							Log ( const char *fmt, ... );
+void							LogChatbox ( bool bLast, const char *fmt, ... );
+void							setDebugPointer ( void *ptr );
 
 // externals
-extern HMODULE g_hDllModule;
-extern char	g_szWorkingDirectory[MAX_PATH];
-extern FILE	*g_flLog;
-extern FILE	*g_flLogAll;
-extern char	g_szLastFunc[256];
-extern uint32_t	g_dwSAMP_Addr;
-extern CSettingsSAInterface *g_pCSettingsSAInterface;
-extern D3DPRESENT_PARAMETERS *g_pGTAPresent;
-extern RsGlobalType *g_RsGlobal;
-extern CCameraSA g_CCamera;
+extern HMODULE					g_hDllModule;
+extern char						g_szWorkingDirectory[MAX_PATH];
+extern FILE						*g_flLog;
+extern FILE						*g_flLogAll;
+extern char						g_szLastFunc[256];
+extern uint32_t					g_dwSAMP_Addr;
+extern CSettingsSAInterface		*g_pCSettingsSAInterface;
+extern D3DPRESENT_PARAMETERS	*g_pGTAPresent;
+extern RsGlobalType				*g_RsGlobal;
+extern CCameraSA				g_CCamera;
 
 // new MTA externals
-extern CGame *pGameInterface;
+extern CGame					*pGameInterface;
 
 // externals
-
 #endif

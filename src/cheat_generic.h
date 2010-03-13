@@ -20,28 +20,27 @@
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
 */
-
 struct gta_cheat
 {
-   uint8_t     *addr;
-   const char  *name;
+	uint8_t		*addr;
+	const char	*name;
 };
 
-int cheat_panic(void);
-void cheat_prevent_freeze(void);
-void cheat_teleport(const float pos[3], int interior_id);
-void cheat_teleport_nearest_car(void);
-void cheat_handle_misc(void);
-void cheat_handle_debug(HWND wnd);
-void cheat_handle_spoof_weapon(void);
-void cheat_handle_weapon_disable(void);
-void cheat_handle_freeze_vehicles(struct vehicle_info *vehicle_info, struct actor_info *actor_info);
-void cheat_handle_unlock(void);
-void cheat_handle_hp(struct vehicle_info *vehicle_info, struct actor_info *actor_info, float time_diff);
-void cheat_handle_stick(struct vehicle_info *vehicle_info, struct actor_info *actor_info, float time_diff);
-void cheat_handle_money(void);
-void cheat_handle_weapon(void);
-void cheat_handle_teleport(struct vehicle_info *vehicle_info, struct actor_info *actor_info, float time_diff);
-void cheat_handle_checkpoint(void);
-void cheat_handle_unfreeze(struct vehicle_info *vehicle_info, struct actor_info *actor_info, float time_diff);
-void cheat_handle_emo(struct vehicle_info *vehicle_info, struct actor_info *actor_info, float time_diff);
+int		cheat_panic ( void );
+void	cheat_prevent_freeze ( void );
+void	cheat_teleport ( const float pos[3], int interior_id );
+void	cheat_teleport_nearest_car ( void );
+void	cheat_handle_misc ( void );
+void	cheat_handle_debug ( HWND wnd );
+void	cheat_handle_spoof_weapon ( void );
+void	cheat_handle_weapon_disable ( void );
+void	cheat_handle_freeze_vehicles ( struct vehicle_info *vehicle_info, struct actor_info *actor_info );
+void	cheat_handle_unlock ( void );
+void	cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *actor_info, float time_diff );
+void	cheat_handle_stick ( struct vehicle_info *vehicle_info, struct actor_info *actor_info, float time_diff );
+void	cheat_handle_money ( void );
+void	cheat_handle_weapon ( void );
+void	cheat_handle_teleport ( struct vehicle_info *vehicle_info, struct actor_info *actor_info, float time_diff );
+void	cheat_handle_checkpoint ( void );
+void	cheat_handle_unfreeze ( struct vehicle_info *vehicle_info, struct actor_info *actor_info, float time_diff );
+void	cheat_handle_emo ( struct vehicle_info *vehicle_info, struct actor_info *actor_info, float time_diff );

@@ -20,5 +20,4 @@
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
 */
-
-const char *debug_classify_pointer(const void *ptr);
+const char	*debug_classify_pointer ( const void *ptr );

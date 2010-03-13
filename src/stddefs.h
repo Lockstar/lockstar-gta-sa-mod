@@ -20,8 +20,6 @@
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
 */
-
-#define snprintf  _snprintf
-#define vsnprintf _vsnprintf
-#define isfinite  _finite
-
+#define snprintf	_snprintf
+#define vsnprintf	_vsnprintf
+#define isfinite	_finite
