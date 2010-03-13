@@ -125,11 +125,6 @@ enum eClientVehicleType
 #define GTAvar_osVer			0xC9AC0C		// int
 #define GTAvar_winVer			0xC9AC10		// int
 #define GTAvar_winMajor			0xC9AC14		// int
-	
-	
-	
-	
-	///////////////////////////////////////////////////////
 typedef struct _VECTOR
 {
 #pragma pack( 1 )

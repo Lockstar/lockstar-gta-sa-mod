@@ -230,7 +230,6 @@ void cheat_hook ( HWND wnd )
 
 	//////////////////////////////////////////
 	// looks like we have pools so continue //
-	//////////////////////////////////////////
 	actor_info = actor_info_get ( ACTOR_SELF, ACTOR_ALIVE );
 	vehicle_info = vehicle_info_get ( VEHICLE_SELF, 0 );
 
@@ -363,7 +362,6 @@ void cheat_hook ( HWND wnd )
 
 		//////////////////////////////////////////////////////////////////
 		// this should be removed after reworking weapon cheat function //
-		//////////////////////////////////////////////////////////////////
 		if ( set.restore_weapons_after_death )
 			* (uint8_t *)0x5E6320 = 0xC3;
 

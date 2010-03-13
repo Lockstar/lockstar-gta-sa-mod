@@ -475,7 +475,7 @@ int isBadPtr_GTA_pVehicleInfo ( vehicle_info *p_VehicleInfo )
 			 ((DWORD) pool_vehicle->start + (pool_vehicle->size * sizeof (vehicle_info)))
  ) )
 		return 1;
-	return( p_VehicleInfo->base.matrix == NULL );
+	return ( p_VehicleInfo->base.matrix == NULL );
 }
 
 int isBadPtr_GTA_pActorInfo ( actor_info *p_ActorInfo )
@@ -488,7 +488,7 @@ int isBadPtr_GTA_pActorInfo ( actor_info *p_ActorInfo )
 			 ((DWORD) pool_actor->start + (pool_actor->size * sizeof (actor_info)))
  ) )
 		return 1;
-	return( p_ActorInfo->base.matrix == NULL );
+	return ( p_ActorInfo->base.matrix == NULL );
 }
 
 bool isBadPtr_handlerAny ( void *pointer, ULONG size, DWORD dwFlags )
@@ -837,7 +837,7 @@ uint32_t __time_get ( void )
 		init = 1;
 	}
 
-	return( uint32_t ) ( time_now.QuadPart - init_time.QuadPart );
+	return ( uint32_t ) ( time_now.QuadPart - init_time.QuadPart );
 }
 
 void cheat_state_text ( const char *fmt, ... )
@@ -1482,7 +1482,7 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 			);
 
 	case 402:
-		return( us == 1009 || us == 1009 || us == 1010 );
+		return ( us == 1009 || us == 1009 || us == 1010 );
 
 	case 404:
 		return
@@ -1518,7 +1518,7 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 			);
 
 	case 409:
-		return( us == 1009 );
+		return ( us == 1009 );
 
 	case 410:
 		return
@@ -1539,10 +1539,10 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 			);
 
 	case 411:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 412:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 415:
 		return
@@ -1573,7 +1573,7 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 			);
 
 	case 419:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 420:
 		return
@@ -1635,7 +1635,7 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 			);
 
 	case 429:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 436:
 		return
@@ -1656,7 +1656,7 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 			);
 
 	case 438:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 439:
 		return
@@ -1677,28 +1677,28 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 			);
 
 	case 442:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 445:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 451:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 458:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 466:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 467:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 474:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 475:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 477:
 		return
@@ -1732,10 +1732,10 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 			);
 
 	case 479:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 480:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 489:
 		return
@@ -1824,10 +1824,10 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 			);
 
 	case 506:
-		return( us == 1009 );
+		return ( us == 1009 );
 
 	case 507:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 516:
 		return
@@ -1892,7 +1892,7 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 			);
 
 	case 526:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 527:
 		return
@@ -1930,7 +1930,7 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 			);
 
 	case 533:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 534:
 		return
@@ -2013,7 +2013,7 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 			);
 
 	case 541:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 542:
 		return
@@ -2032,7 +2032,7 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 			);
 
 	case 545:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 546:
 		return
@@ -2135,7 +2135,7 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 			);
 
 	case 555:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 558:
 		return
@@ -2271,7 +2271,7 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 			);
 
 	case 566:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 567:
 		return
@@ -2324,7 +2324,7 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 			);
 
 	case 579:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 580:
 		return
@@ -2364,7 +2364,7 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 			);
 
 	case 587:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 589:
 		return
@@ -2405,7 +2405,7 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 			);
 
 	case 602:
-		return( us == 1008 || us == 1009 || us == 1010 );
+		return ( us == 1008 || us == 1009 || us == 1010 );
 
 	case 603:
 		return
