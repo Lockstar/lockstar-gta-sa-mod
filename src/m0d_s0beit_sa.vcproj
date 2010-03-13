@@ -1718,6 +1718,54 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="sparshash"
+			>
+			<Filter
+				Name="google"
+				>
+				<File
+					RelativePath=".\sparsehash\google\type_traits.h"
+					>
+				</File>
+				<Filter
+					Name="sparsehash"
+					>
+					<File
+						RelativePath=".\sparsehash\google\sparsehash\densehashtable.h"
+						>
+					</File>
+					<File
+						RelativePath=".\sparsehash\google\sparsehash\sparsehashtable.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="windows"
+				>
+				<File
+					RelativePath=".\sparsehash\windows\config.h"
+					>
+				</File>
+				<File
+					RelativePath=".\sparsehash\windows\port.h"
+					>
+				</File>
+				<Filter
+					Name="google"
+					>
+					<Filter
+						Name="sparsehash"
+						>
+						<File
+							RelativePath=".\sparsehash\windows\google\sparsehash\sparseconfig.h"
+							>
+						</File>
+					</Filter>
+				</Filter>
+			</Filter>
+		</Filter>
 		<File
 			RelativePath=".\m0d_s0beit_sa.def"
 			>
@@ -1740,6 +1788,10 @@
 		</File>
 		<File
 			RelativePath=".\rsrc.rc"
+			>
+		</File>
+		<File
+			RelativePath=".\sparsehash\sparsetable_unittest.cc"
 			>
 		</File>
 		<File

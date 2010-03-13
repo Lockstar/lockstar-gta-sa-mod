@@ -2,10 +2,10 @@ Version 4.1.0.0
 * Support for SA-MP 0.3a.
 * Fixed so many things that it's retarded to list them here.
 * Added menu to add upgrades (Wangs/etc) to your vehicle anywhere.
-* Added option to avoid loosing Trailer. Default: Menu only
-* Added switchable car lights. Default: f2 to switch modes.
-* Added toggleable infinite NOS. Default: Numpad 0
 * Added SpiderWheels, drive on anything! Default: Numpad 5
+* Added option to avoid loosing Trailer. Default: Menu only
+* Added toggleable infinite NOS. Default: Numpad 0
+* Added switchable car lights. Default: f2 to switch modes.
 * Added toggleable vehicle collisions except for your vehicle.
 * Added left & right 90 degree buttons to Quick Turn. Default: [ and ]
 * Added option in menu (GTA->Misc) to toggle windowed mode.
@@ -16,12 +16,10 @@ COMMITTING:
 
 
 TEST:
-completely reworked window mode menu function
-fix possible startup world-load hang
+
 
 TODO:
-fix possible startup worldload hang
-
+make sure F12 panic key is disabling everything
 
 
 

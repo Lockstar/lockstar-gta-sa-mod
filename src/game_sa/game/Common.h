@@ -15,15 +15,15 @@
 #include <windows.h>
 
 // these are changed by SAMP...
-/*
-#define MAX_VEHICLES                        110
-#define MAX_PEDS                            140
-#define MAX_OBJECTS                         350
-#define MAX_BUILDINGS                       13000
-*/
+
+//#define MAX_VEHICLES                        110
+//#define MAX_PEDS                            140
+//#define MAX_OBJECTS                         350
+//#define MAX_BUILDINGS                       13000
+
 #define MAX_PEDS			502
 #define MAX_VEHICLES		2000
-#define MAX_OBJECTS			255
+#define MAX_OBJECTS			350
 #define MAX_BUILDINGS		17096
 
 
