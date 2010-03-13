@@ -1791,10 +1791,6 @@
 			>
 		</File>
 		<File
-			RelativePath=".\sparsehash\sparsetable_unittest.cc"
-			>
-		</File>
-		<File
 			RelativePath=".\stddefs.h"
 			>
 		</File>

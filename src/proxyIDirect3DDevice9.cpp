@@ -1410,8 +1410,7 @@ void renderVehicleTags ( void )
 	int							v;
 
 	//CPoolsSA					*pPools = reinterpret_cast < CPoolsSA * > ( pGame->GetPools () );
-	//vehiclePool_t::mapType::iterator iter = pPools->m_vehiclePool.map.find ( pInterface );
-
+	//CPoolsSA::vehiclePool_t::mapType::iterator iter = pPools->m_vehiclePool.map.find ( pInterface );
 	/*
 	vehiclePool_t::mapType::iterator iter = m_vehiclePool.map.find ( pInterface );
 	if ( iter != m_vehiclePool.map.end () )

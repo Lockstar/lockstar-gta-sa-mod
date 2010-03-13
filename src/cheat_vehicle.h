@@ -20,30 +20,28 @@
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
 */
+void	vehicleJumper ( int iVehicleID );
 
-void vehicleJumper(int iVehicleID);
-
-void cheat_vehicle_teleport(struct vehicle_info *info, const float pos[3], int interior_id);
-void cheat_handle_vehicle_nocols(struct vehicle_info *info);
-void cheat_handle_vehicle_unflip(struct vehicle_info *info, float time_diff);
-void cheat_handle_vehicle_air_brake(struct vehicle_info *info, float time_diff);
-void cheat_handle_vehicle_warp(struct vehicle_info *info, float time_diff);
-void cheat_handle_vehicle_nitro(struct vehicle_info *info, float time_diff);
-void cheat_handle_vehicle_stick(struct vehicle_info *info, float time_diff);
-void cheat_handle_vehicle_quick_turn_180(struct vehicle_info *info, float time_diff);
-void cheat_handle_vehicle_quick_turn_left(struct vehicle_info *info, float time_diff);
-void cheat_handle_vehicle_quick_turn_right(struct vehicle_info *info, float time_diff);
-void cheat_handle_vehicle_protection(struct vehicle_info *info, float time_diff);
-void cheat_handle_vehicle_brake(struct vehicle_info *info, float time_diff);
-void cheat_handle_vehicle_hop(struct vehicle_info *info, float time_diff);
-void cheat_vehicle_air_brake_set(int enabled);
-void cheat_handle_vehicle_engine(struct vehicle_info *vehicle_info, float time_diff);
-void cheat_handle_vehicle_brakedance(struct vehicle_info *vehicle_info, float time_diff);
-void cheat_handle_blinking_carlights(struct vehicle_info *vehicle_info, float time_diff);
-void cheat_handle_vehicle_keepTrailer(struct vehicle_info *vehicle_info, float time_diff);
-void cheat_handle_fast_exit(struct vehicle_info *vehicle_info, float time_diff);
-void cheat_handle_repair_car(struct vehicle_info *vehicle_info, float time_diff);
-void cheat_handle_spiderWheels(vehicle_info *vinfo, float time_diff);
-void CPhysical_ApplyGravity(DWORD dwThis);
-CVector cheat_vehicle_getPositionUnder(CVehicle *cveh);
-
+void	cheat_vehicle_teleport ( struct vehicle_info *info, const float pos[3], int interior_id );
+void	cheat_handle_vehicle_nocols ( struct vehicle_info *info );
+void	cheat_handle_vehicle_unflip ( struct vehicle_info *info, float time_diff );
+void	cheat_handle_vehicle_air_brake ( struct vehicle_info *info, float time_diff );
+void	cheat_handle_vehicle_warp ( struct vehicle_info *info, float time_diff );
+void	cheat_handle_vehicle_nitro ( struct vehicle_info *info, float time_diff );
+void	cheat_handle_vehicle_stick ( struct vehicle_info *info, float time_diff );
+void	cheat_handle_vehicle_quick_turn_180 ( struct vehicle_info *info, float time_diff );
+void	cheat_handle_vehicle_quick_turn_left ( struct vehicle_info *info, float time_diff );
+void	cheat_handle_vehicle_quick_turn_right ( struct vehicle_info *info, float time_diff );
+void	cheat_handle_vehicle_protection ( struct vehicle_info *info, float time_diff );
+void	cheat_handle_vehicle_brake ( struct vehicle_info *info, float time_diff );
+void	cheat_handle_vehicle_hop ( struct vehicle_info *info, float time_diff );
+void	cheat_vehicle_air_brake_set ( int enabled );
+void	cheat_handle_vehicle_engine ( struct vehicle_info *vehicle_info, float time_diff );
+void	cheat_handle_vehicle_brakedance ( struct vehicle_info *vehicle_info, float time_diff );
+void	cheat_handle_blinking_carlights ( struct vehicle_info *vehicle_info, float time_diff );
+void	cheat_handle_vehicle_keepTrailer ( struct vehicle_info *vehicle_info, float time_diff );
+void	cheat_handle_fast_exit ( struct vehicle_info *vehicle_info, float time_diff );
+void	cheat_handle_repair_car ( struct vehicle_info *vehicle_info, float time_diff );
+void	cheat_handle_spiderWheels ( vehicle_info *vinfo, float time_diff );
+void	CPhysical_ApplyGravity ( DWORD dwThis );
+CVector cheat_vehicle_getPositionUnder ( CVehicle *cveh );
