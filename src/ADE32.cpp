@@ -1568,7 +1568,7 @@ int disasm ( BYTE *opcode0, disasm_struct *diza )
 {
 	BYTE	*opcode = opcode0;
 
-	memset ( diza, 0x00, sizeof (disasm_struct) );
+	memset( diza, 0x00, sizeof(disasm_struct) );
 	diza->disasm_defdata = 4;
 	diza->disasm_defaddr = 4;
 
@@ -1700,9 +1700,9 @@ repeat_prefix:
 int oplen ( BYTE *opcode )
 {
 	disasm_struct	diza;
-	memset ( &diza, 0, sizeof (diza) );
+	memset( &diza, 0, sizeof(diza) );
 
-	disasm ( (BYTE *)opcode, &diza );
+	disasm( (BYTE *)opcode, &diza );
 
 	if ( (diza.disasm_flag == C_ERROR)
 	 ||	 ((diza.disasm_flag & C_STOP) == C_STOP)

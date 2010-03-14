@@ -48,7 +48,7 @@ D3DC9			orig_Direct3DCreate9 = NULL;
 
 void traceproc ( const char *szLastFn )
 {
-	_snprintf_s ( szLastFunction, sizeof (szLastFunction), szLastFn );
+	_snprintf_s( szLastFunction, sizeof(szLastFunction), szLastFn );
 }
 
 void log_debug ( const char *fmt, ... )
@@ -59,40 +59,40 @@ void log_debug ( const char *fmt, ... )
 	if ( pFileLog == NULL )
 	{
 		char	filename[512];
-		snprintf ( filename, sizeof (filename), "%s\\%s", szWorkingDir, "m0d_s0beit_sa.log" );
+		snprintf( filename, sizeof(filename), "%s\\%s", szWorkingDir, "m0d_s0beit_sa.log" );
 
-		remove ( filename );
-		pFileLog = fopen ( filename, "a" );
+		remove( filename );
+		pFileLog = fopen( filename, "a" );
 		if ( pFileLog == NULL )
-			return ;
+			return;
 	}
 
-	GetLocalTime ( &time );
-	fprintf ( pFileLog, "[%02d:%02d:%02d.%02d] ", time.wHour, time.wMinute, time.wSecond, time.wMilliseconds );
-	va_start ( ap, fmt );
-	vfprintf ( pFileLog, fmt, ap );
-	va_end ( ap );
-	fprintf ( pFileLog, "\n" );
-	fflush ( pFileLog );
+	GetLocalTime( &time );
+	fprintf( pFileLog, "[%02d:%02d:%02d.%02d] ", time.wHour, time.wMinute, time.wSecond, time.wMilliseconds );
+	va_start( ap, fmt );
+	vfprintf( pFileLog, fmt, ap );
+	va_end( ap );
+	fprintf( pFileLog, "\n" );
+	fflush( pFileLog );
 
 	if ( pFileLogAll == NULL )
 	{
 		char	filename_all[512];
-		snprintf ( filename_all, sizeof (filename_all), "%s\\%s", szWorkingDir, "m0d_s0beit_sa_all.log" );
+		snprintf( filename_all, sizeof(filename_all), "%s\\%s", szWorkingDir, "m0d_s0beit_sa_all.log" );
 
-		pFileLogAll = fopen ( filename_all, "a" );
+		pFileLogAll = fopen( filename_all, "a" );
 		if ( pFileLogAll == NULL )
-			return ;
+			return;
 	}
 
-	GetLocalTime ( &time );
-	fprintf ( pFileLogAll, "[%02d-%02d-%02d || %02d:%02d:%02d.%02d] ", time.wDay, time.wMonth, time.wYear, time.wHour,
-			  time.wMinute, time.wSecond, time.wMilliseconds );
-	va_start ( ap, fmt );
-	vfprintf ( pFileLogAll, fmt, ap );
-	va_end ( ap );
-	fprintf ( pFileLogAll, "\n" );
-	fflush ( pFileLogAll );
+	GetLocalTime( &time );
+	fprintf( pFileLogAll, "[%02d-%02d-%02d || %02d:%02d:%02d.%02d] ", time.wDay, time.wMonth, time.wYear, time.wHour,
+			 time.wMinute, time.wSecond, time.wMilliseconds );
+	va_start( ap, fmt );
+	vfprintf( pFileLogAll, fmt, ap );
+	va_end( ap );
+	fprintf( pFileLogAll, "\n" );
+	fflush( pFileLogAll );
 }
 
 void log_gamemode_info ( const char *fmt, ... )
@@ -103,19 +103,19 @@ void log_gamemode_info ( const char *fmt, ... )
 	{
 		char	filename[512];
 
-		snprintf ( filename, sizeof (filename), "%s\\%s", szWorkingDir, "gamemode_info.log" );
+		snprintf( filename, sizeof(filename), "%s\\%s", szWorkingDir, "gamemode_info.log" );
 
-		pFileGamemode = fopen ( filename, "a" );
+		pFileGamemode = fopen( filename, "a" );
 		if ( pFileGamemode == NULL )
-			return ;
+			return;
 	}
 
-	va_start ( ap, fmt );
-	vfprintf ( pFileGamemode, fmt, ap );
-	va_end ( ap );
+	va_start( ap, fmt );
+	vfprintf( pFileGamemode, fmt, ap );
+	va_end( ap );
 
 	//fprintf(gamemode_file, "\r\n");
-	fflush ( pFileGamemode );
+	fflush( pFileGamemode );
 }
 
 void debug_ptr_set ( void *ptr )
@@ -128,8 +128,8 @@ void debug_ptr_set ( void *ptr )
 	}
 	else
 	{
-		memmove ( debug->ptr, debug->ptr + 1, sizeof (debug->ptr) - sizeof (debug->ptr[0]) );
-		memmove ( debug->offset, debug->offset + 1, sizeof (debug->offset) - sizeof (debug->offset[0]) );
+		memmove( debug->ptr, debug->ptr + 1, sizeof(debug->ptr) - sizeof(debug->ptr[0]) );
+		memmove( debug->offset, debug->offset + 1, sizeof(debug->offset) - sizeof(debug->offset[0]) );
 	}
 
 	debug->ptr[debug->hist_pos] = (uint8_t *)ptr;
@@ -139,78 +139,78 @@ void debug_ptr_set ( void *ptr )
 
 static int init ( void )
 {
-	traceproc ( "init()" );
+	traceproc( "init()" );
 
 	char	filename[MAX_PATH];
 
 	if ( hOrigDll == NULL )
 	{
-		srand ( GetTickCount () );
+		srand( GetTickCount() );
 
-		if ( GetModuleFileName (hDllModule, szWorkingDir, sizeof (szWorkingDir) - 32) != 0 )
+		if ( GetModuleFileName(hDllModule, szWorkingDir, sizeof(szWorkingDir) - 32) != 0 )
 		{
-			if ( strrchr (szWorkingDir, '\\') != NULL )
-				*strrchr ( szWorkingDir, '\\' ) = 0;
+			if ( strrchr(szWorkingDir, '\\') != NULL )
+				*strrchr( szWorkingDir, '\\' ) = 0;
 			else
-				strcpy ( szWorkingDir, "." );
+				strcpy( szWorkingDir, "." );
 		}
 		else
 		{
-			strcpy ( szWorkingDir, "." );
+			strcpy( szWorkingDir, "." );
 		}
 
-		log_debug ( "Initializing %s", NAME );
+		log_debug( "Initializing %s", NAME );
 
-#pragma warning ( disable : 4127 )
-		if ( sizeof (struct vehicle_info) != 2584 )
+#pragma warning( disable : 4127 )
+		if ( sizeof(struct vehicle_info) != 2584 )
 		{
-			log_debug ( "sizeof(struct vehicle_info) == %d, aborting.", sizeof (struct vehicle_info) );
+			log_debug( "sizeof(struct vehicle_info) == %d, aborting.", sizeof(struct vehicle_info) );
 			return 0;
 		}
 
-		if ( sizeof (struct actor_info) != 1988 )
+		if ( sizeof(struct actor_info) != 1988 )
 		{
-			log_debug ( "sizeof(struct actor_info) == %d, aborting.", sizeof (struct actor_info) );
+			log_debug( "sizeof(struct actor_info) == %d, aborting.", sizeof(struct actor_info) );
 			return 0;
 		}
 
-		if ( sizeof (struct settings) > 262144 )
+		if ( sizeof(struct settings) > 262144 )
 		{
-			log_debug ( "sizeof(struct settings) > 262144 (%d), aborting.", sizeof (struct settings) );
+			log_debug( "sizeof(struct settings) > 262144 (%d), aborting.", sizeof(struct settings) );
 			return 0;
 		}
 
-#pragma warning ( default : 4127 )
-		getSamp ();
-		ini_load ();
+#pragma warning( default : 4127 )
+		getSamp();
+		ini_load();
 
 		if ( !set.i_have_edited_the_ini_file )
 		{
-			MessageBox ( 0, "Looks like you've not edited the .ini file like you were told to!\n""\n"
-						 "Before you can use m0d_s0beit, you have to set \"i_have_edited_the_ini_file\" to true.\n",
-					 "You're a retard.", 0 );
-			ShellExecute ( 0, "open", "notepad", INI_FILE, szWorkingDir, SW_SHOW );
+			MessageBox( 0, "Looks like you've not edited the .ini file like you were told to!\n""\n"
+						"Before you can use m0d_s0beit, you have to set \"i_have_edited_the_ini_file\" to true.\n",
+					"You're a retard.", 0 );
+			ShellExecute( 0, "open", "notepad", INI_FILE, szWorkingDir, SW_SHOW );
 			return 0;
 		}
 
-		InitScripting ();
+		InitScripting();
 
-		GetSystemDirectory ( filename, (UINT) (MAX_PATH - strlen ("\\d3d9.dll") - 1) );
-		strlcat ( filename, "\\d3d9.dll", sizeof (filename) );
+		GetSystemDirectory( filename, (UINT) (MAX_PATH - strlen("\\d3d9.dll") - 1) );
+		strlcat( filename, "\\d3d9.dll", sizeof(filename) );
 
 		//log_debug("Loading library: %s", filename);
-		hOrigDll = LoadLibrary ( filename );
+		hOrigDll = LoadLibrary( filename );
 		if ( hOrigDll == NULL )
 		{
-			log_debug ( "Failed to load %s", filename );
+			log_debug( "Failed to load %s", filename );
 			return 0;
 		}
 
-		orig_Direct3DCreate9 = ( D3DC9 ) GetProcAddress ( hOrigDll, "Direct3DCreate9" );
+		orig_Direct3DCreate9 = ( D3DC9 ) GetProcAddress( hOrigDll, "Direct3DCreate9" );
 		if ( orig_Direct3DCreate9 == NULL )
 		{
-			log_debug ( "%s does not export Direct3DCreate9!?", filename );
-			FreeLibrary ( hOrigDll );
+			log_debug( "%s does not export Direct3DCreate9!?", filename );
+			FreeLibrary( hOrigDll );
 			return 0;
 		}
 
@@ -238,7 +238,7 @@ BOOL APIENTRY DllMain ( HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpRese
 	switch ( ul_reason_for_call )
 	{
 	case DLL_PROCESS_ATTACH:
-		DisableThreadLibraryCalls ( hModule );
+		DisableThreadLibraryCalls( hModule );
 		hDllModule = hModule;
 		break;
 
@@ -246,33 +246,33 @@ BOOL APIENTRY DllMain ( HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpRese
 		if ( hOrigDll != NULL )
 		{
 			//log_debug("Detached from process. Freeing d3d9.dll...");
-			FreeLibrary ( hOrigDll );
+			FreeLibrary( hOrigDll );
 			hOrigDll = NULL;
 
 			//log_debug("Freeing memory...");
-			menu_free_all ();
-			ini_free ();
-			log_debug ( "Exited\n" );
+			menu_free_all();
+			ini_free();
+			log_debug( "Exited\n" );
 		}
 
 		if ( pFileLog != NULL )
 		{
 			//log_debug("Closing log file.");
-			fclose ( pFileLog );
+			fclose( pFileLog );
 			pFileLog = NULL;
 		}
 
 		if ( pFileLogAll != NULL )
 		{
 			//log_debug("Closing log file.");
-			fclose ( pFileLogAll );
+			fclose( pFileLogAll );
 			pFileLogAll = NULL;
 		}
 
 		if ( pFileGamemode != NULL )
 		{
 			//log_debug("Closing gamemode file.");
-			fclose ( pFileGamemode );
+			fclose( pFileGamemode );
 			pFileGamemode = NULL;
 		}
 		break;

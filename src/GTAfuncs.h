@@ -154,24 +154,10 @@ CVector		GTAfunc_GetMoveSpeed ( object_base *entity );
 VOID		GTAfunc_SetMoveSpeed ( object_base *vinfo, CVector vecMoveSpeed );
 
 // CWorld functions
-bool		GTAfunc_IsLineOfSightClear ( CVector *vecStart,
-										 CVector *vecEnd,
-										 bool	 bCheckBuildings,
-										 bool	 bCheckVehicles,
-										 bool	 bCheckPeds,
-										 bool	 bCheckObjects,
-										 bool	 bCheckDummies,
-										 bool	 bSeeThroughStuff,
-										 bool	 bIgnoreSomeObjectsForCamera );
-bool		GTAfunc_ProcessLineOfSight ( CVector			 *vecStart,
-										 CVector			 *vecEnd,
-										 CColPoint			 **colCollision,
-										 CEntitySAInterface	 **CollisionEntity,
-										 bool				 bCheckBuildings,
-										 bool				 bCheckVehicles,
-										 bool				 bCheckPeds,
-										 bool				 bCheckObjects,
-										 bool				 bCheckDummies,
-										 bool				 bSeeThroughStuff,
-										 bool				 bIgnoreSomeObjectsForCamera,
-										 bool				 bShootThroughStuff );
+bool		GTAfunc_IsLineOfSightClear ( CVector *vecStart, CVector *vecEnd, bool bCheckBuildings, bool bCheckVehicles,
+										 bool bCheckPeds, bool bCheckObjects, bool bCheckDummies, bool bSeeThroughStuff,
+										 bool bIgnoreSomeObjectsForCamera );
+bool		GTAfunc_ProcessLineOfSight ( CVector *vecStart, CVector *vecEnd, CColPoint **colCollision,
+										 CEntitySAInterface **CollisionEntity, bool bCheckBuildings, bool bCheckVehicles,
+										 bool bCheckPeds, bool bCheckObjects, bool bCheckDummies, bool bSeeThroughStuff,
+										 bool bIgnoreSomeObjectsForCamera, bool bShootThroughStuff );

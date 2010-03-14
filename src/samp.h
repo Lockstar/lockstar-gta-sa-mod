@@ -72,6 +72,9 @@
 #define SPECIAL_ACTION_DRINK_WINE		22
 #define SPECIAL_ACTION_DRINK_SPRUNK		23
 
+//////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// SAMP STRUCTURES ///////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
 struct stSAMP
 {
 #pragma pack( 1 )
@@ -349,78 +352,94 @@ struct stKillInfo
 	struct stKillEntry	killEntry[5];
 };
 
-//////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////// FUNCTIONS //////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////
-int					isBadPtr_SAMP_iVehicleID ( int iVehicleID );
-int					isBadPtr_SAMP_iPlayerID ( int iPlayerID );
-
-void				getSamp ();
-uint32_t			getSampAddress ();
-
-struct stSAMP		*stGetSampInfo ( void );
-struct stChatInfo	*stGetSampChatInfo ( void );
-struct stInputInfo	*stGetInputInfo ( void );
-struct stKillInfo	*stGetKillInfo ( void );
-D3DCOLOR			samp_color_get ( int id );
-D3DCOLOR			samp_color_get_trans ( int id, DWORD trans );
-
-void				sampMainCheat ();
-
-int					getPlayerCount ( void );
-int					getVehicleCount ( void );
-
-int					getPlayerPos ( int iPlayerID, float fPos[3] );
-const char			*getPlayerName ( int iPlayerID );
-int					getPlayerState ( int iPlayerID );
-int					getPlayerVehicleGTAScriptingID ( int iPlayerID );
-int					getPlayerSAMPVehicleID ( int iPlayerID );
-void				spectatePlayer ( int iPlayerID );
-
-struct actor_info	*getGTAPedFromSAMPPlayerID ( int iPlayerID );
-struct vehicle_info *getGTAVehicleFromSAMPVehicleID ( int iPlayerID );
-int					getSAMPPlayerIDFromGTAPed ( struct actor_info *info );
-int					getSAMPVehicleIDFromGTAVehicle ( struct vehicle_info *pVehicle );
-uint32_t			getPedGTAScriptingIDFromPlayerID ( int iPlayerID );
-uint32_t			getVehicleGTAScriptingIDFromVehicleID ( int iVehicleID );
-
-int					samp_vehicle_find_nearest ( int flags );
-
-void				addToChatWindow ( char *text, D3DCOLOR textColor );
-void				addMessageToChatWindow ( const char *text, ... );
-void				addMessageToChatWindowSS ( const char *text, ... );
-void				restartGame ();
-void				addSayToChatWindow ( char *msg );
-void				say ( char *text, ... );
-void				showGameText ( char *text, int time, int textsize );
-void				playerSpawn ( void );
-void				disconnect ( int reason );
-void				setPassword ( char *password );
-void				sendSetInterior ( uint8_t interiorID );
-void				setSpecialAction ( uint8_t byteSpecialAction );
-void				sendSCMEvent ( int iEvent, int iVehicleID, int iParam1, int iParam2 );
 struct stStreamedOutPlayerInfo
 {
 	int		iPlayerID[SAMP_PLAYER_MAX];
 	float	fPlayerPos[SAMP_PLAYER_MAX][3];
 };
-extern struct stStreamedOutPlayerInfo	g_stStreamedOutInfo;
-void									installHooks ();
-void									setSAMPInitScreenMatrix ( float	  camposX,
-																  float	  camposY,
-																  float	  camposZ,
-																  float	  camlookatX,
-																  float	  camlookatY,
-																  float	  camlookatZ );
-void									setSAMPCustomSendRates ( int iOnFoot, int iInCar, int iAim, int iHeadSync );
-int										sampPatchDisableNameTags ( int iEnabled );
-int										sampPatchDisableInteriorUpdate ( int iEnabled );
-int										sampPatchDisableScreeenshotKey ( int iEnabled );
 
-extern int								g_renderSAMP_initSAMPstructs;
-extern struct stSAMP					*g_SAMP;
-extern struct stPlayerPool				*g_Players;
-extern struct stVehiclePool				*g_Vehicles;
-extern struct stChatInfo				*g_Chat;
-extern struct stInputInfo				*g_Input;
-extern struct stKillInfo				*g_DeathList;
+//////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////// SUPPORT VARIABLES //////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+struct stTranslateSAMPGTA_vehiclePool
+{
+	// the index is the position in the vehicle pool
+	//
+	// translation data
+	int iSAMPID[SAMP_VEHICLE_MAX];
+};
+
+//////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////// FUNCTIONS //////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+void											update_translateSAMPGTA_vehiclePool ( void );
+
+int												isBadPtr_SAMP_iVehicleID ( int iVehicleID );
+int												isBadPtr_SAMP_iPlayerID ( int iPlayerID );
+
+void											getSamp ();
+uint32_t										getSampAddress ();
+
+struct stSAMP									*stGetSampInfo ( void );
+struct stChatInfo								*stGetSampChatInfo ( void );
+struct stInputInfo								*stGetInputInfo ( void );
+struct stKillInfo								*stGetKillInfo ( void );
+D3DCOLOR										samp_color_get ( int id );
+D3DCOLOR										samp_color_get_trans ( int id, DWORD trans );
+
+void											sampMainCheat ();
+
+int												getPlayerCount ( void );
+int												getVehicleCount ( void );
+
+int												getPlayerPos ( int iPlayerID, float fPos[3] );
+const char										*getPlayerName ( int iPlayerID );
+int												getPlayerState ( int iPlayerID );
+int												getPlayerVehicleGTAScriptingID ( int iPlayerID );
+int												getPlayerSAMPVehicleID ( int iPlayerID );
+void											spectatePlayer ( int iPlayerID );
+
+struct actor_info								*getGTAPedFromSAMPPlayerID ( int iPlayerID );
+struct vehicle_info								*getGTAVehicleFromSAMPVehicleID ( int iPlayerID );
+int												getSAMPPlayerIDFromGTAPed ( struct actor_info *info );
+int												getSAMPVehicleIDFromGTAVehicle ( struct vehicle_info *pVehicle );
+uint32_t										getPedGTAScriptingIDFromPlayerID ( int iPlayerID );
+uint32_t										getVehicleGTAScriptingIDFromVehicleID ( int iVehicleID );
+
+int												samp_vehicle_find_nearest ( int flags );
+
+void											addToChatWindow ( char *text, D3DCOLOR textColor );
+void											addMessageToChatWindow ( const char *text, ... );
+void											addMessageToChatWindowSS ( const char *text, ... );
+void											restartGame ();
+void											addSayToChatWindow ( char *msg );
+void											say ( char *text, ... );
+void											showGameText ( char *text, int time, int textsize );
+void											playerSpawn ( void );
+void											disconnect ( int reason );
+void											setPassword ( char *password );
+void											sendSetInterior ( uint8_t interiorID );
+void											setSpecialAction ( uint8_t byteSpecialAction );
+void											sendSCMEvent ( int iEvent, int iVehicleID, int iParam1, int iParam2 );
+
+void											installSAMPHooks ();
+void											setSAMPInitScreenMatrix ( float camposX, float camposY, float camposZ,
+																		  float camlookatX, float camlookatY,
+																		  float camlookatZ );
+void											setSAMPCustomSendRates ( int iOnFoot, int iInCar, int iAim, int iHeadSync );
+int												sampPatchDisableNameTags ( int iEnabled );
+int												sampPatchDisableInteriorUpdate ( int iEnabled );
+int												sampPatchDisableScreeenshotKey ( int iEnabled );
+
+// global pointer externals
+extern int										g_renderSAMP_initSAMPstructs;
+extern struct stSAMP							*g_SAMP;
+extern struct stPlayerPool						*g_Players;
+extern struct stVehiclePool						*g_Vehicles;
+extern struct stChatInfo						*g_Chat;
+extern struct stInputInfo						*g_Input;
+extern struct stKillInfo						*g_DeathList;
+extern struct stStreamedOutPlayerInfo			g_stStreamedOutInfo;
+
+// global support variables externals
+extern struct stTranslateSAMPGTA_vehiclePool	translateSAMPGTA_vehiclePool;

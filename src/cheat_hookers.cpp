@@ -32,7 +32,7 @@ DWORD	RETURN_CPhysical_ApplyGravity = 0x543093;
 
 void CPhysical_ApplyGravity ( DWORD dwThis )
 {
-	traceLastFunc ( "CPhysical_ApplyGravity()" );
+	traceLastFunc( "CPhysical_ApplyGravity()" );
 
 	// dwThis should be coming from HOOK_CPhysical_ApplyGravity
 	DWORD	dwType;
@@ -50,23 +50,23 @@ void CPhysical_ApplyGravity ( DWORD dwThis )
 	if ( dwType == 2 )
 	{
 		// It's a vehicle
-		CVehicle	*pVehicle = pGameInterface->GetPools ()->GetVehicle ( (DWORD *)dwThis );
-		CPed		*pPedSelf = pGameInterface->GetPools ()->GetPedFromRef ( CPOOLS_PED_SELF_REF );
-		if ( pVehicle		/**/
+		CVehicle	*pVehicle = pPools->GetVehicle( (DWORD *)dwThis );
+		CPed		*pPedSelf = getSelfCPed();
+		if ( pVehicle
 		 &&	 (
-				 pVehicle->GetDriver () == pPedSelf
-		 ||	 (pVehicle->GetTowedByVehicle () && pVehicle->GetTowedByVehicle ()->GetDriver () == pPedSelf)
-		 ||	 pVehicle->IsPassenger (pPedSelf)
-		 ||	 (pVehicle->GetTowedByVehicle () && pVehicle->GetTowedByVehicle ()->IsPassenger (pPedSelf))
+				 pVehicle->GetDriver() == pPedSelf
+		 ||	 (pVehicle->GetTowedByVehicle() && pVehicle->GetTowedByVehicle()->GetDriver() == pPedSelf)
+		 ||	 pVehicle->IsPassenger(pPedSelf)
+		 ||	 (pVehicle->GetTowedByVehicle() && pVehicle->GetTowedByVehicle()->IsPassenger(pPedSelf))
 		 ) )
 		{
 			// We're in the vehicle, use our gravity vector
 			CVector vecGravity, vecMoveSpeed;
-			pVehicle->GetGravity ( &vecGravity );
-			pVehicle->GetMoveSpeed ( &vecMoveSpeed );
+			pVehicle->GetGravity( &vecGravity );
+			pVehicle->GetMoveSpeed( &vecMoveSpeed );
 			vecMoveSpeed += vecGravity * fTimeStep * fGravity;
-			pVehicle->SetMoveSpeed ( &vecMoveSpeed );
-			if ( pVehicle->GetTowedVehicle () )
+			pVehicle->SetMoveSpeed( &vecMoveSpeed );
+			if ( pVehicle->GetTowedVehicle() )
 			{
 				//ds
 			}
@@ -150,28 +150,28 @@ bool _cdecl VehicleCamStart ( DWORD dwCam, DWORD pVehicleInterface )
 	// This way SA's gravity-goes-downward assumptive code can calculate the camera
 	// spherical coords correctly. Of course we restore these after the camera function
 	// completes.
-	CVehicle	*pVehicle = pGameInterface->GetPools ()->GetVehicle ( (DWORD *)pVehicleInterface );
+	CVehicle	*pVehicle = pPools->GetVehicle( (DWORD *)pVehicleInterface );
 
 	if ( !pVehicle )
 		return false;
 
 	CVector vecGravity;
-	pVehicle->GetGravity ( &vecGravity );
+	pVehicle->GetGravity( &vecGravity );
 
-	GetMatrixForGravity ( vecGravity, gravcam_matGravity );
+	GetMatrixForGravity( vecGravity, gravcam_matGravity );
 	gravcam_matInvertGravity = gravcam_matGravity;
-	gravcam_matInvertGravity.Invert ();
+	gravcam_matInvertGravity.Invert();
 
-	pVehicle->GetMatrix ( &gravcam_matVehicleTransform );
+	pVehicle->GetMatrix( &gravcam_matVehicleTransform );
 
 	CMatrix matVehicleInverted = gravcam_matInvertGravity * gravcam_matVehicleTransform;
 	matVehicleInverted.vPos = gravcam_matVehicleTransform.vPos;
-	pVehicle->SetMatrix ( &matVehicleInverted );
+	pVehicle->SetMatrix( &matVehicleInverted );
 
-	pVehicle->GetMoveSpeed ( &gravcam_vecVehicleVelocity );
+	pVehicle->GetMoveSpeed( &gravcam_vecVehicleVelocity );
 
 	CVector vecVelocityInverted = gravcam_matInvertGravity * gravcam_vecVehicleVelocity;
-	pVehicle->SetMoveSpeed ( &vecVelocityInverted );
+	pVehicle->SetMoveSpeed( &vecVelocityInverted );
 	return true;
 }
 
@@ -264,13 +264,13 @@ bool _cdecl VehicleCamLookDir2 ( DWORD dwCam )
 	float	fTheta = *(float *)( dwCam + 0xAC );
 
 	*( CVector * ) ( dwCam + 0x190 ) = -gravcam_matGravity.vRight *
-		cos ( fPhi ) *
-		cos ( fTheta ) -
+		cos( fPhi ) *
+		cos( fTheta ) -
 		gravcam_matGravity.vFront *
-		sin ( fPhi ) *
-		cos ( fTheta ) +
+		sin( fPhi ) *
+		cos( fTheta ) +
 		gravcam_matGravity.vUp *
-		sin ( fTheta );
+		sin( fTheta );
 
 	*(float *)0x8CCEA8 = fPhi;
 	return true;
@@ -295,7 +295,7 @@ void _declspec ( naked ) HOOK_VehicleCamLookDir2 ()
 void _cdecl VehicleCamHistory ( DWORD dwCam, CVector *pvecTarget, float fTargetTheta, float fRadius, float fZoom )
 {
 	float	fPhi = *(float *)( dwCam + 0xBC );
-	CVector vecDir = -gravcam_matGravity.vRight * cos ( fPhi ) * cos ( fTargetTheta ) - gravcam_matGravity.vFront * sin ( fPhi ) * cos ( fTargetTheta ) + gravcam_matGravity.vUp * sin ( fTargetTheta );
+	CVector vecDir = -gravcam_matGravity.vRight * cos( fPhi ) * cos( fTargetTheta ) - gravcam_matGravity.vFront * sin( fPhi ) * cos( fTargetTheta ) + gravcam_matGravity.vUp * sin( fTargetTheta );
 	( (CVector *) (dwCam + 0x1D8) )[0] = *pvecTarget - vecDir * fRadius;
 	( (CVector *) (dwCam + 0x1D8) )[1] = *pvecTarget - vecDir * fZoom;
 }
@@ -325,10 +325,10 @@ void _cdecl VehicleCamUp ( DWORD dwCam )
 	CVector *pvecUp = ( CVector * ) ( dwCam + 0x1B4 );
 	CVector *pvecLookDir = ( CVector * ) ( dwCam + 0x190 );
 
-	pvecLookDir->Normalize ();
+	pvecLookDir->Normalize();
 	*pvecUp = *pvecLookDir;
-	pvecUp->CrossProduct ( &gravcam_matGravity.vUp );
-	pvecUp->CrossProduct ( pvecLookDir );
+	pvecUp->CrossProduct( &gravcam_matGravity.vUp );
+	pvecUp->CrossProduct( pvecLookDir );
 }
 
 void _declspec ( naked ) HOOK_VehicleCamUp ()
@@ -359,12 +359,12 @@ void _declspec ( naked ) HOOK_VehicleCamUp ()
 void _cdecl VehicleCamEnd ( DWORD pVehicleInterface )
 {
 	// Restore the things that we inverse transformed in VehicleCamStart
-	CVehicle	*pVehicle = pGameInterface->GetPools ()->GetVehicle ( (DWORD *)pVehicleInterface );
+	CVehicle	*pVehicle = pPools->GetVehicle( (DWORD *)pVehicleInterface );
 	if ( !pVehicle )
-		return ;
+		return;
 
-	pVehicle->SetMatrix ( &gravcam_matVehicleTransform );
-	pVehicle->SetMoveSpeed ( &gravcam_vecVehicleVelocity );
+	pVehicle->SetMatrix( &gravcam_matVehicleTransform );
+	pVehicle->SetMoveSpeed( &gravcam_vecVehicleVelocity );
 }
 
 void _declspec ( naked ) HOOK_VehicleCamEnd ()
@@ -444,8 +444,8 @@ void _declspec ( naked ) HOOK_VehicleLookAside ()
 void _cdecl CVehicle_constructor_hook ( CVehicleSAInterface *vehicle )
 {
 	// create & add new CVehicle to CPools
-	CVehicle	*CVeh = pGame->GetPools ()->AddVehicle ( (DWORD *)vehicle );
-	CVeh->SetGravity ( GravityNormal );
+	CVehicle	*CVeh = pGameInterface->GetPools()->AddVehicle( (DWORD *)vehicle );
+	CVeh->SetGravity( GravityNormal );
 }
 
 #define HOOKPOS_CVehicle_constructor	0x6D6259
@@ -471,8 +471,8 @@ void _declspec ( naked ) HOOK_CVehicle_constructor ()
 void _cdecl CVehicle_destructor_hook ( CVehicleSAInterface *vehicle )
 {
 	// remove CVehicle from CPools and delete
-	CVehicle	*CVeh_toDelete = pGame->GetPools ()->GetVehicle ( (DWORD *)vehicle );
-	pGame->GetPools ()->RemoveVehicle ( CVeh_toDelete, false );
+	CVehicle	*CVeh_toDelete = pGameInterface->GetPools()->GetVehicle( (DWORD *)vehicle );
+	pGameInterface->GetPools()->RemoveVehicle( CVeh_toDelete, false );
 }
 
 #define HOOKPOS_CVehicle_destructor 0x6E2B40
@@ -499,7 +499,7 @@ void _declspec ( naked ) HOOK_CVehicle_destructor ()
 void _cdecl CPed_constructor_hook ( CPedSAInterface *ped )
 {
 	// create & add new CPed to CPools
-	pGame->GetPools ()->AddPed ( (DWORD *)ped );
+	pGameInterface->GetPools()->AddPed( (DWORD *)ped );
 }
 
 #define HOOKPOS_CPed_constructor	0x5E8606
@@ -527,8 +527,8 @@ void _declspec ( naked ) HOOK_CPed_constructor ()
 void _cdecl CPed_destructor_hook ( CPedSAInterface *ped )
 {
 	// remove CPed from CPools and delete
-	CPed	*CPed_toDelete = pGame->GetPools ()->GetPed ( (DWORD *)ped );
-	pGame->GetPools ()->RemovePed ( CPed_toDelete, false );
+	CPed	*CPed_toDelete = pGameInterface->GetPools()->GetPed( (DWORD *)ped );
+	pGameInterface->GetPools()->RemovePed( CPed_toDelete, false );
 }
 
 #define HOOKPOS_CPed_destructor 0x5E8620
@@ -559,22 +559,22 @@ void _declspec ( naked ) HOOK_CPed_destructor ()
 void cheat_hookers_installhooks ( void )
 {
 	// hooks
-	HookInstall ( HOOKPOS_VehicleCamStart, (DWORD) HOOK_VehicleCamStart, 6 );
-	HookInstall ( HOOKPOS_VehicleCamTargetZTweak, (DWORD) HOOK_VehicleCamTargetZTweak, 8 );
-	HookInstall ( HOOKPOS_VehicleCamLookDir1, (DWORD) HOOK_VehicleCamLookDir1, 5 );
-	HookInstall ( HOOKPOS_VehicleCamLookDir2, (DWORD) HOOK_VehicleCamLookDir2, 6 );
-	HookInstall ( HOOKPOS_VehicleCamHistory, (DWORD) HOOK_VehicleCamHistory, 6 );
-	HookInstall ( HOOKPOS_VehicleCamEnd, (DWORD) HOOK_VehicleCamEnd, 6 );
-	HookInstall ( HOOKPOS_VehicleLookBehind, (DWORD) HOOK_VehicleLookBehind, 6 );
-	HookInstall ( HOOKPOS_VehicleLookAside, (DWORD) HOOK_VehicleLookAside, 6 );
-	HookInstall ( HOOKPOS_CPhysical_ApplyGravity, (DWORD) HOOK_CPhysical_ApplyGravity, 6 );
-	HookInstall ( HOOKPOS_CVehicle_constructor, (DWORD) HOOK_CVehicle_constructor, 6 );
-	HookInstall ( HOOKPOS_CVehicle_destructor, (DWORD) HOOK_CVehicle_destructor, 6 );
-	HookInstall ( HOOKPOS_CPed_constructor, (DWORD) HOOK_CPed_constructor, 6 );
-	HookInstall ( HOOKPOS_CPed_destructor, (DWORD) HOOK_CPed_destructor, 6 );
+	HookInstall( HOOKPOS_VehicleCamStart, (DWORD) HOOK_VehicleCamStart, 6 );
+	HookInstall( HOOKPOS_VehicleCamTargetZTweak, (DWORD) HOOK_VehicleCamTargetZTweak, 8 );
+	HookInstall( HOOKPOS_VehicleCamLookDir1, (DWORD) HOOK_VehicleCamLookDir1, 5 );
+	HookInstall( HOOKPOS_VehicleCamLookDir2, (DWORD) HOOK_VehicleCamLookDir2, 6 );
+	HookInstall( HOOKPOS_VehicleCamHistory, (DWORD) HOOK_VehicleCamHistory, 6 );
+	HookInstall( HOOKPOS_VehicleCamEnd, (DWORD) HOOK_VehicleCamEnd, 6 );
+	HookInstall( HOOKPOS_VehicleLookBehind, (DWORD) HOOK_VehicleLookBehind, 6 );
+	HookInstall( HOOKPOS_VehicleLookAside, (DWORD) HOOK_VehicleLookAside, 6 );
+	HookInstall( HOOKPOS_CPhysical_ApplyGravity, (DWORD) HOOK_CPhysical_ApplyGravity, 6 );
+	HookInstall( HOOKPOS_CVehicle_constructor, (DWORD) HOOK_CVehicle_constructor, 6 );
+	HookInstall( HOOKPOS_CVehicle_destructor, (DWORD) HOOK_CVehicle_destructor, 6 );
+	HookInstall( HOOKPOS_CPed_constructor, (DWORD) HOOK_CPed_constructor, 6 );
+	HookInstall( HOOKPOS_CPed_destructor, (DWORD) HOOK_CPed_destructor, 6 );
 
 	// calls
-	HookInstallCall ( CALL_VehicleCamUp, (DWORD) HOOK_VehicleCamUp );
-	HookInstallCall ( CALL_VehicleLookBehindUp, (DWORD) HOOK_VehicleCamUp );
-	HookInstallCall ( CALL_VehicleLookAsideUp, (DWORD) HOOK_VehicleCamUp );
+	HookInstallCall( CALL_VehicleCamUp, (DWORD) HOOK_VehicleCamUp );
+	HookInstallCall( CALL_VehicleLookBehindUp, (DWORD) HOOK_VehicleCamUp );
+	HookInstallCall( CALL_VehicleLookAsideUp, (DWORD) HOOK_VehicleCamUp );
 }

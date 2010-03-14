@@ -31,7 +31,7 @@ char *dumb_hex_dump ( void *data, uint32_t len )
 		len = 500;
 
 	for ( i = 0; i < (int)len; i++ )
-		snprintf ( buf + i * 2, sizeof (buf) - i * 2, "%02X", *((uint8_t *)data + i) );
+		snprintf( buf + i * 2, sizeof(buf) - i * 2, "%02X", *((uint8_t *)data + i) );
 
 	return buf;
 }
@@ -54,30 +54,30 @@ int patcher_install ( struct patch_set *patch )
 				break;
 
 			if ( patch->chunk[i].data_cmp != NULL
-			 &&	 !memcmp_safe ((uint8_t *)patch->chunk[i].ptr, patch->chunk[i].data_cmp, patch->chunk[i].len) )
+			 &&	 !memcmp_safe((uint8_t *)patch->chunk[i].ptr, patch->chunk[i].data_cmp, patch->chunk[i].len) )
 			{
-				void	*mem = malloc ( patch->chunk[i].len );
+				void	*mem = malloc( patch->chunk[i].len );
 
-				Log ( "Data mismatch for patch '%s'.", patch->name );
+				Log( "Data mismatch for patch '%s'.", patch->name );
 				if ( mem != NULL )
 				{
-					if ( memcpy_safe (mem, patch->chunk[i].ptr, patch->chunk[i].len) )
-						Log ( "Data @ 0x%p is: %s", patch->chunk[i].ptr, dumb_hex_dump (mem, patch->chunk[i].len) );
-					Log ( "Should be: %s", dumb_hex_dump (patch->chunk[i].data_cmp, patch->chunk[i].len) );
-					free ( mem );
+					if ( memcpy_safe(mem, patch->chunk[i].ptr, patch->chunk[i].len) )
+						Log( "Data @ 0x%p is: %s", patch->chunk[i].ptr, dumb_hex_dump(mem, patch->chunk[i].len) );
+					Log( "Should be: %s", dumb_hex_dump(patch->chunk[i].data_cmp, patch->chunk[i].len) );
+					free( mem );
 				}
 
 				return 0;
 			}
 
 			if ( patch->chunk[i].data_orig == NULL )
-				patch->chunk[i].data_orig = (uint8_t *)malloc ( patch->chunk[i].len );
+				patch->chunk[i].data_orig = (uint8_t *)malloc( patch->chunk[i].len );
 			if ( patch->chunk[i].data_orig == NULL )
 				continue;
 
-			if ( !memcpy_safe (patch->chunk[i].data_orig, patch->chunk[i].ptr, patch->chunk[i].len) )
+			if ( !memcpy_safe(patch->chunk[i].data_orig, patch->chunk[i].ptr, patch->chunk[i].len) )
 			{
-				Log ( "Failed to copy original data for patch '%s' chunk %d @ 0x%p", patch->name, i, patch->chunk[i].ptr );
+				Log( "Failed to copy original data for patch '%s' chunk %d @ 0x%p", patch->name, i, patch->chunk[i].ptr );
 			}
 		}
 
@@ -99,13 +99,13 @@ int patcher_install ( struct patch_set *patch )
 
 			if ( patch->chunk[i].data_rep == NULL )
 			{
-				if ( !memset_safe ((uint8_t *)patch->chunk[i].ptr, 0x90, patch->chunk[i].len) )
-					Log ( "Failed to install patch '%s' chunk %d", patch->name, i );
+				if ( !memset_safe((uint8_t *)patch->chunk[i].ptr, 0x90, patch->chunk[i].len) )
+					Log( "Failed to install patch '%s' chunk %d", patch->name, i );
 			}
 			else
 			{
-				if ( !memcpy_safe ((uint8_t *)patch->chunk[i].ptr, patch->chunk[i].data_rep, patch->chunk[i].len) )
-					Log ( "Failed to install patch '%s' chunk %d", patch->name, i );
+				if ( !memcpy_safe((uint8_t *)patch->chunk[i].ptr, patch->chunk[i].data_rep, patch->chunk[i].len) )
+					Log( "Failed to install patch '%s' chunk %d", patch->name, i );
 			}
 		}
 
@@ -137,8 +137,8 @@ int patcher_remove ( struct patch_set *patch )
 			if ( patch->chunk[i].ptr == NULL )
 				break;
 
-			if ( !memcpy_safe ((uint8_t *)patch->chunk[i].ptr, patch->chunk[i].data_orig, patch->chunk[i].len) )
-				Log ( "Failed to restore patch '%s' chunk %d", patch->name, i );
+			if ( !memcpy_safe((uint8_t *)patch->chunk[i].ptr, patch->chunk[i].data_orig, patch->chunk[i].len) )
+				Log( "Failed to restore patch '%s' chunk %d", patch->name, i );
 		}
 
 		patch->installed = 0;
@@ -167,7 +167,7 @@ void patcher_free ( struct patch_set *patch )
 			break;
 
 		if ( patch->chunk[i].data_orig != NULL )
-			free ( patch->chunk[i].data_orig );
+			free( patch->chunk[i].data_orig );
 	}
 }
 

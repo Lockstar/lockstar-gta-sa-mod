@@ -31,12 +31,12 @@ int					key_being_pressed;
 extern bool			isRequestingScreenshot;
 static void process_key ( int down, int vkey, int repeat, int scancode, int extended, HWND wnd )
 {
-	if ( down && KEY_DOWN (vkey) )
-		return ;	/* ignore key repeat, bad states */
-	if ( !down && KEY_UP (vkey) )
-		return ;	/* ignore bad states */
+	if ( down && KEY_DOWN(vkey) )
+		return; /* ignore key repeat, bad states */
+	if ( !down && KEY_UP(vkey) )
+		return; /* ignore bad states */
 
-	if ( /*0x90 == *(uint8_t *)0x541DF5*/ g_Input != NULL && g_Input->iInputEnabled || GetForegroundWindow () != wnd )
+	if ( /*0x90 == *(uint8_t *)0x541DF5*/ g_Input != NULL && g_Input->iInputEnabled || GetForegroundWindow() != wnd )
 	{
 		if ( set.screenshot_enable )
 		{
@@ -44,9 +44,9 @@ static void process_key ( int down, int vkey, int repeat, int scancode, int exte
 				isRequestingScreenshot = true;
 		}
 
-		if ( !down && KEY_DOWN (vkey) )
+		if ( !down && KEY_DOWN(vkey) )
 			key_table[vkey].count++;
-		return ;
+		return;
 	}
 
 	key_table[vkey].count++;
@@ -85,17 +85,17 @@ static LRESULT CALLBACK wnd_proc ( HWND wnd, UINT umsg, WPARAM wparam, LPARAM lp
       break;*/
 	case WM_LBUTTONDOWN:
 	case WM_LBUTTONUP:
-		process_key ( (umsg == WM_LBUTTONDOWN), VK_LBUTTON, 0, 0, 0, wnd );
+		process_key( (umsg == WM_LBUTTONDOWN), VK_LBUTTON, 0, 0, 0, wnd );
 		break;
 
 	case WM_RBUTTONDOWN:
 	case WM_RBUTTONUP:
-		process_key ( (umsg == WM_RBUTTONDOWN), VK_RBUTTON, 0, 0, 0, wnd );
+		process_key( (umsg == WM_RBUTTONDOWN), VK_RBUTTON, 0, 0, 0, wnd );
 		break;
 
 	case WM_MBUTTONDOWN:
 	case WM_MBUTTONUP:
-		process_key ( (umsg == WM_MBUTTONDOWN), VK_MBUTTON, 0, 0, 0, wnd );
+		process_key( (umsg == WM_MBUTTONDOWN), VK_MBUTTON, 0, 0, 0, wnd );
 		break;
 
 	/* :D */
@@ -120,34 +120,34 @@ static LRESULT CALLBACK wnd_proc ( HWND wnd, UINT umsg, WPARAM wparam, LPARAM lp
 			switch ( vkey )
 			{
 			case VK_SHIFT:
-				if ( scancode == MapVirtualKey (VK_LSHIFT, 0) )
+				if ( scancode == MapVirtualKey(VK_LSHIFT, 0) )
 					vkey = VK_LSHIFT;
-				else if ( scancode == MapVirtualKey (VK_RSHIFT, 0) )
+				else if ( scancode == MapVirtualKey(VK_RSHIFT, 0) )
 					vkey = VK_RSHIFT;
 				break;
 
 			case VK_CONTROL:
-				if ( scancode == MapVirtualKey (VK_LCONTROL, 0) )
+				if ( scancode == MapVirtualKey(VK_LCONTROL, 0) )
 					vkey = VK_LCONTROL;
-				else if ( scancode == MapVirtualKey (VK_RCONTROL, 0) )
+				else if ( scancode == MapVirtualKey(VK_RCONTROL, 0) )
 					vkey = VK_RCONTROL;
 				break;
 
 			case VK_MENU:
-				if ( scancode == MapVirtualKey (VK_LMENU, 0) )
+				if ( scancode == MapVirtualKey(VK_LMENU, 0) )
 					vkey = VK_LMENU;
-				else if ( scancode == MapVirtualKey (VK_RMENU, 0) )
+				else if ( scancode == MapVirtualKey(VK_RMENU, 0) )
 					vkey = VK_RMENU;
 				break;
 			}
 
 			/* :D */
-			if ( KEY_DOWN (VK_LMENU) && vkey == VK_LMENU && down )
+			if ( KEY_DOWN(VK_LMENU) && vkey == VK_LMENU && down )
 				break;
-			if ( KEY_UP (VK_LMENU) && vkey == VK_LMENU && !down )
+			if ( KEY_UP(VK_LMENU) && vkey == VK_LMENU && !down )
 				break;
 
-			process_key ( down, vkey, repeat, scancode, extended, wnd );
+			process_key( down, vkey, repeat, scancode, extended, wnd );
 
 			/* XXX move this */
 			if ( cheat_state->debug_enabled
@@ -178,18 +178,18 @@ static LRESULT CALLBACK wnd_proc ( HWND wnd, UINT umsg, WPARAM wparam, LPARAM lp
 		break;
 	}
 
-	return CallWindowProc ( orig_wndproc, wnd, umsg, wparam, lparam );
+	return CallWindowProc( orig_wndproc, wnd, umsg, wparam, lparam );
 }
 
 void keyhook_maybe_install ( HWND wnd )
 {
 	if ( orig_wndproc == NULL || wnd != orig_wnd )
 	{
-		keyhook_uninstall ();
+		keyhook_uninstall();
 
 		//Log("Installing keyhook...");
-		memset ( key_table, 0, sizeof (struct key_state) * 256 );
-		orig_wndproc = ( WNDPROC ) ( UINT_PTR ) SetWindowLong ( wnd, GWL_WNDPROC, (LONG) (UINT_PTR) wnd_proc );
+		memset( key_table, 0, sizeof(struct key_state) * 256 );
+		orig_wndproc = ( WNDPROC ) ( UINT_PTR ) SetWindowLong( wnd, GWL_WNDPROC, (LONG) (UINT_PTR) wnd_proc );
 		orig_wnd = wnd;
 	}
 }
@@ -199,7 +199,7 @@ void keyhook_uninstall ( void )
 	if ( orig_wnd != NULL )
 	{
 		//Log("Removing keyhook...");
-		SetWindowLong ( orig_wnd, GWL_WNDPROC, (LONG) (UINT_PTR) orig_wndproc );
+		SetWindowLong( orig_wnd, GWL_WNDPROC, (LONG) (UINT_PTR) orig_wndproc );
 		orig_wnd = NULL;
 	}
 }
@@ -211,7 +211,7 @@ void keyhook_run ( void )
 	for ( i = 0; i < 256; i++ )
 	{
 		key_table[i].consume = 0;
-		key_table[i].pstate = KEY_DOWN ( i );
+		key_table[i].pstate = KEY_DOWN( i );
 
 		if ( key_table[i].count > 0 )
 		{
@@ -231,7 +231,7 @@ int keyhook_key_down ( int v )
 
 int keyhook_key_up ( int v )
 {
-	return !KEY_DOWN ( v );
+	return !KEY_DOWN( v );
 }
 
 int keyhook_key_pressed ( int v )
@@ -239,12 +239,12 @@ int keyhook_key_pressed ( int v )
 	if ( key_table[v].consume )
 		return 0;
 	else
-		return KEY_DOWN ( v ) && !key_table[v].pstate;
+		return KEY_DOWN( v ) && !key_table[v].pstate;
 }
 
 int keyhook_key_released ( int v )
 {
-	return KEY_UP ( v ) && key_table[v].pstate;
+	return KEY_UP( v ) && key_table[v].pstate;
 }
 
 void keyhook_key_consume ( int v )

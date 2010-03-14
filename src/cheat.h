@@ -24,7 +24,7 @@
 
 //#define TELEPORT_DETACHABLES
 #define MSEC_TO_TIME( v )	( (uint32_t) (v) * 10 )
-#define TIME_TO_FLOAT( v )	( (float)((double)(v) / (double)MSEC_TO_TIME (1000)) )
+#define TIME_TO_FLOAT( v )	( (float)((double)(v) / (double)MSEC_TO_TIME(1000)) )
 
 // main pool addresses
 #define ACTOR_POOL_POINTER		0x00B74490
@@ -252,7 +252,7 @@ struct debug_info
 
 	int			data_prev_clear;
 
-	uint8_t		cursor_data[sizeof ( void * )];
+	uint8_t		cursor_data[sizeof( void * )];
 	char		ptr_hist_str[64];
 };
 
@@ -522,17 +522,6 @@ struct vehicle_info
 {
 #pragma pack( 1 )
 	struct object_base	base;
-
-	/*
-	union
-	{
-		struct object_base base;
-		struct
-		{
-			CEntitySAInterface m_CEntitySAInterface;
-		};
-	};
-	*/
 	uint8_t				flags;			/* 66 - flags */
 	uint8_t				__unknown_67;	/* 67 */
 	union	/* 68 */

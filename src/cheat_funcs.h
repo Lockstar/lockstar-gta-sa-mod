@@ -91,131 +91,6 @@ struct str_split
 	int		argc;
 };
 
-int									isBadPtr_GTA_pVehicleInfo ( vehicle_info *p_VehicleInfo );
-int									isBadPtr_GTA_pActorInfo ( actor_info *p_ActorInfo );
-bool								isBadPtr_handlerAny ( void *pointer, ULONG size, DWORD dwFlags );
-bool								isBadPtr_readAny ( void *pointer, ULONG size );
-bool								isBadPtr_writeAny ( void *pointer, ULONG size );
-
-uint32_t							GetFromPool ( DWORD value, DWORD Pool, DWORD function );
-extern inline int					ScriptCarId ( struct vehicle_info *mecar );
-extern inline int					ScriptActorId ( struct actor_info *meactor );
-extern inline int					ScriptObjectId ( struct object_info *object );
-extern inline struct vehicle_info	*GetVehicleByGtaId ( int car_id );
-extern inline struct actor_info		*GetActorByGtaId ( int actor_id );
-extern inline struct object_info	*GetObjectByGtaId ( int object_id );
-
-void								gta_weather_state_set ( int state );
-void								gta_time_hour_set ( int hour );
-
-void								gta_money_set ( uint32_t amount );
-uint32_t							gta_money_get ( void );
-
-void								gta_game_speed_set ( float value );
-float								gta_game_speed_get ( void );
-
-void								gta_gravity_set ( float value );
-float								gta_gravity_get ( void );
-
-struct checkpoint					*gta_checkpoint_info_get ( int n );
-
-int									gta_menu_active ( void );
-void								gta_menu_active_set ( int enabled );
-
-const struct weapon_entry			*gta_weapon_get_by_name ( const char *name );
-void								gta_weapon_set ( struct actor_info	 *info,
-													 int				 slot,
-													 int				 id,
-													 int				 ammo,
-													 int				 ammo_clip );
-int									gta_weapon_ammo_set ( struct actor_info *info, int slot, int ammo );
-int									gta_weapon_ammo_clip_set ( struct actor_info *info, int slot, int ammo_clip );
-
-const char							*gta_vehicle_class_name ( int id );
-const struct vehicle_entry			*gta_vehicle_get_by_id ( int id );
-
-void								gta_vehicle_spawn ( int vehicle_id );
-void								gta_jetpack_give ( void );
-int									gta_interior_id_get ( void );
-void								gta_interior_id_set ( int id );
-void								gta_blow_all_cars ();
-
-uint32_t							__time_get ( void );
-void								cheat_state_text ( const char *fmt, ... );
-struct actor_info					*actor_info_get ( int id, int flags );
-struct vehicle_info					*vehicle_info_get ( int id, int flags );
-
-void								cheat_teleport_history_save ( void );
-
-void								vehicle_detachables_teleport ( struct vehicle_info *info,
-																   const float		   from[3],
-																   const float		   to[3] );
-void								cheat_vehicle_tires_set ( struct vehicle_info *info, uint8_t tire_status );
-int									vehicle_contains_trailer ( struct vehicle_info		   *info,
-															   const struct vehicle_info   *trailer );
-int									vehicle_contains_actor ( struct vehicle_info *vehicle, struct actor_info *actor );
-void								vehicle_state_store ( const struct vehicle_info	  *info,
-														  struct vehicle_state		  *state );
-void								vehicle_state_restore ( struct vehicle_info			*info,
-															const struct vehicle_state	*state );
-
-void								vehicle_prevent_below_height ( struct vehicle_info *info, float height );
-
-int									vehicle_find ( int id, int dir, int flags );
-int									actor_find ( int id, int dir, int flags );
-int									vehicle_find_nearest ( int flags );
-int									vehicle_filter_flags ( vehicle_info *info, int flags );
-int									actor_find_nearest ( int flags );
-
-struct vehicle_info					*actor_vehicle_get ( const struct actor_info *info );
-
-void								SetCloudsEnabled ( bool bDisabled );
-
-void								enableCollisionsForEveryStreamedInVehicle ( int iToggle );
-
-void								loadAllWeaponModels ( void );
-
-void								loadSpecificModel ( int iModelID );
-
-// new vehicle types and upgrades
-bool								vehicle_iModelID_IsValid ( int iModelID );
-bool								vehicle_upgrade_iModelID_IsValid ( int iModelID );
-eClientVehicleType					GetVehicleType ( int iModelID );
-bool								isUpgradeCompatible ( int iModelID, vehicle_info *vinfo );
-bool								GetSlotFromUpgrade ( int us, int &ucSlot );
-bool								vehicle_iModelID_IsValid ( int iModelID );
-void								vehicle_addUpgrade ( vehicle_info *vinfo, int iModelID );
-vehicle_upgrade_info				get_cveh_upgrade_info ( int iModelID, int &iUpgradeInfoID );
-int									vehicle_getPaintJob ( vehicle_info *vinfo );
-void								vehicle_setPaintJob ( vehicle_info *vinfo, unsigned char new_paintjob );
-int									vehicle_getColor0 ( vehicle_info *vinfo );
-int									vehicle_getColor1 ( vehicle_info *vinfo );
-void								vehicle_setColor0 ( vehicle_info *vinfo, int new_color );
-void								vehicle_setColor1 ( vehicle_info *vinfo, int new_color );
-
-// --------------------------------------------------------------------------------------------
-int									memcpy_safe ( void *dest, const void *src, uint32_t len );
-int									memset_safe ( void *_dest, int c, uint32_t len );
-int									memcmp_safe ( const void *_s1, const void *_s2, uint32_t len );
-
-void								*dll_baseptr_get ( const char *dll_name );
-
-void								str_split_free ( struct str_split *split );
-struct str_split					*str_split ( const char *str, const char *ch );
-
-size_t								strlcpy ( char *dst, const char *src, size_t size );
-size_t								strlcat ( char *dst, const char *src, size_t size );
-
-void								*memdup ( const void *src, int len );
-uint8_t								*hex_to_bin ( const char *str );
-
-extern const struct weapon_entry	weapon_list[];
-extern const struct vehicle_entry	vehicle_list[VEHICLE_LIST_SIZE];
-extern const struct interiors		interiors_list[];
-
-///////////////////////////////////////////////////////////////////////
-/////////////////////////// VARIABLES /////////////////////////////////
-///////////////////////////////////////////////////////////////////////
 // vehicle upgrade model IDs & names etc
 const struct vehicle_upgrade_info	cveh_upgrade_info[VEHICLE_UPGRADES_COUNT] =
 {
@@ -464,3 +339,116 @@ const struct vehicle_upgrade_info	cveh_upgrade_info[VEHICLE_UPGRADES_COUNT] =
 	{ 1097, "Wheels", "Virtual" },
 	{ 1098, "Wheels", "Access" }
 };
+
+// this blows the doors off Microsoft's version, mmmmkay
+int									isBadPtr_GTA_pVehicleInfo ( vehicle_info *p_VehicleInfo );
+int									isBadPtr_GTA_pActorInfo ( actor_info *p_ActorInfo );
+bool								isBadPtr_handlerAny ( void *pointer, ULONG size, DWORD dwFlags );
+bool								isBadPtr_readAny ( void *pointer, ULONG size );
+bool								isBadPtr_writeAny ( void *pointer, ULONG size );
+
+// oldschool pool
+uint32_t							GetFromPool ( DWORD value, DWORD Pool, DWORD function );
+
+// gta SCM stuff
+extern inline int					ScriptCarId ( struct vehicle_info *mecar );
+extern inline int					ScriptActorId ( struct actor_info *meactor );
+extern inline int					ScriptObjectId ( struct object_info *object );
+extern inline struct vehicle_info	*GetVehicleByGtaId ( int car_id );
+extern inline struct actor_info		*GetActorByGtaId ( int actor_id );
+extern inline struct object_info	*GetObjectByGtaId ( int object_id );
+
+// functions to get/set certain things
+// this should be phased out in favor of MTA/R* classes
+void								gta_weather_state_set ( int state );
+void								gta_time_hour_set ( int hour );
+void								gta_money_set ( uint32_t amount );
+uint32_t							gta_money_get ( void );
+void								gta_game_speed_set ( float value );
+float								gta_game_speed_get ( void );
+void								gta_gravity_set ( float value );
+float								gta_gravity_get ( void );
+struct checkpoint					*gta_checkpoint_info_get ( int n );
+int									gta_menu_active ( void );
+void								gta_menu_active_set ( int enabled );
+const struct weapon_entry			*gta_weapon_get_by_name ( const char *name );
+void								gta_weapon_set ( struct actor_info *info, int slot, int id, int ammo, int ammo_clip );
+int									gta_weapon_ammo_set ( struct actor_info *info, int slot, int ammo );
+int									gta_weapon_ammo_clip_set ( struct actor_info *info, int slot, int ammo_clip );
+const char							*gta_vehicle_class_name ( int id );
+const struct vehicle_entry			*gta_vehicle_get_by_id ( int id );
+void								gta_vehicle_spawn ( int vehicle_id );
+void								gta_jetpack_give ( void );
+int									gta_interior_id_get ( void );
+void								gta_interior_id_set ( int id );
+void								gta_blow_all_cars ();
+struct actor_info					*actor_info_get ( int id, int flags );
+struct vehicle_info					*vehicle_info_get ( int id, int flags );
+
+// called by TIME_GET macro
+uint32_t							__time_get ( void );
+
+// m0d functions, eventually some of this will become part of the m0d framework
+void								cheat_state_text ( const char *fmt, ... );
+void								cheat_teleport_history_save ( void );
+
+// more gta functions
+void								vehicle_detachables_teleport ( struct vehicle_info *info, const float from[3],
+																   const float to[3] );
+void								cheat_vehicle_tires_set ( struct vehicle_info *info, uint8_t tire_status );
+int									vehicle_contains_trailer ( struct vehicle_info *info,
+															   const struct vehicle_info *trailer );
+int									vehicle_contains_actor ( struct vehicle_info *vehicle, struct actor_info *actor );
+void								vehicle_state_store ( const struct vehicle_info *info, struct vehicle_state *state );
+void								vehicle_state_restore ( struct vehicle_info *info, const struct vehicle_state *state );
+void								vehicle_prevent_below_height ( struct vehicle_info *info, float height );
+int									vehicle_find ( int id, int dir, int flags );
+int									actor_find ( int id, int dir, int flags );
+int									vehicle_find_nearest ( int flags );
+int									vehicle_filter_flags ( vehicle_info *info, int flags );
+int									actor_find_nearest ( int flags );
+struct vehicle_info					*actor_vehicle_get ( const struct actor_info *info );
+void								SetCloudsEnabled ( bool bDisabled );
+void								enableCollisionsForEveryStreamedInVehicle ( int iToggle );
+void								loadAllWeaponModels ( void );
+void								loadSpecificModel ( int iModelID );
+
+// new vehicle types and upgrades
+bool								vehicle_iModelID_IsValid ( int iModelID );
+bool								vehicle_upgrade_iModelID_IsValid ( int iModelID );
+eClientVehicleType					GetVehicleType ( int iModelID );
+bool								isUpgradeCompatible ( int iModelID, vehicle_info *vinfo );
+bool								GetSlotFromUpgrade ( int us, int &ucSlot );
+bool								vehicle_iModelID_IsValid ( int iModelID );
+void								vehicle_addUpgrade ( vehicle_info *vinfo, int iModelID );
+vehicle_upgrade_info				get_cveh_upgrade_info ( int iModelID, int &iUpgradeInfoID );
+int									vehicle_getPaintJob ( vehicle_info *vinfo );
+void								vehicle_setPaintJob ( vehicle_info *vinfo, unsigned char new_paintjob );
+int									vehicle_getColor0 ( vehicle_info *vinfo );
+int									vehicle_getColor1 ( vehicle_info *vinfo );
+void								vehicle_setColor0 ( vehicle_info *vinfo, int new_color );
+void								vehicle_setColor1 ( vehicle_info *vinfo, int new_color );
+
+// --------------------------------------------------------------------------------------------
+int									memcpy_safe ( void *dest, const void *src, uint32_t len );
+int									memset_safe ( void *_dest, int c, uint32_t len );
+int									memcmp_safe ( const void *_s1, const void *_s2, uint32_t len );
+
+void								*dll_baseptr_get ( const char *dll_name );
+
+void								str_split_free ( struct str_split *split );
+struct str_split					*str_split ( const char *str, const char *ch );
+
+size_t								strlcpy ( char *dst, const char *src, size_t size );
+size_t								strlcat ( char *dst, const char *src, size_t size );
+
+void								*memdup ( const void *src, int len );
+uint8_t								*hex_to_bin ( const char *str );
+
+extern const struct weapon_entry	weapon_list[];
+extern const struct vehicle_entry	vehicle_list[VEHICLE_LIST_SIZE];
+extern const struct interiors		interiors_list[];
+
+// new functions making use of MTA/R* classes
+CPed								*getSelfCPed ( void );
+CVehicle							*getSelfCVehicle ( void );

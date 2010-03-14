@@ -31,11 +31,15 @@ float* CGameSA::VAR_OldTimeStep;
 float* CGameSA::VAR_TimeStep;
 unsigned long* CGameSA::VAR_Framelimiter;
 
+// wasn't defined anywhere but is used by MTA so... here we go
+CGameSA *pGame = NULL;
+
 /**
  * \todo allow the addon to change the size of the pools (see 0x4C0270 - CPools::Initialise) (in start game?)
  */
 CGameSA::CGameSA()
 {
+	pGame = this;
     // Unprotect all of the GTASA code at once and leave it that way
     DWORD oldProt;
     VirtualProtect((LPVOID)0x401000, 0x4A3000, PAGE_EXECUTE_READWRITE, &oldProt);

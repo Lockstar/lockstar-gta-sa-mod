@@ -78,14 +78,11 @@
 
 // typedefs/classes for legacy
 #include "stddefs.h"
-#include "stdint.h"
+#include "stdtypes.h"
 #include "CVector.h"
 #include "CVector2D.h"
 #include "CMatrix.h"
 #include "CMatrix_Pad.h"
-
-// additional setup includes
-#include "mta_extras.h"
 
 // public SA classes
 // try to always include these in the private class's header
@@ -213,7 +210,8 @@ extern RsGlobalType				*g_RsGlobal;
 extern CCameraSA				g_CCamera;
 
 // new MTA externals
-extern CGame					*pGameInterface;
+extern CGameSA					*pGameInterface;
+extern CPools					*pPools;
 
 // externals
 #endif

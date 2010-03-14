@@ -475,7 +475,7 @@ const char *debug_classify_pointer ( const void *ptr )
 
 	idx = ( idx + 1 ) % 4;
 
-	strcpy ( str[idx], "" );
+	strcpy( str[idx], "" );
 
 	for ( i = 0; pools[i].pool_ptr != NULL; i++ )
 	{
@@ -499,29 +499,29 @@ const char *debug_classify_pointer ( const void *ptr )
 			int item_offset = offset % item_size;
 			int id = offset / item_size;
 
-			snprintf ( str[idx], sizeof (str[0]), "pool(%s)[%d]+%d", pool_name, id, item_offset );
+			snprintf( str[idx], sizeof(str[0]), "pool(%s)[%d]+%d", pool_name, id, item_offset );
 
 			// actor (peds) pool
 			if ( pools[i].pool_ptr == (void *)ACTOR_POOL_POINTER )
 			{
-				int			samp_id = getSAMPPlayerIDFromGTAPed ( actor_info_get (id, 0) );
-				const char	*samp_name = getPlayerName ( samp_id );
+				int			samp_id = getSAMPPlayerIDFromGTAPed( actor_info_get(id, 0) );
+				const char	*samp_name = getPlayerName( samp_id );
 
 				if ( samp_name != NULL )
 				{
-					snprintf ( str[idx] + strlen (str[idx]), sizeof (str[0]) - strlen (str[idx]), " %d:\"%s\"", samp_id,
-							   samp_name );
+					snprintf( str[idx] + strlen(str[idx]), sizeof(str[0]) - strlen(str[idx]), " %d:\"%s\"", samp_id,
+							  samp_name );
 				}
 			}
 
 			if ( table != NULL )
 			{
-				strlcat ( str[idx], ": ", sizeof (str[0]) );
+				strlcat( str[idx], ": ", sizeof(str[0]) );
 				while ( table->descr != NULL )
 				{
 					if ( item_offset >= table->offset && item_offset < table->offset + table->len )
 					{
-						strlcat ( str[idx], table->descr, sizeof (str[0]) );
+						strlcat( str[idx], table->descr, sizeof(str[0]) );
 						break;
 					}
 
@@ -529,7 +529,7 @@ const char *debug_classify_pointer ( const void *ptr )
 				}
 
 				if ( table->descr == NULL )
-					strlcat ( str[idx], "Unknown", sizeof (str[0]) );
+					strlcat( str[idx], "Unknown", sizeof(str[0]) );
 			}
 
 			return str[idx];
@@ -548,7 +548,7 @@ const char *debug_classify_pointer ( const void *ptr )
 
 			if ( (void *)g_Players->pRemotePlayer >= ptr && (void *)(g_Players->pRemotePlayer + 1) < ptr )
 			{
-				snprintf ( str[idx], sizeof (str[0]), "SPL %d:\"%s\"", i, getPlayerName (i) );
+				snprintf( str[idx], sizeof(str[0]), "SPL %d:\"%s\"", i, getPlayerName(i) );
 				return str[idx];
 			}
 		}

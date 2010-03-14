@@ -20,6 +20,12 @@
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
 */
+// this is pretty std stuff
 #define snprintf	_snprintf
 #define vsnprintf	_vsnprintf
 #define isfinite	_finite
+
+// User-defined warnings - MTA
+#define __STR2__( x )	#x
+#define __STR1__( x )	__STR2__( x )
+#define __LOC__			__FILE__ "("__STR1__( __LINE__ ) ") : warning C0000 *m0d Team*: "

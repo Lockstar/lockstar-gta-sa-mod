@@ -472,10 +472,10 @@ int isBadPtr_GTA_pVehicleInfo ( vehicle_info *p_VehicleInfo )
 	if ( !
 			 (
 			 (DWORD) p_VehicleInfo >= (DWORD) pool_vehicle->start && (DWORD) p_VehicleInfo <=
-			 ((DWORD) pool_vehicle->start + (pool_vehicle->size * sizeof (vehicle_info)))
+			 ((DWORD) pool_vehicle->start + (pool_vehicle->size * sizeof(vehicle_info)))
  ) )
 		return 1;
-	return ( p_VehicleInfo->base.matrix == NULL );
+	return p_VehicleInfo->base.matrix == NULL;
 }
 
 int isBadPtr_GTA_pActorInfo ( actor_info *p_ActorInfo )
@@ -485,10 +485,10 @@ int isBadPtr_GTA_pActorInfo ( actor_info *p_ActorInfo )
 	if ( !
 			 (
 			 (DWORD) p_ActorInfo >= (DWORD) pool_actor->start && (DWORD) p_ActorInfo <=
-			 ((DWORD) pool_actor->start + (pool_actor->size * sizeof (actor_info)))
+			 ((DWORD) pool_actor->start + (pool_actor->size * sizeof(actor_info)))
  ) )
 		return 1;
-	return ( p_ActorInfo->base.matrix == NULL );
+	return p_ActorInfo->base.matrix == NULL;
 }
 
 bool isBadPtr_handlerAny ( void *pointer, ULONG size, DWORD dwFlags )
@@ -499,8 +499,8 @@ bool isBadPtr_handlerAny ( void *pointer, ULONG size, DWORD dwFlags )
 	if ( NULL == pointer )
 		return true;
 
-	memset ( &meminfo, 0x00, sizeof (meminfo) );
-	dwSize = VirtualQuery ( pointer, &meminfo, sizeof (meminfo) );
+	memset( &meminfo, 0x00, sizeof(meminfo) );
+	dwSize = VirtualQuery( pointer, &meminfo, sizeof(meminfo) );
 
 	if ( 0 == dwSize )
 		return true;
@@ -522,14 +522,14 @@ bool isBadPtr_handlerAny ( void *pointer, ULONG size, DWORD dwFlags )
 
 bool isBadPtr_readAny ( void *pointer, ULONG size )
 {
-	return isBadPtr_handlerAny ( pointer, size, PAGE_READONLY | PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READ |
-								 PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY );
+	return isBadPtr_handlerAny( pointer, size, PAGE_READONLY | PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READ |
+								PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY );
 }
 
 bool isBadPtr_writeAny ( void *pointer, ULONG size )
 {
-	return isBadPtr_handlerAny ( pointer, size,
-								 PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY );
+	return isBadPtr_handlerAny( pointer, size,
+								PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY );
 }
 
 uint32_t GetFromPool ( DWORD value, DWORD Pool, DWORD function )
@@ -549,32 +549,32 @@ uint32_t GetFromPool ( DWORD value, DWORD Pool, DWORD function )
 
 inline int ScriptCarId ( struct vehicle_info *car )
 {
-	return (int)GetFromPool ( (DWORD) car, VEHICLE_POOL_POINTER, FUNC_GET_CAR_ID );
+	return (int)GetFromPool( (DWORD) car, VEHICLE_POOL_POINTER, FUNC_GET_CAR_ID );
 }
 
 inline int ScriptActorId ( struct actor_info *actor )
 {
-	return (int)GetFromPool ( (DWORD) actor, ACTOR_POOL_POINTER, FUNC_GET_ACTOR_ID );
+	return (int)GetFromPool( (DWORD) actor, ACTOR_POOL_POINTER, FUNC_GET_ACTOR_ID );
 }
 
 inline int ScriptObjectId ( struct object_info *object )
 {
-	return (int)GetFromPool ( (DWORD) object, OBJECT_POOL_POINTER, FUNC_GET_OBJECT_ID );
+	return (int)GetFromPool( (DWORD) object, OBJECT_POOL_POINTER, FUNC_GET_OBJECT_ID );
 }
 
 inline struct vehicle_info *GetVehicleByGtaId ( int car_id )
 {
-	return (vehicle_info *)GetFromPool ( (DWORD) car_id, VEHICLE_POOL_POINTER, FUNC_GET_CAR_STRUCT );
+	return (vehicle_info *)GetFromPool( (DWORD) car_id, VEHICLE_POOL_POINTER, FUNC_GET_CAR_STRUCT );
 }
 
 inline struct actor_info *GetActorByGtaId ( int actor_id )
 {
-	return (actor_info *)GetFromPool ( (DWORD) actor_id, ACTOR_POOL_POINTER, FUNC_GET_ACTOR_STRUCT );
+	return (actor_info *)GetFromPool( (DWORD) actor_id, ACTOR_POOL_POINTER, FUNC_GET_ACTOR_STRUCT );
 }
 
 inline struct object_info *GetObjectByGtaId ( int object_id )
 {
-	return (object_info *)GetFromPool ( (DWORD) object_id, OBJECT_POOL_POINTER, FUNC_GET_OBJECT_STRUCT );
+	return (object_info *)GetFromPool( (DWORD) object_id, OBJECT_POOL_POINTER, FUNC_GET_OBJECT_STRUCT );
 }
 
 void gta_weather_state_set ( int state )
@@ -602,14 +602,14 @@ uint32_t gta_money_get ( void )
 
 void gta_gravity_set ( float value )
 {
-	memcpy_safe ( (void *)0x00863984, &value, sizeof (float) );
+	memcpy_safe( (void *)0x00863984, &value, sizeof(float) );
 }
 
 float gta_gravity_get ( void )
 {
 	float	value;
 
-	memcpy_safe ( &value, (void *)0x00863984, sizeof (float) );
+	memcpy_safe( &value, (void *)0x00863984, sizeof(float) );
 
 	return value;
 }
@@ -628,7 +628,7 @@ struct checkpoint *gta_checkpoint_info_get ( int n )
 {
 	struct checkpoint	*cp = (struct checkpoint *)0x00C7F158;
 
-	if ( vect3_near_zero (cp->position) )
+	if ( vect3_near_zero(cp->position) )
 		return NULL;
 
 	return &cp[n];
@@ -651,7 +651,7 @@ const struct weapon_entry *gta_weapon_get_by_name ( const char *name )
 
 	while ( entry->name != NULL )
 	{
-		if ( _stricmp (entry->name, name) == 0 )
+		if ( _stricmp(entry->name, name) == 0 )
 			return entry;
 		entry++;
 	}
@@ -664,8 +664,8 @@ void gta_weapon_set ( struct actor_info *info, int slot, int id, int ammo, int a
 	/*memset(&info->weapon[slot], 0, sizeof(struct weapon));*/
 	if ( slot < 0 || slot > 12 )
 	{
-		Log ( "invalid weapon slot %d!", slot );
-		return ;
+		Log( "invalid weapon slot %d!", slot );
+		return;
 	}
 
 	if ( id >= 0 )
@@ -751,10 +751,10 @@ void loadAllWeaponModels ( void )
 		{
 			if ( weapon->model_id == -1 )
 				continue;
-			if ( GTAfunc_isModelLoaded (weapon->model_id) )
+			if ( GTAfunc_isModelLoaded(weapon->model_id) )
 				continue;
-			GTAfunc_requestModelLoad ( weapon->model_id );
-			GTAfunc_loadRequestedModels ();
+			GTAfunc_requestModelLoad( weapon->model_id );
+			GTAfunc_loadRequestedModels();
 		}
 
 		models_loaded = 1;
@@ -763,12 +763,12 @@ void loadAllWeaponModels ( void )
 
 void loadSpecificModel ( int iModelID )
 {
-	if ( GTAfunc_isModelLoaded (iModelID) )
-		return ;
-	GTAfunc_requestModelLoad ( iModelID );
-	GTAfunc_loadRequestedModels ();
-	while ( !GTAfunc_isModelLoaded (iModelID) )
-		Sleep ( 10 );
+	if ( GTAfunc_isModelLoaded(iModelID) )
+		return;
+	GTAfunc_requestModelLoad( iModelID );
+	GTAfunc_loadRequestedModels();
+	while ( !GTAfunc_isModelLoaded(iModelID) )
+		Sleep( 10 );
 }
 
 typedef void * ( __cdecl * vehicle_spawn_func ) (int);
@@ -777,9 +777,9 @@ void gta_vehicle_spawn ( int vehicle_id )
 {
 	vehicle_spawn_func	vehicle_spawn = ( vehicle_spawn_func ) 0x0043A0B0;
 
-	Log ( "Calling vehicle_spawn(%d)...", vehicle_id );
-	vehicle_spawn ( vehicle_id );
-	Log ( "Returned." );
+	Log( "Calling vehicle_spawn(%d)...", vehicle_id );
+	vehicle_spawn( vehicle_id );
+	Log( "Returned." );
 }
 
 typedef void * ( __cdecl * jetpack_give_func ) (void);
@@ -788,9 +788,9 @@ void gta_jetpack_give ( void )
 {
 	jetpack_give_func	jetpack_give = ( jetpack_give_func ) 0x00439600;
 
-	Log ( "Calling jetpack_give()..." );
-	jetpack_give ();
-	Log ( "Returned." );
+	Log( "Calling jetpack_give()..." );
+	jetpack_give();
+	Log( "Returned." );
 }
 
 int gta_interior_id_get ( void )
@@ -800,7 +800,7 @@ int gta_interior_id_get ( void )
 
 void gta_interior_id_set ( int id )
 {
-	struct actor_info	*info = actor_info_get ( ACTOR_SELF, 0 );
+	struct actor_info	*info = actor_info_get( ACTOR_SELF, 0 );
 
 	*(uint32_t *)0x00B72914 = ( uint32_t ) id;
 
@@ -825,7 +825,7 @@ uint32_t __time_get ( void )
 	FILETIME				ft;
 	ULARGE_INTEGER			time_now;
 
-	GetSystemTimeAsFileTime ( &ft );
+	GetSystemTimeAsFileTime( &ft );
 	time_now.LowPart = ft.dwLowDateTime;
 	time_now.HighPart = ft.dwHighDateTime;
 
@@ -833,7 +833,7 @@ uint32_t __time_get ( void )
 
 	if ( !init )
 	{
-		init_time.QuadPart = time_now.QuadPart - MSEC_TO_TIME ( 1000 );
+		init_time.QuadPart = time_now.QuadPart - MSEC_TO_TIME( 1000 );
 		init = 1;
 	}
 
@@ -846,13 +846,13 @@ void cheat_state_text ( const char *fmt, ... )
 	if ( fmt == NULL )
 	{
 		cheat_state->text_time = 0;
-		return ;
+		return;
 	}
 
-	va_start ( ap, fmt );
-	vsnprintf ( cheat_state->text, sizeof (cheat_state->text), fmt, ap );
-	va_end ( ap );
-	cheat_state->text_time = time_get ();
+	va_start( ap, fmt );
+	vsnprintf( cheat_state->text, sizeof(cheat_state->text), fmt, ap );
+	va_end( ap );
+	cheat_state->text_time = time_get();
 }
 
 /* returns actor <id>'s struct
@@ -870,27 +870,27 @@ struct actor_info *actor_info_get ( int id, int flags )
 	if ( id == ACTOR_SELF )
 	{
 		info = (struct actor_info *)( UINT_PTR ) * (uint32_t *)ACTOR_POINTER_SELF;
-		if ( isBadPtr_GTA_pActorInfo (info) )
+		if ( isBadPtr_GTA_pActorInfo(info) )
 			return NULL;
 	}
 	else
 	{
 		info = &( (struct actor_info *)pool_actor->start )[id];
-		if ( isBadPtr_GTA_pActorInfo (info) )
+		if ( isBadPtr_GTA_pActorInfo(info) )
 			return NULL;
 	}
 
 	/* XXX this should not be nessecary... but it is. fix it. */
-	if ( vect3_near_zero (&info->base.matrix[4 * 3]) )
+	if ( vect3_near_zero(&info->base.matrix[4 * 3]) )
 		return NULL;
 
-	if ( (flags & ACTOR_ALIVE) && ACTOR_IS_DEAD (info) )
+	if ( (flags & ACTOR_ALIVE) && ACTOR_IS_DEAD(info) )
 		return NULL;
 
 	/* exclude actors in the same car as ACTOR_SELF */
 	if ( flags & ACTOR_NOT_SAME_VEHICLE )
 	{
-		struct actor_info	*self = actor_info_get ( ACTOR_SELF, 0 );
+		struct actor_info	*self = actor_info_get( ACTOR_SELF, 0 );
 
 		if ( self != NULL
 		 &&	 info->state == ACTOR_STATE_DRIVING
@@ -907,23 +907,22 @@ void cheat_teleport_history_save ( void )
 	struct object_base			*base;
 
 	if ( cheat_state->state == CHEAT_STATE_VEHICLE )
-		base = &vehicle_info_get ( VEHICLE_SELF, 0 )->base;
+		base = &vehicle_info_get( VEHICLE_SELF, 0 )->base;
 	else if ( cheat_state->state == CHEAT_STATE_ACTOR )
-		base = &actor_info_get ( ACTOR_SELF, 0 )->base;
+		base = &actor_info_get( ACTOR_SELF, 0 )->base;
 	else
-		return ;
+		return;
 
 	if ( ++cheat_state->teleport_hist_count > TELEPORT_HIST_MAX )
 	{
 		cheat_state->teleport_hist_count = TELEPORT_HIST_MAX;
-		memmove ( &cheat_state->teleport_hist[0], &cheat_state->teleport_hist[1],
-				  sizeof (*teleport) * (TELEPORT_HIST_MAX - 1) );
+		memmove( &cheat_state->teleport_hist[0], &cheat_state->teleport_hist[1], sizeof(*teleport) * (TELEPORT_HIST_MAX - 1) );
 	}
 
 	teleport = &cheat_state->teleport_hist[cheat_state->teleport_hist_count - 1];
 	teleport->set = 1;
-	matrix_copy ( base->matrix, teleport->matrix );
-	teleport->interior_id = gta_interior_id_get ();
+	matrix_copy( base->matrix, teleport->matrix );
+	teleport->interior_id = gta_interior_id_get();
 }
 
 void vehicle_detachables_teleport ( struct vehicle_info *info, const float from[3], const float to[3] )
@@ -996,18 +995,18 @@ struct vehicle_info *vehicle_info_get ( int id, int flags )
 	if ( id == VEHICLE_SELF )
 	{
 		info = (struct vehicle_info *)( UINT_PTR ) * (uint32_t *)VEHICLE_POINTER_SELF;
-		if ( isBadPtr_GTA_pVehicleInfo (info) )
+		if ( isBadPtr_GTA_pVehicleInfo(info) )
 			return NULL;
 
 		// check to see if we're actually in the vehicle
-		struct actor_info	*actor = actor_info_get ( ACTOR_SELF, ACTOR_ALIVE );
-		if ( !vehicle_contains_actor (info, actor) )
+		struct actor_info	*actor = actor_info_get( ACTOR_SELF, ACTOR_ALIVE );
+		if ( !vehicle_contains_actor(info, actor) )
 			return NULL;
 	}
 	else
 	{
 		info = &( (struct vehicle_info *)pool_vehicle->start )[id];
-		if ( isBadPtr_GTA_pVehicleInfo (info) )
+		if ( isBadPtr_GTA_pVehicleInfo(info) )
 			return NULL;
 	}
 
@@ -1030,9 +1029,9 @@ void cheat_vehicle_tires_set ( struct vehicle_info *info, uint8_t tire_status )
 		uint8_t type = temp->vehicle_type;
 
 		if ( type == VEHICLE_TYPE_CAR )
-			vect4_copy ( tires, temp->car_tire_status );
+			vect4_copy( tires, temp->car_tire_status );
 		else if ( type == VEHICLE_TYPE_BIKE )
-			vect2_copy ( tires, temp->bike_tire_status );
+			vect2_copy( tires, temp->bike_tire_status );
 
 		if ( !set.trailer_support )
 			break;
@@ -1060,7 +1059,7 @@ int vehicle_contains_actor ( struct vehicle_info *vehicle, struct actor_info *ac
 	if ( actor == NULL )
 		return NULL;
 
-	memcpy ( passengers, vehicle->passengers, sizeof (uint32_t) * VEHICLE_MAX_PASSENGERS );
+	memcpy( passengers, vehicle->passengers, sizeof(uint32_t) * VEHICLE_MAX_PASSENGERS );
 
 	int i;
 	for ( i = 0; i < VEHICLE_MAX_PASSENGERS; i++ )
@@ -1076,31 +1075,31 @@ int vehicle_contains_actor ( struct vehicle_info *vehicle, struct actor_info *ac
 void vehicle_state_store ( const struct vehicle_info *info, struct vehicle_state *state )
 {
 	if ( info == NULL )
-		return ;
+		return;
 
-	vect3_copy ( info->speed, state->speed );
-	vect3_copy ( info->spin, state->spin );
-	matrix_copy ( info->base.matrix, state->matrix );
+	vect3_copy( info->speed, state->speed );
+	vect3_copy( info->spin, state->spin );
+	matrix_copy( info->base.matrix, state->matrix );
 
 	if ( !set.trailer_support )
-		return ;
+		return;
 
 	state->trailerPtr = info->trailer;
 	state->trailer = new struct vehicle_state;
-	vehicle_state_store ( state->trailerPtr, state->trailer );			/* XXX - recursion sucks */
+	vehicle_state_store( state->trailerPtr, state->trailer );		/* XXX - recursion sucks */
 }
 
 void vehicle_state_restore ( struct vehicle_info *info, const struct vehicle_state *state )
 {
 	if ( info == NULL )
-		return ;
+		return;
 
-	vect3_copy ( state->speed, info->speed );
-	vect3_copy ( state->spin, info->spin );
-	matrix_copy ( state->matrix, info->base.matrix );
+	vect3_copy( state->speed, info->speed );
+	vect3_copy( state->spin, info->spin );
+	matrix_copy( state->matrix, info->base.matrix );
 
 	if ( set.trailer_support )
-		vehicle_state_restore ( state->trailerPtr, state->trailer );	/* XXX - recursion sucks */
+		vehicle_state_restore( state->trailerPtr, state->trailer ); /* XXX - recursion sucks */
 }
 
 /* prevents the vehicle from going below a certain point. doesn't always work
@@ -1114,12 +1113,12 @@ void vehicle_prevent_below_height ( struct vehicle_info *info, float height )
 	{
 		float	vect[3] = { info->base.matrix[4 * 3 + 0], info->base.matrix[4 * 3 + 1], height };
 
-		vehicle_detachables_teleport ( info, &info->base.matrix[4 * 3], vect );
+		vehicle_detachables_teleport( info, &info->base.matrix[4 * 3], vect );
 
-		vect3_copy ( vect, &info->base.matrix[4 * 3] );
+		vect3_copy( vect, &info->base.matrix[4 * 3] );
 
 		info->speed[2] = 0.05f;
-		vect3_zero ( info->spin );
+		vect3_zero( info->spin );
 	}
 }
 
@@ -1144,17 +1143,17 @@ static int __generic_find ( int do_vehicles, int id, int dir, int flags )
 
 		if ( do_vehicles )
 		{
-			if ( vehicle_info_get (n, flags) != NULL )
+			if ( vehicle_info_get(n, flags) != NULL )
 			{
-				if ( vehicle_info_get (n, flags)->base.matrix != vehicle_info_get (VEHICLE_SELF, 0)->base.matrix )
+				if ( vehicle_info_get(n, flags)->base.matrix != vehicle_info_get(VEHICLE_SELF, 0)->base.matrix )
 					return n;
 			}
 		}
 		else
 		{
-			if ( actor_info_get (n, flags) != NULL )
+			if ( actor_info_get(n, flags) != NULL )
 			{
-				if ( actor_info_get (n, flags)->base.matrix != actor_info_get (ACTOR_SELF, 0)->base.matrix )
+				if ( actor_info_get(n, flags)->base.matrix != actor_info_get(ACTOR_SELF, 0)->base.matrix )
 					return n;
 			}
 		}
@@ -1165,12 +1164,12 @@ static int __generic_find ( int do_vehicles, int id, int dir, int flags )
 
 int vehicle_find ( int id, int dir, int flags )
 {
-	return __generic_find ( 1, id, dir, flags );
+	return __generic_find( 1, id, dir, flags );
 }
 
 int actor_find ( int id, int dir, int flags )
 {
-	return __generic_find ( 0, id, dir, flags );
+	return __generic_find( 0, id, dir, flags );
 }
 
 /* XXX make these generic */
@@ -1185,21 +1184,21 @@ int vehicle_find_nearest ( int flags )
 
 	if ( pool_vehicle == NULL )
 		return -1;
-	if ( (actor_self = actor_info_get (ACTOR_SELF, 0)) == NULL )
+	if ( (actor_self = actor_info_get(ACTOR_SELF, 0)) == NULL )
 		return -1;
-	vehicle_self = vehicle_info_get ( VEHICLE_SELF, 0 );
+	vehicle_self = vehicle_info_get( VEHICLE_SELF, 0 );
 
 	for ( int n = 0; n < pool_vehicle->size; n++ )
 	{
 		float	vect[3];
-		if ( (info = vehicle_info_get (n, flags)) == NULL )
+		if ( (info = vehicle_info_get(n, flags)) == NULL )
 			continue;
 
 		// if SAMP is loaded, check if the vehicle is streamed in
 		if ( g_SAMP != NULL )
 		{
-			int iVehicleSAMPID = getSAMPVehicleIDFromGTAVehicle ( info );
-			if ( isBadPtr_SAMP_iVehicleID (iVehicleSAMPID) )
+			int iVehicleSAMPID = getSAMPVehicleIDFromGTAVehicle( info );
+			if ( isBadPtr_SAMP_iVehicleID(iVehicleSAMPID) )
 				continue;
 		}
 
@@ -1220,15 +1219,15 @@ int vehicle_find_nearest ( int flags )
 		//if (info->base.interior_id != g_Players->pLocalPlayer->byteCurrentInterior)
 		//	continue;
 		// filter vehicle by flags function
-		if ( vehicle_filter_flags (info, flags) == 0 )
+		if ( vehicle_filter_flags(info, flags) == 0 )
 			continue;
 
 		// looks like we're all good, now where the heck is we all at?
-		vect3_vect3_sub ( &actor_self->base.matrix[4 * 3], &info->base.matrix[4 * 3], vect );
+		vect3_vect3_sub( &actor_self->base.matrix[4 * 3], &info->base.matrix[4 * 3], vect );
 		vect[2] += 2.0f;
-		if ( dist < 0.0f || vect3_length (vect) < dist )
+		if ( dist < 0.0f || vect3_length(vect) < dist )
 		{
-			dist = vect3_length ( vect );
+			dist = vect3_length( vect );
 			id_nearest = n;
 		}
 	}
@@ -1245,7 +1244,7 @@ int vehicle_filter_flags ( vehicle_info *info, int flags )
 	if ( (flags & VEHICLE_OCCUPIED) || (flags & VEHICLE_EMPTY) )
 	{
 		const struct vehicle_entry	*vehicle;
-		vehicle = gta_vehicle_get_by_id ( info->base.model_alt_id );
+		vehicle = gta_vehicle_get_by_id( info->base.model_alt_id );
 
 		const int	seat_count = vehicle->passengers;
 		for ( seat = 0; seat < seat_count + 1; seat++ )
@@ -1278,24 +1277,24 @@ int actor_find_nearest ( int flags )
 	if ( pool_actor == NULL )
 		return -1;
 
-	if ( (self = actor_info_get (ACTOR_SELF, 0)) == NULL )
+	if ( (self = actor_info_get(ACTOR_SELF, 0)) == NULL )
 		return -1;
 
 	for ( n = 0; n < pool_actor->size; n++ )
 	{
 		float	vect[3];
 
-		if ( (info = actor_info_get (n, flags)) == NULL )
+		if ( (info = actor_info_get(n, flags)) == NULL )
 			continue;
 
 		if ( self->base.matrix == info->base.matrix )
 			continue;
 
-		vect3_vect3_sub ( &self->base.matrix[4 * 3], &info->base.matrix[4 * 3], vect );
+		vect3_vect3_sub( &self->base.matrix[4 * 3], &info->base.matrix[4 * 3], vect );
 
-		if ( dist < 0.0f || vect3_length (vect) < dist )
+		if ( dist < 0.0f || vect3_length(vect) < dist )
 		{
-			dist = vect3_length ( vect );
+			dist = vect3_length( vect );
 			id_nearest = n;
 		}
 	}
@@ -1316,35 +1315,35 @@ void SetCloudsEnabled ( bool bDisabled )
 {
 	//volumetric clouds
 	if ( bDisabled )
-		memcpy_safe ( (void *)0x716380, "\xA1", 1 );
+		memcpy_safe( (void *)0x716380, "\xA1", 1 );
 	else
-		memcpy_safe ( (void *)0x716380, "\xC3", 1 );
+		memcpy_safe( (void *)0x716380, "\xC3", 1 );
 
 	// normal clouds
 	//0071395A     90             NOP
 	if ( bDisabled )
-		memcpy_safe ( (void *)0x713950, "\x83", 1 );
+		memcpy_safe( (void *)0x713950, "\x83", 1 );
 	else
-		memcpy_safe ( (void *)0x713950, "\xC3", 1 );
+		memcpy_safe( (void *)0x713950, "\xC3", 1 );
 
 	// plane trails (not really clouds, but they're sort of vapour)
 	if ( bDisabled )
-		memcpy_safe ( (void *)0x717180, "\x83\xEC\x08", 3 );
+		memcpy_safe( (void *)0x717180, "\x83\xEC\x08", 3 );
 	else
-		memcpy_safe ( (void *)0x717180, "\xC2\x04\x00", 3 );
+		memcpy_safe( (void *)0x717180, "\xC2\x04\x00", 3 );
 }
 
 void enableCollisionsForEveryStreamedInVehicle ( int iToggle )
 {
-	traceLastFunc ( "enableCollisionsForEveryStreamedInVehicle()" );
+	traceLastFunc( "enableCollisionsForEveryStreamedInVehicle()" );
 
 	int v;
 	for ( v = 0; v < pool_vehicle->size; v++ )
 	{
-		struct vehicle_info *vehs = vehicle_info_get ( v, VEHICLE_ALIVE );
+		struct vehicle_info *vehs = vehicle_info_get( v, VEHICLE_ALIVE );
 		if ( vehs == NULL )
 			continue;
-		if ( vehs == vehicle_info_get (VEHICLE_SELF, 0) )
+		if ( vehs == vehicle_info_get(VEHICLE_SELF, 0) )
 			continue;
 		vehs->base.bUsesCollision = iToggle;
 	}
@@ -1363,31 +1362,31 @@ bool vehicle_upgrade_iModelID_IsValid ( int iModelID )
 
 eClientVehicleType GetVehicleType ( int iModelID )
 {
-	traceLastFunc ( "GetVehicleType()" );
+	traceLastFunc( "GetVehicleType()" );
 
 	// Valid vehicle model id?
-	if ( vehicle_iModelID_IsValid (iModelID) )
+	if ( vehicle_iModelID_IsValid(iModelID) )
 	{
 		// Return the appropriate type
-		if ( GTAfunc_vehicle_iModelID_IsCar (iModelID) )
+		if ( GTAfunc_vehicle_iModelID_IsCar(iModelID) )
 			return CLIENTVEHICLE_CAR;
-		if ( GTAfunc_vehicle_iModelID_IsBike (iModelID) )
+		if ( GTAfunc_vehicle_iModelID_IsBike(iModelID) )
 			return CLIENTVEHICLE_BIKE;
-		if ( GTAfunc_vehicle_iModelID_IsPlane (iModelID) )
+		if ( GTAfunc_vehicle_iModelID_IsPlane(iModelID) )
 			return CLIENTVEHICLE_PLANE;
-		if ( GTAfunc_vehicle_iModelID_IsHeli (iModelID) )
+		if ( GTAfunc_vehicle_iModelID_IsHeli(iModelID) )
 			return CLIENTVEHICLE_HELI;
-		if ( GTAfunc_vehicle_iModelID_IsBoat (iModelID) )
+		if ( GTAfunc_vehicle_iModelID_IsBoat(iModelID) )
 			return CLIENTVEHICLE_BOAT;
-		if ( GTAfunc_vehicle_iModelID_IsQuadBike (iModelID) )
+		if ( GTAfunc_vehicle_iModelID_IsQuadBike(iModelID) )
 			return CLIENTVEHICLE_QUADBIKE;
-		if ( GTAfunc_vehicle_iModelID_IsBmx (iModelID) )
+		if ( GTAfunc_vehicle_iModelID_IsBmx(iModelID) )
 			return CLIENTVEHICLE_BMX;
-		if ( GTAfunc_vehicle_iModelID_IsMonsterTruck (iModelID) )
+		if ( GTAfunc_vehicle_iModelID_IsMonsterTruck(iModelID) )
 			return CLIENTVEHICLE_MONSTERTRUCK;
-		if ( GTAfunc_vehicle_iModelID_IsTrailer (iModelID) )
+		if ( GTAfunc_vehicle_iModelID_IsTrailer(iModelID) )
 			return CLIENTVEHICLE_TRAILER;
-		if ( GTAfunc_vehicle_iModelID_IsTrain (iModelID) )
+		if ( GTAfunc_vehicle_iModelID_IsTrain(iModelID) )
 			return CLIENTVEHICLE_TRAIN;
 	}
 
@@ -1397,13 +1396,13 @@ eClientVehicleType GetVehicleType ( int iModelID )
 
 bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 {
-	traceLastFunc ( "isUpgradeCompatible()" );
+	traceLastFunc( "isUpgradeCompatible()" );
 
 	// get vehicle model
 	int					usModel = vinfo->base.model_alt_id;
 
 	// get vehicle type
-	eClientVehicleType	vehicleType = GetVehicleType ( usModel );
+	eClientVehicleType	vehicleType = GetVehicleType( usModel );
 
 	// no upgrades for you!
 	if ( vehicleType == CLIENTVEHICLE_BOAT
@@ -1446,987 +1445,840 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 	switch ( usModel )
 	{
 	case 400:
-		return
-			(
-				us == 1020
-			||	us == 1021
-			||	us == 1019
-			||	us == 1018
-			||	us == 1013
-			||	us == 1024
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			);
+		return us == 1020
+		||	us == 1021
+		||	us == 1019
+		||	us == 1018
+		||	us == 1013
+		||	us == 1024
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010;
 
 	case 401:
-		return
-			(
-				us == 1005
-			||	us == 1004
-			||	us == 1142
-			||	us == 1143
-			||	us == 1144
-			||	us == 114
-			||	us == 1020
-			||	us == 1019
-			||	us == 1013
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1006
-			||	us == 1001
-			||	us == 1003
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1005
+		||	us == 1004
+		||	us == 1142
+		||	us == 1143
+		||	us == 1144
+		||	us == 114
+		||	us == 1020
+		||	us == 1019
+		||	us == 1013
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1006
+		||	us == 1001
+		||	us == 1003
+		||	us == 1017
+		||	us == 1007;
 
 	case 402:
-		return ( us == 1009 || us == 1009 || us == 1010 );
+		return us == 1009 || us == 1009 || us == 1010;
 
 	case 404:
-		return
-			(
-				us == 1020
-			||	us == 1021
-			||	us == 1019
-			||	us == 1013
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1002
-			||	us == 1016
-			||	us == 1000
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1020
+		||	us == 1021
+		||	us == 1019
+		||	us == 1013
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1002
+		||	us == 1016
+		||	us == 1000
+		||	us == 1017
+		||	us == 1007;
 
 	case 405:
-		return
-			(
-				us == 1020
-			||	us == 1021
-			||	us == 1019
-			||	us == 1018
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1001
-			||	us == 1014
-			||	us == 1023
-			||	us == 1000
-			);
+		return us == 1020
+		||	us == 1021
+		||	us == 1019
+		||	us == 1018
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1001
+		||	us == 1014
+		||	us == 1023
+		||	us == 1000;
 
 	case 409:
-		return ( us == 1009 );
+		return us == 1009;
 
 	case 410:
-		return
-			(
-				us == 1019
-			||	us == 1021
-			||	us == 1020
-			||	us == 1013
-			||	us == 1024
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1001
-			||	us == 1023
-			||	us == 1003
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1019
+		||	us == 1021
+		||	us == 1020
+		||	us == 1013
+		||	us == 1024
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1001
+		||	us == 1023
+		||	us == 1003
+		||	us == 1017
+		||	us == 1007;
 
 	case 411:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 412:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 415:
-		return
-			(
-				us == 1019
-			||	us == 1018
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1001
-			||	us == 1023
-			||	us == 1003
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1019
+		||	us == 1018
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1001
+		||	us == 1023
+		||	us == 1003
+		||	us == 1017
+		||	us == 1007;
 
 	case 418:
-		return
-			(
-				us == 1020
-			||	us == 1021
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1006
-			||	us == 1002
-			||	us == 1016
-			);
+		return us == 1020
+		||	us == 1021
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1006
+		||	us == 1002
+		||	us == 1016;
 
 	case 419:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 420:
-		return
-			(
-				us == 1005
-			||	us == 1004
-			||	us == 1021
-			||	us == 1019
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1001
-			||	us == 1003
-			);
+		return us == 1005
+		||	us == 1004
+		||	us == 1021
+		||	us == 1019
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1001
+		||	us == 1003;
 
 	case 421:
-		return
-			(
-				us == 1020
-			||	us == 1021
-			||	us == 1019
-			||	us == 1018
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1014
-			||	us == 1023
-			||	us == 1016
-			||	us == 1000
-			);
+		return us == 1020
+		||	us == 1021
+		||	us == 1019
+		||	us == 1018
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1014
+		||	us == 1023
+		||	us == 1016
+		||	us == 1000;
 
 	case 422:
-		return
-			(
-				us == 1020
-			||	us == 1021
-			||	us == 1019
-			||	us == 1013
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1020
+		||	us == 1021
+		||	us == 1019
+		||	us == 1013
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1017
+		||	us == 1007;
 
 	case 426:
-		return
-			(
-				us == 1005
-			||	us == 1004
-			||	us == 1021
-			||	us == 1019
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1006
-			||	us == 1001
-			||	us == 1003
-			);
+		return us == 1005
+		||	us == 1004
+		||	us == 1021
+		||	us == 1019
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1006
+		||	us == 1001
+		||	us == 1003;
 
 	case 429:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 436:
-		return
-			(
-				us == 1020
-			||	us == 1021
-			||	us == 1022
-			||	us == 1019
-			||	us == 1013
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1006
-			||	us == 1001
-			||	us == 1003
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1020
+		||	us == 1021
+		||	us == 1022
+		||	us == 1019
+		||	us == 1013
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1006
+		||	us == 1001
+		||	us == 1003
+		||	us == 1017
+		||	us == 1007;
 
 	case 438:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 439:
-		return
-			(
-				us == 1003
-			||	us == 1023
-			||	us == 1001
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1017
-			||	us == 1007
-			||	us == 1142
-			||	us == 1143
-			||	us == 1144
-			||	us == 1145
-			||	us == 1013
-			);
+		return us == 1003
+		||	us == 1023
+		||	us == 1001
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1017
+		||	us == 1007
+		||	us == 1142
+		||	us == 1143
+		||	us == 1144
+		||	us == 1145
+		||	us == 1013;
 
 	case 442:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 445:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 451:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 458:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 466:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 467:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 474:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 475:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 477:
-		return
-			(
-				us == 1020
-			||	us == 1021
-			||	us == 1019
-			||	us == 1018
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1006
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1020
+		||	us == 1021
+		||	us == 1019
+		||	us == 1018
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1006
+		||	us == 1017
+		||	us == 1007;
 
 	case 478:
-		return
-			(
-				us == 1005
-			||	us == 1004
-			||	us == 1012
-			||	us == 1020
-			||	us == 1021
-			||	us == 1022
-			||	us == 1013
-			||	us == 1024
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			);
+		return us == 1005
+		||	us == 1004
+		||	us == 1012
+		||	us == 1020
+		||	us == 1021
+		||	us == 1022
+		||	us == 1013
+		||	us == 1024
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010;
 
 	case 479:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 480:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 489:
-		return
-			(
-				us == 1005
-			||	us == 1004
-			||	us == 1020
-			||	us == 1019
-			||	us == 1018
-			||	us == 1013
-			||	us == 1024
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1006
-			||	us == 1002
-			||	us == 1016
-			||	us == 1000
-			);
+		return us == 1005
+		||	us == 1004
+		||	us == 1020
+		||	us == 1019
+		||	us == 1018
+		||	us == 1013
+		||	us == 1024
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1006
+		||	us == 1002
+		||	us == 1016
+		||	us == 1000;
 
 	case 491:
-		return
-			(
-				us == 1142
-			||	us == 1143
-			||	us == 1144
-			||	us == 1145
-			||	us == 1020
-			||	us == 1021
-			||	us == 1019
-			||	us == 1018
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1014
-			||	us == 1023
-			||	us == 1003
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1142
+		||	us == 1143
+		||	us == 1144
+		||	us == 1145
+		||	us == 1020
+		||	us == 1021
+		||	us == 1019
+		||	us == 1018
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1014
+		||	us == 1023
+		||	us == 1003
+		||	us == 1017
+		||	us == 1007;
 
 	case 492:
-		return
-			(
-				us == 1005
-			||	us == 1004
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1006
-			||	us == 1016
-			||	us == 1000
-			);
+		return us == 1005
+		||	us == 1004
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1006
+		||	us == 1016
+		||	us == 1000;
 
 	case 496:
-		return
-			(
-				us == 1006
-			||	us == 1017
-			||	us == 1007
-			||	us == 1011
-			||	us == 1019
-			||	us == 1023
-			||	us == 1001
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1003
-			||	us == 1002
-			||	us == 1142
-			||	us == 1143
-			||	us == 1020
-			);
+		return us == 1006
+		||	us == 1017
+		||	us == 1007
+		||	us == 1011
+		||	us == 1019
+		||	us == 1023
+		||	us == 1001
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1003
+		||	us == 1002
+		||	us == 1142
+		||	us == 1143
+		||	us == 1020;
 
 	case 500:
-		return
-			(
-				us == 1020
-			||	us == 1021
-			||	us == 1019
-			||	us == 1013
-			||	us == 1024
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			);
+		return us == 1020
+		||	us == 1021
+		||	us == 1019
+		||	us == 1013
+		||	us == 1024
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010;
 
 	case 506:
-		return ( us == 1009 );
+		return us == 1009;
 
 	case 507:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 516:
-		return
-			(
-				us == 1004
-			||	us == 1020
-			||	us == 1021
-			||	us == 1019
-			||	us == 1018
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1002
-			||	us == 1015
-			||	us == 1016
-			||	us == 1000
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1004
+		||	us == 1020
+		||	us == 1021
+		||	us == 1019
+		||	us == 1018
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1002
+		||	us == 1015
+		||	us == 1016
+		||	us == 1000
+		||	us == 1017
+		||	us == 1007;
 
 	case 517:
-		return
-			(
-				us == 1142
-			||	us == 1143
-			||	us == 1144
-			||	us == 1145
-			||	us == 1020
-			||	us == 1019
-			||	us == 1018
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1002
-			||	us == 1023
-			||	us == 1016
-			||	us == 1003
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1142
+		||	us == 1143
+		||	us == 1144
+		||	us == 1145
+		||	us == 1020
+		||	us == 1019
+		||	us == 1018
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1002
+		||	us == 1023
+		||	us == 1016
+		||	us == 1003
+		||	us == 1017
+		||	us == 1007;
 
 	case 518:
-		return
-			(
-				us == 1005
-			||	us == 1142
-			||	us == 1143
-			||	us == 1144
-			||	us == 1145
-			||	us == 1020
-			||	us == 1018
-			||	us == 1013
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1006
-			||	us == 1001
-			||	us == 1023
-			||	us == 1003
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1005
+		||	us == 1142
+		||	us == 1143
+		||	us == 1144
+		||	us == 1145
+		||	us == 1020
+		||	us == 1018
+		||	us == 1013
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1006
+		||	us == 1001
+		||	us == 1023
+		||	us == 1003
+		||	us == 1017
+		||	us == 1007;
 
 	case 526:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 527:
-		return
-			(
-				us == 1021
-			||	us == 1020
-			||	us == 1018
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1001
-			||	us == 1014
-			||	us == 1015
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1021
+		||	us == 1020
+		||	us == 1018
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1001
+		||	us == 1014
+		||	us == 1015
+		||	us == 1017
+		||	us == 1007;
 
 	case 529:
-		return
-			(
-				us == 1012
-			||	us == 1011
-			||	us == 1020
-			||	us == 1019
-			||	us == 1018
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1006
-			||	us == 1001
-			||	us == 1023
-			||	us == 1003
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1012
+		||	us == 1011
+		||	us == 1020
+		||	us == 1019
+		||	us == 1018
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1006
+		||	us == 1001
+		||	us == 1023
+		||	us == 1003
+		||	us == 1017
+		||	us == 1007;
 
 	case 533:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 534:
-		return
-			(
-				us == 1126
-			||	us == 1127
-			||	us == 1179
-			||	us == 1185
-			||	us == 1100
-			||	us == 1123
-			||	us == 1125
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1180
-			||	us == 1178
-			||	us == 1101
-			||	us == 1122
-			||	us == 1124
-			||	us == 1106
-			);
+		return us == 1126
+		||	us == 1127
+		||	us == 1179
+		||	us == 1185
+		||	us == 1100
+		||	us == 1123
+		||	us == 1125
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1180
+		||	us == 1178
+		||	us == 1101
+		||	us == 1122
+		||	us == 1124
+		||	us == 1106;
 
 	case 535:
-		return
-			(
-				us == 1109
-			||	us == 1110
-			||	us == 1113
-			||	us == 1114
-			||	us == 1115
-			||	us == 1116
-			||	us == 1117
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1120
-			||	us == 1118
-			||	us == 1121
-			||	us == 1119
-			);
+		return us == 1109
+		||	us == 1110
+		||	us == 1113
+		||	us == 1114
+		||	us == 1115
+		||	us == 1116
+		||	us == 1117
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1120
+		||	us == 1118
+		||	us == 1121
+		||	us == 1119;
 
 	case 536:
-		return
-			(
-				us == 1104
-			||	us == 1105
-			||	us == 1182
-			||	us == 1181
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1184
-			||	us == 1183
-			||	us == 1128
-			||	us == 1103
-			||	us == 1107
-			||	us == 1108
-			);
+		return us == 1104
+		||	us == 1105
+		||	us == 1182
+		||	us == 1181
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1184
+		||	us == 1183
+		||	us == 1128
+		||	us == 1103
+		||	us == 1107
+		||	us == 1108;
 
 	case 540:
-		return
-			(
-				us == 1004
-			||	us == 1142
-			||	us == 1143
-			||	us == 1144
-			||	us == 1145
-			||	us == 1020
-			||	us == 1019
-			||	us == 1018
-			||	us == 1024
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1006
-			||	us == 1001
-			||	us == 1023
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1004
+		||	us == 1142
+		||	us == 1143
+		||	us == 1144
+		||	us == 1145
+		||	us == 1020
+		||	us == 1019
+		||	us == 1018
+		||	us == 1024
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1006
+		||	us == 1001
+		||	us == 1023
+		||	us == 1017
+		||	us == 1007;
 
 	case 541:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 542:
-		return
-			(
-				us == 1144
-			||	us == 1145
-			||	us == 1020
-			||	us == 1021
-			||	us == 1019
-			||	us == 1018
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1014
-			||	us == 1015
-			);
+		return us == 1144
+		||	us == 1145
+		||	us == 1020
+		||	us == 1021
+		||	us == 1019
+		||	us == 1018
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1014
+		||	us == 1015;
 
 	case 545:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 546:
-		return
-			(
-				us == 1004
-			||	us == 1142
-			||	us == 1143
-			||	us == 1144
-			||	us == 1145
-			||	us == 1019
-			||	us == 1018
-			||	us == 1024
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1006
-			||	us == 1002
-			||	us == 1001
-			||	us == 1023
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1004
+		||	us == 1142
+		||	us == 1143
+		||	us == 1144
+		||	us == 1145
+		||	us == 1019
+		||	us == 1018
+		||	us == 1024
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1006
+		||	us == 1002
+		||	us == 1001
+		||	us == 1023
+		||	us == 1017
+		||	us == 1007;
 
 	case 547:
-		return
-			(
-				us == 1142
-			||	us == 1143
-			||	us == 1020
-			||	us == 1021
-			||	us == 1019
-			||	us == 1018
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1016
-			||	us == 1003
-			||	us == 1000
-			);
+		return us == 1142
+		||	us == 1143
+		||	us == 1020
+		||	us == 1021
+		||	us == 1019
+		||	us == 1018
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1016
+		||	us == 1003
+		||	us == 1000;
 
 	case 549:
-		return
-			(
-				us == 1012
-			||	us == 1011
-			||	us == 1142
-			||	us == 1143
-			||	us == 1144
-			||	us == 1145
-			||	us == 1020
-			||	us == 1019
-			||	us == 1018
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1001
-			||	us == 1023
-			||	us == 1003
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1012
+		||	us == 1011
+		||	us == 1142
+		||	us == 1143
+		||	us == 1144
+		||	us == 1145
+		||	us == 1020
+		||	us == 1019
+		||	us == 1018
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1001
+		||	us == 1023
+		||	us == 1003
+		||	us == 1017
+		||	us == 1007;
 
 	case 550:
-		return
-			(
-				us == 1005
-			||	us == 1004
-			||	us == 1142
-			||	us == 1143
-			||	us == 1144
-			||	us == 1145
-			||	us == 1020
-			||	us == 1019
-			||	us == 1018
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1006
-			||	us == 1001
-			||	us == 1023
-			||	us == 1003
-			);
+		return us == 1005
+		||	us == 1004
+		||	us == 1142
+		||	us == 1143
+		||	us == 1144
+		||	us == 1145
+		||	us == 1020
+		||	us == 1019
+		||	us == 1018
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1006
+		||	us == 1001
+		||	us == 1023
+		||	us == 1003;
 
 	case 551:
-		return
-			(
-				us == 1005
-			||	us == 1020
-			||	us == 1021
-			||	us == 1019
-			||	us == 1018
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1006
-			||	us == 1002
-			||	us == 1023
-			||	us == 1016
-			||	us == 1003
-			);
+		return us == 1005
+		||	us == 1020
+		||	us == 1021
+		||	us == 1019
+		||	us == 1018
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1006
+		||	us == 1002
+		||	us == 1023
+		||	us == 1016
+		||	us == 1003;
 
 	case 555:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 558:
-		return
-			(
-				us == 1092
-			||	us == 1089
-			||	us == 1166
-			||	us == 1165
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1168
-			||	us == 1167
-			||	us == 1088
-			||	us == 1091
-			||	us == 1164
-			||	us == 1163
-			||	us == 1094
-			||	us == 1090
-			||	us == 1095
-			||	us == 1093
-			);
+		return us == 1092
+		||	us == 1089
+		||	us == 1166
+		||	us == 1165
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1168
+		||	us == 1167
+		||	us == 1088
+		||	us == 1091
+		||	us == 1164
+		||	us == 1163
+		||	us == 1094
+		||	us == 1090
+		||	us == 1095
+		||	us == 1093;
 
 	case 559:
-		return
-			(
-				us == 1065
-			||	us == 1066
-			||	us == 1160
-			||	us == 1173
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1159
-			||	us == 1161
-			||	us == 1162
-			||	us == 1158
-			||	us == 1067
-			||	us == 1068
-			||	us == 1071
-			||	us == 1069
-			||	us == 1072
-			||	us == 1070
-			||	us == 1009
-			);
+		return us == 1065
+		||	us == 1066
+		||	us == 1160
+		||	us == 1173
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1159
+		||	us == 1161
+		||	us == 1162
+		||	us == 1158
+		||	us == 1067
+		||	us == 1068
+		||	us == 1071
+		||	us == 1069
+		||	us == 1072
+		||	us == 1070
+		||	us == 1009;
 
 	case 560:
-		return
-			(
-				us == 1028
-			||	us == 1029
-			||	us == 1169
-			||	us == 1170
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1141
-			||	us == 1140
-			||	us == 1032
-			||	us == 1033
-			||	us == 1138
-			||	us == 1139
-			||	us == 1027
-			||	us == 1026
-			||	us == 1030
-			||	us == 1031
-			);
+		return us == 1028
+		||	us == 1029
+		||	us == 1169
+		||	us == 1170
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1141
+		||	us == 1140
+		||	us == 1032
+		||	us == 1033
+		||	us == 1138
+		||	us == 1139
+		||	us == 1027
+		||	us == 1026
+		||	us == 1030
+		||	us == 1031;
 
 	case 561:
-		return
-			(
-				us == 1064
-			||	us == 1059
-			||	us == 1155
-			||	us == 1157
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1154
-			||	us == 1156
-			||	us == 1055
-			||	us == 1061
-			||	us == 1058
-			||	us == 1060
-			||	us == 1062
-			||	us == 1056
-			||	us == 1063
-			||	us == 1057
-			);
+		return us == 1064
+		||	us == 1059
+		||	us == 1155
+		||	us == 1157
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1154
+		||	us == 1156
+		||	us == 1055
+		||	us == 1061
+		||	us == 1058
+		||	us == 1060
+		||	us == 1062
+		||	us == 1056
+		||	us == 1063
+		||	us == 1057;
 
 	case 562:
-		return
-			(
-				us == 1034
-			||	us == 1037
-			||	us == 1171
-			||	us == 1172
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1149
-			||	us == 1148
-			||	us == 1038
-			||	us == 1035
-			||	us == 1147
-			||	us == 1146
-			||	us == 1040
-			||	us == 1036
-			||	us == 1041
-			||	us == 1039
-			);
+		return us == 1034
+		||	us == 1037
+		||	us == 1171
+		||	us == 1172
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1149
+		||	us == 1148
+		||	us == 1038
+		||	us == 1035
+		||	us == 1147
+		||	us == 1146
+		||	us == 1040
+		||	us == 1036
+		||	us == 1041
+		||	us == 1039;
 
 	case 565:
-		return
-			(
-				us == 1046
-			||	us == 1045
-			||	us == 1153
-			||	us == 1152
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1150
-			||	us == 1151
-			||	us == 1054
-			||	us == 1053
-			||	us == 1049
-			||	us == 1050
-			||	us == 1051
-			||	us == 1047
-			||	us == 1052
-			||	us == 1048
-			);
+		return us == 1046
+		||	us == 1045
+		||	us == 1153
+		||	us == 1152
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1150
+		||	us == 1151
+		||	us == 1054
+		||	us == 1053
+		||	us == 1049
+		||	us == 1050
+		||	us == 1051
+		||	us == 1047
+		||	us == 1052
+		||	us == 1048;
 
 	case 566:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 567:
-		return
-			(
-				us == 1129
-			||	us == 1132
-			||	us == 1189
-			||	us == 1188
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1187
-			||	us == 1186
-			||	us == 1130
-			||	us == 1131
-			||	us == 1102
-			||	us == 1133
-			);
+		return us == 1129
+		||	us == 1132
+		||	us == 1189
+		||	us == 1188
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1187
+		||	us == 1186
+		||	us == 1130
+		||	us == 1131
+		||	us == 1102
+		||	us == 1133;
 
 	case 575:
-		return
-			(
-				us == 1044
-			||	us == 1043
-			||	us == 1174
-			||	us == 1175
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1176
-			||	us == 1177
-			||	us == 1099
-			||	us == 1042
-			);
+		return us == 1044
+		||	us == 1043
+		||	us == 1174
+		||	us == 1175
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1176
+		||	us == 1177
+		||	us == 1099
+		||	us == 1042;
 
 	case 576:
-		return
-			(
-				us == 1136
-			||	us == 1135
-			||	us == 1191
-			||	us == 1190
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1192
-			||	us == 1193
-			||	us == 1137
-			||	us == 1134
-			);
+		return us == 1136
+		||	us == 1135
+		||	us == 1191
+		||	us == 1190
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1192
+		||	us == 1193
+		||	us == 1137
+		||	us == 1134;
 
 	case 579:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 580:
-		return
-			(
-				us == 1020
-			||	us == 1018
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1006
-			||	us == 1001
-			||	us == 1023
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1020
+		||	us == 1018
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1006
+		||	us == 1001
+		||	us == 1023
+		||	us == 1017
+		||	us == 1007;
 
 	case 585:
-		return
-			(
-				us == 1142
-			||	us == 1143
-			||	us == 1144
-			||	us == 1145
-			||	us == 1020
-			||	us == 1019
-			||	us == 1018
-			||	us == 1013
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1006
-			||	us == 1001
-			||	us == 1023
-			||	us == 1003
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1142
+		||	us == 1143
+		||	us == 1144
+		||	us == 1145
+		||	us == 1020
+		||	us == 1019
+		||	us == 1018
+		||	us == 1013
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1006
+		||	us == 1001
+		||	us == 1023
+		||	us == 1003
+		||	us == 1017
+		||	us == 1007;
 
 	case 587:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 589:
-		return
-			(
-				us == 1005
-			||	us == 1004
-			||	us == 1144
-			||	us == 1145
-			||	us == 1020
-			||	us == 1018
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1024
-			||	us == 1013
-			||	us == 1006
-			||	us == 1016
-			||	us == 1000
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1005
+		||	us == 1004
+		||	us == 1144
+		||	us == 1145
+		||	us == 1020
+		||	us == 1018
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1024
+		||	us == 1013
+		||	us == 1006
+		||	us == 1016
+		||	us == 1000
+		||	us == 1017
+		||	us == 1007;
 
 	case 600:
-		return
-			(
-				us == 1005
-			||	us == 1004
-			||	us == 1020
-			||	us == 1022
-			||	us == 1018
-			||	us == 1013
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1006
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1005
+		||	us == 1004
+		||	us == 1020
+		||	us == 1022
+		||	us == 1018
+		||	us == 1013
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1006
+		||	us == 1017
+		||	us == 1007;
 
 	case 602:
-		return ( us == 1008 || us == 1009 || us == 1010 );
+		return us == 1008 || us == 1009 || us == 1010;
 
 	case 603:
-		return
-			(
-				us == 1144
-			||	us == 1145
-			||	us == 1142
-			||	us == 1143
-			||	us == 1020
-			||	us == 1019
-			||	us == 1018
-			||	us == 1024
-			||	us == 1008
-			||	us == 1009
-			||	us == 1010
-			||	us == 1006
-			||	us == 1001
-			||	us == 1023
-			||	us == 1017
-			||	us == 1007
-			);
+		return us == 1144
+		||	us == 1145
+		||	us == 1142
+		||	us == 1143
+		||	us == 1020
+		||	us == 1019
+		||	us == 1018
+		||	us == 1024
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1006
+		||	us == 1001
+		||	us == 1023
+		||	us == 1017
+		||	us == 1007;
 	}
 
 	// no mod for you
@@ -2435,7 +2287,7 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 
 bool GetSlotFromUpgrade ( int us, int &ucSlot )
 {
-	traceLastFunc ( "GetSlotFromUpgrade()" );
+	traceLastFunc( "GetSlotFromUpgrade()" );
 
 	// TODO: 1013, 1024, 1109, 1110
 	if ( us == 1000
@@ -2697,7 +2549,7 @@ bool GetSlotFromUpgrade ( int us, int &ucSlot )
 
 vehicle_upgrade_info get_cveh_upgrade_info ( int iModelID, int &iUpgradeInfoID )
 {
-	if ( vehicle_upgrade_iModelID_IsValid (iModelID) )
+	if ( vehicle_upgrade_iModelID_IsValid(iModelID) )
 	{
 		for ( int i = 0; i < VEHICLE_UPGRADES_COUNT; i++ )
 		{
@@ -2715,39 +2567,39 @@ vehicle_upgrade_info get_cveh_upgrade_info ( int iModelID, int &iUpgradeInfoID )
 
 void vehicle_addUpgrade ( vehicle_info *vinfo, int iModelID )
 {
-	traceLastFunc ( "vehicle_addUpgrade()" );
+	traceLastFunc( "vehicle_addUpgrade()" );
 	if ( vinfo == NULL )
-		return ;
+		return;
 
 	// filter out the bad mods
 	if ( iModelID >= 1000 && iModelID <= 1193 )
 	{
 		// is the mod compatible with my ride? (upgrade model, vehicle_info)
-		if ( !isUpgradeCompatible (iModelID, vinfo) )
-			return ;
+		if ( !isUpgradeCompatible(iModelID, vinfo) )
+			return;
 
 		// is the mod already loaded?
-		if ( !GTAfunc_isModelLoaded (iModelID) )
+		if ( !GTAfunc_isModelLoaded(iModelID) )
 		{
 			// request model to load broh
-			GTAfunc_requestModelLoad ( iModelID );
+			GTAfunc_requestModelLoad( iModelID );
 
 			// load currently requested models broh
-			GTAfunc_loadRequestedModels ();
+			GTAfunc_loadRequestedModels();
 		}
 
 		// wait for it to load
-		while ( !GTAfunc_isModelLoaded (iModelID) )
-			Sleep ( 10 );
+		while ( !GTAfunc_isModelLoaded(iModelID) )
+			Sleep( 10 );
 
 		// put a mod in my ride broh
-		GTAfunc_requestAnyVehicleUpgrade ( vinfo, iModelID );
+		GTAfunc_requestAnyVehicleUpgrade( vinfo, iModelID );
 
 		// tell everyone else we got a mod broh
 		if ( g_SAMP != NULL )
 		{
-			sendSCMEvent ( 2, getVehicleGTAScriptingIDFromVehicleID (g_Players->pLocalPlayer->sCurrentVehicleID),
-						   iModelID, 0 );
+			sendSCMEvent( 2, getVehicleGTAScriptingIDFromVehicleID(g_Players->pLocalPlayer->sCurrentVehicleID),
+						  iModelID, 0 );
 		}
 	}
 }
@@ -2759,29 +2611,29 @@ void vehicle_addUpgrade ( vehicle_info *vinfo, int iModelID )
 //#define EVENT_ENTEREXIT_MODSHOP		4
 int vehicle_getPaintJob ( vehicle_info *vinfo )
 {
-	traceLastFunc ( "vehicle_getPaintJob()" );
+	traceLastFunc( "vehicle_getPaintJob()" );
 	if ( vinfo == NULL )
 		return -1;
 
-	int iRemap = GTAfunc_vehicle_getRemapIndex ( vinfo );
+	int iRemap = GTAfunc_vehicle_getRemapIndex( vinfo );
 	int iReturn = ( iRemap == -1 ) ? 3 : iRemap;
 	return iReturn;
 }
 
 void vehicle_setPaintJob ( vehicle_info *vinfo, unsigned char new_paintjob )
 {
-	traceLastFunc ( "vehicle_setPaintJob()" );
+	traceLastFunc( "vehicle_setPaintJob()" );
 	if ( vinfo == NULL )
-		return ;
+		return;
 
-	int current_paintjob = vehicle_getPaintJob ( vinfo );
+	int current_paintjob = vehicle_getPaintJob( vinfo );
 	if ( new_paintjob != current_paintjob && new_paintjob <= 4 )
 	{
-		GTAfunc_vehicle_setRemap ( vinfo, static_cast<unsigned int>(new_paintjob) );
+		GTAfunc_vehicle_setRemap( vinfo, static_cast<unsigned int>(new_paintjob) );
 		if ( g_SAMP != NULL )
 		{
-			sendSCMEvent ( 1, getVehicleGTAScriptingIDFromVehicleID (g_Players->pLocalPlayer->sCurrentVehicleID),
-						   new_paintjob, 0 );
+			sendSCMEvent( 1, getVehicleGTAScriptingIDFromVehicleID(g_Players->pLocalPlayer->sCurrentVehicleID),
+						  new_paintjob, 0 );
 		}
 	}
 }
@@ -2802,31 +2654,31 @@ int vehicle_getColor1 ( vehicle_info *vinfo )
 
 void vehicle_setColor0 ( vehicle_info *vinfo, int new_color )
 {
-	traceLastFunc ( "vehicle_setColor0()" );
+	traceLastFunc( "vehicle_setColor0()" );
 	if ( vinfo == NULL )
-		return ;
+		return;
 
 	int secondary_color = vinfo->color[1];
 	vinfo->color[0] = new_color;
 	if ( g_SAMP != NULL )
 	{
-		sendSCMEvent ( 3, getVehicleGTAScriptingIDFromVehicleID (g_Players->pLocalPlayer->sCurrentVehicleID), new_color,
-					   secondary_color );
+		sendSCMEvent( 3, getVehicleGTAScriptingIDFromVehicleID(g_Players->pLocalPlayer->sCurrentVehicleID), new_color,
+					  secondary_color );
 	}
 }
 
 void vehicle_setColor1 ( vehicle_info *vinfo, int new_color )
 {
-	traceLastFunc ( "vehicle_setColor1()" );
+	traceLastFunc( "vehicle_setColor1()" );
 	if ( vinfo == NULL )
-		return ;
+		return;
 
 	int secondary_color = vinfo->color[0];
 	vinfo->color[1] = new_color;
 	if ( g_SAMP != NULL )
 	{
-		sendSCMEvent ( 3, getVehicleGTAScriptingIDFromVehicleID (g_Players->pLocalPlayer->sCurrentVehicleID),
-					   secondary_color, new_color );
+		sendSCMEvent( 3, getVehicleGTAScriptingIDFromVehicleID(g_Players->pLocalPlayer->sCurrentVehicleID),
+					  secondary_color, new_color );
 	}
 }
 
@@ -2841,7 +2693,7 @@ static int __page_size_get ( void )
 
 	if ( page_size == -1 )
 	{
-		GetSystemInfo ( &si );
+		GetSystemInfo( &si );
 		page_size = (int)si.dwPageSize;
 	}
 
@@ -2850,7 +2702,7 @@ static int __page_size_get ( void )
 
 static int __page_write ( void *_dest, const void *_src, uint32_t len )
 {
-	static int		page_size = __page_size_get ();
+	static int		page_size = __page_size_get();
 	uint8_t			*dest = (uint8_t *)_dest;
 	const uint8_t	*src = (const uint8_t *)_src;
 	DWORD			prot_prev = 0;
@@ -2867,22 +2719,22 @@ static int __page_write ( void *_dest, const void *_src, uint32_t len )
 		if ( this_len > page_remain )
 			this_len = page_remain;
 
-		if ( isBadPtr_writeAny (dest, this_len) )
+		if ( isBadPtr_writeAny(dest, this_len) )
 		{
-			if ( !VirtualProtect ((void *)dest, this_len, PAGE_EXECUTE_READWRITE, &prot_prev) )
+			if ( !VirtualProtect((void *)dest, this_len, PAGE_EXECUTE_READWRITE, &prot_prev) )
 				ret = 0;
 			else
 				prot_changed = 1;
 		}
 
-		if ( !WriteProcessMemory (GetCurrentProcess (), dest, (void *)src, this_len, &write_len) )
+		if ( !WriteProcessMemory(GetCurrentProcess(), dest, (void *)src, this_len, &write_len) )
 			write_len = 0;
 
 		if ( prot_changed )
 		{
 			DWORD	dummy;
-			if ( !VirtualProtect ((void *)dest, this_len, prot_prev, &dummy) )
-				Log ( "__page_write() could not restore original permissions for ptr %p", dest );
+			if ( !VirtualProtect((void *)dest, this_len, prot_prev, &dummy) )
+				Log( "__page_write() could not restore original permissions for ptr %p", dest );
 		}
 
 		if ( (int)write_len != this_len )
@@ -2898,7 +2750,7 @@ static int __page_write ( void *_dest, const void *_src, uint32_t len )
 
 static int __page_read ( void *_dest, const void *_src, uint32_t len )
 {
-	static int	page_size = __page_size_get ();
+	static int	page_size = __page_size_get();
 	uint8_t		*dest = (uint8_t *)_dest;
 	uint8_t		*src = (uint8_t *)_src;
 	DWORD		prot_prev = 0;
@@ -2915,27 +2767,27 @@ static int __page_read ( void *_dest, const void *_src, uint32_t len )
 		if ( this_len > page_remain )
 			this_len = page_remain;
 
-		if ( isBadPtr_readAny (src, this_len) )
+		if ( isBadPtr_readAny(src, this_len) )
 		{
-			if ( !VirtualProtect ((void *)src, this_len, PAGE_EXECUTE_READWRITE, &prot_prev) )
+			if ( !VirtualProtect((void *)src, this_len, PAGE_EXECUTE_READWRITE, &prot_prev) )
 				ret = 0;
 			else
 				prot_changed = 1;
 		}
 
-		if ( !ReadProcessMemory (GetCurrentProcess (), src, dest, this_len, &read_len) )
+		if ( !ReadProcessMemory(GetCurrentProcess(), src, dest, this_len, &read_len) )
 			read_len = 0;
 
 		if ( prot_changed )
 		{
 			DWORD	dummy;
-			if ( !VirtualProtect ((void *)src, this_len, prot_prev, &dummy) )
-				Log ( "__page_read() could not restore original permissions for ptr %p", src );
+			if ( !VirtualProtect((void *)src, this_len, prot_prev, &dummy) )
+				Log( "__page_read() could not restore original permissions for ptr %p", src );
 		}
 
 		if ( (int)read_len != this_len )
 		{
-			memset ( dest + read_len, 0, this_len - read_len );
+			memset( dest + read_len, 0, this_len - read_len );
 			ret = 0;
 		}
 
@@ -2949,7 +2801,7 @@ static int __page_read ( void *_dest, const void *_src, uint32_t len )
 
 int memcpy_safe ( void *_dest, const void *_src, uint32_t len )
 {
-	static int		page_size = __page_size_get ();
+	static int		page_size = __page_size_get();
 	static int		recurse_ok = 1;
 	uint8_t			buf[4096];
 	uint8_t			*dest = (uint8_t *)_dest;
@@ -2958,15 +2810,15 @@ int memcpy_safe ( void *_dest, const void *_src, uint32_t len )
 
 	while ( len > 0 )
 	{
-		uint32_t	this_len = sizeof ( buf );
+		uint32_t	this_len = sizeof( buf );
 
 		if ( this_len > len )
 			this_len = len;
 
-		if ( !__page_read (buf, src, this_len) )
+		if ( !__page_read(buf, src, this_len) )
 			ret = 0;
 
-		if ( !__page_write (dest, buf, this_len) )
+		if ( !__page_write(dest, buf, this_len) )
 			ret = 0;
 
 		len -= this_len;
@@ -2982,20 +2834,20 @@ int memset_safe ( void *_dest, int c, uint32_t len )
 	uint8_t *dest = (uint8_t *)_dest;
 	uint8_t buf[4096];
 
-	memset ( buf, c, (len > 4096) ? 4096 : len );
+	memset( buf, c, (len > 4096) ? 4096 : len );
 
 	for ( ;; )
 	{
 		if ( len > 4096 )
 		{
-			if ( memcpy_safe (dest, buf, 4096) != 1 )
+			if ( memcpy_safe(dest, buf, 4096) != 1 )
 				return 0;
 			dest += 4096;
 			len -= 4096;
 		}
 		else
 		{
-			if ( memcpy_safe (dest, buf, len) != 1 )
+			if ( memcpy_safe(dest, buf, len) != 1 )
 				return 0;
 			break;
 		}
@@ -3014,9 +2866,9 @@ int memcmp_safe ( const void *_s1, const void *_s2, uint32_t len )
 	{
 		if ( len > 4096 )
 		{
-			if ( memcpy_safe (buf, s1, 4096) != 1 )
+			if ( memcpy_safe(buf, s1, 4096) != 1 )
 				return 0;
-			if ( memcmp (buf, s2, 4096) != 0 )
+			if ( memcmp(buf, s2, 4096) != 0 )
 				return 0;
 			s1 += 4096;
 			s2 += 4096;
@@ -3024,9 +2876,9 @@ int memcmp_safe ( const void *_s1, const void *_s2, uint32_t len )
 		}
 		else
 		{
-			if ( memcpy_safe (buf, s1, len) != 1 )
+			if ( memcpy_safe(buf, s1, len) != 1 )
 				return 0;
-			if ( memcmp (buf, s2, len) != 0 )
+			if ( memcmp(buf, s2, len) != 0 )
 				return 0;
 			break;
 		}
@@ -3037,7 +2889,7 @@ int memcmp_safe ( const void *_s1, const void *_s2, uint32_t len )
 
 void *dll_baseptr_get ( const char *dll_name )
 {
-	return GetModuleHandle ( dll_name );
+	return GetModuleHandle( dll_name );
 }
 
 void str_split_free ( struct str_split *split )
@@ -3045,10 +2897,10 @@ void str_split_free ( struct str_split *split )
 	if ( split != NULL )
 	{
 		if ( split->str != NULL )
-			free ( split->str );
+			free( split->str );
 		if ( split->argv != NULL )
-			free ( split->argv );
-		free ( split );
+			free( split->argv );
+		free( split );
 	}
 }
 
@@ -3060,17 +2912,17 @@ struct str_split *str_split ( const char *str, const char *ch )
 	void				*tmp;
 
 	/* left trim */
-	while ( *str && strchr (ch, *str) != NULL )
+	while ( *str && strchr(ch, *str) != NULL )
 		str++;
 
-	split = (struct str_split *)calloc ( 1, sizeof (struct str_split) );
+	split = (struct str_split *)calloc( 1, sizeof(struct str_split) );
 	if ( split == NULL )
 		return NULL;
 
-	split->str = _strdup ( str );
+	split->str = _strdup( str );
 	if ( split->str == NULL )
 	{
-		free ( split );
+		free( split );
 		return NULL;
 	}
 
@@ -3100,10 +2952,10 @@ struct str_split *str_split ( const char *str, const char *ch )
 		}
 
 		/* find next value */
-		for ( ; *next && strchr (ch, *next) == NULL; next++ );
+		for ( ; *next && strchr(ch, *next) == NULL; next++ );
 		next = *next ? next : NULL;
 
-		if ( (tmp = realloc (split->argv, (split->argc + 1) * sizeof (char *))) == NULL )
+		if ( (tmp = realloc(split->argv, (split->argc + 1) * sizeof(char *))) == NULL )
 			goto out;
 		split->argv = (char **)tmp;
 
@@ -3113,13 +2965,13 @@ struct str_split *str_split ( const char *str, const char *ch )
 		if ( next == NULL )
 			break;
 
-		for ( *next++ = 0; *next && strchr (ch, *next) != NULL; next++ );
+		for ( *next++ = 0; *next && strchr(ch, *next) != NULL; next++ );
 
 		if ( *next == 0 )
 			break;
 	}
 
-	tmp = realloc ( split->argv, (split->argc + 1) * sizeof (char *) );
+	tmp = realloc( split->argv, (split->argc + 1) * sizeof(char *) );
 	if ( tmp == NULL )
 		goto out;
 	split->argv = (char **)tmp;
@@ -3129,13 +2981,13 @@ struct str_split *str_split ( const char *str, const char *ch )
 	return split;
 
 out: ;
-	str_split_free ( split );
+	str_split_free( split );
 	return NULL;
 }
 
 size_t strlcpy ( char *dst, const char *src, size_t size )
 {
-	size_t	len = strlen ( src );
+	size_t	len = strlen( src );
 
 	if ( size == 0 )
 		return len;
@@ -3143,12 +2995,12 @@ size_t strlcpy ( char *dst, const char *src, size_t size )
 	if ( len >= size )
 	{
 		size--;
-		memcpy ( dst, src, size );
+		memcpy( dst, src, size );
 		dst[size] = 0;
 	}
 	else if ( size > 0 )
 	{
-		strcpy ( dst, src );
+		strcpy( dst, src );
 	}
 
 	return len;
@@ -3156,8 +3008,8 @@ size_t strlcpy ( char *dst, const char *src, size_t size )
 
 size_t strlcat ( char *dst, const char *src, size_t size )
 {
-	size_t	dlen = strlen ( dst );
-	size_t	slen = strlen ( src );
+	size_t	dlen = strlen( dst );
+	size_t	slen = strlen( src );
 
 	if ( size == 0 )
 		return dlen + slen;
@@ -3165,12 +3017,12 @@ size_t strlcat ( char *dst, const char *src, size_t size )
 	if ( dlen + slen >= size )
 	{
 		size -= dlen - 1;
-		memcpy ( dst + dlen, src, size );
+		memcpy( dst + dlen, src, size );
 		dst[dlen + size] = 0;
 	}
 	else if ( size > 0 )
 	{
-		strcpy ( dst + dlen, src );
+		strcpy( dst + dlen, src );
 	}
 
 	return dlen + slen;
@@ -3178,10 +3030,10 @@ size_t strlcat ( char *dst, const char *src, size_t size )
 
 void *memdup ( const void *src, int len )
 {
-	void	*dest = malloc ( len );
+	void	*dest = malloc( len );
 
 	if ( dest != NULL )
-		memcpy ( dest, src, len );
+		memcpy( dest, src, len );
 
 	return dest;
 }
@@ -3200,22 +3052,22 @@ static signed char hex_to_dec ( signed char ch )
 
 uint8_t *hex_to_bin ( const char *str )
 {
-	int		len = (int)strlen ( str );
+	int		len = (int)strlen( str );
 	uint8_t *buf, *sbuf;
 
 	if ( len == 0 || len % 2 != 0 )
 		return NULL;
 
-	sbuf = buf = (uint8_t *)malloc ( len / 2 );
+	sbuf = buf = (uint8_t *)malloc( len / 2 );
 
 	while ( *str )
 	{
-		signed char bh = hex_to_dec ( *str++ );
-		signed char bl = hex_to_dec ( *str++ );
+		signed char bh = hex_to_dec( *str++ );
+		signed char bl = hex_to_dec( *str++ );
 
 		if ( bl == -1 || bh == -1 )
 		{
-			free ( sbuf );
+			free( sbuf );
 			return NULL;
 		}
 
@@ -3223,4 +3075,17 @@ uint8_t *hex_to_bin ( const char *str )
 	}
 
 	return sbuf;
+}
+
+/////////////////////////////////////////
+
+// new functions related to R* classes //
+CPed *getSelfCPed ( void )
+{
+	return pGameInterface->GetPools()->GetPedFromRef( CPOOLS_PED_SELF_REF );
+}
+
+CVehicle *getSelfCVehicle ( void )
+{
+	return pGameInterface->GetPools()->GetPedFromRef( CPOOLS_PED_SELF_REF )->GetVehicle();
 }

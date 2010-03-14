@@ -43,12 +43,12 @@ int __declspec ( naked ) ExecuteScriptBuf ()
 
 int ScriptCommand ( const SCRIPT_COMMAND *pScriptCommand, ... )
 {
-	traceLastFunc ( "ScriptCommand()" );
+	traceLastFunc( "ScriptCommand()" );
 
 	va_list		ap;
-	const char	*p = pScriptCommand->Params;			// Get parameter string.
-	va_start ( ap, pScriptCommand );					// Initialize varargs.
-	memcpy ( &ScriptBuf, &pScriptCommand->OpCode, 2 );	// Copy opcode to script buf.
+	const char	*p = pScriptCommand->Params;	// Get parameter string.
+	va_start( ap, pScriptCommand ); // Initialize varargs.
+	memcpy( &ScriptBuf, &pScriptCommand->OpCode, 2 );	// Copy opcode to script buf.
 	int		buf_pos = 2;	// Position in buffer after opcode.
 	WORD	var_pos = 0;	// Init var_pos.
 
@@ -63,34 +63,34 @@ int ScriptCommand ( const SCRIPT_COMMAND *pScriptCommand, ... )
 		{
 		case 'i':			// If integer...
 			{
-				int i = va_arg ( ap, int ); // Grab an int off the stack.
+				int i = va_arg( ap, int );	// Grab an int off the stack.
 				ScriptBuf[buf_pos] = 0x01;	// Variable data type = 0x01 (4b int).
 				buf_pos++;;
 
 				// Increment buffer position.
-				memcpy ( &ScriptBuf[buf_pos], &i, 4 );	// Insert the int.
+				memcpy( &ScriptBuf[buf_pos], &i, 4 );	// Insert the int.
 				buf_pos += 4;	// Increment buffer by 4b.
 				break;
 			}
 
 		case 'f':	// If float...
 			{
-				float	f = (float)va_arg ( ap, double );	// Get float off the stack.
+				float	f = (float)va_arg( ap, double );	// Get float off the stack.
 				ScriptBuf[buf_pos] = 0x06;	// Variable data type = 0x06 (float).
 				buf_pos++;	// Increment buffer position.
-				memcpy ( &ScriptBuf[buf_pos], &f, 4 );	// Copy float into script buf.
+				memcpy( &ScriptBuf[buf_pos], &f, 4 );	// Copy float into script buf.
 				buf_pos += 4;	// Increment buffer by 4b.
 				break;
 			}
 
 		case 'v':	// If variable...
 			{
-				DWORD	*v = va_arg ( ap, DWORD * );	// Get the pointer to the passed variable.
-				ScriptBuf[buf_pos] = 0x03;	// Variable data type = 0x03 (Local Var).
+				DWORD	*v = va_arg( ap, DWORD * ); // Get the pointer to the passed variable.
+				ScriptBuf[buf_pos] = 0x03;			// Variable data type = 0x03 (Local Var).
 				buf_pos++;	// Increment buffer position.
 				pdwParamVars[var_pos] = v;		// Save pointer to passed variable.
 				gst->dwLocalVar[var_pos] = *v;	// Put value of passed variable into local.
-				memcpy ( &ScriptBuf[buf_pos], &var_pos, 2 );	// Copy the offset into the script.
+				memcpy( &ScriptBuf[buf_pos], &var_pos, 2 ); // Copy the offset into the script.
 				buf_pos += 2;	// Increment buffer by 2b.
 				var_pos++;		// Increment the variable position.
 				break;
@@ -105,11 +105,11 @@ int ScriptCommand ( const SCRIPT_COMMAND *pScriptCommand, ... )
 		++p;		// Next parameter
 	}
 
-	va_end ( ap );	// End varargs.
+	va_end( ap );	// End varargs.
 
 	// Execute script stub.
 	int result = 0;
-	result = ExecuteScriptBuf ();
+	result = ExecuteScriptBuf();
 
 	if ( var_pos )	// if we've used a variable...
 	{
@@ -125,5 +125,5 @@ int ScriptCommand ( const SCRIPT_COMMAND *pScriptCommand, ... )
 void InitScripting ()
 {
 	gst = new GAME_SCRIPT_THREAD;
-	ZeroMemory ( gst, sizeof (GAME_SCRIPT_THREAD) );
+	ZeroMemory( gst, sizeof(GAME_SCRIPT_THREAD) );
 }

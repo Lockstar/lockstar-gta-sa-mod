@@ -31,7 +31,7 @@ int GTAfunc_isModelLoaded ( int iModelID )
 void GTAfunc_requestModelLoad ( int iModelID )
 {
 	if ( iModelID < 0 )
-		return ;
+		return;
 	__asm
 	{
 		push 2
@@ -83,7 +83,7 @@ bool GTAfunc_IsUpgradeAvailable ( int m_dwModelID, eVehicleUpgradePosn posn )
 void GTAfunc_requestAnyVehicleUpgrade ( vehicle_info *vinfo, int iModelID )
 {
 	if ( vinfo == NULL )
-		return ;
+		return;
 
 	DWORD	dwFunction = FUNC_RequestAnyVehicleUpgrade;
 	__asm
@@ -97,7 +97,7 @@ void GTAfunc_requestAnyVehicleUpgrade ( vehicle_info *vinfo, int iModelID )
 void GTAfunc_removeVehicleUpgrade ( vehicle_info *vinfo, int iModelID )
 {
 	if ( vinfo == NULL )
-		return ;
+		return;
 
 	uint32_t	func_upgrade = 0x6DF930;
 	__asm
@@ -375,7 +375,7 @@ CVector GTAfunc_GetMoveSpeed ( object_base *entity )
 		mov dwReturn, eax
 	}
 
-	memcpy_safe ( &vecMoveSpeed, (void *)dwReturn, sizeof (CVector) );
+	memcpy_safe( &vecMoveSpeed, (void *)dwReturn, sizeof(CVector) );
 	return vecMoveSpeed;
 }
 
@@ -391,7 +391,7 @@ VOID GTAfunc_SetMoveSpeed ( object_base *entity, CVector vecMoveSpeed )
 		mov dwReturn, eax
 	}
 
-	memcpy_safe ( (void *)dwReturn, &vecMoveSpeed, sizeof (CVector) );
+	memcpy_safe( (void *)dwReturn, &vecMoveSpeed, sizeof(CVector) );
 }
 
 bool GTAfunc_IsUpsideDown ( vehicle_info *vinfo )
@@ -424,15 +424,9 @@ bool GTAfunc_IsOnItsSide ( vehicle_info *vinfo )
 	return bReturn;
 }
 
-bool GTAfunc_IsLineOfSightClear ( CVector *vecStart,
-								  CVector *vecEnd,
-								  bool	  bCheckBuildings,
-								  bool	  bCheckVehicles,
-								  bool	  bCheckPeds,
-								  bool	  bCheckObjects,
-								  bool	  bCheckDummies,
-								  bool	  bSeeThroughStuff,
-								  bool	  bIgnoreSomeObjectsForCamera )
+bool GTAfunc_IsLineOfSightClear ( CVector *vecStart, CVector *vecEnd, bool bCheckBuildings, bool bCheckVehicles,
+								  bool bCheckPeds, bool bCheckObjects, bool bCheckDummies, bool bSeeThroughStuff,
+								  bool bIgnoreSomeObjectsForCamera )
 {
 	DWORD	dwFunc = FUNC_IsLineOfSightClear;
 	bool	bReturn = false;
@@ -455,23 +449,15 @@ bool GTAfunc_IsLineOfSightClear ( CVector *vecStart,
 	return bReturn;
 }
 
-bool GTAfunc_ProcessLineOfSight ( CVector			  *vecStart,
-								  CVector			  *vecEnd,
-								  CColPoint			  **colCollision,
-								  CEntitySAInterface  **CollisionEntity,
-								  bool				  bCheckBuildings,
-								  bool				  bCheckVehicles,
-								  bool				  bCheckPeds,
-								  bool				  bCheckObjects,
-								  bool				  bCheckDummies,
-								  bool				  bSeeThroughStuff,
-								  bool				  bIgnoreSomeObjectsForCamera,
-								  bool				  bShootThroughStuff )
+bool GTAfunc_ProcessLineOfSight ( CVector *vecStart, CVector *vecEnd, CColPoint **colCollision,
+								  CEntitySAInterface **CollisionEntity, bool bCheckBuildings, bool bCheckVehicles,
+								  bool bCheckPeds, bool bCheckObjects, bool bCheckDummies, bool bSeeThroughStuff,
+								  bool bIgnoreSomeObjectsForCamera, bool bShootThroughStuff )
 {
 	DWORD	dwPadding[100]; // stops the function missbehaving and overwriting the return address
 	dwPadding[0] = 0;		// prevent the warning and eventual compiler optimizations from removing it
-	CColPointSA				*pColPointSA = new CColPointSA ();
-	CColPointSAInterface	*pColPointSAInterface = pColPointSA->GetInterface ();
+	CColPointSA				*pColPointSA = new CColPointSA();
+	CColPointSAInterface	*pColPointSAInterface = pColPointSA->GetInterface();
 
 	//DWORD targetEntity;
 	CEntitySAInterface		*targetEntity = NULL;
@@ -501,7 +487,7 @@ bool GTAfunc_ProcessLineOfSight ( CVector			  *vecStart,
 	/*
     if ( CollisionEntity )
     {
-	    CPoolsSA * pPools = ((CPoolsSA *)pGame->GetPools());
+	    CPoolsSA * pPools = ((CPoolsSA *)pGameInterface->GetPools());
 	    if(pPools)
 	    {
 		    if(targetEntity)
@@ -527,7 +513,7 @@ bool GTAfunc_ProcessLineOfSight ( CVector			  *vecStart,
 	if ( colCollision )
 		*colCollision = pColPointSA;
 	else
-		pColPointSA->Destroy ();
+		pColPointSA->Destroy();
 
 	return bReturn;
 }

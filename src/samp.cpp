@@ -25,13 +25,33 @@
 #define SAMP_DLL	"samp.dll"
 #define SAMP_CMP	"766A8B060FB6481451E8"
 
-int				g_renderSAMP_initSAMPstructs;
-stSAMP			*g_SAMP;
-stPlayerPool	*g_Players;
-stVehiclePool	*g_Vehicles;
-stChatInfo		*g_Chat;
-stInputInfo		*g_Input;
-stKillInfo		*g_DeathList;
+// global same pointers
+int								g_renderSAMP_initSAMPstructs;
+stSAMP							*g_SAMP;
+stPlayerPool					*g_Players;
+stVehiclePool					*g_Vehicles;
+stChatInfo						*g_Chat;
+stInputInfo						*g_Input;
+stKillInfo						*g_DeathList;
+
+// global managed support variables
+stTranslateSAMPGTA_vehiclePool	translateSAMPGTA_vehiclePool;
+
+//////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////// FUNCTIONS //////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+
+// update SAMPGTA vehicle translation structure
+void update_translateSAMPGTA_vehiclePool ( void )
+{
+	for ( int i = 0; i <= SAMP_VEHICLE_MAX; i++ )
+	{
+		if ( g_Vehicles && g_Vehicles->iIsListed[i] && g_Vehicles->pSAMP_Vehicle[i] )
+		{
+			translateSAMPGTA_vehiclePool.iSAMPID[g_Vehicles->pSAMP_Vehicle[i]->ulGTA_Vehicle_ID] = i;
+		}
+	}
+}
 
 // new functions to check for bad pointers
 int isBadPtr_SAMP_iVehicleID ( int iVehicleID )
@@ -54,9 +74,9 @@ int isBadPtr_SAMP_iPlayerID ( int iPlayerID )
 void getSamp ()
 {
 	if ( set.basic_mode )
-		return ;
+		return;
 
-	uint32_t	samp_dll = getSampAddress ();
+	uint32_t	samp_dll = getSampAddress();
 
 	if ( samp_dll != NULL )
 	{
@@ -64,22 +84,22 @@ void getSamp ()
 
 		if ( g_dwSAMP_Addr != NULL )
 		{
-			if ( !memcmp_safe ((uint8_t *)g_dwSAMP_Addr + 0xBABE, hex_to_bin (SAMP_CMP), 10) )
+			if ( !memcmp_safe((uint8_t *)g_dwSAMP_Addr + 0xBABE, hex_to_bin(SAMP_CMP), 10) )
 			{
-				Log ( "Unknown SA:MP version. %s is only supported in this version.", SAMP_VERSION );
+				Log( "Unknown SA:MP version. %s is only supported in this version.", SAMP_VERSION );
 				g_dwSAMP_Addr = NULL;
-				return ;
+				return;
 			}
 
-			Log ( "g_dwSAMP_Addr: 0x%p", g_dwSAMP_Addr );
+			Log( "g_dwSAMP_Addr: 0x%p", g_dwSAMP_Addr );
 		}
 	}
 	else
 	{
-		Log ( "Could not get the samp DLL." );
+		Log( "Could not get the samp DLL." );
 	}
 
-	return ;
+	return;
 }
 
 uint32_t getSampAddress ()
@@ -93,12 +113,12 @@ uint32_t getSampAddress ()
 	{
 		if ( set.wine_compatibility )
 		{
-			HMODULE temp = LoadLibrary ( SAMP_DLL );
+			HMODULE temp = LoadLibrary( SAMP_DLL );
 			__asm mov samp_dll, eax
 		}
 		else
 		{
-			void	*temp = dll_baseptr_get ( SAMP_DLL );
+			void	*temp = dll_baseptr_get( SAMP_DLL );
 			__asm mov samp_dll, eax
 		}
 	}
@@ -168,7 +188,7 @@ D3DCOLOR samp_color_get ( int id )
 
 	D3DCOLOR	*color_table;
 	if ( id < 0 || id >= (SAMP_PLAYER_MAX + 3) )
-		return D3DCOLOR_ARGB ( 0xFF, 0x99, 0x99, 0x99 );
+		return D3DCOLOR_ARGB( 0xFF, 0x99, 0x99, 0x99 );
 
 	switch ( id )
 	{
@@ -193,7 +213,7 @@ D3DCOLOR samp_color_get_trans ( int id, DWORD trans )
 
 	D3DCOLOR	*color_table;
 	if ( id < 0 || id >= (SAMP_PLAYER_MAX + 3) )
-		return D3DCOLOR_ARGB ( 0xFF, 0x99, 0x99, 0x99 );
+		return D3DCOLOR_ARGB( 0xFF, 0x99, 0x99, 0x99 );
 
 	switch ( id )
 	{
@@ -215,63 +235,67 @@ extern int	joining_server, iShowVehicles;
 extern bool bShowChat;
 void sampMainCheat ()
 {
-	traceLastFunc ( "sampMainCheat()" );
+	traceLastFunc( "sampMainCheat()" );
 
 	// g_Vehicles & g_Players pointers need to be refreshed or nulled
-	if ( isBadPtr_writeAny (g_SAMP->pPool_Vehicle, sizeof (stVehiclePool)) )
+	if ( isBadPtr_writeAny(g_SAMP->pPool_Vehicle, sizeof(stVehiclePool)) )
 		g_Vehicles = NULL;
 	else
 		g_Vehicles = g_SAMP->pPool_Vehicle;
-	if ( isBadPtr_writeAny (g_SAMP->pPool_Player, sizeof (stPlayerPool)) )
+	if ( isBadPtr_writeAny(g_SAMP->pPool_Player, sizeof(stPlayerPool)) )
 		g_Players = NULL;
 	else
 		g_Players = g_SAMP->pPool_Player;
 
+	// update GTA to SAMP translation structures
+	update_translateSAMPGTA_vehiclePool();
+
+	// start chatbox logging
 	if ( set.chatbox_logging )
 	{
 		static int	chatbox_init;
 		if ( !chatbox_init )
 		{
 			SYSTEMTIME	time;
-			GetLocalTime ( &time );
-			LogChatbox ( false, "Session started at %02d/%02d/%02d", time.wDay, time.wMonth, time.wYear );
+			GetLocalTime( &time );
+			LogChatbox( false, "Session started at %02d/%02d/%02d", time.wDay, time.wMonth, time.wYear );
 			chatbox_init = 1;
 		}
 	}
 
 	if ( !cheat_state->render_player_tags )
-		sampPatchDisableNameTags ( 1 );
+		sampPatchDisableNameTags( 1 );
 	else
-		sampPatchDisableNameTags ( 0 );
+		sampPatchDisableNameTags( 0 );
 
-	if ( KEY_PRESSED (set.key_map_show_vehicles) )
+	if ( KEY_PRESSED(set.key_map_show_vehicles) )
 		iShowVehicles ^= 1;
 
-	if ( KEY_DOWN (set.secondary_key) )
+	if ( KEY_DOWN(set.secondary_key) )
 	{
-		if ( KEY_PRESSED (set.key_player_info_list) )
+		if ( KEY_PRESSED(set.key_player_info_list) )
 			cheat_state->player_info_list ^= 1;
 
-		if ( KEY_PRESSED (set.key_rejoin) )
+		if ( KEY_PRESSED(set.key_rejoin) )
 		{
-			restartGame ();
-			disconnect ( 500 );
-			cheat_state_text ( "Rejoining in %d seconds...", set.rejoin_delay / 1000 );
-			cheat_state->_generic.rejoinTick = GetTickCount ();
+			restartGame();
+			disconnect( 500 );
+			cheat_state_text( "Rejoining in %d seconds...", set.rejoin_delay / 1000 );
+			cheat_state->_generic.rejoinTick = GetTickCount();
 		}
 
-		if ( KEY_PRESSED (set.key_respawn) )
-			playerSpawn ();
+		if ( KEY_PRESSED(set.key_respawn) )
+			playerSpawn();
 
-		if ( KEY_PRESSED (set.key_render_player_tags) )
+		if ( KEY_PRESSED(set.key_render_player_tags) )
 			cheat_state->render_player_tags ^= 1;
-		if ( KEY_PRESSED (set.key_render_vehicle_tags) )
+		if ( KEY_PRESSED(set.key_render_vehicle_tags) )
 			cheat_state->render_vehicle_tags ^= 1;
 	}
 
-	if ( KEY_DOWN (set.chat_secondary_key) )
+	if ( KEY_DOWN(set.chat_secondary_key) )
 	{
-		if ( KEY_PRESSED (set.d3dtext_chat_showhide_key) )
+		if ( KEY_PRESSED(set.d3dtext_chat_showhide_key) )
 		{
 			if ( bShowChat )
 				bShowChat = false;
@@ -296,26 +320,26 @@ void sampMainCheat ()
 			if ( spam )
 			{
 				if ( msg )
-					if ( KEY_DOWN (key) )
-						say ( "%s", msg );
+					if ( KEY_DOWN(key) )
+						say( "%s", msg );
 			}
 			else
 			{
 				if ( msg )
-					if ( KEY_PRESSED (key) )
-						say ( "%s", msg );
+					if ( KEY_PRESSED(key) )
+						say( "%s", msg );
 			}
 		}
 	}
 
-	static int	iHooksInstalled;
-	if ( !iHooksInstalled )
+	static int	iSAMPHooksInstalled;
+	if ( !iSAMPHooksInstalled )
 	{
-		installHooks ();
-		iHooksInstalled = 1;
+		installSAMPHooks();
+		iSAMPHooksInstalled = 1;
 	}
 
-	if ( cheat_state->_generic.rejoinTick && cheat_state->_generic.rejoinTick < (GetTickCount () - set.rejoin_delay) )
+	if ( cheat_state->_generic.rejoinTick && cheat_state->_generic.rejoinTick < (GetTickCount() - set.rejoin_delay) )
 	{
 		g_SAMP->iGameState = GAMESTATE_WAIT_CONNECT;
 		cheat_state->_generic.rejoinTick = 0;
@@ -323,16 +347,16 @@ void sampMainCheat ()
 
 	if ( joining_server == 1 )
 	{
-		restartGame ();
-		disconnect ( 500 );
-		cheat_state_text ( "Joining server in %d seconds...", set.rejoin_delay / 1000 );
-		cheat_state->_generic.join_serverTick = GetTickCount ();
+		restartGame();
+		disconnect( 500 );
+		cheat_state_text( "Joining server in %d seconds...", set.rejoin_delay / 1000 );
+		cheat_state->_generic.join_serverTick = GetTickCount();
 		joining_server = 2;
 	}
 
-	if ( cheat_state->_generic.join_serverTick
-	 &&	 cheat_state->_generic.join_serverTick < (GetTickCount () - set.rejoin_delay)
-	 &&	 joining_server == 2 )
+	if ( joining_server == 2
+	 &&	 cheat_state->_generic.join_serverTick
+	 &&	 cheat_state->_generic.join_serverTick < (GetTickCount() - set.rejoin_delay) )
 	{
 		g_SAMP->iGameState = GAMESTATE_WAIT_CONNECT;
 		joining_server = 0;
@@ -378,12 +402,12 @@ int getVehicleCount ( void )
 
 int getPlayerPos ( int iPlayerID, float fPos[3] )
 {
-	traceLastFunc ( "getPlayerPos()" );
+	traceLastFunc( "getPlayerPos()" );
 
 	struct actor_info	*pActor = NULL;
 	struct vehicle_info *pVehicle = NULL;
 
-	struct actor_info	*pSelfActor = actor_info_get ( ACTOR_SELF, 0 );
+	struct actor_info	*pSelfActor = actor_info_get( ACTOR_SELF, 0 );
 
 	if ( g_Players == NULL )
 		return 0;
@@ -404,21 +428,21 @@ int getPlayerPos ( int iPlayerID, float fPos[3] )
 		if ( pVehicle != NULL && pActor->vehicle == pVehicle && pVehicle->passengers[0] == pActor )
 		{
 			// driver of a vehicle
-			vect3_copy ( &pActor->vehicle->base.matrix[4 * 3], fPos );
+			vect3_copy( &pActor->vehicle->base.matrix[4 * 3], fPos );
 
 			//vect3_copy(g_Players->pRemotePlayer[iPlayerID]->fVehiclePosition, fPos);
 		}
 		else if ( pVehicle != NULL )
 		{
 			// passenger of a vehicle
-			vect3_copy ( &pActor->base.matrix[4 * 3], fPos );
+			vect3_copy( &pActor->base.matrix[4 * 3], fPos );
 
 			//vect3_copy(g_Players->pRemotePlayer[iPlayerID]->fActorPosition, fPos);
 		}
 		else
 		{
 			// on foot
-			vect3_copy ( &pActor->base.matrix[4 * 3], fPos );
+			vect3_copy( &pActor->base.matrix[4 * 3], fPos );
 
 			//vect3_copy(g_Players->pRemotePlayer[iPlayerID]->fActorPosition, fPos);
 		}
@@ -426,15 +450,15 @@ int getPlayerPos ( int iPlayerID, float fPos[3] )
 
 	if ( pSelfActor != NULL )
 	{
-		if ( vect3_dist (&pSelfActor->base.matrix[4 * 3], fPos) < 100.0f )
-			vect3_copy ( &pActor->base.matrix[4 * 3], fPos );
+		if ( vect3_dist(&pSelfActor->base.matrix[4 * 3], fPos) < 100.0f )
+			vect3_copy( &pActor->base.matrix[4 * 3], fPos );
 	}
 
 	// detect zombies
-	if ( vect3_near_zero (fPos) )
-		vect3_copy ( &pActor->base.matrix[4 * 3], fPos );
+	if ( vect3_near_zero(fPos) )
+		vect3_copy( &pActor->base.matrix[4 * 3], fPos );
 
-	return !vect3_near_zero ( fPos );
+	return !vect3_near_zero( fPos );
 }
 
 const char *getPlayerName ( int iPlayerID )
@@ -461,6 +485,7 @@ int getPlayerState ( int iPlayerID )
 	return g_Players->pRemotePlayer[iPlayerID]->bytePlayerState;
 }
 
+/*
 int getPlayerVehicleGTAScriptingID ( int iPlayerID )
 {
 	uint32_t	car;
@@ -482,51 +507,57 @@ int getPlayerVehicleGTAScriptingID ( int iPlayerID )
 		return car;
 	}
 }
-
-int getPlayerSAMPVehicleID ( int iPlayerID )
+*/
+int getPlayerVehicleGTAScriptingID ( int iPlayerID )
 {
-	if ( g_Players == NULL && g_Vehicles == NULL )
-		return 0;
+	// this should already be done or this should *not* be getting called
+	//if ( g_Players == NULL && g_Vehicles == NULL )
+	//	return 0;
 	if ( g_Players->pRemotePlayer[iPlayerID] == NULL )
 		return 0;
 	if ( g_Vehicles->pSAMP_Vehicle[g_Players->pRemotePlayer[iPlayerID]->sVehicleID] == NULL )
 		return 0;
 
-	int ret_id = (int)
+	if ( iPlayerID == ACTOR_SELF )
+	{
+		return (int)
+			(
+				((DWORD) g_Vehicles->pSAMP_Vehicle[g_Players->pLocalPlayer->sCurrentVehicleID]->pGTA_Vehicle) -
+				(DWORD) pool_vehicle->start
+			) / 2584;
+	}
+
+	return (int)
 		(
 			((DWORD) g_Players->pRemotePlayer[iPlayerID]->pSAMP_Vehicle->pGTA_Vehicle) -
 			(DWORD) pool_vehicle->start
 		) /
 				2584;
-
-	return ret_id;
-
-	//	return g_Players->pRemotePlayer[iPlayerID]->sVehicleID; -- sVehicleID = some samp intern vehicle id?
 }
 
 void spectatePlayer ( int iID )
 {
-	if ( getPlayerState (iID) == PLAYER_STATE_ONFOOT )
+	if ( getPlayerState(iID) == PLAYER_STATE_ONFOOT )
 	{
 		if ( g_Players == NULL )
-			return ;
-		ScriptCommand ( &camera_on_actor, getPedGTAScriptingIDFromPlayerID (iID), 4, 1 );
+			return;
+		ScriptCommand( &camera_on_actor, getPedGTAScriptingIDFromPlayerID(iID), 4, 1 );
 	}
-	else if ( getPlayerState (iID) == PLAYER_STATE_DRIVER )
+	else if ( getPlayerState(iID) == PLAYER_STATE_DRIVER )
 	{
 		if ( g_Players == NULL || g_Vehicles == NULL )
-			return ;
+			return;
 
 		int iPlayerVehicleID = g_Players->pRemotePlayer[iID]->sVehicleID;
-		ScriptCommand ( &camera_on_vehicle, getVehicleGTAScriptingIDFromVehicleID (iPlayerVehicleID), 3, 1 );
+		ScriptCommand( &camera_on_vehicle, getVehicleGTAScriptingIDFromVehicleID(iPlayerVehicleID), 3, 1 );
 	}
-	else if ( getPlayerState (iID) == PLAYER_STATE_PASSENGER )
+	else if ( getPlayerState(iID) == PLAYER_STATE_PASSENGER )
 	{
 		if ( g_Players == NULL || g_Vehicles == NULL )
-			return ;
+			return;
 
 		int iPlayerVehicleID = g_Players->pRemotePlayer[iID]->sVehicleID;
-		ScriptCommand ( &camera_on_vehicle, getVehicleGTAScriptingIDFromVehicleID (iPlayerVehicleID), 3, 1 );
+		ScriptCommand( &camera_on_vehicle, getVehicleGTAScriptingIDFromVehicleID(iPlayerVehicleID), 3, 1 );
 	}
 }
 
@@ -535,16 +566,15 @@ struct actor_info *getGTAPedFromSAMPPlayerID ( int iPlayerID )
 	if ( g_Players == NULL || iPlayerID < 0 || iPlayerID >= SAMP_PLAYER_MAX )
 		return NULL;
 	if ( iPlayerID == g_Players->sLocalPlayerID )
-		return actor_info_get ( ACTOR_SELF, 0 );
+		return actor_info_get( ACTOR_SELF, 0 );
 	if ( g_Players->iIsListed[iPlayerID] != 1 )
 		return NULL;
 	if ( g_Players->pRemotePlayer[iPlayerID] == NULL )
 		return NULL;
 	if ( g_Players->pRemotePlayer[iPlayerID]->pSAMP_Actor == NULL )
 		return NULL;
-	if ( g_Players->pRemotePlayer[iPlayerID]->pSAMP_Actor->pGTA_Ped == NULL )
-		return NULL;
 
+	// return actor_info, null or otherwise
 	return g_Players->pRemotePlayer[iPlayerID]->pSAMP_Actor->pGTA_Ped;
 }
 
@@ -553,12 +583,11 @@ struct vehicle_info *getGTAVehicleFromSAMPVehicleID ( int iVehicleID )
 	if ( g_Vehicles == NULL || iVehicleID < 0 || iVehicleID >= SAMP_VEHICLE_MAX )
 		return NULL;
 	if ( iVehicleID == g_Players->pLocalPlayer->sCurrentVehicleID )
-		return vehicle_info_get ( VEHICLE_SELF, 0 );
+		return vehicle_info_get( VEHICLE_SELF, 0 );
 	if ( g_Vehicles->iIsListed[iVehicleID] != 1 )
 		return NULL;
-	if ( g_Vehicles->pGTA_Vehicle[iVehicleID] == NULL )
-		return NULL;
 
+	// return vehicle_info, null or otherwise
 	return g_Vehicles->pGTA_Vehicle[iVehicleID];
 }
 
@@ -566,7 +595,7 @@ int getSAMPPlayerIDFromGTAPed ( struct actor_info *pGTAPed )
 {
 	if ( g_Players == NULL )
 		return 0;
-	if ( actor_info_get (ACTOR_SELF, 0) == pGTAPed )
+	if ( actor_info_get(ACTOR_SELF, 0) == pGTAPed )
 		return g_Players->sLocalPlayerID;
 
 	int i;
@@ -591,7 +620,7 @@ int getSAMPVehicleIDFromGTAVehicle ( struct vehicle_info *pVehicle )
 {
 	if ( g_Vehicles == NULL )
 		return NULL;
-	if ( vehicle_info_get (VEHICLE_SELF, 0) == pVehicle && g_Players != NULL )
+	if ( vehicle_info_get(VEHICLE_SELF, 0) == pVehicle && g_Players != NULL )
 		return g_Players->pLocalPlayer->sCurrentVehicleID;
 
 	int i, iReturn = 0;
@@ -641,32 +670,32 @@ void addMessageToChatWindow ( const char *text, ... )
 	{
 		va_list ap;
 		if ( text == NULL )
-			return ;
+			return;
 
 		char	tmp[512];
-		memset ( tmp, 0, 512 );
+		memset( tmp, 0, 512 );
 
-		va_start ( ap, text );
-		vsprintf ( tmp, text, ap );
-		va_end ( ap );
+		va_start( ap, text );
+		vsprintf( tmp, text, ap );
+		va_end( ap );
 
-		addToChatWindow ( tmp, D3DCOLOR_XRGB (gui_samp_cheat_state_text->red, gui_samp_cheat_state_text->green,
-						  gui_samp_cheat_state_text->blue) );
+		addToChatWindow( tmp, D3DCOLOR_XRGB(gui_samp_cheat_state_text->red, gui_samp_cheat_state_text->green,
+						 gui_samp_cheat_state_text->blue) );
 	}
 	else
 	{
 		va_list ap;
 		if ( text == NULL )
-			return ;
+			return;
 
 		char	tmp[512];
-		memset ( tmp, 0, 512 );
+		memset( tmp, 0, 512 );
 
-		va_start ( ap, text );
-		vsprintf ( tmp, text, ap );
-		va_end ( ap );
+		va_start( ap, text );
+		vsprintf( tmp, text, ap );
+		va_end( ap );
 
-		cheat_state_text ( tmp, D3DCOLOR_ARGB (255, 0, 200, 200) );
+		cheat_state_text( tmp, D3DCOLOR_ARGB(255, 0, 200, 200) );
 	}
 }
 
@@ -676,31 +705,31 @@ void addMessageToChatWindowSS ( const char *text, ... )
 	{
 		va_list ap;
 		if ( text == NULL )
-			return ;
+			return;
 
 		char	tmp[512];
-		memset ( tmp, 0, 512 );
+		memset( tmp, 0, 512 );
 
-		va_start ( ap, text );
-		vsprintf ( tmp, text, ap );
-		va_end ( ap );
+		va_start( ap, text );
+		vsprintf( tmp, text, ap );
+		va_end( ap );
 
-		addMessageToChatWindow ( tmp, D3DCOLOR_ARGB (255, 0, 200, 200) );
+		addMessageToChatWindow( tmp, D3DCOLOR_ARGB(255, 0, 200, 200) );
 	}
 	else
 	{
 		va_list ap;
 		if ( text == NULL )
-			return ;
+			return;
 
 		char	tmp[512];
-		memset ( tmp, 0, 512 );
+		memset( tmp, 0, 512 );
 
-		va_start ( ap, text );
-		vsprintf ( tmp, text, ap );
-		va_end ( ap );
+		va_start( ap, text );
+		vsprintf( tmp, text, ap );
+		va_end( ap );
 
-		cheat_state_text ( tmp, D3DCOLOR_ARGB (255, 0, 200, 200) );
+		cheat_state_text( tmp, D3DCOLOR_ARGB(255, 0, 200, 200) );
 	}
 }
 
@@ -708,7 +737,7 @@ void addMessageToChatWindowSS ( const char *text, ... )
 void addToChatWindow ( char *text, D3DCOLOR textColor )
 {
 	if ( text == NULL )
-		return ;
+		return;
 
 	uint32_t	chatinfo = g_dwSAMP_Addr + SAMP_CHAT_INFO_OFFSET;
 	uint32_t	func = g_dwSAMP_Addr + FUNC_ADDTOCHATWND;
@@ -740,20 +769,20 @@ void restartGame ()
 void say ( char *text, ... )
 {
 	if ( text == NULL )
-		return ;
-	if ( isBadPtr_readAny (text, 128) )
-		return ;
-	traceLastFunc ( "say()" );
+		return;
+	if ( isBadPtr_readAny(text, 128) )
+		return;
+	traceLastFunc( "say()" );
 
 	va_list ap;
 	char	tmp[128];
-	memset ( tmp, 0, 128 );
+	memset( tmp, 0, 128 );
 
-	va_start ( ap, text );
-	vsprintf ( tmp, text, ap );
-	va_end ( ap );
+	va_start( ap, text );
+	vsprintf( tmp, text, ap );
+	va_end( ap );
 
-	addSayToChatWindow ( tmp );
+	addSayToChatWindow( tmp );
 }
 
 #define FUNC_SAY		0x4010
@@ -761,10 +790,10 @@ void say ( char *text, ... )
 void addSayToChatWindow ( char *msg )
 {
 	if ( msg == NULL )
-		return ;
-	if ( isBadPtr_readAny (msg, 128) )
-		return ;
-	traceLastFunc ( "addSayToChatWindow()" );
+		return;
+	if ( isBadPtr_readAny(msg, 128) )
+		return;
+	traceLastFunc( "addSayToChatWindow()" );
 
 	if ( msg[0] == '/' )
 	{
@@ -843,7 +872,7 @@ uint8_t g_byteSpecialAction = 0;
 void setSpecialAction ( uint8_t byteSpecialAction )
 {
 	if ( g_Players->pLocalPlayer == NULL )
-		return ;
+		return;
 
 	g_Players->pLocalPlayer->onFootData.byteSpecialAction = byteSpecialAction;
 	g_byteSpecialAction = byteSpecialAction;
@@ -873,7 +902,7 @@ uint8_t _declspec ( naked ) carjacked_hook ( void )
 {
 	__asm mov anticarjacked_ebx_backup, ebx
 	__asm pushad
-	cheat_state->_generic.anti_carjackTick = GetTickCount ();
+	cheat_state->_generic.anti_carjackTick = GetTickCount();
 	cheat_state->_generic.car_jacked = true;
 
 	__asm popad
@@ -937,15 +966,15 @@ uint8_t _declspec ( naked ) chatboxlog_hook ( void )
 		break;
 
 	case 1:
-		LogChatbox ( false, "%s: %s", chatboxlog_hook_nickname, chatboxlog_hook_string );
+		LogChatbox( false, "%s: %s", chatboxlog_hook_nickname, chatboxlog_hook_string );
 		break;
 
 	case 2:
-		LogChatbox ( false, "%s", chatboxlog_hook_string );
+		LogChatbox( false, "%s", chatboxlog_hook_string );
 		break;
 
 	case 3:
-		LogChatbox ( false, "%s", chatboxlog_hook_string );
+		LogChatbox( false, "%s", chatboxlog_hook_string );
 		break;
 	}
 
@@ -966,41 +995,41 @@ uint8_t _declspec ( naked ) chatboxlog_hook ( void )
 #define SAMP_HOOK_RPCRETR	0x1A779
 #define SAMP_HOOK_RPCRETR2	0x1A6C2
 #endif
-void installHooks ()
+void installSAMPHooks ()
 {
 	CDetour api;
 
 	if ( set.anti_carjacking )
 	{
-		if ( memcmp_safe ((uint8_t *)g_dwSAMP_Addr + SAMP_HOOK_STATECHANGE, hex_to_bin ("6A0568"), 3) )
+		if ( memcmp_safe((uint8_t *)g_dwSAMP_Addr + SAMP_HOOK_STATECHANGE, hex_to_bin("6A0568"), 3) )
 		{
-			if ( api.Create ((uint8_t *) ((uint32_t) g_dwSAMP_Addr) + SAMP_HOOK_STATECHANGE, (uint8_t *)carjacked_hook,
-							  DETOUR_TYPE_JMP, 5) == 0 )
-				Log ( "Failed to hook StateChange." );
+			if ( api.Create((uint8_t *) ((uint32_t) g_dwSAMP_Addr) + SAMP_HOOK_STATECHANGE, (uint8_t *)carjacked_hook,
+							 DETOUR_TYPE_JMP, 5) == 0 )
+				Log( "Failed to hook StateChange." );
 		}
 		else
-			Log ( "Failed to hook StateChange (memcmp)" );
+			Log( "Failed to hook StateChange (memcmp)" );
 	}
 
-	if ( memcmp_safe ((uint8_t *)g_dwSAMP_Addr + SAMP_HOOK_STREAMEDOUT_POS, hex_to_bin ("6A00E8"), 3) )
+	if ( memcmp_safe((uint8_t *)g_dwSAMP_Addr + SAMP_HOOK_STREAMEDOUT_POS, hex_to_bin("6A00E8"), 3) )
 	{
-		if ( api.Create ((uint8_t *) ((uint32_t) g_dwSAMP_Addr) + SAMP_HOOK_STREAMEDOUT_POS,
-						  (uint8_t *)streamedout_pos_hook, DETOUR_TYPE_JMP, 5) == 0 )
-			Log ( "Failed to hook streamedout_pos_hook." );
+		if ( api.Create((uint8_t *) ((uint32_t) g_dwSAMP_Addr) + SAMP_HOOK_STREAMEDOUT_POS,
+						 (uint8_t *)streamedout_pos_hook, DETOUR_TYPE_JMP, 5) == 0 )
+			Log( "Failed to hook streamedout_pos_hook." );
 	}
 	else
-		Log ( "Failed to hook streamedout_pos_hook (memcmp)" );
+		Log( "Failed to hook streamedout_pos_hook (memcmp)" );
 
 	if ( set.chatbox_logging )
 	{
-		if ( memcmp_safe ((uint8_t *)g_dwSAMP_Addr + SAMP_HOOK_CHATBOXLOG, hex_to_bin ("8B4424"), 3) )
+		if ( memcmp_safe((uint8_t *)g_dwSAMP_Addr + SAMP_HOOK_CHATBOXLOG, hex_to_bin("8B4424"), 3) )
 		{
-			if ( api.Create ((uint8_t *) ((uint32_t) g_dwSAMP_Addr) + SAMP_HOOK_CHATBOXLOG, (uint8_t *)chatboxlog_hook,
-							  DETOUR_TYPE_JMP, 5) == 0 )
-				Log ( "Failed to hook chatboxlog_hook." );
+			if ( api.Create((uint8_t *) ((uint32_t) g_dwSAMP_Addr) + SAMP_HOOK_CHATBOXLOG, (uint8_t *)chatboxlog_hook,
+							 DETOUR_TYPE_JMP, 5) == 0 )
+				Log( "Failed to hook chatboxlog_hook." );
 		}
 		else
-			Log ( "Failed to hook chatboxlog_hook (memcmp)" );
+			Log( "Failed to hook chatboxlog_hook (memcmp)" );
 	}
 }
 
@@ -1008,35 +1037,31 @@ void installHooks ()
 #define SAMP_LOOKATPOS			0x7FE2
 #define SAMP_POSFORSTREAMINVEH	0x7F86
 #define SAMP_POSFORSTREAMONFOOT 0x7FA3
-void setSAMPInitScreenMatrix ( float   camposX,
-							   float   camposY,
-							   float   camposZ,
-							   float   camlookatX,
-							   float   camlookatY,
-							   float   camlookatZ )
+void setSAMPInitScreenMatrix ( float camposX, float camposY, float camposZ, float camlookatX, float camlookatY,
+							   float camlookatZ )
 {
 	if ( !set.samp_custom_init_screen_enable )
-		return ;
+		return;
 	if ( g_dwSAMP_Addr == NULL )
-		return ;
+		return;
 	if ( g_SAMP == NULL )
-		return ;
+		return;
 
-	memcpy_safe ( (void *)(g_dwSAMP_Addr + SAMP_CAMPOS), &camposX, sizeof (float) );
-	memcpy_safe ( (void *)(g_dwSAMP_Addr + SAMP_CAMPOS - 0x5), &camposY, sizeof (float) );
-	memcpy_safe ( (void *)(g_dwSAMP_Addr + SAMP_CAMPOS - 0xA), &camposZ, sizeof (float) );
+	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_CAMPOS), &camposX, sizeof(float) );
+	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_CAMPOS - 0x5), &camposY, sizeof(float) );
+	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_CAMPOS - 0xA), &camposZ, sizeof(float) );
 
-	memcpy_safe ( (void *)(g_dwSAMP_Addr + SAMP_LOOKATPOS), &camlookatX, sizeof (float) );
-	memcpy_safe ( (void *)(g_dwSAMP_Addr + SAMP_LOOKATPOS - 0x5), &camlookatY, sizeof (float) );
-	memcpy_safe ( (void *)(g_dwSAMP_Addr + SAMP_LOOKATPOS - 0xA), &camlookatZ, sizeof (float) );
+	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_LOOKATPOS), &camlookatX, sizeof(float) );
+	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_LOOKATPOS - 0x5), &camlookatY, sizeof(float) );
+	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_LOOKATPOS - 0xA), &camlookatZ, sizeof(float) );
 
-	memcpy_safe ( (void *)(g_dwSAMP_Addr + SAMP_POSFORSTREAMINVEH), &camposX, sizeof (float) );
-	memcpy_safe ( (void *)(g_dwSAMP_Addr + SAMP_POSFORSTREAMINVEH - 0x5), &camposY, sizeof (float) );
-	memcpy_safe ( (void *)(g_dwSAMP_Addr + SAMP_POSFORSTREAMINVEH - 0xA), &camposZ, sizeof (float) );
+	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_POSFORSTREAMINVEH), &camposX, sizeof(float) );
+	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_POSFORSTREAMINVEH - 0x5), &camposY, sizeof(float) );
+	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_POSFORSTREAMINVEH - 0xA), &camposZ, sizeof(float) );
 
-	memcpy_safe ( (void *)(g_dwSAMP_Addr + SAMP_POSFORSTREAMONFOOT), &camposX, sizeof (float) );
-	memcpy_safe ( (void *)(g_dwSAMP_Addr + SAMP_POSFORSTREAMONFOOT - 0x5), &camposY, sizeof (float) );
-	memcpy_safe ( (void *)(g_dwSAMP_Addr + SAMP_POSFORSTREAMONFOOT - 0xA), &camposZ, sizeof (float) );
+	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_POSFORSTREAMONFOOT), &camposX, sizeof(float) );
+	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_POSFORSTREAMONFOOT - 0x5), &camposY, sizeof(float) );
+	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_POSFORSTREAMONFOOT - 0xA), &camposZ, sizeof(float) );
 }
 
 #define SAMP_ONFOOTSENDRATE		0x67098
@@ -1046,16 +1071,16 @@ void setSAMPInitScreenMatrix ( float   camposX,
 void setSAMPCustomSendRates ( int iOnFoot, int iInCar, int iAim, int iHeadSync )
 {
 	if ( !set.samp_custom_sendrates_enable )
-		return ;
+		return;
 	if ( g_dwSAMP_Addr == NULL )
-		return ;
+		return;
 	if ( g_SAMP == NULL )
-		return ;
+		return;
 
-	memcpy_safe ( (void *)(g_dwSAMP_Addr + SAMP_ONFOOTSENDRATE), &iOnFoot, sizeof (int) );
-	memcpy_safe ( (void *)(g_dwSAMP_Addr + SAMP_INCARSENDRATE), &iInCar, sizeof (int) );
-	memcpy_safe ( (void *)(g_dwSAMP_Addr + SAMP_AIMSENDRATE), &iAim, sizeof (int) );
-	memcpy_safe ( (void *)(g_dwSAMP_Addr + SAMP_HEADSYNCSENDRATE), &iHeadSync, sizeof (int) );
+	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_ONFOOTSENDRATE), &iOnFoot, sizeof(int) );
+	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_INCARSENDRATE), &iInCar, sizeof(int) );
+	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_AIMSENDRATE), &iAim, sizeof(int) );
+	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_HEADSYNCSENDRATE), &iHeadSync, sizeof(int) );
 }
 
 #define SAMP_DISABLE_NAMETAGS	0x3D7B0
@@ -1069,10 +1094,11 @@ int sampPatchDisableNameTags ( int iEnabled )
 		{ { 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_DISABLE_NAMETAGS ), NULL, (uint8_t *)"\xC3", NULL } }
 	};
 
-	if ( iEnabled )
-		return patcher_remove ( &patch );
-	else
-		return patcher_install ( &patch );
+	if ( iEnabled && patch.installed )
+		return patcher_remove( &patch );
+	else if ( !patch.installed )
+		return patcher_install( &patch );
+	return NULL;
 }
 
 #define SAMP_SENDINTERIOR	0x56DF
@@ -1089,9 +1115,9 @@ int sampPatchDisableInteriorUpdate ( int iEnabled )
 	};
 
 	if ( iEnabled )
-		return patcher_install ( &patch );
+		return patcher_install( &patch );
 	else
-		return patcher_remove ( &patch );
+		return patcher_remove( &patch );
 }
 
 #define SAMP_NOPSCREENSHOT	0x3E71D
@@ -1107,7 +1133,7 @@ int sampPatchDisableScreeenshotKey ( int iEnabled )
 	};
 
 	if ( iEnabled )
-		return patcher_install ( &patch );
+		return patcher_install( &patch );
 	else
-		return patcher_remove ( &patch );
+		return patcher_remove( &patch );
 }

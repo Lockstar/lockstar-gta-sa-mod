@@ -1725,6 +1725,26 @@
 				Name="google"
 				>
 				<File
+					RelativePath=".\sparsehash\google\dense_hash_map.h"
+					>
+				</File>
+				<File
+					RelativePath=".\sparsehash\google\dense_hash_set.h"
+					>
+				</File>
+				<File
+					RelativePath=".\sparsehash\google\sparse_hash_map.h"
+					>
+				</File>
+				<File
+					RelativePath=".\sparsehash\google\sparse_hash_set.h"
+					>
+				</File>
+				<File
+					RelativePath=".\sparsehash\google\sparsetable.h"
+					>
+				</File>
+				<File
 					RelativePath=".\sparsehash\google\type_traits.h"
 					>
 				</File>
@@ -1779,10 +1799,6 @@
 			>
 		</File>
 		<File
-			RelativePath=".\mta_extras.h"
-			>
-		</File>
-		<File
 			RelativePath=".\resource.h"
 			>
 		</File>
@@ -1795,7 +1811,7 @@
 			>
 		</File>
 		<File
-			RelativePath=".\stdint.h"
+			RelativePath=".\stdtypes.h"
 			>
 		</File>
 	</Files>

@@ -47,7 +47,7 @@ typedef struct d3dvertex_s
 #define SAFE_RELEASE( d ) \
 	if ( d ) \
 	{ \
-		d->Release (); \
+		d->Release(); \
 		d = NULL; \
 	}
 
@@ -124,8 +124,7 @@ protected:
 	static bool					m_statesOK;
 };
 
-class CD3DFont :
-	public CD3DBaseRender
+class CD3DFont : public CD3DBaseRender
 {
 public:
 	CD3DRender	*m_pRender;
@@ -165,8 +164,7 @@ private:
 	float					m_fChrHeight;
 };
 
-class CD3DRender :
-	public CD3DBaseRender
+class CD3DRender : public CD3DBaseRender
 {
 public:
 	CD3DRender ( int numVertices );

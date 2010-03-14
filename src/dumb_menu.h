@@ -27,14 +27,14 @@ struct menu;
 #define MENU_INCDEC_SPEED		20	/* auto-scroll speed (scrolls per second) */
 #define MENU_INCDEC_DELAY		400 /* delay in milliseconds before auto-scrolling */
 
-#define MENU_SCROLL_TIME		MSEC_TO_TIME ( 1000 / MENU_SCROLL_SPEED )
+#define MENU_SCROLL_TIME		MSEC_TO_TIME( 1000 / MENU_SCROLL_SPEED )
 #define MENU_OP_ENABLED			0	/* query if menu item is enabled */
 #define MENU_OP_SELECT			1	/* menu item selected notification (enter) */
 #define MENU_OP_DEC				2	/* menu item value decrease notification */
 #define MENU_OP_INC				3	/* menu item value increase notification */
 
-#define MENU_COLOR_DEFAULT		D3DCOLOR_XRGB ( 223, 223, 223 )
-#define MENU_COLOR_SEPARATOR	D3DCOLOR_XRGB ( 157, 157, 157 )
+#define MENU_COLOR_DEFAULT		D3DCOLOR_XRGB( 223, 223, 223 )
+#define MENU_COLOR_SEPARATOR	D3DCOLOR_XRGB( 157, 157, 157 )
 
 struct menu_item
 {
