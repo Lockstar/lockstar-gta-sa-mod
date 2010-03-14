@@ -33,6 +33,189 @@ stChatInfo		*g_Chat;
 stInputInfo		*g_Input;
 stKillInfo		*g_DeathList;
 
+//ClientCommands
+void cmd_current_skin ()
+{
+	struct actor_info	*self = actor_info_get ( ACTOR_SELF, NULL );
+	addMessageToChatWindow ( "Skin ID: %i", self->base.model_alt_id );
+	addMessageToChatWindow ( "Serverside Skin ID: %i", g_Players->pLocalPlayer->iSpawnSkin );
+}
+
+extern int	joining_server;
+void cmd_change_server ( char *param )	//127.0.0.1 7777 Username Password
+{
+	traceLastFunc ( "change_server" );
+
+	char	*result;
+	bool	success = false;
+
+	char	IP[257], LocalName[29];
+	int		Port;
+	strcpy ( IP, g_SAMP->szIP );
+	Port = g_SAMP->ulPort;
+	strcpy ( LocalName, g_Players->szLocalPlayerName );
+
+	result = strtok ( param, " :" );
+	for ( int i = 0; i <= 4; i++ )
+	{
+		if ( result == NULL && !success )
+		{
+			//		addMessageToChatWindow("USAGE: /m0d_change_server <ip> <port> <Username> <Password>");
+			addMessageToChatWindow ( "USAGE: /m0d_change_server <ip> <port> <Username>" );
+
+			//		addMessageToChatWindow("USAGE2: /m0d_change_server <ip> <port>");
+			//		addMessageToChatWindow("Username and/or Password will be ignored if they are set to NULL");
+			addMessageToChatWindow ( "Username will be ignored if it is set to NULL or left out." );
+			strcpy ( g_SAMP->szIP, IP );
+			g_SAMP->ulPort = Port;
+			strcpy ( LocalName, g_Players->szLocalPlayerName );
+
+			//		setPassword("");
+			return ;
+		}
+		else if ( result == NULL && success )
+		{
+			joining_server = 1;
+			return ;
+		}
+
+		Log ( "%i is %s", i, result );
+		switch ( i )
+		{
+		case 0:
+			strcpy ( g_SAMP->szIP, result );
+			break;
+
+		case 1:
+			g_SAMP->ulPort = atoi ( result );
+			success = true;
+			break;
+
+		case 2:
+			if ( strcmp (result, "NULL") != 0 )
+				strcpy ( g_Players->szLocalPlayerName, result );
+			break;
+
+		// crashing often - but it worked before :P
+		//		case 3:
+		//			if(strcmp(result,"NULL")!=0)
+		//				setPassword(result);
+		//			break;
+		default:
+			{
+				//				addMessageToChatWindow("USAGE: /m0d_change_server <ip> <port> <Username> <Password>");
+				addMessageToChatWindow ( "USAGE: /m0d_change_server <ip> <port> <Username>" );
+				addMessageToChatWindow ( "Username will be ignored if set to NULL or left out." );
+				strcpy ( g_SAMP->szIP, IP );
+				g_SAMP->ulPort = Port;
+				strcpy ( LocalName, g_Players->szLocalPlayerName );
+
+				//				setPassword("");
+				return ;
+			}
+		}
+
+		result = strtok ( NULL, " :" );
+	}
+}
+
+void cmd_current_server ( char *param )
+{
+	addMessageToChatWindow ( "Server Name: %s", g_SAMP->szHostname );
+	addMessageToChatWindow ( "Server Address: %s:%i", g_SAMP->szIP, g_SAMP->ulPort );
+	addMessageToChatWindow ( "Username: %s", g_Players->szLocalPlayerName, g_Players->iLocalPlayerPing );
+}
+
+bool findstrinstr ( char *param, char *tele )
+{
+	char	*result;
+	char	temp, subtext[64];
+	int		i = 0;
+	for ( int j = 0; j < 64; j++ )
+	{
+		if ( !isalpha (param[j]) )
+			param[j] = '.';
+	}
+
+	result = strtok ( param, "." );
+	while ( result != NULL )
+	{
+		temp = 1;
+		i = 0;
+		while ( temp != NULL )
+		{
+			temp = result[i];
+			if ( isupper (temp) )
+				temp = tolower ( temp );
+			subtext[i] = temp;
+			i++;
+		}
+
+		if ( strstr (tele, subtext) == NULL )
+			return false;
+		result = strtok ( NULL, "." );
+	}
+
+	return true;
+}
+
+void cmd_tele_loc ( char *param )
+{
+	if ( strlen (param) == 0 )
+	{
+		addMessageToChatWindow ( "USAGE: /m0d_tele_location <location name>" );
+		addMessageToChatWindow ( "Use /m0d_tele_locations to show the location names." );
+		addMessageToChatWindow ( "The more specific you are on location name the better the result." );
+		return ;
+	}
+
+	char	temp, tele[64];
+	for ( int i = 0; i < STATIC_TELEPORT_MAX; i++ )
+	{
+		if ( strlen (set.static_teleport_name[i]) == 0 || vect3_near_zero (set.static_teleport[i].pos) )
+			continue;
+
+		int j;
+		for ( j = 0; j < 64; j++ )
+		{
+			tele[j] = 0;
+		}
+
+		j = 0;
+		while ( set.static_teleport_name[i][j] && j < 64 )
+		{
+			temp = set.static_teleport_name[i][j];
+			if ( isupper (temp) )
+				temp = tolower ( temp );
+			tele[j] = temp;
+			j++;
+		}
+
+		if ( !findstrinstr (param, tele) )
+			continue;
+
+		cheat_state_text ( "Teleported to: %s.", set.static_teleport_name[i] );
+		cheat_teleport ( set.static_teleport[i].pos, set.static_teleport[i].interior_id );
+		return ;
+	}
+
+	addMessageToChatWindow ( "USAGE: /m0d_tele_location <location name>" );
+	addMessageToChatWindow ( "Use /m0d_tele_locations to show the location names." );
+	addMessageToChatWindow ( "The more specific you are on location name the better the result." );
+}
+
+void cmd_tele_locations ()
+{
+	for ( int i = 0; i < STATIC_TELEPORT_MAX; i++ )
+	{
+		if ( strlen (set.static_teleport_name[i]) == 0 || vect3_near_zero (set.static_teleport[i].pos) )
+			continue;
+		addMessageToChatWindow ( "%s", set.static_teleport_name[i] );
+	}
+
+	addMessageToChatWindow ( "To teleport use the menu or: /m0d_tele_location <location name>" );
+}
+
 // new functions to check for bad pointers
 int isBadPtr_SAMP_iVehicleID ( int iVehicleID )
 {
@@ -211,7 +394,7 @@ D3DCOLOR samp_color_get_trans ( int id, DWORD trans )
 	return ( color_table[id] >> 8 ) | trans;
 }
 
-extern int	joining_server, iShowVehicles;
+extern int	iShowVehicles;
 extern bool bShowChat;
 void sampMainCheat ()
 {
@@ -632,6 +815,22 @@ uint32_t getVehicleGTAScriptingIDFromVehicleID ( int iVehicleID )
 		return NULL;
 
 	return g_Vehicles->pSAMP_Vehicle[iVehicleID]->ulGTA_Vehicle_ID;
+}
+
+#define FUNC_ADDCLIENTCMD		0x377A0
+#define SAMP_ADDCLIENTCMD_DATA	0xEDDC0
+void addClientCommand ( char *text, int function )
+{
+	if ( text == NULL || function == NULL )
+		return ;
+
+	uint32_t	data = g_dwSAMP_Addr + SAMP_ADDCLIENTCMD_DATA;
+	uint32_t	func = g_dwSAMP_Addr + FUNC_ADDCLIENTCMD;
+	__asm mov eax, data
+	__asm mov ecx, [eax]
+	__asm push function
+	__asm push text
+	__asm call func
 }
 
 struct gui	*gui_samp_cheat_state_text = &set.guiset[2];

@@ -173,6 +173,8 @@
 #define ID_MENU_SAMPMISC_TELEPICKUP				110
 #define ID_MENU_SAMPMISC_RENDEROBJTXT			14
 #define ID_MENU_SAMPMISC_RENDERPCKTXT			15
+#define ID_MENU_SAMPMISC_M0DCOMMANDS		16
+static bool modcommands = false;
 
 #define ID_MENU_SPECIAL_ACTION_NONE				0
 #define ID_MENU_SPECIAL_ACTION_USEJETPACK		2
@@ -1765,6 +1767,9 @@ static int menu_callback_sampmisc ( int op, struct menu_item *item )
 
 			case ID_MENU_SAMPMISC_RENDERPCKTXT:
 				return cheat_state->_generic.pickuptexts;
+
+			case ID_MENU_SAMPMISC_M0DCOMMANDS:
+				return modcommands;
 			}
 		}
 
@@ -1835,6 +1840,26 @@ static int menu_callback_sampmisc ( int op, struct menu_item *item )
 
 			case ID_MENU_SAMPMISC_RENDERPCKTXT:
 				cheat_state->_generic.pickuptexts ^= 1;
+				break;
+
+			case ID_MENU_SAMPMISC_M0DCOMMANDS:
+				{
+					if ( KEY_PRESSED (VK_RETURN) )
+					{	// i know
+						modcommands = true;
+
+						// int dbg = (g_dwSAMP_Addr + 0xED8A8);
+						// *(int*)dbg = 1;
+						// addClientCommand("m0d_skin",(g_dwSAMP_Addr+SAMP_FUNC_SKIN));
+						addClientCommand ( "m0d_current_skin", (int)cmd_current_skin );
+						addClientCommand ( "m0d_change_server", (int)cmd_change_server );
+						addClientCommand ( "m0d_current_server", (int)cmd_current_server );
+						addClientCommand ( "m0d_tele_location", (int)cmd_tele_loc );
+						addClientCommand ( "m0d_teleport_location", (int)cmd_tele_loc );
+						addClientCommand ( "m0d_tele_locations", (int)cmd_tele_locations );
+						addClientCommand ( "m0d_teleport_locations", (int)cmd_tele_locations );
+					}
+				}
 				break;
 			}
 		}
@@ -2941,6 +2966,7 @@ void menu_maybe_init ( void )
 	menu_item_add ( menu_sampmisc, menu_telepickup, "Teleport to pickup", ID_MENU_SAMPMISC_TELEPICKUP,
 					MENU_COLOR_DEFAULT, NULL );
 	menu_item_add ( menu_sampmisc, NULL, "Render pickup texts", ID_MENU_SAMPMISC_RENDERPCKTXT, MENU_COLOR_DEFAULT, NULL );
+	menu_item_add ( menu_sampmisc, NULL, "Load M0D-Commands", ID_MENU_SAMPMISC_M0DCOMMANDS, MENU_COLOR_DEFAULT, NULL );
 
 	/* main menu -> sampmisc -> change game state */
 	menu_item_add ( menu_gamestate, NULL, "None", GAMESTATE_NONE, MENU_COLOR_DEFAULT, NULL );
