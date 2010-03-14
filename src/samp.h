@@ -20,6 +20,9 @@
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
 */
+#define SAMP_FUNC_SKIN					0x36FA0
+#define SAMP_FUNC_VEHICLE				0x37010
+
 #define SAMP_PLAYER_MAX					500
 #define SAMP_VEHICLE_MAX				2000
 #define SAMP_PICKUP_MAX					2048
@@ -373,6 +376,11 @@ struct stTranslateSAMPGTA_vehiclePool
 ///////////////////////////////////// FUNCTIONS //////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
 void											update_translateSAMPGTA_vehiclePool ( void );
+void				cmd_current_skin ();
+void				cmd_change_server ( char *param );
+void				cmd_current_server ( char *param );
+void				cmd_tele_loc ( char *param );
+void				cmd_tele_locations ();
 
 int												isBadPtr_SAMP_iVehicleID ( int iVehicleID );
 int												isBadPtr_SAMP_iPlayerID ( int iPlayerID );
@@ -408,6 +416,7 @@ uint32_t										getVehicleGTAScriptingIDFromVehicleID ( int iVehicleID );
 
 int												samp_vehicle_find_nearest ( int flags );
 
+void				addClientCommand ( char *text, int function );
 void											addToChatWindow ( char *text, D3DCOLOR textColor );
 void											addMessageToChatWindow ( const char *text, ... );
 void											addMessageToChatWindowSS ( const char *text, ... );
