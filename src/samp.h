@@ -364,23 +364,34 @@ struct stStreamedOutPlayerInfo
 //////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////// SUPPORT VARIABLES //////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
-struct stTranslateSAMPGTA_vehiclePool
+struct stTranslateGTASAMP_vehiclePool
 {
+#pragma pack( 1 )
 	// the index is the position in the vehicle pool
 	//
 	// translation data
 	int iSAMPID[SAMP_VEHICLE_MAX];
 };
+struct stTranslateGTASAMP_pedPool
+{
+#pragma pack( 1 )
+	// the index is the position in the vehicle pool
+	//
+	// translation data
+	int iSAMPID[SAMP_PLAYER_MAX];
+};
 
 //////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////// FUNCTIONS //////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
-void											update_translateSAMPGTA_vehiclePool ( void );
-void				cmd_current_skin ();
-void				cmd_change_server ( char *param );
-void				cmd_current_server ( char *param );
-void				cmd_tele_loc ( char *param );
-void				cmd_tele_locations ();
+void											update_translateGTASAMP_vehiclePool ( void );
+void											update_translateGTASAMP_pedPool ( void );
+
+void											cmd_current_skin ();
+void											cmd_change_server ( char *param );
+void											cmd_current_server ( char *param );
+void											cmd_tele_loc ( char *param );
+void											cmd_tele_locations ();
 
 int												isBadPtr_SAMP_iVehicleID ( int iVehicleID );
 int												isBadPtr_SAMP_iPlayerID ( int iPlayerID );
@@ -416,7 +427,7 @@ uint32_t										getVehicleGTAScriptingIDFromVehicleID ( int iVehicleID );
 
 int												samp_vehicle_find_nearest ( int flags );
 
-void				addClientCommand ( char *text, int function );
+void											addClientCommand ( char *text, int function );
 void											addToChatWindow ( char *text, D3DCOLOR textColor );
 void											addMessageToChatWindow ( const char *text, ... );
 void											addMessageToChatWindowSS ( const char *text, ... );
@@ -451,4 +462,5 @@ extern struct stKillInfo						*g_DeathList;
 extern struct stStreamedOutPlayerInfo			g_stStreamedOutInfo;
 
 // global support variables externals
-extern struct stTranslateSAMPGTA_vehiclePool	translateSAMPGTA_vehiclePool;
+extern struct stTranslateGTASAMP_vehiclePool	translateGTASAMP_vehiclePool;
+extern struct stTranslateGTASAMP_pedPool		translateGTASAMP_pedPool;

@@ -452,3 +452,5 @@ extern const struct interiors		interiors_list[];
 // new functions making use of MTA/R* classes
 CPed								*getSelfCPed ( void );
 CVehicle							*getSelfCVehicle ( void );
+int									getVehicleGTAIDFromInterface ( DWORD *vehicle );
+int									getPedGTAIDFromInterface ( DWORD *ped );

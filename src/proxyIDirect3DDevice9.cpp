@@ -1107,9 +1107,7 @@ void CalcScreenCoors ( D3DXVECTOR3 *vecWorld, D3DXVECTOR3 *vecScreen )
 struct playerTagInfo
 {
 #pragma pack( 1 )
-	float	tagX;
-	float	tagY;
-	float	tagZ;
+	CVector tagPosition;
 	float	tagOffsetY;
 	bool	isStairStacked;
 	float	stairStackedOffset;
@@ -1118,267 +1116,363 @@ struct playerTagInfo
 // new player ESP
 void renderPlayerTags ( void )
 {
+	traceLastFunc( "renderPlayerTags" );
+
+	// don't run in the menu
 	if ( gta_menu_active() )
 		return;
-	if ( GetAsyncKeyState(VK_TAB) < 0 )
-		return;
+
+	// old tab menu, needs new method
+	//if ( GetAsyncKeyState(VK_TAB) < 0 )
+	//	return;
+	// is this needed?
 	if ( GetAsyncKeyState(VK_F10) < 0 )
 		return;
 
-	if ( g_Players == NULL )
+	// don't run if the CGameSA doesn't exist
+	if ( !pGameInterface )
 		return;
 
-	struct actor_info	*self = actor_info_get( ACTOR_SELF, 0 );
-	if ( self == NULL )
+	// don't run if we don't exist
+	CPed	*pPedSelf = getSelfCPed();
+	if ( !pPedSelf )
 		return;
 
-	int		i;			// for fors
-	char	buf[256];	// format trash buffer
-	bool	isPlayerWithinView[SAMP_PLAYER_MAX];
-	bool	isPlayerESPCollided[SAMP_PLAYER_MAX];
-	bool	isPlayerESPStairStacked[SAMP_PLAYER_MAX];
-	for ( i = 0; i < SAMP_PLAYER_MAX; i++ )
+	// for tracking player states as we iterate through
+	//bool	isPedWithinView[SAMP_PLAYER_MAX];
+	bool	isPedESPCollided[SAMP_PLAYER_MAX];
+	bool	isPedESPStairStacked[SAMP_PLAYER_MAX];
+	//memset( isPedWithinView, false, sizeof(bool) * SAMP_PLAYER_MAX );
+	memset( isPedESPCollided, false, sizeof(bool) * SAMP_PLAYER_MAX );
+	memset( isPedESPStairStacked, true, sizeof(bool) * SAMP_PLAYER_MAX );
+
+	// alignment settings
+	int			ESP_tag_player_pixelOffsetY = -10;
+	float		ESP_tag_player_D3DBox_pixelOffsetX = -0.5;
+	float		ESP_tag_player_D3DBox_pixelOffsetY = -0.5;
+	float		ESP_tag_player_posOffsetZ = 1.0;
+
+	// trash values to use during iterations
+	float		vh;
+	int			iSAMPID, iSAMPID_Inner, selfSAMPID;
+	CVector		iterPosition, ourPosMinusIter, ourPosition;
+	D3DXVECTOR3 poss, screenposs;
+	char		buf[256];
+
+	// get our info
+	ourPosition = pPedSelf->GetInterface()->Placeable.matrix->vPos;
+	selfSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)pPedSelf->GetInterface() )];
+
+	// setup iterator
+	CPedSA		*iterPed = NULL;
+	CPoolsSA	*pPools = reinterpret_cast < CPoolsSA * > ( pGameInterface->GetPools() );
+	CPoolsSA::pedPool_t::mapType::iterator iter = pPools->m_pedPool.map.begin();
+
+	// get initial variables for peds streamed in
+	while ( iter.pos < iter.end )
 	{
-		isPlayerESPCollided[i] = false;
-		isPlayerWithinView[i] = false;
-		isPlayerESPStairStacked[i] = true;
-	}
+		// map iterator pointer to our pointer
+		iterPed = iter.pos->second;
 
-	int		ESP_tag_player_pixelOffsetY = -10;
-	float	ESP_tag_player_D3DBox_pixelOffsetX = -0.5;
-	float	ESP_tag_player_D3DBox_pixelOffsetY = -0.5;
-	float	ESP_tag_player_posOffsetZ = 1.0;
+		// advance to next item for next pass
+		iter.pos++;
+		if ( !iterPed )
+			continue;
 
-	//DWORD *dwLenX = (DWORD*)(0xC17044);
-	//DWORD *dwLenY = (DWORD*)(0xC17048);
-	// this loop figures out which players are valid and on screen
-	// and populates some variables
-	for ( i = 0; i < SAMP_PLAYER_MAX; i++ )
-	{
-		struct actor_info	*actor = NULL;
-		float				pos[3];
-		D3DXVECTOR3			poss, screenposs;
+		// check if it's farther than set.player_tags_dist
+		iterPosition = iterPed->GetInterface()->Placeable.matrix->vPos;
+		ourPosMinusIter = ourPosition - iterPosition;
+		if ( ourPosMinusIter.Length() > set.player_tags_dist )
+			continue;
 
-		if ( g_Players->iIsListed[i] != 1 )
+		// get SAMP's player id
+		iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
+
+		// ignore if it's us
+		if ( iSAMPID == selfSAMPID )
 			continue;
-		if ( g_Players->pRemotePlayer[i] == NULL )
-			continue;
-		if ( isBadPtr_writeAny(g_Players->pRemotePlayer[i], sizeof(stRemotePlayer)) != 0 )
-			continue;
-		if ( g_Players->pRemotePlayer[i]->bytePlayerState == PLAYER_STATE_NONE )
-			continue;
-		if ( g_Players->pRemotePlayer[i]->pSAMP_Actor != NULL
-		 &&	 isBadPtr_writeAny(g_Players->pRemotePlayer[i]->pSAMP_Actor, sizeof(stRemotePlayer)) == 0 )
+
+		// get the player position in 2D
+		poss.x = iterPosition.fX;
+		poss.y = iterPosition.fY;
+		poss.z = iterPosition.fZ + ESP_tag_player_posOffsetZ;
+		CalcScreenCoors( &poss, &screenposs );
+
+		// check if the iter is culled or not
+		if ( screenposs.z < 1.f )
 		{
-			if ( (actor = g_Players->pRemotePlayer[i]->pSAMP_Actor->pGTA_Ped) == NULL )
-				continue;
-			if ( !getPlayerPos(i, pos) )
-				continue;
-			if ( vect3_dist(pos, &self->base.matrix[4 * 3]) > set.player_tags_dist )
-				continue;
-
-			// get the player position in 2D
-			poss.x = pos[0];
-			poss.y = pos[1];
-			poss.z = pos[2] + ESP_tag_player_posOffsetZ;
-			CalcScreenCoors( &poss, &screenposs );
-
-			// is this complicated enough?  so far, it seems good
-			if ( screenposs.z < 1.0f )
-			{
-				g_playerTagInfo[i].tagOffsetY = 0.0f;
-				continue;
-			}
-
-			// local, mark this playerID ESP "on" for this frame
-			isPlayerWithinView[i] = true;
-
-			// global, set ESP position for tagOffsetY use
-			g_playerTagInfo[i].tagX = screenposs.x;
-			g_playerTagInfo[i].tagY = screenposs.y;
-			g_playerTagInfo[i].tagZ = screenposs.z;
-
-			//+ (self->base.matrix[4*3] * 0.05f);
+			g_playerTagInfo[iSAMPID].tagOffsetY = 0.0f;
+			continue;
 		}
+
+		// global, set ESP position for tagOffsetY use
+		g_playerTagInfo[iSAMPID].tagPosition.fX = screenposs.x;
+		g_playerTagInfo[iSAMPID].tagPosition.fY = screenposs.y;
+		g_playerTagInfo[iSAMPID].tagPosition.fZ = screenposs.z;
 	}
+
+	// reset iter position & setup iterInner
+	iter = pPools->m_pedPool.map.begin();
+	CPedSA	*iterInnerPed = NULL;
+	CPoolsSA::pedPool_t::mapType::iterator iterInner;
 
 	// remove staircase problem
-	for ( i = 0; i < SAMP_PLAYER_MAX; i++ )
+	while ( iter.pos < iter.end )
 	{
-		if ( !isPlayerWithinView[i] || g_playerTagInfo[i].tagOffsetY < 40.f && !g_playerTagInfo[i].isStairStacked )
-		{
+		// map iterator pointer to our pointer
+		iterPed = iter.pos->second;
+
+		// advance to next item for next pass
+		iter.pos++;
+		if ( !iterPed )
 			continue;
-		}
+
+		// get SAMP's player id
+		iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
+
+		// filter out "ok" ESP
+		if ( g_playerTagInfo[iSAMPID].tagOffsetY < 40.f && !g_playerTagInfo[iSAMPID].isStairStacked )
+			continue;
+
+		// ignore if it's us
+		if ( iSAMPID == selfSAMPID )
+			continue;
 
 		// detect stair stacking per frame if ESP isn't already stair stacked
-		if ( !g_playerTagInfo[i].isStairStacked )
+		if ( !g_playerTagInfo[iSAMPID].isStairStacked )
 		{
-			for ( int g_pTI_i = 0; g_pTI_i < SAMP_PLAYER_MAX; g_pTI_i++ )
+			// reset iterInner position
+			iterInner = pPools->m_pedPool.map.begin();
+			while ( iterInner.pos < iterInner.end )
 			{
-				if ( !isPlayerWithinView[g_pTI_i] || i == g_pTI_i )
+				// map iterator pointer to our pointer
+				iterInnerPed = iterInner.pos->second;
+
+				// advance to next item for next pass
+				iterInner.pos++;
+				if ( !iterInnerPed )
 					continue;
-				if ( abs(g_playerTagInfo[i].tagX - g_playerTagInfo[g_pTI_i].tagX) <= 100.f
-				 &&	 abs((g_playerTagInfo[i].tagY - (g_playerTagInfo[i].tagOffsetY / 2)) -
-							  (g_playerTagInfo[g_pTI_i].tagY - g_playerTagInfo[g_pTI_i].tagOffsetY)) <= 20.f )
+
+				// get SAMP's player id
+				iSAMPID_Inner = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterInnerPed->GetPedInterface() )];
+
+				// ignore if it's us
+				if ( iSAMPID == iSAMPID_Inner )
+					continue;
+
+				// test to see who comes out on top
+				if ( abs(g_playerTagInfo[iSAMPID].tagPosition.fX - g_playerTagInfo[iSAMPID_Inner].tagPosition.fX) <= 100.f
+				 &&	 abs((g_playerTagInfo[iSAMPID].tagPosition.fY - (g_playerTagInfo[iSAMPID].tagOffsetY / 2)) - (g_playerTagInfo[iSAMPID_Inner].tagPosition.fY - g_playerTagInfo[iSAMPID_Inner].tagOffsetY)) <= 20.f )
 				{
-					isPlayerESPStairStacked[i] = false;
+					isPedESPStairStacked[iSAMPID] = false;
 				}
 			}
 
 			// setup stair stack variables needed to un stack the ESP
-			if ( isPlayerESPStairStacked[i] )
+			if ( isPedESPStairStacked[iSAMPID] )
 			{
-				g_playerTagInfo[i].isStairStacked = true;
-				g_playerTagInfo[i].stairStackedOffset = g_playerTagInfo[i].tagOffsetY / 2;
+				g_playerTagInfo[iSAMPID].isStairStacked = true;
+				g_playerTagInfo[iSAMPID].stairStackedOffset = g_playerTagInfo[iSAMPID].tagOffsetY / 2;
 			}
+
+			// end detect stair stacking
 		}
 
 		// lower the offsets for stair stacked ESP
 		// and turn off stack status of ESP that reaches the "available" offset
-		if ( g_playerTagInfo[i].isStairStacked )
+		if ( g_playerTagInfo[iSAMPID].isStairStacked )
 		{
-			g_playerTagInfo[i].tagOffsetY = g_playerTagInfo[i].tagOffsetY - 5.f;
-			g_playerTagInfo[i].stairStackedOffset = g_playerTagInfo[i].stairStackedOffset - 5.f;
-			if ( g_playerTagInfo[i].stairStackedOffset < 5.f )
+			g_playerTagInfo[iSAMPID].tagOffsetY = g_playerTagInfo[iSAMPID].tagOffsetY - 5.f;
+			g_playerTagInfo[iSAMPID].stairStackedOffset = g_playerTagInfo[iSAMPID].stairStackedOffset - 5.f;
+			if ( g_playerTagInfo[iSAMPID].stairStackedOffset < 5.f )
 			{
-				g_playerTagInfo[i].stairStackedOffset = 0.0f;
-				g_playerTagInfo[i].isStairStacked = false;
+				g_playerTagInfo[iSAMPID].stairStackedOffset = 0.0f;
+				g_playerTagInfo[iSAMPID].isStairStacked = false;
 			}
 		}
+
+		// end remove staircase problem
 	}
 
-	// this loop detects collisions and figures out the tagOffsetY
-	for ( i = 0; i < SAMP_PLAYER_MAX; i++ )
+	// reset iter position & setup iterInner
+	iter = pPools->m_pedPool.map.begin();
+
+	// detect & adjust for ESP collisions
+	while ( iter.pos < iter.end )
 	{
-		if ( !isPlayerWithinView[i] || g_playerTagInfo[i].isStairStacked )
+		// map iterator pointer to our pointer
+		iterPed = iter.pos->second;
+
+		// advance to next item for next pass
+		iter.pos++;
+		if ( !iterPed )
 			continue;
-		for ( int g_pTI_i = 0; g_pTI_i < SAMP_PLAYER_MAX; g_pTI_i++ )
+
+		// get SAMP's player id
+		iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
+
+		// we're not stairstacked, move along
+		if ( g_playerTagInfo[iSAMPID].isStairStacked )
+			continue;
+
+		// reset iterInner position
+		iterInner = pPools->m_pedPool.map.begin();
+		while ( iterInner.pos < iterInner.end )
 		{
-			if ( !isPlayerWithinView[g_pTI_i] || i == g_pTI_i || g_playerTagInfo[g_pTI_i].isStairStacked )
+			// map iterator pointer to our pointer
+			iterInnerPed = iterInner.pos->second;
+
+			// advance to next item for next pass
+			iterInner.pos++;
+			if ( !iterInnerPed )
+				continue;
+
+			// get SAMP's player id
+			//iterInnerPed->GetPedInterface()
+			iSAMPID_Inner = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterInnerPed->GetPedInterface() )];
+
+			// filter out same Peds & already stair stacked
+			if ( g_playerTagInfo[iSAMPID_Inner].isStairStacked || iSAMPID == iSAMPID_Inner )
 				continue;
 
 			// player is within range, figure out if there's collision
-			if ( abs(g_playerTagInfo[i].tagX - g_playerTagInfo[g_pTI_i].tagX) <= 100.f
-			 &&	 abs((g_playerTagInfo[i].tagY - g_playerTagInfo[i].tagOffsetY) -
-						  (g_playerTagInfo[g_pTI_i].tagY - g_playerTagInfo[g_pTI_i].tagOffsetY)) <= 20.f )
+			if ( abs(g_playerTagInfo[iSAMPID].tagPosition.fX - g_playerTagInfo[iSAMPID_Inner].tagPosition.fX) <= 100.f
+			 &&	 abs((g_playerTagInfo[iSAMPID].tagPosition.fY - g_playerTagInfo[iSAMPID].tagOffsetY) - (
+						  g_playerTagInfo[iSAMPID_Inner].tagPosition.fY - g_playerTagInfo[iSAMPID_Inner].tagOffsetY)) <= 20.f )
 			{
 				// collision, figure out who gets to stay
-				if ( g_playerTagInfo[i].tagZ < g_playerTagInfo[g_pTI_i].tagZ )
+				if ( g_playerTagInfo[iSAMPID].tagPosition.fZ < g_playerTagInfo[iSAMPID_Inner].tagPosition.fZ )
 				{
 					// playerID "g_pTI_i" is farther, it should move up
-					g_playerTagInfo[g_pTI_i].tagOffsetY = g_playerTagInfo[g_pTI_i].tagOffsetY + 5.f;
-					isPlayerESPCollided[g_pTI_i] = true;
+					g_playerTagInfo[iSAMPID_Inner].tagOffsetY = g_playerTagInfo[iSAMPID_Inner].tagOffsetY + 5.f;
+					isPedESPCollided[iSAMPID_Inner] = true;
 				}
-				else if ( g_playerTagInfo[i].tagZ > g_playerTagInfo[g_pTI_i].tagZ )
+				else if ( g_playerTagInfo[iSAMPID].tagPosition.fZ > g_playerTagInfo[iSAMPID_Inner].tagPosition.fZ )
 				{
 					// playerID "i" is farther, it should move up
 					// we should only need normal upward movement here
-					g_playerTagInfo[i].tagOffsetY = g_playerTagInfo[i].tagOffsetY + 5.f;
-					isPlayerESPCollided[i] = true;
+					g_playerTagInfo[iSAMPID].tagOffsetY = g_playerTagInfo[iSAMPID].tagOffsetY + 5.f;
+					isPedESPCollided[iSAMPID] = true;
 				}
 				else
 				{
 					// both playerIDs are the same position @_@ so prefer the lower ID#
-					if ( i < g_pTI_i )
+					if ( iSAMPID < iSAMPID_Inner )
 					{
-						g_playerTagInfo[g_pTI_i].tagOffsetY = g_playerTagInfo[g_pTI_i].tagOffsetY + 5.f;
-						isPlayerESPCollided[g_pTI_i] = true;
+						g_playerTagInfo[iSAMPID_Inner].tagOffsetY = g_playerTagInfo[iSAMPID_Inner].tagOffsetY + 5.f;
+						isPedESPCollided[iSAMPID_Inner] = true;
 					}
 					else
 					{
-						g_playerTagInfo[i].tagOffsetY = g_playerTagInfo[i].tagOffsetY + 5.f;
-						isPlayerESPCollided[i] = true;
+						g_playerTagInfo[iSAMPID].tagOffsetY = g_playerTagInfo[iSAMPID].tagOffsetY + 5.f;
+						isPedESPCollided[iSAMPID] = true;
 					}
 				}
 			}
 
 			// are we jigglin?  everybody likes ta jiggle.
-			if ( abs(g_playerTagInfo[i].tagX - g_playerTagInfo[g_pTI_i].tagX) <= 100.f
-			 &&	 abs((g_playerTagInfo[i].tagY - g_playerTagInfo[i].tagOffsetY) -
-						  (g_playerTagInfo[g_pTI_i].tagY - g_playerTagInfo[g_pTI_i].tagOffsetY)) - 5.f <= 20.f )
+			if ( abs(g_playerTagInfo[iSAMPID].tagPosition.fX - g_playerTagInfo[iSAMPID_Inner].tagPosition.fX) <= 100.f
+			 &&	 abs((g_playerTagInfo[iSAMPID].tagPosition.fY - g_playerTagInfo[iSAMPID].tagOffsetY) - (
+						  g_playerTagInfo[iSAMPID_Inner].tagPosition.fY - g_playerTagInfo[iSAMPID_Inner].tagOffsetY)) - 5.f <= 20.f )
 			{
-				if ( g_playerTagInfo[i].tagZ < g_playerTagInfo[g_pTI_i].tagZ )
+				if ( g_playerTagInfo[iSAMPID].tagPosition.fZ < g_playerTagInfo[iSAMPID_Inner].tagPosition.fZ )
 				{
-					isPlayerESPCollided[g_pTI_i] = true;
+					isPedESPCollided[iSAMPID_Inner] = true;
 				}
 				else
 				{
-					isPlayerESPCollided[i] = true;
+					isPedESPCollided[iSAMPID] = true;
 				}
 			}
-		}	// end loop: g_pTI_i
+		}	// end inner while
 
 		// return tagOffsetY to zero if needed
-		if ( !isPlayerESPCollided[i] )
+		if ( !isPedESPCollided[iSAMPID] )
 		{
-			if ( g_playerTagInfo[i].tagOffsetY >= 5.f )
+			if ( g_playerTagInfo[iSAMPID].tagOffsetY >= 5.f )
 			{
-				g_playerTagInfo[i].tagOffsetY = g_playerTagInfo[i].tagOffsetY - 5.f;
+				g_playerTagInfo[iSAMPID].tagOffsetY = g_playerTagInfo[iSAMPID].tagOffsetY - 5.f;
 			}
 			else
 			{
-				g_playerTagInfo[i].tagOffsetY = 0.0f;
+				g_playerTagInfo[iSAMPID].tagOffsetY = 0.0f;
 			}
 		}
-	}		// end loop: i
+	}	// end outer while
+
+	// reset iter position & setup iterInner
+	iter = pPools->m_pedPool.map.begin();
 
 	// start render ESP tags
-	// variables we need within the loop
 	float	w, h, playerBaseY;
-	for ( i = 0; i < SAMP_PLAYER_MAX; i++ )
+	while ( iter.pos < iter.end )
 	{
-		if ( isPlayerWithinView[i] )
+		// map iterator pointer to our pointer
+		iterPed = iter.pos->second;
+
+		// advance to next item for next pass
+		iter.pos++;
+		if ( !iterPed )
+			continue;
+
+		// get SAMP's player id
+		iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
+
+		// ignore if it's us
+		if ( iSAMPID == selfSAMPID )
+			continue;
+
+		// make sure the player is actually there so we don't crash it
+		if ( isBadPtr_writeAny(g_Players->pRemotePlayer[iSAMPID], sizeof(stRemotePlayer)) )
+			continue;
+		//if ( isBadPtr_writeAny(g_Players->pRemotePlayer[iSAMPID]->pSAMP_Actor, sizeof(stSAMPPed)) )
+		//	continue;
+
+		playerBaseY = g_playerTagInfo[iSAMPID].tagPosition.fY -
+			g_playerTagInfo[iSAMPID].tagOffsetY +
+			ESP_tag_player_pixelOffsetY;
+
+		D3DCOLOR	player_color = samp_color_get_trans( g_Players->pRemotePlayer[iSAMPID]->sPlayerID, 0xDD000000 );
+		h = pD3DFontSmall->DrawHeight();
+		_snprintf_s( buf, sizeof(buf), "%s (%d)", getPlayerName(iSAMPID), iSAMPID );
+		w = pD3DFontSmall->DrawLength( buf );
+		pD3DFontSmall->PrintShadow( g_playerTagInfo[iSAMPID].tagPosition.fX, playerBaseY - h, player_color, buf );
+
+		// get Ped health
+		vh = iterPed->GetHealth();
+
+		D3DCOLOR	color = D3DCOLOR_ARGB( 75, 0, 200, 0 );
+		if ( vh > 100.0f )
+			vh = 100.0f;
+		if ( vh < 100.0f && vh > 60.0f )
+			color = D3DCOLOR_ARGB( 111, 0, 200, 0 );
+		if ( vh < 60.0f && vh > 20.0f )
+			color = D3DCOLOR_ARGB( 111, 200, 200, 0 );
+		if ( vh < 20.0f && vh > 0.0f )
+			color = D3DCOLOR_ARGB( 111, 200, 0, 0 );
+
+		render->D3DBox( g_playerTagInfo[iSAMPID].tagPosition.fX + ESP_tag_player_D3DBox_pixelOffsetX,
+						playerBaseY + ESP_tag_player_D3DBox_pixelOffsetY, 100.0f, 10.0f, D3DCOLOR_ARGB(111, 0, 0, 0) );
+		render->D3DBox( g_playerTagInfo[iSAMPID].tagPosition.fX + 1.0f + ESP_tag_player_D3DBox_pixelOffsetX,
+						playerBaseY + 1.0f + ESP_tag_player_D3DBox_pixelOffsetY, vh - 2.0f, 8.0f, color );
+
+		if ( g_Players->pRemotePlayer[iSAMPID]->fActorArmor > 0.0f )
 		{
-			// make sure the player is actually there so we don't crash it
-			if ( isBadPtr_writeAny(g_Players->pRemotePlayer[i], sizeof(stRemotePlayer)) != 0 )
-				continue;
-			if ( isBadPtr_writeAny(g_Players->pRemotePlayer[i]->pSAMP_Actor, sizeof(stSAMPPed)) != 0 )
-				continue;
-
-			playerBaseY = g_playerTagInfo[i].tagY - g_playerTagInfo[i].tagOffsetY + ESP_tag_player_pixelOffsetY;
-
-			D3DCOLOR	player_color = samp_color_get_trans( g_Players->pRemotePlayer[i]->sPlayerID, 0xDD000000 );
-			h = pD3DFontSmall->DrawHeight();
-			_snprintf_s( buf, sizeof(buf), "%s (%d)", getPlayerName(i), i );
-			w = pD3DFontSmall->DrawLength( buf );
-			pD3DFontSmall->PrintShadow( g_playerTagInfo[i].tagX, playerBaseY - h, player_color, buf );
-
-			float		vh = g_Players->pRemotePlayer[i]->fActorHealth;
-			D3DCOLOR	color = D3DCOLOR_ARGB( 75, 0, 200, 0 );
-
-			if ( vh > 100.0f )
-				vh = 100.0f;
-			if ( vh < 100.0f && vh > 60.0f )
-				color = D3DCOLOR_ARGB( 111, 0, 200, 0 );
-			if ( vh < 60.0f && vh > 20.0f )
-				color = D3DCOLOR_ARGB( 111, 200, 200, 0 );
-			if ( vh < 20.0f && vh > 0.0f )
-				color = D3DCOLOR_ARGB( 111, 200, 0, 0 );
-
-			render->D3DBox( g_playerTagInfo[i].tagX + ESP_tag_player_D3DBox_pixelOffsetX,
-							playerBaseY + ESP_tag_player_D3DBox_pixelOffsetY, 100.0f, 10.0f, D3DCOLOR_ARGB(111, 0, 0, 0) );
-			render->D3DBox( g_playerTagInfo[i].tagX + 1.0f + ESP_tag_player_D3DBox_pixelOffsetX,
-							playerBaseY + 1.0f + ESP_tag_player_D3DBox_pixelOffsetY, vh - 2.0f, 8.0f, color );
-
-			if ( g_Players->pRemotePlayer[i]->fActorArmor > 0.0f )
-			{
-				float	va = g_Players->pRemotePlayer[i]->fActorArmor;
-				if ( va > 100.0f )
-					va = 100.0f;
-				va /= 1.0f;
-				render->D3DBox( g_playerTagInfo[i].tagX + ESP_tag_player_D3DBox_pixelOffsetX,
-								playerBaseY + ESP_tag_player_D3DBox_pixelOffsetY, va - 1.0f, 10.0f,
-								D3DCOLOR_ARGB(111, 0, 0, 0) );
-				render->D3DBox( g_playerTagInfo[i].tagX + 1.0f + ESP_tag_player_D3DBox_pixelOffsetX,
-								playerBaseY + 1.0f + ESP_tag_player_D3DBox_pixelOffsetY, va - 2.0f, 8.0f,
-								D3DCOLOR_ARGB(111, 220, 220, 220) );
-			}
-
-			_snprintf_s( buf, sizeof(buf), "H: %d, A: %d", (int)g_Players->pRemotePlayer[i]->fActorHealth,
-						 (int)g_Players->pRemotePlayer[i]->fActorArmor );
-			pD3DFontFixedSmall->PrintShadow( g_playerTagInfo[i].tagX + 8.0f, playerBaseY - h + 12.0f,
-											 D3DCOLOR_ARGB(130, 0xFF, 0x6A, 0), buf );
+			float	va = g_Players->pRemotePlayer[iSAMPID]->fActorArmor;
+			if ( va > 100.0f )
+				va = 100.0f;
+			va /= 1.0f;
+			render->D3DBox( g_playerTagInfo[iSAMPID].tagPosition.fX + ESP_tag_player_D3DBox_pixelOffsetX,
+							playerBaseY + ESP_tag_player_D3DBox_pixelOffsetY, va - 1.0f, 10.0f, D3DCOLOR_ARGB(111, 0, 0, 0) );
+			render->D3DBox( g_playerTagInfo[iSAMPID].tagPosition.fX + 1.0f + ESP_tag_player_D3DBox_pixelOffsetX,
+							playerBaseY + 1.0f + ESP_tag_player_D3DBox_pixelOffsetY, va - 2.0f, 8.0f,
+							D3DCOLOR_ARGB(111, 220, 220, 220) );
 		}
+
+		_snprintf_s( buf, sizeof(buf), "H: %d, A: %d", (int)g_Players->pRemotePlayer[iSAMPID]->fActorHealth,
+					 (int)g_Players->pRemotePlayer[iSAMPID]->fActorArmor );
+		pD3DFontFixedSmall->PrintShadow( g_playerTagInfo[iSAMPID].tagPosition.fX + 8.0f, playerBaseY - h + 12.0f,
+										 D3DCOLOR_ARGB(130, 0xFF, 0x6A, 0), buf );
 	}
 
 	// end render ESP tags
@@ -1420,10 +1514,10 @@ void renderVehicleTags ( void )
 	D3DXVECTOR3			poss, screenposs;
 	D3DCOLOR			vcolor;
 	CVector2D			screenPosition;
-	CVector				pedPosition, vehPosition, pedMinusVehicle;
+	CVector				ourPosition, iterPosition, ourPosMinusIter;
 
-	// get per position
-	pedPosition = pPedSelf->GetInterface()->Placeable.matrix->vPos;
+	// get our position
+	ourPosition = pPedSelf->GetInterface()->Placeable.matrix->vPos;
 
 	// setup iterator
 	CVehicleSA	*iterVehicle = NULL;
@@ -1431,7 +1525,7 @@ void renderVehicleTags ( void )
 	CPoolsSA::vehiclePool_t::mapType::iterator iter = pPools->m_vehiclePool.map.begin();
 
 	// iterate
-	while ( iter.pos != iter.end )
+	while ( iter.pos < iter.end )
 	{
 		// map iterator CVehicleSA pointer to our CVehicle pointer
 		iterVehicle = iter.pos->second;
@@ -1448,12 +1542,12 @@ void renderVehicleTags ( void )
 		// ^ not needed?
 		//
 		// check if it's farther than set.vehicle_tags_dist
-		vehPosition = iterVehicle->GetInterface()->Placeable.matrix->vPos;
-		pedMinusVehicle = pedPosition - vehPosition;
-		if ( pedMinusVehicle.Length() > set.vehicle_tags_dist )
+		iterPosition = iterVehicle->GetInterface()->Placeable.matrix->vPos;
+		ourPosMinusIter = ourPosition - iterPosition;
+		if ( ourPosMinusIter.Length() > set.vehicle_tags_dist )
 			continue;
 
-		// check if it's in our interior (m_areaCode)
+		// check if it's not in our interior (m_areaCode)
 		if ( iterVehicle->m_pInterface->m_areaCode != pPedSelf->GetInterface()->m_areaCode )
 			continue;
 
@@ -1466,9 +1560,9 @@ void renderVehicleTags ( void )
 			continue;
 
 		// CVector to D3DXVECTOR3, function to be converted to CVector later
-		poss.x = vehPosition.fX;
-		poss.y = vehPosition.fY;
-		poss.z = vehPosition.fZ + ESP_tag_vehicle_posOffsetZ;
+		poss.x = iterPosition.fX;
+		poss.y = iterPosition.fY;
+		poss.z = iterPosition.fZ + ESP_tag_vehicle_posOffsetZ;
 
 		// yup
 		CalcScreenCoors( &poss, &screenposs );
@@ -1484,13 +1578,10 @@ void renderVehicleTags ( void )
 		// get the vehicle model's name
 		vehicle = gta_vehicle_get_by_id( iterVehicle->GetModelIndex() );
 
-		// here we need to figure out a proper way to get SAMP's vehicle id
-		v = translateSAMPGTA_vehiclePool.iSAMPID[pPools->GetVehicleRef( (DWORD *)iterVehicle->GetVehicleInterface() )];
+		// get SAMP's vehicle id
+		v = translateGTASAMP_vehiclePool.iSAMPID[getVehicleGTAIDFromInterface( (DWORD *)iterVehicle->GetVehicleInterface() )];
 
-		//v = translateSAMPGTA_vehiclePool.iSAMPID[iterVehicle->GetArrayID()];
-		//v = 0;
-		
-				/////////////////
+		/////////////////
 		// render time //
 		h = pD3DFontSmall->DrawHeight();
 		_snprintf_s( buf, sizeof(buf), "%s (%d)", vehicle->name, v );
