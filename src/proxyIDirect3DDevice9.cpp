@@ -1111,6 +1111,7 @@ struct playerTagInfo
 	float	tagOffsetY;
 	bool	isStairStacked;
 	float	stairStackedOffset;
+	bool	isPastMaxDistance;
 } g_playerTagInfo[SAMP_PLAYER_MAX];
 
 // new player ESP
@@ -1179,14 +1180,19 @@ void renderPlayerTags ( void )
 		if ( !iterPed )
 			continue;
 
+		// get SAMP's player id
+		iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
+
 		// check if it's farther than set.player_tags_dist
 		iterPosition = iterPed->GetInterface()->Placeable.matrix->vPos;
 		ourPosMinusIter = ourPosition - iterPosition;
 		if ( ourPosMinusIter.Length() > set.player_tags_dist )
+		{
+			g_playerTagInfo[iSAMPID].isPastMaxDistance = true;
 			continue;
-
-		// get SAMP's player id
-		iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
+		}
+		else
+			g_playerTagInfo[iSAMPID].isPastMaxDistance = false;
 
 		// ignore if it's us
 		if ( iSAMPID == selfSAMPID )
@@ -1202,6 +1208,7 @@ void renderPlayerTags ( void )
 		if ( screenposs.z < 1.f )
 		{
 			g_playerTagInfo[iSAMPID].tagOffsetY = 0.0f;
+			g_playerTagInfo[iSAMPID].isPastMaxDistance = true;
 			continue;
 		}
 
@@ -1231,7 +1238,7 @@ void renderPlayerTags ( void )
 		iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
 
 		// filter out "ok" ESP
-		if ( g_playerTagInfo[iSAMPID].tagOffsetY < 40.f && !g_playerTagInfo[iSAMPID].isStairStacked )
+		if ( g_playerTagInfo[iSAMPID].isPastMaxDistance || g_playerTagInfo[iSAMPID].tagOffsetY < 40.f && !g_playerTagInfo[iSAMPID].isStairStacked )
 			continue;
 
 		// ignore if it's us
@@ -1256,8 +1263,8 @@ void renderPlayerTags ( void )
 				// get SAMP's player id
 				iSAMPID_Inner = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterInnerPed->GetPedInterface() )];
 
-				// ignore if it's us
-				if ( iSAMPID == iSAMPID_Inner )
+				// ignore if it's us or isPastMaxDistance
+				if ( iSAMPID_Inner == iSAMPID || g_playerTagInfo[iSAMPID_Inner].isPastMaxDistance )
 					continue;
 
 				// test to see who comes out on top
@@ -1274,9 +1281,7 @@ void renderPlayerTags ( void )
 				g_playerTagInfo[iSAMPID].isStairStacked = true;
 				g_playerTagInfo[iSAMPID].stairStackedOffset = g_playerTagInfo[iSAMPID].tagOffsetY / 2;
 			}
-
-			// end detect stair stacking
-		}
+		}	// end inner while - detect stair stacking
 
 		// lower the offsets for stair stacked ESP
 		// and turn off stack status of ESP that reaches the "available" offset
@@ -1290,9 +1295,7 @@ void renderPlayerTags ( void )
 				g_playerTagInfo[iSAMPID].isStairStacked = false;
 			}
 		}
-
-		// end remove staircase problem
-	}
+	}	// end outer while - remove staircase problem
 
 	// reset iter position & setup iterInner
 	iter = pPools->m_pedPool.map.begin();
@@ -1311,8 +1314,8 @@ void renderPlayerTags ( void )
 		// get SAMP's player id
 		iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
 
-		// we're not stairstacked, move along
-		if ( g_playerTagInfo[iSAMPID].isStairStacked )
+		// we isPastMaxDistance or stairstacked, move along
+		if ( g_playerTagInfo[iSAMPID].isPastMaxDistance || g_playerTagInfo[iSAMPID].isStairStacked )
 			continue;
 
 		// reset iterInner position
@@ -1331,8 +1334,8 @@ void renderPlayerTags ( void )
 			//iterInnerPed->GetPedInterface()
 			iSAMPID_Inner = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterInnerPed->GetPedInterface() )];
 
-			// filter out same Peds & already stair stacked
-			if ( g_playerTagInfo[iSAMPID_Inner].isStairStacked || iSAMPID == iSAMPID_Inner )
+			// filter out isPastMaxDistance, stairstacked, and same Ped
+			if ( g_playerTagInfo[iSAMPID].isPastMaxDistance || g_playerTagInfo[iSAMPID_Inner].isStairStacked || iSAMPID == iSAMPID_Inner )
 				continue;
 
 			// player is within range, figure out if there's collision
@@ -1418,8 +1421,8 @@ void renderPlayerTags ( void )
 		// get SAMP's player id
 		iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
 
-		// ignore if it's us
-		if ( iSAMPID == selfSAMPID )
+		// ignore if isPastMaxDistance or if it's us
+		if ( g_playerTagInfo[iSAMPID].isPastMaxDistance || iSAMPID == selfSAMPID )
 			continue;
 
 		// make sure the player is actually there so we don't crash it
@@ -2487,7 +2490,7 @@ void renderSAMP ( void )
 		if ( isPornographyMasterControlRunning && set.screenshot_clean )
 		{
 			g_SAMP->fNameTagsDistance = 70.0f;
-			sampPatchDisableNameTags( 1 );
+			sampPatchEnableNameTags( 1 );
 		}
 		else
 		{

@@ -483,9 +483,9 @@ void sampMainCheat ()
 	}
 
 	if ( cheat_state->render_player_tags )
-		sampPatchDisableNameTags( 1 );
+		sampPatchEnableNameTags( 1 );
 	else
-		sampPatchDisableNameTags( 0 );
+		sampPatchEnableNameTags( 0 );
 
 	if ( KEY_PRESSED(set.key_map_show_vehicles) )
 		iShowVehicles ^= 1;
@@ -1320,9 +1320,9 @@ void setSAMPCustomSendRates ( int iOnFoot, int iInCar, int iAim, int iHeadSync )
 }
 
 #define SAMP_DISABLE_NAMETAGS	0x3D7B0
-int sampPatchDisableNameTags ( int iEnabled )
+int sampPatchEnableNameTags ( int iEnabled )
 {
-	static struct patch_set sampPatchDisableNameTags_patch =
+	static struct patch_set sampPatchEnableNameTags_patch =
 	{
 		"Remove player status",
 		0,
@@ -1330,10 +1330,10 @@ int sampPatchDisableNameTags ( int iEnabled )
 		{ { 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_DISABLE_NAMETAGS ), NULL, (uint8_t *)"\xC3", NULL } }
 	};
 
-	if ( iEnabled && !sampPatchDisableNameTags_patch.installed )
-		return patcher_install( &sampPatchDisableNameTags_patch );
-	else if ( !iEnabled && sampPatchDisableNameTags_patch.installed )
-		return patcher_remove( &sampPatchDisableNameTags_patch );
+	if ( iEnabled && !sampPatchEnableNameTags_patch.installed )
+		return patcher_install( &sampPatchEnableNameTags_patch );
+	else if ( !iEnabled && sampPatchEnableNameTags_patch.installed )
+		return patcher_remove( &sampPatchEnableNameTags_patch );
 	return NULL;
 }
 

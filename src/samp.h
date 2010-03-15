@@ -447,7 +447,7 @@ void											setSAMPInitScreenMatrix ( float camposX, float camposY, float cam
 																		  float camlookatX, float camlookatY,
 																		  float camlookatZ );
 void											setSAMPCustomSendRates ( int iOnFoot, int iInCar, int iAim, int iHeadSync );
-int												sampPatchDisableNameTags ( int iEnabled );
+int												sampPatchEnableNameTags ( int iEnabled );
 int												sampPatchDisableInteriorUpdate ( int iEnabled );
 int												sampPatchDisableScreeenshotKey ( int iEnabled );
 
