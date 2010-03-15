@@ -35,20 +35,55 @@ stInputInfo						*g_Input;
 stKillInfo						*g_DeathList;
 
 // global managed support variables
-stTranslateSAMPGTA_vehiclePool	translateSAMPGTA_vehiclePool;
+stTranslateGTASAMP_vehiclePool	translateGTASAMP_vehiclePool;
+stTranslateGTASAMP_pedPool		translateGTASAMP_pedPool;
 
 //////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////// FUNCTIONS //////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
 
 // update SAMPGTA vehicle translation structure
-void update_translateSAMPGTA_vehiclePool ( void )
+void update_translateGTASAMP_vehiclePool ( void )
 {
+	traceLastFunc( "update_translateGTASAMP_vehiclePool()" );
+	if ( !g_Vehicles )
+		return;
+	int iGTAID;
 	for ( int i = 0; i <= SAMP_VEHICLE_MAX; i++ )
 	{
-		if ( g_Vehicles && g_Vehicles->iIsListed[i] && g_Vehicles->pSAMP_Vehicle[i] )
+		if ( g_Vehicles->iIsListed[i] != 1 )
+			continue;
+		if ( isBadPtr_writeAny(g_Vehicles->pSAMP_Vehicle[i], sizeof(stSAMPVehicle)) )
+			continue;
+		if ( isBadPtr_writeAny(g_Vehicles->pSAMP_Vehicle[i]->pGTA_Vehicle, sizeof(vehicle_info)) )
+			continue;
+		iGTAID = getVehicleGTAIDFromInterface( (DWORD *)g_Vehicles->pSAMP_Vehicle[i]->pGTA_Vehicle );
+		if ( iGTAID <= SAMP_VEHICLE_MAX && iGTAID >= 0 )
 		{
-			translateSAMPGTA_vehiclePool.iSAMPID[g_Vehicles->pSAMP_Vehicle[i]->ulGTA_Vehicle_ID] = i;
+			translateGTASAMP_vehiclePool.iSAMPID[iGTAID] = i;
+		}
+	}
+}
+
+// update SAMPGTA ped translation structure
+void update_translateGTASAMP_pedPool ( void )
+{
+	traceLastFunc( "update_translateGTASAMP_pedPool()" );
+	if ( !g_Players )
+		return;
+	int iGTAID;
+	for ( int i = 0; i <= SAMP_PLAYER_MAX; i++ )
+	{
+		if ( g_Players->iIsListed[i] != 1 )
+			continue;
+		if ( isBadPtr_writeAny(g_Players->pRemotePlayer[i], sizeof(stRemotePlayer)) )
+			continue;
+		if ( isBadPtr_writeAny(g_Players->pRemotePlayer[i]->pSAMP_Actor, sizeof(stSAMPPed)) )
+			continue;
+		iGTAID = getPedGTAIDFromInterface( (DWORD *)g_Players->pRemotePlayer[i]->pSAMP_Actor->pGTA_Ped );
+		if ( iGTAID <= SAMP_PLAYER_MAX && iGTAID >= 0 )
+		{
+			translateGTASAMP_pedPool.iSAMPID[iGTAID] = i;
 		}
 	}
 }
@@ -56,64 +91,64 @@ void update_translateSAMPGTA_vehiclePool ( void )
 //ClientCommands
 void cmd_current_skin ()
 {
-	struct actor_info	*self = actor_info_get ( ACTOR_SELF, NULL );
-	addMessageToChatWindow ( "Skin ID: %i", self->base.model_alt_id );
-	addMessageToChatWindow ( "Serverside Skin ID: %i", g_Players->pLocalPlayer->iSpawnSkin );
+	struct actor_info	*self = actor_info_get( ACTOR_SELF, NULL );
+	addMessageToChatWindow( "Skin ID: %i", self->base.model_alt_id );
+	addMessageToChatWindow( "Serverside Skin ID: %i", g_Players->pLocalPlayer->iSpawnSkin );
 }
 
 extern int	joining_server;
 void cmd_change_server ( char *param )	//127.0.0.1 7777 Username Password
 {
-	traceLastFunc ( "change_server" );
+	traceLastFunc( "change_server" );
 
 	char	*result;
 	bool	success = false;
 
 	char	IP[257], LocalName[29];
 	int		Port;
-	strcpy ( IP, g_SAMP->szIP );
+	strcpy( IP, g_SAMP->szIP );
 	Port = g_SAMP->ulPort;
-	strcpy ( LocalName, g_Players->szLocalPlayerName );
+	strcpy( LocalName, g_Players->szLocalPlayerName );
 
-	result = strtok ( param, " :" );
+	result = strtok( param, " :" );
 	for ( int i = 0; i <= 4; i++ )
 	{
 		if ( result == NULL && !success )
 		{
 			//		addMessageToChatWindow("USAGE: /m0d_change_server <ip> <port> <Username> <Password>");
-			addMessageToChatWindow ( "USAGE: /m0d_change_server <ip> <port> <Username>" );
+			addMessageToChatWindow( "USAGE: /m0d_change_server <ip> <port> <Username>" );
 
 			//		addMessageToChatWindow("USAGE2: /m0d_change_server <ip> <port>");
 			//		addMessageToChatWindow("Username and/or Password will be ignored if they are set to NULL");
-			addMessageToChatWindow ( "Username will be ignored if it is set to NULL or left out." );
-			strcpy ( g_SAMP->szIP, IP );
+			addMessageToChatWindow( "Username will be ignored if it is set to NULL or left out." );
+			strcpy( g_SAMP->szIP, IP );
 			g_SAMP->ulPort = Port;
-			strcpy ( LocalName, g_Players->szLocalPlayerName );
+			strcpy( LocalName, g_Players->szLocalPlayerName );
 
 			//		setPassword("");
-			return ;
+			return;
 		}
 		else if ( result == NULL && success )
 		{
 			joining_server = 1;
-			return ;
+			return;
 		}
 
-		Log ( "%i is %s", i, result );
+		Log( "%i is %s", i, result );
 		switch ( i )
 		{
 		case 0:
-			strcpy ( g_SAMP->szIP, result );
+			strcpy( g_SAMP->szIP, result );
 			break;
 
 		case 1:
-			g_SAMP->ulPort = atoi ( result );
+			g_SAMP->ulPort = atoi( result );
 			success = true;
 			break;
 
 		case 2:
-			if ( strcmp (result, "NULL") != 0 )
-				strcpy ( g_Players->szLocalPlayerName, result );
+			if ( strcmp(result, "NULL") != 0 )
+				strcpy( g_Players->szLocalPlayerName, result );
 			break;
 
 		// crashing often - but it worked before :P
@@ -124,26 +159,26 @@ void cmd_change_server ( char *param )	//127.0.0.1 7777 Username Password
 		default:
 			{
 				//				addMessageToChatWindow("USAGE: /m0d_change_server <ip> <port> <Username> <Password>");
-				addMessageToChatWindow ( "USAGE: /m0d_change_server <ip> <port> <Username>" );
-				addMessageToChatWindow ( "Username will be ignored if set to NULL or left out." );
-				strcpy ( g_SAMP->szIP, IP );
+				addMessageToChatWindow( "USAGE: /m0d_change_server <ip> <port> <Username>" );
+				addMessageToChatWindow( "Username will be ignored if set to NULL or left out." );
+				strcpy( g_SAMP->szIP, IP );
 				g_SAMP->ulPort = Port;
-				strcpy ( LocalName, g_Players->szLocalPlayerName );
+				strcpy( LocalName, g_Players->szLocalPlayerName );
 
 				//				setPassword("");
-				return ;
+				return;
 			}
 		}
 
-		result = strtok ( NULL, " :" );
+		result = strtok( NULL, " :" );
 	}
 }
 
 void cmd_current_server ( char *param )
 {
-	addMessageToChatWindow ( "Server Name: %s", g_SAMP->szHostname );
-	addMessageToChatWindow ( "Server Address: %s:%i", g_SAMP->szIP, g_SAMP->ulPort );
-	addMessageToChatWindow ( "Username: %s", g_Players->szLocalPlayerName, g_Players->iLocalPlayerPing );
+	addMessageToChatWindow( "Server Name: %s", g_SAMP->szHostname );
+	addMessageToChatWindow( "Server Address: %s:%i", g_SAMP->szIP, g_SAMP->ulPort );
+	addMessageToChatWindow( "Username: %s", g_Players->szLocalPlayerName, g_Players->iLocalPlayerPing );
 }
 
 bool findstrinstr ( char *param, char *tele )
@@ -153,11 +188,11 @@ bool findstrinstr ( char *param, char *tele )
 	int		i = 0;
 	for ( int j = 0; j < 64; j++ )
 	{
-		if ( !isalpha (param[j]) )
+		if ( !isalpha(param[j]) )
 			param[j] = '.';
 	}
 
-	result = strtok ( param, "." );
+	result = strtok( param, "." );
 	while ( result != NULL )
 	{
 		temp = 1;
@@ -165,15 +200,15 @@ bool findstrinstr ( char *param, char *tele )
 		while ( temp != NULL )
 		{
 			temp = result[i];
-			if ( isupper (temp) )
-				temp = tolower ( temp );
+			if ( isupper(temp) )
+				temp = tolower( temp );
 			subtext[i] = temp;
 			i++;
 		}
 
-		if ( strstr (tele, subtext) == NULL )
+		if ( strstr(tele, subtext) == NULL )
 			return false;
-		result = strtok ( NULL, "." );
+		result = strtok( NULL, "." );
 	}
 
 	return true;
@@ -181,18 +216,18 @@ bool findstrinstr ( char *param, char *tele )
 
 void cmd_tele_loc ( char *param )
 {
-	if ( strlen (param) == 0 )
+	if ( strlen(param) == 0 )
 	{
-		addMessageToChatWindow ( "USAGE: /m0d_tele_location <location name>" );
-		addMessageToChatWindow ( "Use /m0d_tele_locations to show the location names." );
-		addMessageToChatWindow ( "The more specific you are on location name the better the result." );
-		return ;
+		addMessageToChatWindow( "USAGE: /m0d_tele_location <location name>" );
+		addMessageToChatWindow( "Use /m0d_tele_locations to show the location names." );
+		addMessageToChatWindow( "The more specific you are on location name the better the result." );
+		return;
 	}
 
 	char	temp, tele[64];
 	for ( int i = 0; i < STATIC_TELEPORT_MAX; i++ )
 	{
-		if ( strlen (set.static_teleport_name[i]) == 0 || vect3_near_zero (set.static_teleport[i].pos) )
+		if ( strlen(set.static_teleport_name[i]) == 0 || vect3_near_zero(set.static_teleport[i].pos) )
 			continue;
 
 		int j;
@@ -205,35 +240,35 @@ void cmd_tele_loc ( char *param )
 		while ( set.static_teleport_name[i][j] && j < 64 )
 		{
 			temp = set.static_teleport_name[i][j];
-			if ( isupper (temp) )
-				temp = tolower ( temp );
+			if ( isupper(temp) )
+				temp = tolower( temp );
 			tele[j] = temp;
 			j++;
 		}
 
-		if ( !findstrinstr (param, tele) )
+		if ( !findstrinstr(param, tele) )
 			continue;
 
-		cheat_state_text ( "Teleported to: %s.", set.static_teleport_name[i] );
-		cheat_teleport ( set.static_teleport[i].pos, set.static_teleport[i].interior_id );
-		return ;
+		cheat_state_text( "Teleported to: %s.", set.static_teleport_name[i] );
+		cheat_teleport( set.static_teleport[i].pos, set.static_teleport[i].interior_id );
+		return;
 	}
 
-	addMessageToChatWindow ( "USAGE: /m0d_tele_location <location name>" );
-	addMessageToChatWindow ( "Use /m0d_tele_locations to show the location names." );
-	addMessageToChatWindow ( "The more specific you are on location name the better the result." );
+	addMessageToChatWindow( "USAGE: /m0d_tele_location <location name>" );
+	addMessageToChatWindow( "Use /m0d_tele_locations to show the location names." );
+	addMessageToChatWindow( "The more specific you are on location name the better the result." );
 }
 
 void cmd_tele_locations ()
 {
 	for ( int i = 0; i < STATIC_TELEPORT_MAX; i++ )
 	{
-		if ( strlen (set.static_teleport_name[i]) == 0 || vect3_near_zero (set.static_teleport[i].pos) )
+		if ( strlen(set.static_teleport_name[i]) == 0 || vect3_near_zero(set.static_teleport[i].pos) )
 			continue;
-		addMessageToChatWindow ( "%s", set.static_teleport_name[i] );
+		addMessageToChatWindow( "%s", set.static_teleport_name[i] );
 	}
 
-	addMessageToChatWindow ( "To teleport use the menu or: /m0d_tele_location <location name>" );
+	addMessageToChatWindow( "To teleport use the menu or: /m0d_tele_location <location name>" );
 }
 
 // new functions to check for bad pointers
@@ -431,7 +466,8 @@ void sampMainCheat ()
 		g_Players = g_SAMP->pPool_Player;
 
 	// update GTA to SAMP translation structures
-	update_translateSAMPGTA_vehiclePool();
+	update_translateGTASAMP_vehiclePool();
+	update_translateGTASAMP_pedPool();
 
 	// start chatbox logging
 	if ( set.chatbox_logging )
@@ -446,7 +482,7 @@ void sampMainCheat ()
 		}
 	}
 
-	if ( !cheat_state->render_player_tags )
+	if ( cheat_state->render_player_tags )
 		sampPatchDisableNameTags( 1 );
 	else
 		sampPatchDisableNameTags( 0 );
@@ -691,6 +727,7 @@ int getPlayerVehicleGTAScriptingID ( int iPlayerID )
 	}
 }
 */
+
 int getPlayerVehicleGTAScriptingID ( int iPlayerID )
 {
 	// this should already be done or this should *not* be getting called
@@ -851,7 +888,7 @@ uint32_t getVehicleGTAScriptingIDFromVehicleID ( int iVehicleID )
 void addClientCommand ( char *text, int function )
 {
 	if ( text == NULL || function == NULL )
-		return ;
+		return;
 
 	uint32_t	data = g_dwSAMP_Addr + SAMP_ADDCLIENTCMD_DATA;
 	uint32_t	func = g_dwSAMP_Addr + FUNC_ADDCLIENTCMD;
@@ -1285,7 +1322,7 @@ void setSAMPCustomSendRates ( int iOnFoot, int iInCar, int iAim, int iHeadSync )
 #define SAMP_DISABLE_NAMETAGS	0x3D7B0
 int sampPatchDisableNameTags ( int iEnabled )
 {
-	static struct patch_set patch =
+	static struct patch_set sampPatchDisableNameTags_patch =
 	{
 		"Remove player status",
 		0,
@@ -1293,10 +1330,10 @@ int sampPatchDisableNameTags ( int iEnabled )
 		{ { 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_DISABLE_NAMETAGS ), NULL, (uint8_t *)"\xC3", NULL } }
 	};
 
-	if ( iEnabled && patch.installed )
-		return patcher_remove( &patch );
-	else if ( !patch.installed )
-		return patcher_install( &patch );
+	if ( iEnabled && !sampPatchDisableNameTags_patch.installed )
+		return patcher_install( &sampPatchDisableNameTags_patch );
+	else if ( !iEnabled && sampPatchDisableNameTags_patch.installed )
+		return patcher_remove( &sampPatchDisableNameTags_patch );
 	return NULL;
 }
 
@@ -1304,7 +1341,7 @@ int sampPatchDisableNameTags ( int iEnabled )
 #define SAMP_SETINTERIOR	0x311C0
 int sampPatchDisableInteriorUpdate ( int iEnabled )
 {
-	static struct patch_set patch =
+	static struct patch_set sampPatchDisableInteriorUpdate_patch =
 	{
 		"NOP sendinterior",
 		0,
@@ -1313,16 +1350,17 @@ int sampPatchDisableInteriorUpdate ( int iEnabled )
 					( (uint8_t *)g_dwSAMP_Addr + SAMP_SETINTERIOR ), NULL, (uint8_t *)"\xC2\x04\x00", NULL } }
 	};
 
-	if ( iEnabled )
-		return patcher_install( &patch );
-	else
-		return patcher_remove( &patch );
+	if ( iEnabled && !sampPatchDisableInteriorUpdate_patch.installed )
+		return patcher_install( &sampPatchDisableInteriorUpdate_patch );
+	else if ( !iEnabled && sampPatchDisableInteriorUpdate_patch.installed )
+		return patcher_remove( &sampPatchDisableInteriorUpdate_patch );
+	return NULL;
 }
 
 #define SAMP_NOPSCREENSHOT	0x3E71D
 int sampPatchDisableScreeenshotKey ( int iEnabled )
 {
-	static struct patch_set patch =
+	static struct patch_set sampPatchDisableScreeenshotKey_patch =
 	{
 		"NOP screenshot key",
 		0,
@@ -1331,8 +1369,9 @@ int sampPatchDisableScreeenshotKey ( int iEnabled )
 					(uint8_t *)"\xE9\x4A\x01\x00\x00\x90", NULL }, }
 	};
 
-	if ( iEnabled )
-		return patcher_install( &patch );
-	else
-		return patcher_remove( &patch );
+	if ( iEnabled && !sampPatchDisableScreeenshotKey_patch.installed )
+		return patcher_install( &sampPatchDisableScreeenshotKey_patch );
+	else if ( !iEnabled && sampPatchDisableScreeenshotKey_patch.installed )
+		return patcher_remove( &sampPatchDisableScreeenshotKey_patch );
+	return NULL;
 }

@@ -3077,8 +3077,6 @@ uint8_t *hex_to_bin ( const char *str )
 	return sbuf;
 }
 
-/////////////////////////////////////////
-
 // new functions related to R* classes //
 CPed *getSelfCPed ( void )
 {
@@ -3088,4 +3086,14 @@ CPed *getSelfCPed ( void )
 CVehicle *getSelfCVehicle ( void )
 {
 	return pGameInterface->GetPools()->GetPedFromRef( CPOOLS_PED_SELF_REF )->GetVehicle();
+}
+
+int getVehicleGTAIDFromInterface ( DWORD *vehicle )
+{
+	return (int)( (DWORD) vehicle - (DWORD) pool_vehicle->start ) / 2584;
+}
+
+int getPedGTAIDFromInterface ( DWORD *ped )
+{
+	return (int)( (DWORD) ped - (DWORD) pool_actor->start ) / 1988;
 }
