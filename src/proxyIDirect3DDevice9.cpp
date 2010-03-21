@@ -1117,7 +1117,7 @@ struct playerTagInfo
 // new player ESP
 void renderPlayerTags ( void )
 {
-	traceLastFunc( "renderPlayerTags" );
+	traceLastFunc( "renderPlayerTags()" );
 
 	// don't run in the menu
 	if ( gta_menu_active() )
@@ -1143,6 +1143,7 @@ void renderPlayerTags ( void )
 	//bool	isPedWithinView[SAMP_PLAYER_MAX];
 	bool	isPedESPCollided[SAMP_PLAYER_MAX];
 	bool	isPedESPStairStacked[SAMP_PLAYER_MAX];
+
 	//memset( isPedWithinView, false, sizeof(bool) * SAMP_PLAYER_MAX );
 	memset( isPedESPCollided, false, sizeof(bool) * SAMP_PLAYER_MAX );
 	memset( isPedESPStairStacked, true, sizeof(bool) * SAMP_PLAYER_MAX );
@@ -1154,7 +1155,7 @@ void renderPlayerTags ( void )
 	float		ESP_tag_player_posOffsetZ = 1.0;
 
 	// trash values to use during iterations
-	float		vh;
+	float		vh, va;
 	int			iSAMPID, iSAMPID_Inner, selfSAMPID;
 	CVector		iterPosition, ourPosMinusIter, ourPosition;
 	D3DXVECTOR3 poss, screenposs;
@@ -1220,6 +1221,7 @@ void renderPlayerTags ( void )
 
 	// reset iter position & setup iterInner
 	iter = pPools->m_pedPool.map.begin();
+
 	CPedSA	*iterInnerPed = NULL;
 	CPoolsSA::pedPool_t::mapType::iterator iterInner;
 
@@ -1238,8 +1240,9 @@ void renderPlayerTags ( void )
 		iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
 
 		// filter out "ok" ESP
-		if ( g_playerTagInfo[iSAMPID].isPastMaxDistance || g_playerTagInfo[iSAMPID].tagOffsetY < 40.f && !g_playerTagInfo[iSAMPID].isStairStacked )
-			continue;
+		if ( g_playerTagInfo[iSAMPID].isPastMaxDistance
+		 ||	 g_playerTagInfo[iSAMPID].tagOffsetY < 40.f
+		 &&	 !g_playerTagInfo[iSAMPID].isStairStacked ) continue;
 
 		// ignore if it's us
 		if ( iSAMPID == selfSAMPID )
@@ -1295,7 +1298,7 @@ void renderPlayerTags ( void )
 				g_playerTagInfo[iSAMPID].isStairStacked = false;
 			}
 		}
-	}	// end outer while - remove staircase problem
+	}		// end outer while - remove staircase problem
 
 	// reset iter position & setup iterInner
 	iter = pPools->m_pedPool.map.begin();
@@ -1335,8 +1338,9 @@ void renderPlayerTags ( void )
 			iSAMPID_Inner = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterInnerPed->GetPedInterface() )];
 
 			// filter out isPastMaxDistance, stairstacked, and same Ped
-			if ( g_playerTagInfo[iSAMPID].isPastMaxDistance || g_playerTagInfo[iSAMPID_Inner].isStairStacked || iSAMPID == iSAMPID_Inner )
-				continue;
+			if ( g_playerTagInfo[iSAMPID].isPastMaxDistance
+			 ||	 g_playerTagInfo[iSAMPID_Inner].isStairStacked
+			 ||	 iSAMPID == iSAMPID_Inner ) continue;
 
 			// player is within range, figure out if there's collision
 			if ( abs(g_playerTagInfo[iSAMPID].tagPosition.fX - g_playerTagInfo[iSAMPID_Inner].tagPosition.fX) <= 100.f
@@ -1401,7 +1405,7 @@ void renderPlayerTags ( void )
 				g_playerTagInfo[iSAMPID].tagOffsetY = 0.0f;
 			}
 		}
-	}	// end outer while
+	}		// end outer while
 
 	// reset iter position & setup iterInner
 	iter = pPools->m_pedPool.map.begin();
@@ -1428,9 +1432,9 @@ void renderPlayerTags ( void )
 		// make sure the player is actually there so we don't crash it
 		if ( isBadPtr_writeAny(g_Players->pRemotePlayer[iSAMPID], sizeof(stRemotePlayer)) )
 			continue;
+
 		//if ( isBadPtr_writeAny(g_Players->pRemotePlayer[iSAMPID]->pSAMP_Actor, sizeof(stSAMPPed)) )
 		//	continue;
-
 		playerBaseY = g_playerTagInfo[iSAMPID].tagPosition.fY -
 			g_playerTagInfo[iSAMPID].tagOffsetY +
 			ESP_tag_player_pixelOffsetY;
@@ -1442,7 +1446,11 @@ void renderPlayerTags ( void )
 		pD3DFontSmall->PrintShadow( g_playerTagInfo[iSAMPID].tagPosition.fX, playerBaseY - h, player_color, buf );
 
 		// get Ped health
-		vh = iterPed->GetHealth();
+		// works in single player, but SAMP maintains its own player health
+		//vh = iterPed->GetHealth();
+		// get samp health
+		vh = g_Players->pRemotePlayer[iSAMPID]->fActorHealth;
+		va = g_Players->pRemotePlayer[iSAMPID]->fActorArmor;
 
 		D3DCOLOR	color = D3DCOLOR_ARGB( 75, 0, 200, 0 );
 		if ( vh > 100.0f )
@@ -1459,9 +1467,8 @@ void renderPlayerTags ( void )
 		render->D3DBox( g_playerTagInfo[iSAMPID].tagPosition.fX + 1.0f + ESP_tag_player_D3DBox_pixelOffsetX,
 						playerBaseY + 1.0f + ESP_tag_player_D3DBox_pixelOffsetY, vh - 2.0f, 8.0f, color );
 
-		if ( g_Players->pRemotePlayer[iSAMPID]->fActorArmor > 0.0f )
+		if ( va > 0.0f )
 		{
-			float	va = g_Players->pRemotePlayer[iSAMPID]->fActorArmor;
 			if ( va > 100.0f )
 				va = 100.0f;
 			va /= 1.0f;
@@ -1481,9 +1488,10 @@ void renderPlayerTags ( void )
 	// end render ESP tags
 }
 
+// render vehicle ESP in SAMP
 void renderVehicleTags ( void )
 {
-	traceLastFunc( "renderVehicleTags" );
+	traceLastFunc( "renderVehicleTags()" );
 
 	// don't run if the menu is active
 	if ( gta_menu_active() )
@@ -1848,8 +1856,9 @@ void renderKillList ( void )
 
 	static int	kill_last = -1, kill_render;
 
-	if ( GetAsyncKeyState(VK_TAB) < 0 )
-		return;
+	// outdated, needs new method
+	//if ( GetAsyncKeyState(VK_TAB) < 0 )
+	//	return;
 	if ( GetAsyncKeyState(VK_F10) < 0 )
 		return;
 
@@ -2443,33 +2452,21 @@ void renderSAMP ( void )
 	if ( !g_renderSAMP_initSAMPstructs )
 	{
 		g_SAMP = stGetSampInfo();
-		if ( g_SAMP == NULL )
-			return;
 		if ( isBadPtr_writeAny(g_SAMP, sizeof(stSAMP)) )
 			return;
 		g_Players = g_SAMP->pPool_Player;
-		if ( g_Players == NULL )
-			return;
 		if ( isBadPtr_writeAny(g_Players, sizeof(stPlayerPool)) )
 			return;
 		g_Vehicles = g_SAMP->pPool_Vehicle;
-		if ( g_Vehicles == NULL )
-			return;
 		if ( isBadPtr_writeAny(g_Vehicles, sizeof(stVehiclePool)) )
 			return;
 		g_Chat = stGetSampChatInfo();
-		if ( g_Chat == NULL )
-			return;
 		if ( isBadPtr_writeAny(g_Chat, sizeof(stChatInfo)) )
 			return;
 		g_Input = stGetInputInfo();
-		if ( g_Input == NULL )
-			return;
 		if ( isBadPtr_writeAny(g_Input, sizeof(stInputInfo)) )
 			return;
 		g_DeathList = stGetKillInfo();
-		if ( g_DeathList == NULL )
-			return;
 		if ( isBadPtr_writeAny(g_DeathList, sizeof(stKillInfo)) )
 			return;
 
@@ -2491,6 +2488,11 @@ void renderSAMP ( void )
 		{
 			g_SAMP->fNameTagsDistance = 70.0f;
 			sampPatchEnableNameTags( 1 );
+			CPed	*pPedSelf = pPools->GetPedFromRef( CPOOLS_PED_SELF_REF );
+			if ( pPedSelf->GetVehicle() )
+			{
+				pPedSelf->GetVehicle()->SetGravity( &CVector(0.0, 0.0, -1.0) );
+			}
 		}
 		else
 		{
@@ -2644,13 +2646,6 @@ float getFPS ( void )
 
 		// set new FPS
 		fpsBuf1 = ( fpsFrameCounter * 4 );
-		if ( fpsBuf1 > 500.0f )
-		{
-			// menu much?
-			fpsFrameCounter = 0;
-			return 0.0f;
-		}
-
 		fpsDisplay = ( fpsBuf1 + fpsBuf2 + fpsBuf3 + fpsBuf4 ) / 4.0;
 
 		// reset counter

@@ -904,12 +904,14 @@ void cheat_handle_blinking_carlights ( struct vehicle_info *vinfo, float time_di
 	if ( vinfo->vehicle_type != VEHICLE_TYPE_CAR
 	 ||	 class_id == VEHICLE_CLASS_TRAILER
 	 ||	 class_id == VEHICLE_CLASS_AIRPLANE
-	 ||	 class_id == VEHICLE_CLASS_HELI )	// lol at bikes
+	 ||	 class_id == VEHICLE_CLASS_HELI
+	 ||	 class_id == VEHICLE_CLASS_BIKE )	// NOT lol at bikes, u crash without this, try HPV
 	return;
 
 	// enables car lights any time of day, not synced
-	ScriptCommand( &set_car_lights, ScriptCarId(vinfo), 2 );
-
+	// we need a better way to do this that can be disabled
+	//ScriptCommand( &set_car_lights, ScriptCarId(vinfo), 2 );
+	//
 	// switch is faster than multiple if/else statements
 	switch ( cheat_state->vehicle.blinking_carlights_state )
 	{

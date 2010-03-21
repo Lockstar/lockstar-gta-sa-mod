@@ -162,12 +162,12 @@ void cheat_hook ( HWND wnd )
 	// install keyhook
 	keyhook_maybe_install( wnd );
 
+	// setup menu
+	menu_maybe_init();
+
 	/* initialize state */
 	if ( cheat_state == NULL )
 	{
-		// setup menu
-		menu_maybe_init();
-
 		// set default cheat_state variables
 		cheat_state = &__cheat_state;
 		cheat_state->_generic.spoof_weapon = -1;

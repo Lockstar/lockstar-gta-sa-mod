@@ -192,7 +192,7 @@ static bool modcommands = false;
 #define ID_MENU_SPECIAL_ACTION_URINATE			68
 
 struct menu *menu_active = NULL;
-static int	menu_init;
+static int	menu_init = 0;
 
 static struct menu *menu_new ( struct menu *parent, int id, menu_callback callback )
 {
@@ -2598,6 +2598,7 @@ void menu_maybe_init ( void )
 	traceLastFunc( "menu_maybe_init()" );
 	if ( menu_init )
 		return;
+
 
 	struct menu *menu_main, *menu_cheats, *menu_cheats_mods, *menu_cheats_handling, *menu_cheats_inv, *
 		menu_cheats_money, *menu_cheats_weather, *menu_cheats_time, *menu_weapons, *menu_vehicles, *menu_teleports, *

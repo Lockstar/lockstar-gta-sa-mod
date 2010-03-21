@@ -35,30 +35,34 @@ static struct patch_set patch_actor_hp =
 
 int cheat_panic ( void )
 {
-	struct actor_info	*actor_info = actor_info_get( ACTOR_SELF, ACTOR_ALIVE );
-	struct vehicle_info *vehicle_info = vehicle_info_get( VEHICLE_SELF, VEHICLE_ALIVE );
-	static int			cheat_panic_enabled;
-	static int			pstate_actor_hp, pstate_map, pstate_d3dtext_hud;
-	static int			pstate_ini[INI_PATCHES_MAX];
-	int					i;
+	traceLastFunc( "cheat_panic()" );
+
+	static int	pstate_map = 0, pstate_d3dtext_hud = 0, pstate_actor_hp = 0, pstate_ini[INI_PATCHES_MAX];
+	int			i;
 
 	if ( KEY_PRESSED(set.key_panic) )
 	{
-		cheat_panic_enabled ^= 1;
+		cheat_state->_generic.cheat_panic_enabled ^= 1;
 
-		if ( cheat_panic_enabled )
+		if ( cheat_state->_generic.cheat_panic_enabled )
 		{
+			struct actor_info	*actor_info = actor_info_get( ACTOR_SELF, ACTOR_ALIVE );
+
 			if ( actor_info != NULL )
 			{
 				actor_info->flags &= ~ACTOR_FLAGS_INVULNERABLE;
 				actor_info->weapon_slot = 0;
 			}
 
-			if ( vehicle_info != NULL )
+
+			CPed	*pPedSelf = pPools->GetPedFromRef( CPOOLS_PED_SELF_REF );
+			if ( pPedSelf->GetVehicle() )
 			{
-				vehicle_info->flags &= ~VEHICLE_FLAGS_INVULNERABLE;
-				if ( vehicle_info->hitpoints > 1000.0f )
-					vehicle_info->hitpoints = 1000.0f;
+				CVehicle *pVehicleSelf = pPedSelf->GetVehicle();
+				pVehicleSelf->SetGravity( &CVector(0.0, 0.0, -1.0) );
+				pVehicleSelf->GetInterface()->nImmunities &= ~VEHICLE_FLAGS_INVULNERABLE;
+				if ( pVehicleSelf->GetHealth() > 1000.0f )
+					pVehicleSelf->SetHealth( 1000.0f );
 			}
 
 			// set vehicle gravity to normal
@@ -72,20 +76,24 @@ int cheat_panic ( void )
 			cheat_state->_generic.map = 0;
 			cheat_state->_generic.menu = 0;
 
+			// remove "Extra actor invincibility" patch
 			pstate_actor_hp = patch_actor_hp.installed;
-
 			patcher_remove( &patch_actor_hp );
 
 			for ( i = 0; i < INI_PATCHES_MAX; i++ )
 			{
-				pstate_ini[i] = set.patch[i].installed;
-				patcher_remove( &set.patch[i] );
+				// added to not remove volatile patches
+				if ( !set.patch[i].has_volatile )
+				{
+					pstate_ini[i] = set.patch[i].installed;
+					patcher_remove( &set.patch[i] );
+				}
 			}
 		}
 		else
 		{
 			if ( pstate_actor_hp )
-				patcher_remove( &patch_actor_hp );
+				patcher_install( &patch_actor_hp );
 
 			set.d3dtext_hud = pstate_d3dtext_hud;
 			cheat_state->_generic.map = pstate_map;
@@ -100,7 +108,7 @@ int cheat_panic ( void )
 		}
 	}
 
-	return cheat_panic_enabled;
+	return cheat_state->_generic.cheat_panic_enabled;
 }
 
 /* XXX move to cheat_funcs.cpp? */

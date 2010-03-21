@@ -55,8 +55,8 @@ void update_translateGTASAMP_vehiclePool ( void )
 			continue;
 		if ( isBadPtr_writeAny(g_Vehicles->pSAMP_Vehicle[i], sizeof(stSAMPVehicle)) )
 			continue;
-		if ( isBadPtr_writeAny(g_Vehicles->pSAMP_Vehicle[i]->pGTA_Vehicle, sizeof(vehicle_info)) )
-			continue;
+		//if ( isBadPtr_writeAny(g_Vehicles->pSAMP_Vehicle[i]->pGTA_Vehicle, sizeof(vehicle_info)) )
+		//	continue;
 		iGTAID = getVehicleGTAIDFromInterface( (DWORD *)g_Vehicles->pSAMP_Vehicle[i]->pGTA_Vehicle );
 		if ( iGTAID <= SAMP_VEHICLE_MAX && iGTAID >= 0 )
 		{
@@ -74,8 +74,8 @@ void update_translateGTASAMP_pedPool ( void )
 	int iGTAID;
 	for ( int i = 0; i <= SAMP_PLAYER_MAX; i++ )
 	{
-		if ( g_Players->iIsListed[i] != 1 )
-			continue;
+		//if ( g_Players->iIsListed[i] != 1 )
+		//	continue;
 		if ( isBadPtr_writeAny(g_Players->pRemotePlayer[i], sizeof(stRemotePlayer)) )
 			continue;
 		if ( isBadPtr_writeAny(g_Players->pRemotePlayer[i]->pSAMP_Actor, sizeof(stSAMPPed)) )
