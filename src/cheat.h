@@ -227,6 +227,8 @@ struct cheat_state_generic
 	int		nocols_enabled;
 	int		nocols_toggled;
 	DWORD	nocols_change_tick;
+
+	int		cheat_panic_enabled;
 };
 
 struct cheat_state_hooks
