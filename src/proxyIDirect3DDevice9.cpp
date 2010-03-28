@@ -1140,11 +1140,8 @@ void renderPlayerTags ( void )
 		return;
 
 	// for tracking player states as we iterate through
-	//bool	isPedWithinView[SAMP_PLAYER_MAX];
 	bool	isPedESPCollided[SAMP_PLAYER_MAX];
 	bool	isPedESPStairStacked[SAMP_PLAYER_MAX];
-
-	//memset( isPedWithinView, false, sizeof(bool) * SAMP_PLAYER_MAX );
 	memset( isPedESPCollided, false, sizeof(bool) * SAMP_PLAYER_MAX );
 	memset( isPedESPStairStacked, true, sizeof(bool) * SAMP_PLAYER_MAX );
 
@@ -1240,9 +1237,9 @@ void renderPlayerTags ( void )
 		iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
 
 		// filter out "ok" ESP
-		if ( g_playerTagInfo[iSAMPID].isPastMaxDistance
-		 ||	 g_playerTagInfo[iSAMPID].tagOffsetY < 40.f
-		 &&	 !g_playerTagInfo[iSAMPID].isStairStacked ) continue;
+		if ( !g_playerTagInfo[iSAMPID].isStairStacked
+		 &&	 g_playerTagInfo[iSAMPID].tagOffsetY < 40.f
+		 ||	 g_playerTagInfo[iSAMPID].isPastMaxDistance ) continue;
 
 		// ignore if it's us
 		if ( iSAMPID == selfSAMPID )
@@ -2488,6 +2485,7 @@ void renderSAMP ( void )
 		{
 			g_SAMP->fNameTagsDistance = 70.0f;
 			sampPatchEnableNameTags( 1 );
+
 			CPed	*pPedSelf = pPools->GetPedFromRef( CPOOLS_PED_SELF_REF );
 			if ( pPedSelf->GetVehicle() )
 			{
