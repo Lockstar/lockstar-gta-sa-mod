@@ -51,14 +51,15 @@ void CPhysical_ApplyGravity ( DWORD dwThis )
 	{
 		// It's a vehicle
 		CVehicle	*pVehicle = pPools->GetVehicle( (DWORD *)dwThis );
-		CPed		*pPedSelf = getSelfCPed();
-		if ( pVehicle
-		 &&	 (
-				 pVehicle->GetDriver() == pPedSelf
-		 ||	 (pVehicle->GetTowedByVehicle() && pVehicle->GetTowedByVehicle()->GetDriver() == pPedSelf)
-		 ||	 pVehicle->IsPassenger(pPedSelf)
-		 ||	 (pVehicle->GetTowedByVehicle() && pVehicle->GetTowedByVehicle()->IsPassenger(pPedSelf))
-		 ) )
+		if ( !pVehicle )
+		{
+			// apply regular downward gravity
+			*(float *)( dwThis + 0x4C ) -= fTimeStep * fGravity;
+			return;
+		}
+
+		CPed	*pPedSelf = getSelfCPed();
+		if ( pVehicle->GetDriver() == pPedSelf || pVehicle->IsPassenger(pPedSelf) )
 		{
 			// We're in the vehicle, use our gravity vector
 			CVector vecGravity, vecMoveSpeed;
@@ -66,9 +67,18 @@ void CPhysical_ApplyGravity ( DWORD dwThis )
 			pVehicle->GetMoveSpeed( &vecMoveSpeed );
 			vecMoveSpeed += vecGravity * fTimeStep * fGravity;
 			pVehicle->SetMoveSpeed( &vecMoveSpeed );
-			if ( pVehicle->GetTowedVehicle() )
+		}
+		else if ( pVehicle->GetTowedByVehicle() )
+		{
+			if ( pVehicle->GetTowedByVehicle()->GetDriver() == pPedSelf
+			 ||	 pVehicle->GetTowedByVehicle()->IsPassenger(pPedSelf) )
 			{
-				//ds
+				// It's our trailer, use our gravity vector
+				CVector vecGravity, vecMoveSpeed;
+				pVehicle->GetTowedByVehicle()->GetGravity( &vecGravity );
+				pVehicle->GetMoveSpeed( &vecMoveSpeed );
+				vecMoveSpeed += vecGravity * fTimeStep * fGravity;
+				pVehicle->SetMoveSpeed( &vecMoveSpeed );
 			}
 		}
 		else
