@@ -30,7 +30,7 @@ private:
 	{
 		if(!isfinite(param))
 			return 1;
-		return (fabs(param) < 0.001);
+		return (fabs(param) < FLOAT_EPSILON);
 	}
 
 public:
@@ -85,11 +85,28 @@ public:
         fZ = _fX * param->fY - param->fX * _fY;
     }
 
-	bool IsNearZero( void ) 
+	bool IsNearZero ( void ) 
 	{
 		if(!isfinite(fX) || !isfinite(fY) || !isfinite(fZ))
 			return 1;
 		return (IsNearZeroFloat(fX) && IsNearZeroFloat(fY) && IsNearZeroFloat(fZ));
+	}
+
+	void Zero ( void )
+	{
+		fX = 0.0f;
+		fY = 0.0f;
+		fZ = 0.0f;
+	}
+
+	void ZeroNearZero ( void )
+	{
+		if ( IsNearZeroFloat(fX) )
+			fX =0.0f;
+		if ( IsNearZeroFloat(fY) )
+			fY =0.0f;
+		if ( IsNearZeroFloat(fZ) )
+			fZ =0.0f;
 	}
 
     CVector operator + ( const CVector& vecRight ) const

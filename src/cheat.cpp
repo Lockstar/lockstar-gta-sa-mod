@@ -164,6 +164,7 @@ void cheat_hook ( HWND wnd )
 
 	// setup menu
 	menu_maybe_init();
+	traceLastFunc( "cheat_hook()" );
 
 	/* initialize state */
 	if ( cheat_state == NULL )
@@ -303,6 +304,9 @@ void cheat_hook ( HWND wnd )
 		{
 			// load all the weapon models
 			loadAllWeaponModels();
+
+			// get funky
+			//pGameInterface->GetAudio()->PlayBeatTrack(2);
 
 			// increment stage
 			m_InitStages++;

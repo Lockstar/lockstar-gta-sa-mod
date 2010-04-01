@@ -20,6 +20,11 @@
 class CMatrix
 {
 public:
+	CVector vRight;
+	CVector vFront;
+	CVector vUp;
+	CVector vPos;
+
     CMatrix ( )
     {
         // Load the identity matrix
@@ -84,10 +89,31 @@ public:
         vPos  *= -1.0f;
     }
 
-	CVector vRight;
-	CVector vFront;
-	CVector vUp;
-	CVector vPos;
+	CMatrix Rotate ( const CVector * param, float theta )
+	{
+		// Rotate the rotation matrix
+		double sin_t = sinf( theta ), cos_t = cosf( theta );
+		CMatrix mRotateMult;
+		// rotate X
+		mRotateMult.vRight.fX = (double) cos_t + ( 1.0f - cos_t ) * param->fX * param->fX;
+		mRotateMult.vRight.fY = (double) ( 1.0f - cos_t ) * param->fX * param->fY - sin_t * param->fZ;
+		mRotateMult.vRight.fZ = (double) ( 1.0f - cos_t ) * param->fX * param->fZ + sin_t * param->fY;
+		// rotate Y
+		mRotateMult.vFront.fX = (double) ( 1.0f - cos_t ) * param->fY * param->fX + sin_t * param->fZ;
+		mRotateMult.vFront.fY = (double) cos_t + ( 1.0f - cos_t ) * param->fY * param->fY;
+		mRotateMult.vFront.fZ = (double) ( 1.0f - cos_t ) * param->fY * param->fZ - sin_t * param->fX;
+		// rotate Z
+		mRotateMult.vUp.fX = (double) ( 1.0f - cos_t ) * param->fZ * param->fX - sin_t * param->fY;
+		mRotateMult.vUp.fY = (double) ( 1.0f - cos_t ) * param->fZ * param->fY + sin_t * param->fX;
+		mRotateMult.vUp.fZ = (double) cos_t + ( 1.0f - cos_t ) * param->fZ * param->fZ;
+		// multiply matrix
+		mRotateMult = mRotateMult * (*this);
+		// set vectors
+		mRotateMult.vPos = vPos;
+		// return
+		return mRotateMult;
+	}
+
 };
 
 #endif

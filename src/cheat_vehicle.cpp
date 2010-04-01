@@ -176,43 +176,58 @@ void cheat_handle_vehicle_nocols ( struct vehicle_info *info )
 
 void cheat_handle_vehicle_unflip ( struct vehicle_info *info, float time_diff )
 {
-	static float	unflip_rotation;
-
+	// this func needs to be switched to new classes code
 	/* Unflip */
-	if ( KEY_PRESSED(set.key_unflip) )
-	{
-		/* get the vehicle's yaw angle (z-axis) */
-		unflip_rotation = atan2f( info->base.matrix[4 * 1 + 0], info->base.matrix[4 * 1 + 1] );
-	}
+	//if ( KEY_PRESSED(set.key_unflip) )
+	//{ }
 
 	/* Rotate vehicle while the unflip key is held down */
 	if ( KEY_DOWN(set.key_unflip) )
 	{
-		float	a = unflip_rotation;
-		float	*m = info->base.matrix;
-		float	matrix[16] =
-		{
-			cosf( a ),
-			-sinf( a ),
-			0.0f,
-			0.0f,	// right
-			sinf( a ),
-			cosf( a ),
-			0.0f,
-			0.0f,	// attitude
-			0.0f,
-			0.0f,
-			1.0f,
-			0.0f,	// up
-			m[4 * 3 + 0],
-			m[4 * 3 + 1],
-			m[4 * 3 + 2],
-			1.0f	// position
-		};
+		// inter-frame timing info from the game
+		float		fTimeStep = *(float *)0xB7CB5C;
 
-		matrix_copy( matrix, info->base.matrix );
-		vect3_zero( info->spin );
-		unflip_rotation += time_diff * M_PI;
+		// get our vehicle, gravity, and matrix
+		CVehicle	*cveh = getSelfCVehicle();
+		CVector		cvehGrav;
+		CMatrix		cvehMatrix;
+		cveh->GetGravity( &cvehGrav );
+		cveh->GetMatrix( &cvehMatrix );
+
+		// get "down" from vehicle model
+		CVector rotationAxis = cheat_vehicle_getPositionUnder( cveh );
+
+		// normalize our vectors
+		cvehGrav.Normalize();
+		rotationAxis.Normalize();
+
+		// axis and rotation for gravity
+		float	theta = acos( rotationAxis.DotProduct(&cvehGrav) );
+		if ( theta > FLOAT_EPSILON )
+		{
+			rotationAxis.CrossProduct( &cvehGrav );
+			rotationAxis.Normalize();
+			rotationAxis.ZeroNearZero();
+			cvehMatrix = cvehMatrix.Rotate( &rotationAxis, -theta );
+		}
+
+		// axis for slow turn
+		theta = M_PI / ( 50.0f * fTimeStep + 1.0f );
+		// this if shouldn't be needed
+		//if ( theta > FLOAT_EPSILON )
+		//{
+			CVector slowTurnAxis = cvehMatrix.vUp;
+			slowTurnAxis.Normalize();
+			slowTurnAxis.ZeroNearZero();
+			cvehMatrix = cvehMatrix.Rotate( &cvehMatrix.vUp, theta );
+		//}
+
+		// set the new matrix
+		cveh->SetMatrix( &cvehMatrix );
+
+		// no more spin cycle for you
+		CVector vZero ( 0.0f, 0.0f, 0.0f );
+		cveh->SetTurnSpeed( &vZero );
 	}
 }
 
