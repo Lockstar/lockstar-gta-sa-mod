@@ -54,125 +54,125 @@
 #ifdef M0D_DEV
 #define ID_MENU_TESTING 255
 #endif
-#define ID_CHEAT_INVULN							10
-#define ID_CHEAT_WEAPONS						20
-#define ID_CHEAT_MONEY							30
-#define ID_CHEAT_MODS							40
-#define ID_CHEAT_PROT							50
-#define ID_CHEAT_WARP_NEAR						60
-#define ID_CHEAT_JETPACK						70
-#define ID_CHEAT_UNLOCK							80
-#define ID_CHEAT_WEATHER						90
-#define ID_CHEAT_TIME							100
-#define ID_CHEAT_HP								110
-#define ID_CHEAT_ARMOR							120
-#define ID_CHEAT_GRAVITY						130
-#define ID_CHEAT_MAP							140
-#define ID_CHEAT_TELETEXTS						150
-#define ID_CHEAT_GAME_SPEED						160
-#define ID_CHEAT_HANDLING						170
-#define ID_CHEAT_KEEP_TRAILER					180
-#define ID_CHEAT_NOCOLS							190
+#define ID_CHEAT_INVULN						10
+#define ID_CHEAT_WEAPONS					20
+#define ID_CHEAT_MONEY						30
+#define ID_CHEAT_MODS						40
+#define ID_CHEAT_PROT						50
+#define ID_CHEAT_WARP_NEAR					60
+#define ID_CHEAT_JETPACK					70
+#define ID_CHEAT_UNLOCK						80
+#define ID_CHEAT_WEATHER					90
+#define ID_CHEAT_TIME						100
+#define ID_CHEAT_HP							110
+#define ID_CHEAT_ARMOR						120
+#define ID_CHEAT_GRAVITY					130
+#define ID_CHEAT_MAP						140
+#define ID_CHEAT_TELETEXTS					150
+#define ID_CHEAT_GAME_SPEED					160
+#define ID_CHEAT_HANDLING					170
+#define ID_CHEAT_KEEP_TRAILER				180
+#define ID_CHEAT_NOCOLS						190
 
-#define ID_CHEAT_INVULN_ACTOR					0
-#define ID_CHEAT_INVULN_VEHICLE					1
-#define ID_CHEAT_INVULN_TIRES					2
-#define ID_CHEAT_INVULN_MIN_HP					3
-#define ID_CHEAT_INVULN_DMGRED					4
-#define ID_CHEAT_INVULN_REGEN					5
-#define ID_CHEAT_INVULN_REGEN_ONFOOT			6
+#define ID_CHEAT_INVULN_ACTOR				0
+#define ID_CHEAT_INVULN_VEHICLE				1
+#define ID_CHEAT_INVULN_TIRES				2
+#define ID_CHEAT_INVULN_MIN_HP				3
+#define ID_CHEAT_INVULN_DMGRED				4
+#define ID_CHEAT_INVULN_REGEN				5
+#define ID_CHEAT_INVULN_REGEN_ONFOOT		6
 
-#define ID_CHEAT_MONEY_GIVE_500					0
-#define ID_CHEAT_MONEY_GIVE_1000				1
-#define ID_CHEAT_MONEY_GIVE_5000				2
-#define ID_CHEAT_MONEY_GIVE_10000				3
-#define ID_CHEAT_MONEY_GIVE_20000				4
-#define ID_CHEAT_MONEY_GIVE_99999999			5
-#define ID_CHEAT_MONEY_GIVE_CUSTOM				6
-#define ID_CHEAT_MONEY_MAX						7
-#define ID_CHEAT_MONEY_RAND_MIN					8
-#define ID_CHEAT_MONEY_RAND_MAX					9
-#define ID_CHEAT_MONEY_IVAL_MIN					10
-#define ID_CHEAT_MONEY_IVAL_MAX					11
+#define ID_CHEAT_MONEY_GIVE_500				0
+#define ID_CHEAT_MONEY_GIVE_1000			1
+#define ID_CHEAT_MONEY_GIVE_5000			2
+#define ID_CHEAT_MONEY_GIVE_10000			3
+#define ID_CHEAT_MONEY_GIVE_20000			4
+#define ID_CHEAT_MONEY_GIVE_99999999		5
+#define ID_CHEAT_MONEY_GIVE_CUSTOM			6
+#define ID_CHEAT_MONEY_MAX					7
+#define ID_CHEAT_MONEY_RAND_MIN				8
+#define ID_CHEAT_MONEY_RAND_MAX				9
+#define ID_CHEAT_MONEY_IVAL_MIN				10
+#define ID_CHEAT_MONEY_IVAL_MAX				11
 
-#define ID_CHEAT_MODS_COLOR1					10
-#define ID_CHEAT_MODS_COLOR2					20
-#define ID_CHEAT_MODS_PAINTJOB					30
+#define ID_CHEAT_MODS_COLOR1				10
+#define ID_CHEAT_MODS_COLOR2				20
+#define ID_CHEAT_MODS_PAINTJOB				30
 
-#define ID_CHEAT_HANDLING_MASS					0
-#define ID_CHEAT_HANDLING_TURNMASS				1
-#define ID_CHEAT_HANDLING_DRAGCOEFF				2
-#define ID_CHEAT_HANDLING_TRACMULT				3
-#define ID_CHEAT_HANDLING_ENGNACCEL				4
-#define ID_CHEAT_HANDLING_MAXVEL				5
-#define ID_CHEAT_HANDLING_BRAKEDECEL			6
-#define ID_CHEAT_HANDLING_SUSPFORCELVL			7
-#define ID_CHEAT_HANDLING_COLDMGMULT			8
-#define ID_CHEAT_HANDLING_MULTIPLIER			9
-#define ID_CHEAT_HANDLING_TRACTIONLOSS			10
-#define ID_CHEAT_HANDLING_TRACTIONBIAS			11
-#define ID_CHEAT_HANDLING_SUSPANTIDIVEMULT		12
+#define ID_CHEAT_HANDLING_MASS				0
+#define ID_CHEAT_HANDLING_TURNMASS			1
+#define ID_CHEAT_HANDLING_DRAGCOEFF			2
+#define ID_CHEAT_HANDLING_TRACMULT			3
+#define ID_CHEAT_HANDLING_ENGNACCEL			4
+#define ID_CHEAT_HANDLING_MAXVEL			5
+#define ID_CHEAT_HANDLING_BRAKEDECEL		6
+#define ID_CHEAT_HANDLING_SUSPFORCELVL		7
+#define ID_CHEAT_HANDLING_COLDMGMULT		8
+#define ID_CHEAT_HANDLING_MULTIPLIER		9
+#define ID_CHEAT_HANDLING_TRACTIONLOSS		10
+#define ID_CHEAT_HANDLING_TRACTIONBIAS		11
+#define ID_CHEAT_HANDLING_SUSPANTIDIVEMULT	12
 
-#define ID_WEAPON_ENABLE						0
-#define ID_WEAPON_RANDOM						1
-#define ID_WEAPON_ITEM							2
+#define ID_WEAPON_ENABLE					0
+#define ID_WEAPON_RANDOM					1
+#define ID_WEAPON_ITEM						2
 
-#define ID_VEHICLES_IWARP						0
-#define ID_VEHICLES_FREEZE						1
-#define ID_MENU_VEHICLES_SUB					106
+#define ID_VEHICLES_IWARP					0
+#define ID_VEHICLES_FREEZE					1
+#define ID_MENU_VEHICLES_SUB				106
 
-#define ID_MISC_COORDS							0
-#define ID_MISC_RELOAD							1
-#define ID_MISC_HUDTEXT							2
-#define ID_MISC_BAD_WEAPONS						3
-#define ID_MISC_TRAILERS						4
-#define ID_MISC_FPSLIMIT						5
-#define ID_MISC_TOGGLEWINDOWED					6
-#define ID_MISC_CLEANSCREENSHOT					7
+#define ID_MISC_COORDS						0
+#define ID_MISC_RELOAD						1
+#define ID_MISC_HUDTEXT						2
+#define ID_MISC_BAD_WEAPONS					3
+#define ID_MISC_TRAILERS					4
+#define ID_MISC_FPSLIMIT					5
+#define ID_MISC_TOGGLEWINDOWED				6
+#define ID_MISC_CLEANSCREENSHOT				7
 
-#define ID_DEBUG_ENABLE							0
-#define ID_DEBUG_SELF_ACTOR						1
-#define ID_DEBUG_SAMP_DLL						2
-#define ID_DEBUG_SELF_VEHICLE					3
-#define ID_DEBUG_SAMP_INFO						4
-#define ID_DEBUG_SAMP_PLAYER_LIST				5
-#define ID_DEBUG_SAMP_LOCAL_INFO				6
-#define ID_DEBUG_SAMP_CHAT_INFO					7
-#define ID_DEBUG_SAMP_CHAT_IPT_INFO				8
-#define ID_DEBUG_SAMP_KILL_INFO					9
-#define ID_DEBUG_SAMP_VEHICLE_LIST				10
+#define ID_DEBUG_ENABLE						0
+#define ID_DEBUG_SELF_ACTOR					1
+#define ID_DEBUG_SAMP_DLL					2
+#define ID_DEBUG_SELF_VEHICLE				3
+#define ID_DEBUG_SAMP_INFO					4
+#define ID_DEBUG_SAMP_PLAYER_LIST			5
+#define ID_DEBUG_SAMP_LOCAL_INFO			6
+#define ID_DEBUG_SAMP_CHAT_INFO				7
+#define ID_DEBUG_SAMP_CHAT_IPT_INFO			8
+#define ID_DEBUG_SAMP_KILL_INFO				9
+#define ID_DEBUG_SAMP_VEHICLE_LIST			10
 
-#define ID_HUDIND_BAR							0
-#define ID_HUDIND_TSHADOWS						1
-#define ID_HUDIND_INV							2
-#define ID_HUDIND_WEAPON						3
-#define ID_HUDIND_MONEY							4
-#define ID_HUDIND_FREEZE						5
-#define ID_HUDIND_INVEH_AIRBRK					6
-#define ID_HUDIND_INVEH_STICK					7
-#define ID_HUDIND_INVEH_BRKDANCE				8
-#define ID_HUDIND_ONFOOT_AIRBRK					9
-#define ID_HUDIND_ONFOOT_STICK					10
-#define ID_HUDIND_ONFOOT_AIM					11
-#define ID_HUDIND_POS							12
-#define ID_HUDIND_FPS							13
-#define ID_HUDIND_LB_BARS						14
-#define ID_HUDIND_INVEH_SPIDER					15
+#define ID_HUDIND_BAR						0
+#define ID_HUDIND_TSHADOWS					1
+#define ID_HUDIND_INV						2
+#define ID_HUDIND_WEAPON					3
+#define ID_HUDIND_MONEY						4
+#define ID_HUDIND_FREEZE					5
+#define ID_HUDIND_INVEH_AIRBRK				6
+#define ID_HUDIND_INVEH_STICK				7
+#define ID_HUDIND_INVEH_BRKDANCE			8
+#define ID_HUDIND_ONFOOT_AIRBRK				9
+#define ID_HUDIND_ONFOOT_STICK				10
+#define ID_HUDIND_ONFOOT_AIM				11
+#define ID_HUDIND_POS						12
+#define ID_HUDIND_FPS						13
+#define ID_HUDIND_LB_BARS					14
+#define ID_HUDIND_INVEH_SPIDER				15
 
-#define ID_MENU_SAMPMISC						0
-#define ID_MENU_SAMPMISC_VEHICLES_INSTANT		108
-#define ID_MENU_SAMPMISC_FAKE_KILL				105
-#define ID_MENU_SAMPMISC_SPOOF_WEAPON			3
-#define ID_MENU_SAMPMISC_SAMP_INFO_LIST			4
-#define ID_MENU_SAMPMISC_CHAT_TEXT				6
-#define ID_MENU_SAMPMISC_CHAT_TEXTLINES			7
-#define ID_MENU_SAMPMISC_GAMESTATE				9
-#define ID_MENU_SAMPMISC_SPECIALACTION			12
-#define ID_MENU_SAMPMISC_SAMP_CJ_ANIM			13
-#define ID_MENU_SAMPMISC_TELEOBJECT				109
-#define ID_MENU_SAMPMISC_TELEPICKUP				110
-#define ID_MENU_SAMPMISC_RENDEROBJTXT			14
-#define ID_MENU_SAMPMISC_RENDERPCKTXT			15
+#define ID_MENU_SAMPMISC					0
+#define ID_MENU_SAMPMISC_VEHICLES_INSTANT	108
+#define ID_MENU_SAMPMISC_FAKE_KILL			105
+#define ID_MENU_SAMPMISC_SPOOF_WEAPON		3
+#define ID_MENU_SAMPMISC_SAMP_INFO_LIST		4
+#define ID_MENU_SAMPMISC_CHAT_TEXT			6
+#define ID_MENU_SAMPMISC_CHAT_TEXTLINES		7
+#define ID_MENU_SAMPMISC_GAMESTATE			9
+#define ID_MENU_SAMPMISC_SPECIALACTION		12
+#define ID_MENU_SAMPMISC_SAMP_CJ_ANIM		13
+#define ID_MENU_SAMPMISC_TELEOBJECT			109
+#define ID_MENU_SAMPMISC_TELEPICKUP			110
+#define ID_MENU_SAMPMISC_RENDEROBJTXT		14
+#define ID_MENU_SAMPMISC_RENDERPCKTXT		15
 #define ID_MENU_SAMPMISC_M0DCOMMANDS		16
 static bool modcommands = false;
 
@@ -596,45 +596,53 @@ static int menu_callback_teleobject ( int op, struct menu_item *item )
 
 static void menu_handling_populate ( struct menu *menu )
 {
-	struct vehicle_info *vinfo = vehicle_info_get( VEHICLE_SELF, 0 );
-	char				text[64];
-
-	menu_items_free( menu );
-
-	if ( vinfo == NULL )
+	CVehicle	*cveh = getSelfCVehicle();
+	if ( cveh == NULL )
+		return;
+	if ( cveh->GetHandlingData() == NULL )
 		return;
 
 	traceLastFunc( "menu_handling_populate()" );
+
+	char	text[64];
+
+	menu_items_free( menu );
 
 	snprintf( text, sizeof(text), "Multiplier: %0.2f", set.handling_multiplier );
 	menu_item_add( menu, NULL, text, ID_CHEAT_HANDLING_MULTIPLIER, MENU_COLOR_DEFAULT, NULL );
 
 	menu_item_add( menu, NULL, "\tHandling", ID_NONE, MENU_COLOR_SEPARATOR, NULL );
 
-	snprintf( text, sizeof(text), "Engine acceleration: %0.2f", vinfo->pHandlingData->Transmission.fEngineAccelleration );
+	snprintf( text, sizeof(text), "Engine acceleration: %0.2f", cveh->GetHandlingData()->GetEngineAccelleration() );
 	menu_item_add( menu, NULL, text, ID_CHEAT_HANDLING_ENGNACCEL, MENU_COLOR_DEFAULT, NULL );
-	snprintf( text, sizeof(text), "Brake decelleration: %0.2f", vinfo->pHandlingData->fBrakeDecelleration );
+	snprintf( text, sizeof(text), "Brake decelleration: %0.2f", cveh->GetHandlingData()->GetBrakeDecelleration() );
 	menu_item_add( menu, NULL, text, ID_CHEAT_HANDLING_BRAKEDECEL, MENU_COLOR_DEFAULT, NULL );
-	snprintf( text, sizeof(text), "Drag coefficient: %0.2f", vinfo->pHandlingData->fDragCoeff );
+	snprintf( text, sizeof(text), "Drag coefficient: %0.2f", cveh->GetHandlingData()->GetDragCoeff() );
 	menu_item_add( menu, NULL, text, ID_CHEAT_HANDLING_DRAGCOEFF, MENU_COLOR_DEFAULT, NULL );
 
+	snprintf( text, sizeof(text), "Max velocity: %0.2f", cveh->GetHandlingData()->GetMaxVelocity() );
+	menu_item_add( menu, NULL, text, ID_CHEAT_HANDLING_MAXVEL, MENU_COLOR_DEFAULT, NULL );
+
 	// these can't be used because they don't always show up right etc... possibly mapped wrong
-	//snprintf(text, sizeof(text), "Traction multiplier: %0.2f", vinfo->pHandlingData->fTractionMultiplier);
-	//menu_item_add(menu, NULL,      text, ID_CHEAT_HANDLING_TRACMULT,   MENU_COLOR_DEFAULT, NULL);
-	//snprintf(text, sizeof(text), "Traction loss: %0.2f", vinfo->pHandlingData->fTractionLoss);
-	//menu_item_add(menu, NULL,      text, ID_CHEAT_HANDLING_TRACTIONLOSS,   MENU_COLOR_DEFAULT, NULL);
-	//snprintf(text, sizeof(text), "Traction bias: %0.2f", vinfo->pHandlingData->fTractionBias);
-	//menu_item_add(menu, NULL,      text, ID_CHEAT_HANDLING_TRACTIONBIAS,   MENU_COLOR_DEFAULT, NULL);
-	//snprintf(text, sizeof(text), "Suspension force level: %0.2f", vinfo->pHandlingData->fSuspensionForceLevel);
-	//menu_item_add(menu, NULL,      text, ID_CHEAT_HANDLING_SUSPFORCELVL,   MENU_COLOR_DEFAULT, NULL);
-	//snprintf(text, sizeof(text), "Suspension anti-dive multiplier: %0.2f", vinfo->pHandlingData->fSuspensionAntidiveMultiplier);
-	//menu_item_add(menu, NULL,      text, ID_CHEAT_HANDLING_SUSPANTIDIVEMULT,   MENU_COLOR_DEFAULT, NULL);
-	//snprintf(text, sizeof(text), "Mass: %0.2f", vinfo->pHandlingData->fMass);
-	//menu_item_add(menu, NULL,      text, ID_CHEAT_HANDLING_MASS,   MENU_COLOR_DEFAULT, NULL);
-	//snprintf(text, sizeof(text), "Turn mass: %0.2f", vinfo->pHandlingData->fTurnMass);
-	//menu_item_add(menu, NULL,      text, ID_CHEAT_HANDLING_TURNMASS,   MENU_COLOR_DEFAULT, NULL);
-	//snprintf(text, sizeof(text), "Collision damage multiplier: %0.2f", vinfo->pHandlingData->fCollisionDamageMultiplier);
-	//menu_item_add(menu, NULL,      text, ID_CHEAT_HANDLING_COLDMGMULT,   MENU_COLOR_DEFAULT, NULL);
+	snprintf( text, sizeof(text), "Traction multiplier: %0.2f", cveh->GetHandlingData()->GetTractionMultiplier() );
+	menu_item_add( menu, NULL, text, ID_CHEAT_HANDLING_TRACMULT, MENU_COLOR_DEFAULT, NULL );
+	snprintf( text, sizeof(text), "Traction loss: %0.2f", cveh->GetHandlingData()->GetTractionLoss() );
+	menu_item_add( menu, NULL, text, ID_CHEAT_HANDLING_TRACTIONLOSS, MENU_COLOR_DEFAULT, NULL );
+	snprintf( text, sizeof(text), "Traction bias: %0.2f", cveh->GetHandlingData()->GetTractionBias() );
+	menu_item_add( menu, NULL, text, ID_CHEAT_HANDLING_TRACTIONBIAS, MENU_COLOR_DEFAULT, NULL );
+	snprintf( text, sizeof(text), "Suspension force level: %0.2f", cveh->GetHandlingData()->GetSuspensionForceLevel() );
+	menu_item_add( menu, NULL, text, ID_CHEAT_HANDLING_SUSPFORCELVL, MENU_COLOR_DEFAULT, NULL );
+
+	//snprintf( text, sizeof(text), "Suspension anti-dive multiplier: %0.2f", cveh->GetHandlingData()->GetSuspensionAntidiveMultiplier() );
+	//menu_item_add( menu, NULL, text, ID_CHEAT_HANDLING_SUSPANTIDIVEMULT, MENU_COLOR_DEFAULT, NULL );
+	snprintf( text, sizeof(text), "Mass: %0.2f", cveh->GetHandlingData()->GetMass() );
+	menu_item_add( menu, NULL, text, ID_CHEAT_HANDLING_MASS, MENU_COLOR_DEFAULT, NULL );
+	snprintf( text, sizeof(text), "Turn mass: %0.2f", cveh->GetHandlingData()->GetTurnMass() );
+	menu_item_add( menu, NULL, text, ID_CHEAT_HANDLING_TURNMASS, MENU_COLOR_DEFAULT, NULL );
+
+	//snprintf( text, sizeof(text), "Collision damage multiplier: %0.2f",
+	//		  cveh->GetHandlingData()->GetCollisionDamageMultiplier() );
+	//menu_item_add( menu, NULL, text, ID_CHEAT_HANDLING_COLDMGMULT, MENU_COLOR_DEFAULT, NULL );
 }
 
 #ifdef M0D_DEV
@@ -1117,11 +1125,12 @@ static int menu_callback_cheats ( int op, struct menu_item *item )
 
 static int menu_callback_handling ( int op, struct menu_item *item )
 {
-	struct vehicle_info *info = vehicle_info_get( VEHICLE_SELF, 0 );
-	if ( info == NULL )
-		return 0;
+	CVehicle	*cveh = getSelfCVehicle();
+	if ( cveh == NULL )
+		return NULL;
 
-	int mod;
+	int		mod;
+	float	hlng;
 
 	switch ( op )
 	{
@@ -1140,36 +1149,59 @@ static int menu_callback_handling ( int op, struct menu_item *item )
 			return 1;
 
 		case ID_CHEAT_HANDLING_ENGNACCEL:
+			hlng = cveh->GetHandlingData()->GetEngineAccelleration();
 			if ( mod > 0 )
-				info->pHandlingData->Transmission.fEngineAccelleration += set.handling_multiplier;
+				hlng += set.handling_multiplier;
 			if ( mod < 0 )
-				info->pHandlingData->Transmission.fEngineAccelleration -= set.handling_multiplier;
-			menu_item_name_set( item, "Engine acceleration: %0.2f",
-								info->pHandlingData->Transmission.fEngineAccelleration );
+				hlng -= set.handling_multiplier;
+			cveh->GetHandlingData()->SetEngineAccelleration( hlng );
+
+			//cveh->GetHandlingData()->Recalculate();
+			menu_item_name_set( item, "Engine acceleration: %0.2f", hlng );
 			return 1;
 
 		case ID_CHEAT_HANDLING_BRAKEDECEL:
+			hlng = cveh->GetHandlingData()->GetBrakeDecelleration();
 			if ( mod > 0 )
-				info->pHandlingData->fBrakeDecelleration += set.handling_multiplier;
+				hlng += set.handling_multiplier;
 			if ( mod < 0 )
-				info->pHandlingData->fBrakeDecelleration -= set.handling_multiplier;
-			menu_item_name_set( item, "Brake decelleration: %0.2f", info->pHandlingData->fBrakeDecelleration );
+				hlng -= set.handling_multiplier;
+			cveh->GetHandlingData()->SetBrakeDecelleration( hlng );
+
+			//cveh->GetHandlingData()->Recalculate();
+			menu_item_name_set( item, "Brake decelleration: %0.2f", hlng );
+			return 1;
+
+		case ID_CHEAT_HANDLING_MAXVEL:
+			hlng = cveh->GetHandlingData()->GetMaxVelocity();
+			if ( mod > 0 )
+				hlng += set.handling_multiplier;
+			if ( mod < 0 )
+				hlng -= set.handling_multiplier;
+			cveh->GetHandlingData()->SetMaxVelocity( hlng );
+
+			//cveh->GetHandlingData()->Recalculate();
+			menu_item_name_set( item, "Max velocity: %0.2f", hlng );
 			return 1;
 
 		case ID_CHEAT_HANDLING_TRACMULT:
+			hlng = cveh->GetHandlingData()->GetTractionMultiplier();
 			if ( mod > 0 )
-				info->pHandlingData->fTractionMultiplier += set.handling_multiplier;
+				hlng += set.handling_multiplier;
 			if ( mod < 0 )
-				info->pHandlingData->fTractionMultiplier -= set.handling_multiplier;
-			menu_item_name_set( item, "Traction multiplier: %0.2f", info->pHandlingData->fTractionMultiplier );
+				hlng -= set.handling_multiplier;
+			cveh->GetHandlingData()->SetTractionMultiplier( hlng );
+			menu_item_name_set( item, "Traction multiplier: %0.2f", hlng );
 			return 1;
 
 		case ID_CHEAT_HANDLING_TRACTIONLOSS:
+			hlng = cveh->GetHandlingData()->GetTractionLoss();
 			if ( mod > 0 )
-				info->pHandlingData->fTractionLoss += set.handling_multiplier;
+				hlng += set.handling_multiplier;
 			if ( mod < 0 )
-				info->pHandlingData->fTractionLoss -= set.handling_multiplier;
-			menu_item_name_set( item, "Traction loss: %0.2f", info->pHandlingData->fTractionLoss );
+				hlng -= set.handling_multiplier;
+			cveh->GetHandlingData()->SetTractionLoss( hlng );
+			menu_item_name_set( item, "Traction loss: %0.2f", hlng );
 			return 1;
 
 		/*case ID_CHEAT_HANDLING_TRACTIONBIAS:
@@ -1177,12 +1209,24 @@ static int menu_callback_handling ( int op, struct menu_item *item )
 			if(mod < 0) info->pHandlingData->fTractionBias -= set.handling_multiplier;
 			menu_item_name_set(item, "Traction bias: %0.2f", info->pHandlingData->fTractionBias);
 			return 1;*/
-		case ID_CHEAT_HANDLING_SUSPFORCELVL:
+		case ID_CHEAT_HANDLING_TRACTIONBIAS:
+			hlng = cveh->GetHandlingData()->GetTractionBias();
 			if ( mod > 0 )
-				info->pHandlingData->fSuspensionForceLevel += set.handling_multiplier;
+				hlng += set.handling_multiplier;
 			if ( mod < 0 )
-				info->pHandlingData->fSuspensionForceLevel -= set.handling_multiplier;
-			menu_item_name_set( item, "Suspension force level: %0.2f", info->pHandlingData->fSuspensionForceLevel );
+				hlng -= set.handling_multiplier;
+			cveh->GetHandlingData()->SetTractionBias( hlng );
+			menu_item_name_set( item, "Traction bias: %0.2f", hlng );
+			return 1;
+
+		case ID_CHEAT_HANDLING_SUSPFORCELVL:
+			hlng = cveh->GetHandlingData()->GetSuspensionForceLevel();
+			if ( mod > 0 )
+				hlng += set.handling_multiplier;
+			if ( mod < 0 )
+				hlng -= set.handling_multiplier;
+			cveh->GetHandlingData()->SetSuspensionForceLevel( hlng );
+			menu_item_name_set( item, "Suspension force level: %0.2f", hlng );
 			return 1;
 
 		// this one really makes the vehicle go nuttahs with tilt
@@ -1193,27 +1237,33 @@ static int menu_callback_handling ( int op, struct menu_item *item )
 			menu_item_name_set(item, "Suspension anti-dive multiplier: %0.2f", info->pHandlingData->fSuspensionAntidiveMultiplier);
 			return 1;*/
 		case ID_CHEAT_HANDLING_MASS:
+			hlng = cveh->GetHandlingData()->GetMass();
 			if ( mod > 0 )
-				info->pHandlingData->fMass += set.handling_multiplier;
+				hlng += set.handling_multiplier;
 			if ( mod < 0 )
-				info->pHandlingData->fMass -= set.handling_multiplier;
-			menu_item_name_set( item, "Mass: %0.2f", info->pHandlingData->fMass );
+				hlng -= set.handling_multiplier;
+			cveh->GetHandlingData()->SetMass( hlng );
+			menu_item_name_set( item, "Mass: %0.2f", hlng );
 			return 1;
 
 		case ID_CHEAT_HANDLING_TURNMASS:
+			hlng = cveh->GetHandlingData()->GetTurnMass();
 			if ( mod > 0 )
-				info->pHandlingData->fTurnMass += set.handling_multiplier;
+				hlng += set.handling_multiplier;
 			if ( mod < 0 )
-				info->pHandlingData->fTurnMass -= set.handling_multiplier;
-			menu_item_name_set( item, "Turn mass: %0.2f", info->pHandlingData->fTurnMass );
+				hlng -= set.handling_multiplier;
+			cveh->GetHandlingData()->SetTurnMass( hlng );
+			menu_item_name_set( item, "Turn mass: %0.2f", hlng );
 			return 1;
 
 		case ID_CHEAT_HANDLING_DRAGCOEFF:
+			hlng = cveh->GetHandlingData()->GetDragCoeff();
 			if ( mod > 0 )
-				info->pHandlingData->fDragCoeff += set.handling_multiplier;
+				hlng += set.handling_multiplier;
 			if ( mod < 0 )
-				info->pHandlingData->fDragCoeff -= set.handling_multiplier;
-			menu_item_name_set( item, "Drag coeffiecient: %0.2f", info->pHandlingData->fDragCoeff );
+				hlng -= set.handling_multiplier;
+			cveh->GetHandlingData()->SetDragCoeff( hlng );
+			menu_item_name_set( item, "Drag coeffiecient: %0.2f", hlng );
 			return 1;
 
 			/*case ID_CHEAT_HANDLING_COLDMGMULT:
@@ -1839,20 +1889,20 @@ static int menu_callback_sampmisc ( int op, struct menu_item *item )
 
 			case ID_MENU_SAMPMISC_M0DCOMMANDS:
 				{
-					if ( KEY_PRESSED (VK_RETURN) )
+					if ( KEY_PRESSED(VK_RETURN) )
 					{	// i know
 						modcommands = true;
 
 						// int dbg = (g_dwSAMP_Addr + 0xED8A8);
 						// *(int*)dbg = 1;
 						// addClientCommand("m0d_skin",(g_dwSAMP_Addr+SAMP_FUNC_SKIN));
-						addClientCommand ( "m0d_current_skin", (int)cmd_current_skin );
-						addClientCommand ( "m0d_change_server", (int)cmd_change_server );
-						addClientCommand ( "m0d_current_server", (int)cmd_current_server );
-						addClientCommand ( "m0d_tele_location", (int)cmd_tele_loc );
-						addClientCommand ( "m0d_teleport_location", (int)cmd_tele_loc );
-						addClientCommand ( "m0d_tele_locations", (int)cmd_tele_locations );
-						addClientCommand ( "m0d_teleport_locations", (int)cmd_tele_locations );
+						addClientCommand( "m0d_current_skin", (int)cmd_current_skin );
+						addClientCommand( "m0d_change_server", (int)cmd_change_server );
+						addClientCommand( "m0d_current_server", (int)cmd_current_server );
+						addClientCommand( "m0d_tele_location", (int)cmd_tele_loc );
+						addClientCommand( "m0d_teleport_location", (int)cmd_tele_loc );
+						addClientCommand( "m0d_tele_locations", (int)cmd_tele_locations );
+						addClientCommand( "m0d_teleport_locations", (int)cmd_tele_locations );
 					}
 				}
 				break;
@@ -2599,14 +2649,15 @@ void menu_maybe_init ( void )
 	if ( menu_init )
 		return;
 
-
-	struct menu *menu_main, *menu_cheats, *menu_cheats_mods, *menu_cheats_handling, *menu_cheats_inv, *
-		menu_cheats_money, *menu_cheats_weather, *menu_cheats_time, *menu_weapons, *menu_vehicles, *menu_teleports, *
-			menu_interiors, *menu_misc, *menu_debug, *menu_hudindicators, *menu_patches, *menu_players, *menu_servers, *
+	struct menu *menu_main, *menu_cheats, *menu_cheats_mods, *menu_cheats_inv, *menu_cheats_money, *
+		menu_cheats_weather, *menu_cheats_time, *menu_weapons, *menu_vehicles, *menu_teleports, *menu_interiors, *
+			menu_misc, *menu_debug, *menu_hudindicators, *menu_patches, *menu_players, *menu_servers, *
 				menu_players_warp, *menu_players_vehwarp, *menu_players_spec,
 #ifdef M0D_DEV
 	* menu_players_debug,
 #endif
+
+	//*menu_cheats_handling,
 	*menu_player_info, *menu_sampmisc, *menu_spoof_weapon, *menu_fake_kill, *menu_vehicles_instant, *menu_gamestate, *menu_specialaction, *menu_teleobject, *menu_telepickup, *menu_samppatches;
 
 	char		name[128];
@@ -2621,7 +2672,9 @@ void menu_maybe_init ( void )
 	menu_cheats_mods = menu_new( menu_cheats, ID_MENU_CHEATS_MODS, menu_callback_cheats_mods );
 	menu_cheats_weather = menu_new( menu_cheats, ID_MENU_CHEATS_WEATHER, menu_callback_cheats );
 	menu_cheats_time = menu_new( menu_cheats, ID_MENU_CHEATS_TIME, menu_callback_cheats );
-	menu_cheats_handling = menu_new( menu_cheats, ID_MENU_CHEATS_HANDLING, menu_callback_handling );
+
+	// disabled for now until we/mta rework CHandlingEntrySA
+	//menu_cheats_handling = menu_new( menu_cheats, ID_MENU_CHEATS_HANDLING, menu_callback_handling );
 	menu_weapons = menu_new( menu_main, ID_MENU_WEAPONS, menu_callback_weapons );
 	menu_vehicles = menu_new( menu_main, ID_MENU_VEHICLES, menu_callback_vehicles );
 	menu_teleports = menu_new( menu_main, ID_MENU_TELEPORTS, menu_callback_teleports );
@@ -2679,8 +2732,8 @@ void menu_maybe_init ( void )
 
 	/* main menu -> cheats */
 	menu_item_add( menu_cheats, menu_cheats_mods, "Vehicle upgrades", ID_CHEAT_MODS, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_cheats, menu_cheats_handling, "Change vehicle handling", ID_CHEAT_HANDLING, MENU_COLOR_DEFAULT,
-				   NULL );
+
+	//menu_item_add( menu_cheats, menu_cheats_handling, "Change vehicle handling", ID_CHEAT_HANDLING, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_cheats, menu_cheats_money, "Money", ID_CHEAT_MONEY, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_cheats, menu_cheats_inv, "Invulnerable", ID_CHEAT_INVULN, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_cheats, NULL, "Restore health", ID_CHEAT_HP, MENU_COLOR_DEFAULT, NULL );
@@ -2961,7 +3014,7 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_sampmisc, menu_telepickup, "Teleport to pickup", ID_MENU_SAMPMISC_TELEPICKUP,
 				   MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_sampmisc, NULL, "Render pickup texts", ID_MENU_SAMPMISC_RENDERPCKTXT, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add ( menu_sampmisc, NULL, "Load M0D-Commands", ID_MENU_SAMPMISC_M0DCOMMANDS, MENU_COLOR_DEFAULT, NULL );
+	menu_item_add( menu_sampmisc, NULL, "Load M0D-Commands", ID_MENU_SAMPMISC_M0DCOMMANDS, MENU_COLOR_DEFAULT, NULL );
 
 	/* main menu -> sampmisc -> change game state */
 	menu_item_add( menu_gamestate, NULL, "None", GAMESTATE_NONE, MENU_COLOR_DEFAULT, NULL );

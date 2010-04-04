@@ -1269,10 +1269,7 @@ int vehicle_filter_flags ( vehicle_info *info, int flags )
 /* returns the id of the nearest actor */
 int actor_find_nearest ( int flags )
 {
-	const struct actor_info *self, *info;
-	float					dist = -1.0f;
-	int						id_nearest = -1;
-	int						n;
+	const struct actor_info *self;
 
 	if ( pool_actor == NULL )
 		return -1;
@@ -1280,10 +1277,14 @@ int actor_find_nearest ( int flags )
 	if ( (self = actor_info_get(ACTOR_SELF, 0)) == NULL )
 		return -1;
 
+	const struct actor_info *info;
+	float	vect[3];
+	float	dist = -1.0f;
+	int		id_nearest = -1;
+	int		n;
+
 	for ( n = 0; n < pool_actor->size; n++ )
 	{
-		float	vect[3];
-
 		if ( (info = actor_info_get(n, flags)) == NULL )
 			continue;
 
@@ -1304,7 +1305,7 @@ int actor_find_nearest ( int flags )
 
 struct vehicle_info *actor_vehicle_get ( const struct actor_info *info )
 {
-	if ( info->state == ACTOR_STATE_DRIVING && info->vehicle != NULL )
+	if ( info->state == ACTOR_STATE_DRIVING && !isBadPtr_GTA_pVehicleInfo(info->vehicle) )
 		return info->vehicle;
 
 	return NULL;

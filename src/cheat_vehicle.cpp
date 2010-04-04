@@ -25,8 +25,6 @@
 // new function to jump into vehicles without jacking (also for single player)
 void vehicleJumper ( int iVehicleID )
 {
-	traceLastFunc( "vehicleJumper()" );
-
 	// can't touch this
 	if ( iVehicleID == VEHICLE_SELF )
 		return;
@@ -37,6 +35,8 @@ void vehicleJumper ( int iVehicleID )
 	// check that the vehicle is legit
 	if ( isBadPtr_GTA_pVehicleInfo(pVehicle) )
 		return;
+
+	traceLastFunc( "vehicleJumper()" );
 
 	// if SAMP is loaded, check if the vehicle is streamed in
 	if ( g_SAMP != NULL )
@@ -128,6 +128,8 @@ void cheat_vehicle_teleport ( struct vehicle_info *info, const float pos[3], int
 	if ( info == NULL )
 		return;
 
+	traceLastFunc( "cheat_vehicle_teleport()" );
+
 	float				diff[3];
 	float				new_pos[3];
 	struct vehicle_info *temp;
@@ -152,9 +154,19 @@ void cheat_vehicle_teleport ( struct vehicle_info *info, const float pos[3], int
 	}
 }
 
+void cheat_handle_vehicle_unjacker ( struct vehicle_info *info, float time_diff )
+{
+	//ds
+}
+
 //Making the vehicle instant jumping and the trailer attaching easier
 void cheat_handle_vehicle_nocols ( struct vehicle_info *info )
 {
+	if ( isBadPtr_GTA_pVehicleInfo(info) )
+		return;
+
+	traceLastFunc( "cheat_handle_vehicle_nocols()" );
+
 	if ( cheat_state->_generic.nocols_toggled )
 	{
 		cheat_state->_generic.nocols_enabled = 1;
@@ -176,14 +188,16 @@ void cheat_handle_vehicle_nocols ( struct vehicle_info *info )
 
 void cheat_handle_vehicle_unflip ( struct vehicle_info *info, float time_diff )
 {
-	// this func needs to be switched to new classes code
+	traceLastFunc( "cheat_handle_vehicle_unflip()" );
+
 	/* Unflip */
 	//if ( KEY_PRESSED(set.key_unflip) )
 	//{ }
-
 	/* Rotate vehicle while the unflip key is held down */
 	if ( KEY_DOWN(set.key_unflip) )
 	{
+		traceLastFunc( "cheat_handle_vehicle_unflip()" );
+
 		// inter-frame timing info from the game
 		float		fTimeStep = *(float *)0xB7CB5C;
 
@@ -212,16 +226,17 @@ void cheat_handle_vehicle_unflip ( struct vehicle_info *info, float time_diff )
 		}
 
 		// axis for slow turn
-		theta = M_PI / ( 50.0f * fTimeStep + 1.0f );
+		theta = M_PI / ( 50.0f / fTimeStep );
+
 		// this if shouldn't be needed
 		//if ( theta > FLOAT_EPSILON )
 		//{
-			CVector slowTurnAxis = cvehMatrix.vUp;
-			slowTurnAxis.Normalize();
-			slowTurnAxis.ZeroNearZero();
-			cvehMatrix = cvehMatrix.Rotate( &cvehMatrix.vUp, theta );
-		//}
+		CVector slowTurnAxis = cvehMatrix.vUp;
+		slowTurnAxis.Normalize();
+		slowTurnAxis.ZeroNearZero();
+		cvehMatrix = cvehMatrix.Rotate( &cvehMatrix.vUp, theta );
 
+		//}
 		// set the new matrix
 		cveh->SetMatrix( &cvehMatrix );
 
@@ -248,6 +263,8 @@ void cheat_handle_vehicle_air_brake ( struct vehicle_info *info, float time_diff
 		orig_matrix_set = 0;
 		return;
 	}
+
+	traceLastFunc( "cheat_handle_vehicle_air_brake()" );
 
 	if ( set.air_brake_toggle )
 	{
@@ -416,6 +433,8 @@ void cheat_handle_vehicle_air_brake ( struct vehicle_info *info, float time_diff
 
 void cheat_handle_vehicle_warp ( struct vehicle_info *info, float time_diff )
 {
+	traceLastFunc( "cheat_handle_vehicle_warp()" );
+
 	static struct vehicle_state state;
 	static float				raildist;
 	static uint32_t				warp_time = 0;
@@ -492,14 +511,35 @@ void cheat_handle_vehicle_warp ( struct vehicle_info *info, float time_diff )
 
 void cheat_handle_vehicle_hop ( struct vehicle_info *info, float time_diff )
 {
-	struct vehicle_info *temp;
+	traceLastFunc( "cheat_handle_vehicle_hop()" );
 
 	if ( KEY_DOWN(set.key_vehicle_hop) )
 	{
-		for ( temp = info; temp != NULL; temp = temp->trailer )
-		{
-			temp->speed[2] = set.vehicle_hop_speed;
+		CVehicle	*cveh = pGameInterface->GetPools()->GetVehicle( (DWORD *)info );
+		CVector		vecSpeedAdd, vecMoveSpeed;
+		float		theDotProduct;
+		cveh->GetGravity( &vecSpeedAdd );
+		vecSpeedAdd = -vecSpeedAdd;
 
+		for ( ; cveh != NULL; cveh = cveh->GetTowedVehicle() )
+		{
+			cveh->GetMoveSpeed( &vecMoveSpeed );
+			theDotProduct = vecMoveSpeed.DotProduct( &vecSpeedAdd );
+			if ( theDotProduct < set.vehicle_hop_speed / 2.0f )
+			{
+				if ( theDotProduct < 0.0f )
+				{
+					vecMoveSpeed += ( vecSpeedAdd * (set.vehicle_hop_speed * 2.0f) );
+				}
+				else
+				{
+					vecMoveSpeed += ( vecSpeedAdd * (set.vehicle_hop_speed / 2.0f) );
+				}
+
+				cveh->SetMoveSpeed( &vecMoveSpeed );
+			}
+
+			//set.vehicle_hop_speed;
 			if ( !set.trailer_support )
 				break;
 		}
@@ -508,6 +548,8 @@ void cheat_handle_vehicle_hop ( struct vehicle_info *info, float time_diff )
 
 void cheat_handle_vehicle_brake ( struct vehicle_info *info, float time_diff )
 {
+	traceLastFunc( "cheat_handle_vehicle_brake()" );
+
 	float				speed;
 	struct vehicle_info *temp;
 
@@ -547,6 +589,8 @@ void cheat_handle_vehicle_brake ( struct vehicle_info *info, float time_diff )
 
 void cheat_handle_vehicle_nitro ( struct vehicle_info *info, float time_diff )
 {
+	traceLastFunc( "cheat_handle_vehicle_nitro()" );
+
 	static uint32_t		timer;
 	static float		speed_off;
 	float				pre_speed[3];
@@ -614,8 +658,27 @@ void cheat_handle_vehicle_nitro ( struct vehicle_info *info, float time_diff )
 	}
 }
 
-void cheat_handle_vehicle_quick_turn_180 ( struct vehicle_info *info, float time_diff )
+//MATRIX4X4
+//	VECTOR right			
+//		float X [4*0+0]
+//		float Y [4*0+1]
+//		float Z [4*0+2]		Roll
+// DWORD  flags;
+// VECTOR up;
+//		float X [4*1+0]
+//		float Y [4*1+1]
+//		float Z [4*1+2]		Pitch
+// float  pad_u;
+// VECTOR at;				Front
+//		float X [4*2+0]
+//		float Y [4*2+1]
+//		float Z [4*2+2]		Yaw
+
+//
+void cheat_handle_vehicle_quick_turn ( struct vehicle_info *info, float time_diff )
 {
+	traceLastFunc( "cheat_handle_vehicle_quick_turn()" );
+
 	if ( KEY_PRESSED(set.key_quick_turn_180) )
 	{
 		/* simply invert the X and Y axis.. */
@@ -650,36 +713,11 @@ void cheat_handle_vehicle_quick_turn_180 ( struct vehicle_info *info, float time
 			}
 		}
 	}
-}
 
-//MATRIX4X4
-//	VECTOR right
-//		float X [4*0+0]
-//		float Y [4*0+1]
-//		float Z [4*0+2] Roll
-// DWORD  flags;
-// VECTOR up;
-//		float X [4*1+0]
-//		float Y [4*1+1]
-//		float Z [4*1+2] Pitch
-// float  pad_u;
-// VECTOR at;
-//		float X [4*2+0]
-//		float Y [4*2+1]
-//		float Z [4*2+2]
-// float  pad_a;
-// VECTOR pos;
-//		float X [4*3+0]
-//		float Y [4*3+1]
-//		float Z [4*3+2]
-
-// float  pad_p;
-void cheat_handle_vehicle_quick_turn_left ( struct vehicle_info *vinfo, float time_diff )
-{
 	if ( KEY_PRESSED(set.key_quick_turn_left) )
 	{
 		struct vehicle_info *temp;
-		for ( temp = vinfo; temp != NULL; temp = temp->trailer )
+		for ( temp = info; temp != NULL; temp = temp->trailer )
 		{
 			// do new heading
 			float		*heading_matrix = temp->base.matrix;
@@ -703,14 +741,11 @@ void cheat_handle_vehicle_quick_turn_left ( struct vehicle_info *vinfo, float ti
 				break;
 		}
 	}
-}
 
-void cheat_handle_vehicle_quick_turn_right ( struct vehicle_info *vinfo, float time_diff )
-{
 	if ( KEY_PRESSED(set.key_quick_turn_right) )
 	{
 		struct vehicle_info *temp;
-		for ( temp = vinfo; temp != NULL; temp = temp->trailer )
+		for ( temp = info; temp != NULL; temp = temp->trailer )
 		{
 			// do new heading
 			float		*heading_matrix = temp->base.matrix;
@@ -740,6 +775,8 @@ void cheat_handle_vehicle_quick_turn_right ( struct vehicle_info *vinfo, float t
 
 void cheat_handle_vehicle_protection ( struct vehicle_info *info, float time_diff )
 {
+	traceLastFunc( "cheat_handle_vehicle_protection()" );
+
 	static float		last_spin[3];
 	struct vehicle_info *temp;
 
@@ -791,6 +828,8 @@ void cheat_handle_vehicle_engine ( struct vehicle_info *vehicle_info, float time
 	if ( vehicle_info == NULL )
 		return;
 
+	traceLastFunc( "cheat_handle_vehicle_engine()" );
+
 	struct vehicle_info *veh_self = vehicle_info_get( VEHICLE_SELF, 0 );
 	if ( veh_self == NULL )
 		return;
@@ -816,6 +855,8 @@ void cheat_handle_vehicle_brakedance ( struct vehicle_info *vehicle_info, float 
 		return;
 	if ( cheat_state->vehicle.stick )
 		return;
+
+	traceLastFunc( "cheat_handle_vehicle_brakedance()" );
 
 	static float	velpos, velneg;
 
@@ -884,7 +925,7 @@ void cheat_handle_vehicle_brakedance ( struct vehicle_info *vehicle_info, float 
 	}
 }
 
-void cheat_handle_blinking_carlights ( struct vehicle_info *vinfo, float time_diff )
+void cheat_handle_vehicle_blinking_carlights ( struct vehicle_info *vinfo, float time_diff )
 {
 	traceLastFunc( "cheat_handle_blinking_carlights()" );
 
@@ -1125,8 +1166,10 @@ void cheat_handle_vehicle_keepTrailer ( struct vehicle_info *vinfo, float time_d
 	}
 }
 
-void cheat_handle_fast_exit ( struct vehicle_info *vehicle_info, float time_diff )
+void cheat_handle_vehicle_fast_exit ( struct vehicle_info *vehicle_info, float time_diff )
 {
+	traceLastFunc( "cheat_handle_fast_exit()" );
+
 	if ( KEY_PRESSED(set.key_fast_exit) )
 	{
 		float				*coord =
@@ -1136,8 +1179,10 @@ void cheat_handle_fast_exit ( struct vehicle_info *vehicle_info, float time_diff
 	}
 }
 
-void cheat_handle_repair_car ( struct vehicle_info *vehicle_info, float time_diff )
+void cheat_handle_vehicle_repair_car ( struct vehicle_info *vehicle_info, float time_diff )
 {
+	traceLastFunc( "cheat_handle_repair_car()" );
+
 	if ( KEY_PRESSED(set.key_repair_car) )
 	{
 		// get info
@@ -1240,7 +1285,7 @@ bool init_patchBikeFalloff ( void )
 	return m_SpiderWheels_falloffFound;
 }
 
-void cheat_handle_spiderWheels ( struct vehicle_info *vinfo, float time_diff )
+void cheat_handle_vehicle_spiderWheels ( struct vehicle_info *vinfo, float time_diff )
 {
 	traceLastFunc( "cheat_handle_spiderWheels()" );
 

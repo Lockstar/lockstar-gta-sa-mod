@@ -3,7 +3,7 @@ Version 4.1.0.0
 * Fixed so many things that it's retarded to list them here.
 * Added menu to add upgrades (Wangs/etc) to your vehicle anywhere.
 * Added SpiderWheels, drive on anything! Default: Numpad 5
-* Added option to avoid loosing Trailer. Default: Menu only
+* Added option to avoid loosing Trailer. Default: Menu
 * Added toggleable infinite NOS. Default: Numpad 0
 * Added switchable car lights. Default: f2 to switch modes.
 * Added toggleable vehicle collisions except for your vehicle.
@@ -19,7 +19,8 @@ TEST:
 
 
 TODO:
-make sure F12 panic key is disabling everything
+fix Unjacker
+make sure F12 panic key & clean screenshots is disabling everything
 
 
 
