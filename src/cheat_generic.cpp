@@ -344,6 +344,8 @@ struct freeze_info
 
 void cheat_handle_freeze_vehicles ( struct vehicle_info *vehicle_info, struct actor_info *actor_info )
 {
+	traceLastFunc( "cheat_handle_freeze_vehicles()" );
+
 	static struct freeze_info	*freeze;
 	struct vehicle_info			*info;
 	float						*pos;
@@ -431,6 +433,8 @@ void cheat_handle_unlock ( void )
 
 void cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *actor_info, float time_diff )
 {
+	traceLastFunc( "cheat_handle_hp()" );
+
 	static float	prev_pos[3];
 
 	if ( KEY_PRESSED(set.key_hp_cheat) )
@@ -592,6 +596,12 @@ void cheat_handle_stick ( struct vehicle_info *vehicle_info, struct actor_info *
 
 	if ( (vehicle_info != NULL && cheat_state->vehicle.stick) || (actor_info != NULL && cheat_state->actor.stick) )
 	{
+		// remove any bad vehicle or actor stuffs
+		if ( isBadPtr_GTA_pVehicleInfo(vehicle_info) )
+			vehicle_info = NULL;
+		if ( isBadPtr_GTA_pActorInfo(actor_info) )
+			actor_info = NULL;
+
 		/* check if actor has disappeared.. and if it has, switch to teh nearest */
 		if ( id != -1 && actor_info_get(id, ACTOR_ALIVE) == NULL )
 			id = actor_find_nearest( ACTOR_ALIVE | ACTOR_NOT_SAME_VEHICLE );
@@ -801,6 +811,8 @@ void cheat_handle_weapon ( void )
 
 void cheat_handle_teleport ( struct vehicle_info *vehicle_info, struct actor_info *actor_info, float time_diff )
 {
+	traceLastFunc( "cheat_handle_teleport()" );
+
 	struct object_base	*base = ( vehicle_info != NULL ) ? &vehicle_info->base : &actor_info->base;
 	int					i;
 
@@ -898,6 +910,8 @@ void cheat_handle_checkpoint ( void )
 
 void cheat_handle_unfreeze ( struct vehicle_info *vehicle_info, struct actor_info *actor_info, float time_diff )
 {
+	traceLastFunc( "cheat_handle_unfreeze()" );
+
 	if ( KEY_PRESSED(set.key_anti_freeze) )
 	{
 		ScriptCommand( &toggle_player_controllable, 0, 1 );
@@ -910,24 +924,29 @@ void cheat_handle_unfreeze ( struct vehicle_info *vehicle_info, struct actor_inf
 
 void cheat_handle_emo ( struct vehicle_info *vehicle_info, struct actor_info *actor_info, float time_diff )
 {
+	traceLastFunc( "cheat_handle_emo()" );
+
 	struct vehicle_info *vtemp;
 
-	if ( actor_info != NULL )
+	if ( !isBadPtr_GTA_pActorInfo(actor_info) )
 	{
 		if ( KEY_PRESSED(set.key_self_destruct) )
 			actor_info->hitpoints = 0.0f;
 	}
-	else if ( vehicle_info != NULL )
+	else if ( !isBadPtr_GTA_pVehicleInfo(vehicle_info) )
 	{
-		if ( KEY_PRESSED(set.key_self_destruct) )
+		actor_info = actor_info_get(ACTOR_SELF, 0);
+		if ( actor_info->state == ACTOR_STATE_DRIVING && actor_info->vehicle->passengers[0] == actor_info )
 		{
-			for ( vtemp = vehicle_info; vtemp != NULL; vtemp = vtemp->trailer )
+			if ( KEY_PRESSED(set.key_self_destruct) )
 			{
-				vtemp->hitpoints = 1.0f;
-				cheat_vehicle_tires_set( vtemp, 1 );
-
-				if ( !set.trailer_support )
-					break;
+				for ( vtemp = vehicle_info; vtemp != NULL; vtemp = vtemp->trailer )
+				{
+					vtemp->hitpoints = 1.0f;
+					cheat_vehicle_tires_set( vtemp, 1 );
+					if ( !set.trailer_support )
+						break;
+				}
 			}
 		}
 	}

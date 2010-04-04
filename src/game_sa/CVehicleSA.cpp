@@ -87,6 +87,7 @@ CVehicleSA::CVehicleSA( eVehicleTypes dwModelID )
 CVehicleSA::CVehicleSA ( CVehicleSAInterface * vehicleInterface )
 {
     m_pInterface = vehicleInterface;
+	m_pHandlingData = new CHandlingEntrySA( GetVehicleInterface()->pHandlingData );
 
     m_pInterface->bStreamingDontDelete = true;
     m_pInterface->bDontStream = true;

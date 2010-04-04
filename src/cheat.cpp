@@ -97,10 +97,7 @@ static void cheat_main_vehicle ( float time_diff )
 
 	struct vehicle_info *info = vehicle_info_get( VEHICLE_SELF, 0 );
 	if ( info == NULL )
-	{
-		Log( "wtf, vehicle_info_get() returned NULL." );
 		return;
-	}
 
 	// this should have its own handler
 	if ( set.anti_carjacking )
@@ -116,33 +113,34 @@ static void cheat_main_vehicle ( float time_diff )
 		}
 	}
 
+	// copy vehicle coords to cheat_state storage
 	vect3_copy( &info->base.matrix[4 * 3], cheat_state->vehicle.coords );
-	cheat_handle_vehicle_nocols( info );
+
+	// the following functions can be found in cheat_generic.cpp
+	cheat_handle_unfreeze( info, NULL, time_diff );
 	cheat_handle_teleport( info, NULL, time_diff );
+	cheat_handle_stick( info, NULL, time_diff );
 	cheat_handle_freeze_vehicles( info, NULL );
 	cheat_handle_hp( info, NULL, time_diff );
-	cheat_handle_unfreeze( info, NULL, time_diff );
 	cheat_handle_emo( info, NULL, time_diff );
 
 	// the following functions can be found in cheat_vehicle.cpp
+	cheat_handle_vehicle_nocols( info );
+	cheat_handle_vehicle_protection( info, time_diff );
 	cheat_handle_vehicle_unflip( info, time_diff );
 	cheat_handle_vehicle_nitro( info, time_diff );
 	cheat_handle_vehicle_air_brake( info, time_diff );
 	cheat_handle_vehicle_warp( info, time_diff );
-	cheat_handle_stick( info, NULL, time_diff );
-	cheat_handle_vehicle_protection( info, time_diff );
-	cheat_handle_vehicle_quick_turn_180( info, time_diff );
-	cheat_handle_vehicle_quick_turn_left( info, time_diff );
-	cheat_handle_vehicle_quick_turn_right( info, time_diff );
+	cheat_handle_vehicle_quick_turn( info, time_diff );
 	cheat_handle_vehicle_brake( info, time_diff );
 	cheat_handle_vehicle_hop( info, time_diff );
 	cheat_handle_vehicle_engine( info, time_diff );
 	cheat_handle_vehicle_brakedance( info, time_diff );
-	cheat_handle_blinking_carlights( info, time_diff );
+	cheat_handle_vehicle_blinking_carlights( info, time_diff );
 	cheat_handle_vehicle_keepTrailer( info, time_diff );
-	cheat_handle_repair_car( info, time_diff );
-	cheat_handle_fast_exit( info, time_diff );
-	cheat_handle_spiderWheels( info, time_diff );
+	cheat_handle_vehicle_repair_car( info, time_diff );
+	cheat_handle_vehicle_fast_exit( info, time_diff );
+	cheat_handle_vehicle_spiderWheels( info, time_diff );
 }
 
 // the main daddyo

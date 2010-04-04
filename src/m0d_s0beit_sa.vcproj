@@ -46,7 +46,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/EHsc"
 				Optimization="2"
-				InlineFunctionExpansion="2"
+				InlineFunctionExpansion="1"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
@@ -62,7 +62,6 @@
 				WarnAsError="false"
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="0"
-				CompileAs="0"
 				DisableSpecificWarnings="4995;4244;4996;4482;4409;4250;"
 			/>
 			<Tool
