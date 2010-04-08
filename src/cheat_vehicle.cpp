@@ -957,8 +957,8 @@ void cheat_handle_vehicle_blinking_carlights ( struct vehicle_info *vinfo, float
 	 ||	 class_id == VEHICLE_CLASS_TRAILER
 	 ||	 class_id == VEHICLE_CLASS_AIRPLANE
 	 ||	 class_id == VEHICLE_CLASS_HELI
-	 ||	 class_id == VEHICLE_CLASS_BIKE )	// NOT lol at bikes, u crash without this, try HPV
-	return;
+	 ||	 class_id == VEHICLE_CLASS_BIKE )
+	 return;
 
 	// enables car lights any time of day, not synced
 	// we need a better way to do this that can be disabled

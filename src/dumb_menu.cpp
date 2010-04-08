@@ -1892,11 +1892,6 @@ static int menu_callback_sampmisc ( int op, struct menu_item *item )
 					if ( KEY_PRESSED(VK_RETURN) )
 					{	// i know
 						modcommands = true;
-
-						// int dbg = (g_dwSAMP_Addr + 0xED8A8);
-						// *(int*)dbg = 1;
-						// addClientCommand("m0d_skin",(g_dwSAMP_Addr+SAMP_FUNC_SKIN));
-						addClientCommand( "m0d_current_skin", (int)cmd_current_skin );
 						addClientCommand( "m0d_change_server", (int)cmd_change_server );
 						addClientCommand( "m0d_current_server", (int)cmd_current_server );
 						addClientCommand( "m0d_tele_location", (int)cmd_tele_loc );

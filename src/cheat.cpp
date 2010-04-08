@@ -311,13 +311,14 @@ void cheat_hook ( HWND wnd )
 		}
 	}
 
-	if ( set.d3dtext_chat )
+	static bool chat_once = false;
+	if ( set.d3dtext_chat && !chat_once )
 	{
 		if ( g_Chat != NULL && g_Chat->iChatWindowMode )
 		{
 			//Log("Disabling SA:MP chat text.");
 			g_Chat->iChatWindowMode = 0;
-			set.d3dtext_chat = 0;
+			chat_once = true;
 		}
 	}
 

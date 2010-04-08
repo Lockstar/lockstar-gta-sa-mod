@@ -1036,7 +1036,7 @@ void RenderVehicleHPBar ( void )
 		D3DXVECTOR2 axisSpeedo = D3DXVECTOR2( speedoPos.x, speedoPos.y );
 		D3DXVECTOR2 axisNeedle = D3DXVECTOR2( (130.00f * needlePos.x), (152.00f * needlePos.y) );
 
-		if ( !gta_menu_active() )
+		if ( !gta_menu_active() && !KEY_DOWN(VK_TAB) )
 		{
 			if ( (sSpeedoPNG) && (tSpeedoPNG) && (sNeedlePNG) && (tNeedlePNG) )
 			{
@@ -1123,12 +1123,19 @@ void renderPlayerTags ( void )
 	if ( gta_menu_active() )
 		return;
 
-	// old tab menu, needs new method
-	//if ( GetAsyncKeyState(VK_TAB) < 0 )
-	//	return;
-	// is this needed?
+	if ( (GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
+	 ||	 *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 ) 
+		return;
+
 	if ( GetAsyncKeyState(VK_F10) < 0 )
 		return;
+
+	//Enable samp Nametags and exit this function, if panic key
+	if ( cheat_state->_generic.cheat_panic_enabled )
+	{
+		sampPatchDisableNameTags( 0 );
+		return;
+	}
 
 	// don't run if the CGameSA doesn't exist
 	if ( !pGameInterface )
@@ -1138,6 +1145,9 @@ void renderPlayerTags ( void )
 	CPed	*pPedSelf = getSelfCPed();
 	if ( !pPedSelf )
 		return;
+
+	//Disable samp Nametags
+	sampPatchDisableNameTags( 1 );
 
 	// for tracking player states as we iterate through
 	bool	isPedESPCollided[SAMP_PLAYER_MAX];
@@ -1430,6 +1440,10 @@ void renderPlayerTags ( void )
 		if ( isBadPtr_writeAny(g_Players->pRemotePlayer[iSAMPID], sizeof(stRemotePlayer)) )
 			continue;
 
+		// static bots (casino/ammunation) dont need fake names
+		if ( g_Players->pRemotePlayer[iSAMPID]->pSAMP_Actor == NULL )
+			continue;
+
 		//if ( isBadPtr_writeAny(g_Players->pRemotePlayer[iSAMPID]->pSAMP_Actor, sizeof(stSAMPPed)) )
 		//	continue;
 		playerBaseY = g_playerTagInfo[iSAMPID].tagPosition.fY -
@@ -1503,11 +1517,14 @@ void renderVehicleTags ( void )
 	if ( !pPedSelf )
 		return;
 
-	// this is outdated, we need to detect if SA:MP's menu is open or not now
-	//if ( GetAsyncKeyState(VK_TAB) < 0 )
-	//	return;
-	// why not show with F10?
+	if ( (GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
+	 ||	 *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 ) 
+		return;
+
 	if ( GetAsyncKeyState(VK_F10) < 0 )
+		return;
+
+	if ( cheat_state->_generic.cheat_panic_enabled )
 		return;
 
 	const vehicle_entry *vehicle;
@@ -1745,13 +1762,17 @@ void renderPlayerInfoList ( void )
 	if ( gta_menu_active() )
 		return;
 
-	if ( GetAsyncKeyState(VK_TAB) < 0 )
+	if ( (GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
+	 ||	 *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 ) 
 		return;
+
 	if ( GetAsyncKeyState(VK_F1) < 0 )
 		return;
 	if ( GetAsyncKeyState(VK_F5) < 0 )
 		return;
 	if ( GetAsyncKeyState(VK_F10) < 0 )
+		return;
+	if ( cheat_state->_generic.cheat_panic_enabled )
 		return;
 
 	if ( g_Players == NULL && g_Vehicles == NULL )
@@ -1846,6 +1867,144 @@ void renderPlayerInfoList ( void )
 	}
 }
 
+void renderScoreList ()
+{
+	traceLastFunc( "renderScoreList()" );
+
+	if ( g_Players == NULL )
+		return;
+
+	if ( GetAsyncKeyState(VK_F10) < 0 )
+		return;
+
+	if ( !set.d3dtext_score )
+		return;
+
+	static int	patched = 0;
+	if ( cheat_state->_generic.cheat_panic_enabled && patched )
+	{
+		patched = !sampPatchDisableScoreboardToggleOn( 0 );
+		if ( KEY_DOWN(VK_TAB) )
+			* (char *)( (*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C ) = 1;
+		else
+			* (char *)( (*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C ) = 0;
+		return;
+	}
+	else if ( cheat_state->_generic.cheat_panic_enabled )
+		return;
+	else
+	{
+		sampPatchDisableScoreboardToggleOn( 1 );
+		patched = 1;
+	}
+
+	if ( !KEY_DOWN(VK_TAB) )
+		return;
+
+	//Close SAMP Scoreboard and SAMP Chat
+	*(char *)( (*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C ) = 0;
+	g_Chat->iChatWindowMode = 0;
+
+	uint32_t	samp_info = ( uint32_t ) g_SAMP;
+	uint32_t	func = g_dwSAMP_Addr + 0x6560;
+	__asm mov ecx, samp_info
+	__asm call func
+
+	char buffer[512];
+
+	float	lowest;
+	int		amount_players = getPlayerCount();
+	lowest = 115.0f;
+
+	int max_amount_players = ( pPresentParam.BackBufferHeight - 110.0f - lowest ) / ( 1.0f + pD3DFont->DrawHeight() );
+	max_amount_players -= 2;	//1
+	int			rendered_players = 0;
+	static int	current_player = 0;
+	float		loc[2] = { ( pPresentParam.BackBufferWidth / 8 ) * 2.0f, 100.0f };
+
+	if ( amount_players < max_amount_players )
+	{
+		current_player = 0;
+		if ( amount_players < max_amount_players / 2 )
+		{
+			loc[1] = ( pPresentParam.BackBufferHeight / 4 );
+			lowest = pPresentParam.BackBufferHeight - loc[1] - ( (amount_players + 2) * (1.0f + pD3DFont->DrawHeight()) );
+		}
+		else
+			loc[1] += ( 1.0f + pD3DFont->DrawHeight() ) * ( (max_amount_players + 1) - amount_players );
+	}
+	else if ( amount_players > max_amount_players )
+	{
+		max_amount_players -= 1;
+		if ( KEY_PRESSED(VK_NEXT) )
+		{
+			current_player += max_amount_players;
+			if ( current_player > (amount_players - max_amount_players) )
+				current_player = amount_players - max_amount_players + 2;
+		}
+		else if ( KEY_PRESSED(VK_PRIOR) )
+		{
+			current_player -= max_amount_players;
+			if ( current_player < 0 )
+				current_player = 0;
+		}
+	}
+	else
+		current_player = 0;
+
+	loc[1] -= 1.0f + pD3DFont->DrawHeight();
+	render->D3DBox( loc[0] - 10.0f, loc[1] - 2.0f, (pPresentParam.BackBufferWidth / 8) * 4.0f,
+					pD3DFont->DrawHeight() + 3.0f, D3DCOLOR_ARGB(150, 200, 200, 200) );
+	_snprintf_s( buffer, sizeof(buffer), "%s (%s:%d) Connected Players: %d", g_SAMP->szHostname, g_SAMP->szIP,
+				 g_SAMP->ulPort, amount_players );
+	pD3DFont->PrintShadow( loc[0], loc[1], D3DCOLOR_ARGB(200, 255, 255, 255), buffer );
+	loc[1] += 10.0f + pD3DFont->DrawHeight();
+
+	render->D3DBox( loc[0] - 10.0f, loc[1] - 10.0f, (pPresentParam.BackBufferWidth / 8) * 4.0f,
+					pPresentParam.BackBufferHeight - loc[1] - lowest, D3DCOLOR_ARGB(150, 100, 100, 100) );
+
+	_snprintf_s( buffer, sizeof(buffer), "%s (%d)", g_Players->szLocalPlayerName, g_Players->sLocalPlayerID );
+	pD3DFont->PrintShadow( loc[0], loc[1], samp_color_get(g_Players->sLocalPlayerID), buffer );
+
+	loc[0] += ( pPresentParam.BackBufferWidth / 8 ) * 2;
+	_snprintf_s( buffer, sizeof(buffer), "%d", g_Players->iLocalPlayerScore );
+	pD3DFont->PrintShadow( loc[0], loc[1], samp_color_get(g_Players->sLocalPlayerID), buffer );
+
+	loc[0] += ( pPresentParam.BackBufferWidth / 8 ) * 2 - 70.0f;
+	_snprintf_s( buffer, sizeof(buffer), "%d", g_Players->iLocalPlayerPing );
+	pD3DFont->PrintShadow( loc[0], loc[1], samp_color_get(g_Players->sLocalPlayerID), buffer );
+
+	for ( int i = current_player; i < SAMP_PLAYER_MAX; i++ )
+	{
+		if ( g_Players->iIsListed[i] != 1 )
+			continue;
+		if ( g_Players->sLocalPlayerID == i )
+			continue;
+
+		rendered_players++;
+		loc[0] = ( pPresentParam.BackBufferWidth / 8 ) * 2.0f;
+		loc[1] += 1.0f + pD3DFont->DrawHeight();
+
+		if ( g_Players->iIsNPC[i] == 1 )
+			_snprintf_s( buffer, sizeof(buffer), "[BOT]%s (%d)", getPlayerName(i), i );
+		else
+			_snprintf_s( buffer, sizeof(buffer), "%s (%d)", getPlayerName(i), i );
+
+		pD3DFont->PrintShadow( loc[0], loc[1], samp_color_get(i), buffer );
+
+		loc[0] += ( pPresentParam.BackBufferWidth / 8 ) * 2;
+		_snprintf_s( buffer, sizeof(buffer), "%d", g_Players->iScore[i] );
+		pD3DFont->PrintShadow( loc[0], loc[1], samp_color_get(i), buffer );
+
+		loc[0] += ( pPresentParam.BackBufferWidth / 8 ) * 2 - 70.0f;
+		_snprintf_s( buffer, sizeof(buffer), "%d", g_Players->iPing[i] );
+		pD3DFont->PrintShadow( loc[0], loc[1], samp_color_get(i), buffer );
+
+		if ( rendered_players > max_amount_players )
+			return;
+	}
+}
+
 void renderKillList ( void )
 {
 	if ( g_DeathList == NULL )
@@ -1853,11 +2012,17 @@ void renderKillList ( void )
 
 	static int	kill_last = -1, kill_render;
 
-	// outdated, needs new method
-	//if ( GetAsyncKeyState(VK_TAB) < 0 )
-	//	return;
+	if ( (GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
+	 ||	 *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 ) 
+		return;
+
 	if ( GetAsyncKeyState(VK_F10) < 0 )
 		return;
+	if ( cheat_state->_generic.cheat_panic_enabled )
+	{
+		g_DeathList->iEnabled = 1;
+		return;
+	}
 
 	mmm_yummy_poop( g_DeathList, &g_DeathList->iEnabled, &kill_last, &kill_render, "kill list" );
 
@@ -1931,14 +2096,15 @@ void renderKillList ( void )
 }
 
 float	fYChatPosAdj = 167.0f;
-bool	bShowChat = true;
 void renderChat ( void )
 {
 	if ( g_Chat == NULL )
 		return;
 
-	if ( GetAsyncKeyState(VK_TAB) < 0 )
+	if ( (KEY_DOWN(VK_TAB) && set.d3dtext_score)
+	 ||	 (*(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 && !set.d3dtext_score) ) 
 		return;
+
 	if ( GetAsyncKeyState(VK_F1) < 0 )
 		return;
 	if ( GetAsyncKeyState(VK_F5) < 0 )
@@ -1946,10 +2112,23 @@ void renderChat ( void )
 	if ( GetAsyncKeyState(VK_F10) < 0 )
 		return;
 
+	if ( cheat_state->_generic.cheat_panic_enabled )
+	{
+		g_Chat->iChatWindowMode = 2;
+		return;
+	}
+
 	static int	chat_last = -1, chat_render;
 	mmm_yummy_poop( g_Chat, &g_Chat->iChatWindowMode, &chat_last, &chat_render, "chat text" );
 
-	if ( chat_render && !gta_menu_active() && bShowChat )
+	if ( KEY_RELEASED(VK_TAB) && !set.d3dtext_chat && set.d3dtext_score )
+	{
+		g_Chat->iChatWindowMode = 2;
+		chat_last = 2;
+		chat_render = 0;
+	}
+
+	if ( chat_render && !gta_menu_active() )
 	{
 		if ( set.d3dtext_chat_lines <= 0 )
 			set.d3dtext_chat_lines = 10;
@@ -2484,7 +2663,7 @@ void renderSAMP ( void )
 		if ( isPornographyMasterControlRunning && set.screenshot_clean )
 		{
 			g_SAMP->fNameTagsDistance = 70.0f;
-			sampPatchEnableNameTags( 1 );
+			sampPatchDisableNameTags( 0 );
 
 			CPed	*pPedSelf = pPools->GetPedFromRef( CPOOLS_PED_SELF_REF );
 			if ( pPedSelf->GetVehicle() )
@@ -2501,14 +2680,14 @@ void renderSAMP ( void )
 				RenderObjectTexts();
 			if ( cheat_state->render_vehicle_tags )
 				renderVehicleTags();
-			if ( cheat_state->render_player_tags )
-				renderPlayerTags();
 			if ( cheat_state->player_info_list )
 				renderPlayerInfoList();
 			if ( cheat_state->_generic.map )
 				RenderMap();
+			renderPlayerTags();
 			renderKillList();
 			renderChat();
+			renderScoreList();
 			if ( iViewingInfoPlayer == -1 )
 			{ }
 			else
@@ -2543,7 +2722,6 @@ void renderSAMP ( void )
 				sampPatchDisableScreeenshotKey( 1 );
 			else
 				sampPatchDisableScreeenshotKey( 0 );
-
 			a = 1;
 		}
 	}
@@ -3620,6 +3798,7 @@ no_render: ;
 	}
 
 	// return GPU's EndScene()
+	traceLastFunc( "it_wasnt_us()" );
 	return ret;
 }
 

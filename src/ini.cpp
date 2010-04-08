@@ -691,12 +691,14 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.d3dtext_chat, "false" );
 	if ( (ent = ini_register_entry("d3dtext_chat_lines", TYPE_INT)) != NULL )
 		ini_register_data( ent, &set.d3dtext_chat_lines, "20" );
-	if ( (ent = ini_register_entry("d3dtext_chat_showhide_key", TYPE_KEY)) != NULL )
-		ini_register_data( ent, &set.d3dtext_chat_showhide_key, "oem_period" );
 
 	if ( (ent = ini_register_entry("d3dtext_kill", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.d3dtext_kill, "true" );
+	if ( (ent = ini_register_entry("d3dtext_score", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.d3dtext_score, "true" );
 
+	if ( (ent = ini_register_entry("anti_spam", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.anti_spam, "false" );
 	if ( (ent = ini_register_entry("chatbox_logging", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.chatbox_logging, "false" );
 
@@ -836,8 +838,8 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.render_object_texts, "false" );
 
 	//
-	if ( (ent = ini_register_entry("esp_players_airride", TYPE_BOOL)) != NULL )
-		ini_register_data( ent, &set.esp_players_airride, "true" );
+	//	if ( (ent = ini_register_entry("esp_players_airride", TYPE_BOOL)) != NULL )
+	//		ini_register_data( ent, &set.esp_players_airride, "true" );
 
 	// end new ESP ish
 	if ( (ent = ini_register_entry("screenshot_enable", TYPE_BOOL)) != NULL )

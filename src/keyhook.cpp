@@ -211,7 +211,11 @@ void keyhook_run ( void )
 	for ( i = 0; i < 256; i++ )
 	{
 		key_table[i].consume = 0;
-		key_table[i].pstate = KEY_DOWN( i );
+
+		if ( i == VK_PRIOR || i == VK_NEXT || i == VK_TAB )
+			key_table[i].pstate = ( key_table[i].count & 1 );
+		else
+			key_table[i].pstate = KEY_DOWN( i );
 
 		if ( key_table[i].count > 0 )
 		{
@@ -238,6 +242,8 @@ int keyhook_key_pressed ( int v )
 {
 	if ( key_table[v].consume )
 		return 0;
+	else if ( v == VK_PRIOR || v == VK_NEXT || v == VK_TAB )
+		return KEY_DOWN( v ) && !( key_table[v].pstate ^ key_table[v].flip );
 	else
 		return KEY_DOWN( v ) && !key_table[v].pstate;
 }
