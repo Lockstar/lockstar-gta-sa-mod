@@ -733,23 +733,31 @@ int getPlayerVehicleGTAScriptingID ( int iPlayerID )
 */
 int getPlayerVehicleGTAScriptingID ( int iPlayerID )
 {
-	// this should already be done or this should *not* be getting called
-	//if ( g_Players == NULL && g_Vehicles == NULL )
-	//	return 0;
+	// fix to always return our own vehicle always if that's what's being asked for
+	if ( iPlayerID == ACTOR_SELF )
+	{
+		stSAMPVehicle *sampveh = g_Vehicles->pSAMP_Vehicle[g_Players->pLocalPlayer->sCurrentVehicleID];
+		if ( sampveh )
+		{
+			return (int)
+				(
+					((DWORD) sampveh->pGTA_Vehicle) -
+					(DWORD) pool_vehicle->start
+				) / 2584;
+		}
+		else
+			return 0;
+	}
+
+	// make sure remote player is legit
 	if ( g_Players->pRemotePlayer[iPlayerID] == NULL )
 		return 0;
+
+	// make sure samp knows the vehicle exists
 	if ( g_Vehicles->pSAMP_Vehicle[g_Players->pRemotePlayer[iPlayerID]->sVehicleID] == NULL )
 		return 0;
 
-	if ( iPlayerID == ACTOR_SELF )
-	{
-		return (int)
-			(
-				((DWORD) g_Vehicles->pSAMP_Vehicle[g_Players->pLocalPlayer->sCurrentVehicleID]->pGTA_Vehicle) -
-				(DWORD) pool_vehicle->start
-			) / 2584;
-	}
-
+	// return the remote player's vehicle
 	return (int)
 		(
 			((DWORD) g_Players->pRemotePlayer[iPlayerID]->pSAMP_Vehicle->pGTA_Vehicle) -

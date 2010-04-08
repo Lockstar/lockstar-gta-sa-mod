@@ -225,18 +225,14 @@ void cheat_handle_vehicle_unflip ( struct vehicle_info *info, float time_diff )
 			cvehMatrix = cvehMatrix.Rotate( &rotationAxis, -theta );
 		}
 
-		// axis for slow turn
-		theta = M_PI / ( 50.0f / fTimeStep );
+		// slow turn to the right
+		theta = M_PI / ( 75.0f / fTimeStep );
 
-		// this if shouldn't be needed
-		//if ( theta > FLOAT_EPSILON )
-		//{
 		CVector slowTurnAxis = cvehMatrix.vUp;
 		slowTurnAxis.Normalize();
 		slowTurnAxis.ZeroNearZero();
 		cvehMatrix = cvehMatrix.Rotate( &cvehMatrix.vUp, theta );
 
-		//}
 		// set the new matrix
 		cveh->SetMatrix( &cvehMatrix );
 
@@ -1085,8 +1081,11 @@ void cheat_handle_vehicle_keepTrailer ( struct vehicle_info *vinfo, float time_d
 {
 	traceLastFunc( "cheat_handle_vehicle_keepTrailer()" );
 
+	// toggle state from key press
 	if ( KEY_PRESSED(set.key_keep_trailer) )
 		cheat_state->vehicle.keep_trailer_attached ^= 1;
+
+	// return if disabled or not driving
 	if ( !cheat_state->vehicle.keep_trailer_attached )
 		return;
 
@@ -1094,8 +1093,10 @@ void cheat_handle_vehicle_keepTrailer ( struct vehicle_info *vinfo, float time_d
 	if ( self == NULL || vinfo->passengers[0] != self )
 		return;
 
+	// static vars to store trailer info
 	static struct vehicle_info	*myveh_old;
 	static struct vehicle_info	*mytrailer_old;
+
 	if ( vinfo == myveh_old )
 	{
 		if ( vinfo->trailer != NULL )
@@ -1105,48 +1106,101 @@ void cheat_handle_vehicle_keepTrailer ( struct vehicle_info *vinfo, float time_d
 		}
 		else if ( mytrailer_old != NULL )
 		{
-			DWORD	car = ScriptCarId( mytrailer_old );
-			if ( car == NULL )
+			DWORD	trailer_id = ScriptCarId( mytrailer_old );
+			if ( trailer_id == NULL )
 				return;
 
 			CVector distance = vinfo->base.m_CMatrix->vPos - mytrailer_old->base.m_CMatrix->vPos;
-			if ( distance.Length() <= 20.0f )
+			if ( distance.Length() <= 40.0f )
 			{
+				// new variables to be used with R* classes
+				CVehicle	*cveh, *cvehtrailer;
+				CVector		cvehGrav, rotationAxis, vecVehHitchPos, vecTrailerHitchPos, vecTrailerHitchPosOffset,
+					vecTrailerPos;
+				CVector		vZero ( 0.0f, 0.0f, 0.0f );
+				CMatrix		cvehMatrix;
+				float		theta;
+
 				if ( !cheat_state->vehicle.air_brake )
 				{
-					//unflip()
-					// this should be reworked to consider custom gravity
-					float	a = atan2f( vinfo->base.matrix[4 * 1 + 0], vinfo->base.matrix[4 * 1 + 1] );
-					float	*m = vinfo->base.matrix;
-					float	matrix[16] =
-					{
-						cosf( a ),
-						-sinf( a ),
-						0.0f,
-						0.0f,	// right
-						sinf( a ),
-						cosf( a ),
-						0.0f,
-						0.0f,	// attitude
-						0.0f,
-						0.0f,
-						1.0f,
-						0.0f,	// up
-						m[4 * 3 + 0],
-						m[4 * 3 + 1],
-						m[4 * 3 + 2],
-						1.0f	// position
-					};
-					matrix_copy( matrix, vinfo->base.matrix );
-					vect3_zero( vinfo->speed_rammed );
-					vect3_zero( vinfo->spin_rammed );
-				}
+					// unflip
+					// get this vehicle, gravity, and matrix
+					cveh = pPools->GetVehicle( (DWORD *)vinfo );
+					cveh->GetGravity( &cvehGrav );
+					cveh->GetMatrix( &cvehMatrix );
 
-				// re-attach trailer
-				ScriptCommand( &put_trailer_on_cab, car, ScriptCarId(vinfo) );
-				cheat_state->_generic.nocols_enabled = 1;
-				cheat_state->_generic.nocols_change_tick = GetTickCount();
-				/**/
+					// get trailer
+					cvehtrailer = pPools->GetVehicle( (DWORD *)mytrailer_old );
+
+					// get "down" from vehicle model
+					rotationAxis = cheat_vehicle_getPositionUnder( cveh );
+
+					// normalize our vectors
+					cvehGrav.Normalize();
+					rotationAxis.Normalize();
+
+					// axis and rotation for gravity
+					theta = acos( rotationAxis.DotProduct(&cvehGrav) );
+					if ( theta > FLOAT_EPSILON )
+					{
+						rotationAxis.CrossProduct( &cvehGrav );
+						rotationAxis.Normalize();
+						rotationAxis.ZeroNearZero();
+						cvehMatrix = cvehMatrix.Rotate( &rotationAxis, -theta );
+
+						// set the new matrix
+						cveh->SetMatrix( &cvehMatrix );
+					}
+
+					// re-attach trailer
+					cvehtrailer->SetTowLink( cveh );
+
+					// fix trailer orientation
+					rotationAxis = cheat_vehicle_getPositionUnder( cvehtrailer );
+					cvehtrailer->GetMatrix( &cvehMatrix );
+					theta = acos( rotationAxis.DotProduct(&cvehGrav) );
+					if ( theta > FLOAT_EPSILON )
+					{
+						rotationAxis.CrossProduct( &cvehGrav );
+						rotationAxis.Normalize();
+						rotationAxis.ZeroNearZero();
+						cvehMatrix = cvehMatrix.Rotate( &rotationAxis, -theta );
+						cvehMatrix = cvehMatrix.Rotate( &cvehMatrix.vRight, 0.15f );
+						cvehtrailer->SetMatrix( &cvehMatrix );
+					}
+
+					// fix trailer position
+
+					// this should either use the bar or the hitch depending on vehicle model
+					// needs testing to make sure what all vehicle models use the hitch
+					//cveh->GetTowHitchPos( &vecVehHitchPos );
+					cveh->GetTowBarPos( &vecVehHitchPos );
+
+					cvehtrailer->GetTowHitchPos( &vecTrailerHitchPos );
+					vecTrailerPos = cvehtrailer->GetInterface()->Placeable.matrix->vPos;
+					vecTrailerHitchPosOffset = vecTrailerHitchPos - vecTrailerPos;
+					vecTrailerPos += ( vecVehHitchPos - vecTrailerHitchPos ) - vecTrailerHitchPosOffset;
+					cvehtrailer->SetPosition( &vecTrailerPos );
+
+					// prevent collision from altering speed/spin
+					//cheat_state->_generic.nocols_enabled = 1;
+					//cheat_state->_generic.nocols_change_tick = GetTickCount();
+					cveh->GetVehicleInterface()->vecVelocityCollision = &vZero;
+					cveh->GetVehicleInterface()->vecSpinCollision = &vZero;
+				}
+				else
+				{
+					// get vehicle pointers
+					cveh = pPools->GetVehicle( (DWORD *)vinfo );
+					cvehtrailer = pPools->GetVehicle( (DWORD *)mytrailer_old );
+
+					// re-attach trailer
+					cvehtrailer->SetTowLink( cveh );
+
+					// prevent collision from altering speed/spin
+					cheat_state->_generic.nocols_enabled = 1;
+					cheat_state->_generic.nocols_change_tick = GetTickCount();
+				}
 			}
 			else
 			{

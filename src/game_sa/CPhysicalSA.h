@@ -34,8 +34,8 @@ public:
 /* IMPORTANT: KEEP "pad" in CVehicle UP-TO-DATE if you add something here (or eventually pad someplace else) */
 	CVector * vecVelocity;
 	CVector * vecSpin;
-	CVector * vecUnk3;
-	CVector * vecUnk4;
+	CVector * vecVelocityCollision; // velocity from collision, will be added to vecVelocity
+	CVector * vecSpinCollision; // spin from collision, will be added to vecSpin
 	CVector * vecUnk5;
 	CVector * vecUnk6;
     float pad [12];
