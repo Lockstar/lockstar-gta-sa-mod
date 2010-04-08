@@ -387,9 +387,9 @@ struct stTranslateGTASAMP_pedPool
 void											update_translateGTASAMP_vehiclePool ( void );
 void											update_translateGTASAMP_pedPool ( void );
 
-void											cmd_current_skin ();
 void											cmd_change_server ( char *param );
 void											cmd_current_server ( char *param );
+bool											findstrinstr ( char *find, char *text );
 void											cmd_tele_loc ( char *param );
 void											cmd_tele_locations ();
 
@@ -447,9 +447,10 @@ void											setSAMPInitScreenMatrix ( float camposX, float camposY, float cam
 																		  float camlookatX, float camlookatY,
 																		  float camlookatZ );
 void											setSAMPCustomSendRates ( int iOnFoot, int iInCar, int iAim, int iHeadSync );
-int												sampPatchEnableNameTags ( int iEnabled );
+int												sampPatchDisableNameTags ( int iEnabled );
 int												sampPatchDisableInteriorUpdate ( int iEnabled );
 int												sampPatchDisableScreeenshotKey ( int iEnabled );
+int												sampPatchDisableScoreboardToggleOn ( int iEnabled );
 
 // global pointer externals
 extern int										g_renderSAMP_initSAMPstructs;

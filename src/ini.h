@@ -239,10 +239,11 @@ struct settings
 
 	int						d3dtext_chat;
 	int						d3dtext_chat_lines;
-	int						d3dtext_chat_showhide_key;
 
 	int						d3dtext_kill;
+	int						d3dtext_score;
 
+	int						anti_spam;
 	int						chatbox_logging;
 
 	int						nametags_show;
@@ -320,7 +321,7 @@ struct settings
 	int						render_teleport_texts;
 	int						render_pickup_texts;
 	int						render_object_texts;
-	int						esp_players_airride;
+//	int						esp_players_airride;
 
 	int						screenshot_enable;
 	int						screenshot_clean;

@@ -93,12 +93,7 @@ void update_translateGTASAMP_pedPool ( void )
 }
 
 //ClientCommands
-void cmd_current_skin ()
-{
-	struct actor_info	*self = actor_info_get( ACTOR_SELF, NULL );
-	addMessageToChatWindow( "Skin ID: %i", self->base.model_alt_id );
-	addMessageToChatWindow( "Serverside Skin ID: %i", g_Players->pLocalPlayer->iSpawnSkin );
-}
+
 
 extern int	joining_server;
 void cmd_change_server ( char *param )	//127.0.0.1 7777 Username Password
@@ -138,7 +133,7 @@ void cmd_change_server ( char *param )	//127.0.0.1 7777 Username Password
 			return;
 		}
 
-		Log( "%i is %s", i, result );
+		//Log( "%i is %s", i, result );
 		switch ( i )
 		{
 		case 0:
@@ -185,18 +180,18 @@ void cmd_current_server ( char *param )
 	addMessageToChatWindow( "Username: %s", g_Players->szLocalPlayerName, g_Players->iLocalPlayerPing );
 }
 
-bool findstrinstr ( char *param, char *tele )
+bool findstrinstr ( char *find, char *text )
 {
 	char	*result;
 	char	temp, subtext[64];
 	int		i = 0;
 	for ( int j = 0; j < 64; j++ )
 	{
-		if ( !isalpha(param[j]) )
-			param[j] = '.';
+		if ( !isalpha(find[j]) )
+			find[j] = '.';
 	}
 
-	result = strtok( param, "." );
+	result = strtok( find, "." );
 	while ( result != NULL )
 	{
 		temp = 1;
@@ -210,7 +205,7 @@ bool findstrinstr ( char *param, char *tele )
 			i++;
 		}
 
-		if ( strstr(tele, subtext) == NULL )
+		if ( strstr(text, subtext) == NULL )
 			return false;
 		result = strtok( NULL, "." );
 	}
@@ -454,7 +449,6 @@ D3DCOLOR samp_color_get_trans ( int id, DWORD trans )
 }
 
 extern int	iShowVehicles;
-extern bool bShowChat;
 void sampMainCheat ()
 {
 	traceLastFunc( "sampMainCheat()" );
@@ -486,11 +480,6 @@ void sampMainCheat ()
 		}
 	}
 
-	if ( cheat_state->render_player_tags )
-		sampPatchEnableNameTags( 1 );
-	else
-		sampPatchEnableNameTags( 0 );
-
 	if ( KEY_PRESSED(set.key_map_show_vehicles) )
 		iShowVehicles ^= 1;
 
@@ -518,14 +507,6 @@ void sampMainCheat ()
 
 	if ( KEY_DOWN(set.chat_secondary_key) )
 	{
-		if ( KEY_PRESSED(set.d3dtext_chat_showhide_key) )
-		{
-			if ( bShowChat )
-				bShowChat = false;
-			else
-				bShowChat = true;
-		}
-
 		int			i, key, spam;
 		const char	*msg;
 		for ( i = 0; i < INI_CHATMSGS_MAX; i++ )
@@ -736,14 +717,10 @@ int getPlayerVehicleGTAScriptingID ( int iPlayerID )
 	// fix to always return our own vehicle always if that's what's being asked for
 	if ( iPlayerID == ACTOR_SELF )
 	{
-		stSAMPVehicle *sampveh = g_Vehicles->pSAMP_Vehicle[g_Players->pLocalPlayer->sCurrentVehicleID];
+		stSAMPVehicle	*sampveh = g_Vehicles->pSAMP_Vehicle[g_Players->pLocalPlayer->sCurrentVehicleID];
 		if ( sampveh )
 		{
-			return (int)
-				(
-					((DWORD) sampveh->pGTA_Vehicle) -
-					(DWORD) pool_vehicle->start
-				) / 2584;
+			return (int)( ((DWORD) sampveh->pGTA_Vehicle) - (DWORD) pool_vehicle->start ) / 2584;
 		}
 		else
 			return 0;
@@ -1235,6 +1212,60 @@ uint8_t _declspec ( naked ) chatboxlog_hook ( void )
 	__asm jmp chatboxlog_hook_continue
 }
 
+DWORD	server_message_jmp;
+uint8_t _declspec ( naked ) server_message_hook ( void )
+{
+	int		thismsg;
+	DWORD	thiscolor;
+	__asm mov thismsg, esi
+	__asm mov thiscolor, eax
+	thiscolor = ( thiscolor >> 8 ) | 0xFF000000;
+
+	static char		last_servermsg[512];
+	static DWORD	allow_show_again = GetTickCount();
+	if ( strcmp(last_servermsg, (char *)thismsg) != NULL || GetTickCount() > allow_show_again )
+	{
+		addToChatWindow( (char *)thismsg, thiscolor );
+		strcpy( last_servermsg, (char *)thismsg );
+		allow_show_again = GetTickCount() + 5000;
+	}
+
+	__asm mov ebx, g_dwSAMP_Addr
+	__asm add ebx, 0x369C3
+	__asm mov server_message_jmp, ebx
+	__asm jmp server_message_jmp
+}
+
+DWORD	client_message_jmp;
+uint8_t _declspec ( naked ) client_message_hook ( void )
+{
+	int			thismsg;
+	int			id;
+	DWORD		back;
+	static char last_clientmsg[SAMP_PLAYER_MAX][256];
+	__asm mov thismsg, edx
+	__asm mov back, ecx
+	__asm mov id, eax
+
+	static DWORD allow_show_again = GetTickCount();
+	if ( strcmp(last_clientmsg[id], (char *)thismsg) != NULL || GetTickCount() > allow_show_again )
+	{
+		DWORD	func = g_dwSAMP_Addr + 0xD870;
+		__asm mov ecx, back
+		__asm push thismsg
+		__asm call func
+		strcpy( last_clientmsg[id], (char *)thismsg );
+		allow_show_again = GetTickCount() + 5000;
+	}
+
+	__asm mov ebx, g_dwSAMP_Addr
+	__asm add ebx, 0x8D46
+	__asm mov client_message_jmp, ebx
+	__asm jmp client_message_jmp
+}
+
+#define SAMP_HOOKPOS_ServerMessage	0x369AC
+#define SAMP_HOOKPOS_ClientMessage	0x8D40
 #define SAMP_HOOK_STATECHANGE		0xCE15
 #define SAMP_HOOK_STREAMEDOUT_POS	0xB795
 #define SAMP_HOOK_CHATBOXLOG		0x36590
@@ -1245,6 +1276,26 @@ uint8_t _declspec ( naked ) chatboxlog_hook ( void )
 void installSAMPHooks ()
 {
 	CDetour api;
+
+	if ( set.anti_spam )
+	{
+		if ( memcmp_safe((uint8_t *)g_dwSAMP_Addr + SAMP_HOOKPOS_ServerMessage, hex_to_bin("6A00C1"), 3) )
+		{
+			if ( api.Create((uint8_t *) ((uint32_t) g_dwSAMP_Addr) + SAMP_HOOKPOS_ServerMessage,
+							 (uint8_t *)server_message_hook, DETOUR_TYPE_JMP, 5) == 0 )
+				Log( "Failed to hook ServerMessage." );
+		}
+		else
+			Log( "Failed to hook ServerMessage (memcmp)" );
+		if ( memcmp_safe((uint8_t *)g_dwSAMP_Addr + SAMP_HOOKPOS_ClientMessage, hex_to_bin("52E82A"), 3) )
+		{
+			if ( api.Create((uint8_t *) ((uint32_t) g_dwSAMP_Addr) + SAMP_HOOKPOS_ClientMessage,
+							 (uint8_t *)client_message_hook, DETOUR_TYPE_JMP, 5) == 0 )
+				Log( "Failed to hook ClientMessage." );
+		}
+		else
+			Log( "Failed to hook ClientMessage (memcmp)" );
+	}
 
 	if ( set.anti_carjacking )
 	{
@@ -1331,7 +1382,7 @@ void setSAMPCustomSendRates ( int iOnFoot, int iInCar, int iAim, int iHeadSync )
 }
 
 #define SAMP_DISABLE_NAMETAGS	0x3D7B0
-int sampPatchEnableNameTags ( int iEnabled )
+int sampPatchDisableNameTags ( int iEnabled )
 {
 	static struct patch_set sampPatchEnableNameTags_patch =
 	{
@@ -1384,5 +1435,37 @@ int sampPatchDisableScreeenshotKey ( int iEnabled )
 		return patcher_install( &sampPatchDisableScreeenshotKey_patch );
 	else if ( !iEnabled && sampPatchDisableScreeenshotKey_patch.installed )
 		return patcher_remove( &sampPatchDisableScreeenshotKey_patch );
+	return NULL;
+}
+
+#define SAMP_NOPSCOREBOARDTOGGLEONKEYLOCK	0x3B029
+#define SAMP_NOPSCOREBOARDTOGGLEON			0x3B032
+int sampPatchDisableScoreboardToggleOn ( int iEnabled )
+{
+	static struct patch_set sampPatchDisableScoreboardKeyLock_patch =
+	{
+		"NOP Scoreboard Toggle On KEYLOCK",
+		0,
+		0,
+		{ { 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_NOPSCOREBOARDTOGGLEONKEYLOCK ), NULL,
+					(uint8_t *)"\x00", NULL }, }
+	};
+	static struct patch_set sampPatchDisableScoreboardToggleOn_patch =
+	{
+		"NOP Scoreboard Toggle On",
+		0,
+		0,
+		{ { 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_NOPSCOREBOARDTOGGLEON ), NULL, (uint8_t *)"\x00", NULL }, }
+	};
+
+	if ( iEnabled && !sampPatchDisableScoreboardKeyLock_patch.installed )
+		patcher_install( &sampPatchDisableScoreboardKeyLock_patch );
+	else if ( !iEnabled && sampPatchDisableScoreboardKeyLock_patch.installed )
+		patcher_remove( &sampPatchDisableScoreboardKeyLock_patch );
+
+	if ( iEnabled && !sampPatchDisableScoreboardToggleOn_patch.installed )
+		return patcher_install( &sampPatchDisableScoreboardToggleOn_patch );
+	else if ( !iEnabled && sampPatchDisableScoreboardToggleOn_patch.installed )
+		return patcher_remove( &sampPatchDisableScoreboardToggleOn_patch );
 	return NULL;
 }

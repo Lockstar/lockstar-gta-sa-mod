@@ -470,20 +470,26 @@ public:
     // 1612
     RwFrame * pChassis;
     RwFrame * pWheelFrontRight;
-    BYTE padding271[4];
+    RwFrame * pWheelFrontRight_special; //special wheel (for vehicles with >4wheels)
     RwFrame * pWheelRearRight;
     RwFrame * pWheelFrontLeft;
-    BYTE padding272[4];
+    RwFrame * pWheelFrontLeft_special;
     RwFrame * pWheelRearLeft;
     RwFrame * pDoors [ 4 ];
     RwFrame * pBumpers [ 2 ];
-    BYTE padding273[8];
+    RwFrame * pHeli_rotor;			/*1664*/
+	RwFrame * pHeli_rotor_moving;
     RwFrame * pBonet;
     RwFrame * pBoot;
     RwFrame * pWindscreen;
     RwFrame * pExhaust;
+	RwFrame * pSpecial_a;		/* 1688 - special objects for fork,dozer,packer,harvester,...*/
+	RwFrame * pSpecial_b;		/* 1692 */
+	RwFrame * pSpecial_c;		/* 1696 */
+	RwFrame * pSpecial_d;		/* 1700 */
+	RwFrame * pSpecial_b_t;		/* 1704 - stunt plane, train */
 
-    BYTE padding280[576];
+    BYTE padding280[556];
     // 2276
     float m_fBurningTime;
 };
