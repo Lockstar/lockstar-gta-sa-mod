@@ -75,10 +75,15 @@ void CPhysical_ApplyGravity ( DWORD dwThis )
 			{
 				// It's our trailer, use our gravity vector
 				CVector vecGravity, vecMoveSpeed;
-				pVehicle->GetTowedByVehicle()->GetGravity( &vecGravity );
+				pVehicle->GetGravity( &vecGravity );
 				pVehicle->GetMoveSpeed( &vecMoveSpeed );
 				vecMoveSpeed += vecGravity * fTimeStep * fGravity;
 				pVehicle->SetMoveSpeed( &vecMoveSpeed );
+			}
+			else
+			{
+				// apply regular downward gravity
+				*(float *)( dwThis + 0x4C ) -= fTimeStep * fGravity;
 			}
 		}
 		else
