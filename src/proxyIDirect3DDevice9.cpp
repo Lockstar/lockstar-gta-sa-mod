@@ -1000,7 +1000,7 @@ void RenderVehicleHPBar ( void )
 
 	render->D3DBoxi( 0, bottom - 10, 101, 10, D3DCOLOR_ARGB(127, 0, 0, 0), NULL );
 	render->D3DBoxi( 0, bottom - 9, hp, 8, D3DCOLOR_ARGB(127, 191, 0, 0), 1000 );
-	_snprintf_s( text, sizeof(text), "VHealth: %d", (int)vinfo->hitpoints );
+	_snprintf_s( text, sizeof(text), "VHealth: %d", hp );
 	pD3DFontFixed->PrintShadow( (float)(2), (float)(bottom - 9), D3DCOLOR_XRGB(255, 255, 255), text );
 
 	if ( !set.speedometer_old_enable )
@@ -1055,29 +1055,6 @@ void RenderVehicleHPBar ( void )
 		}
 	}
 }
-
-// Function taken from the MTA:SA source code (MTA10/core/CGraphics.cpp)
-//void CalcScreenCoors ( D3DXVECTOR3 * vecWorld, D3DXVECTOR3 * vecScreen )
-//{
-//	/** C++-ifyed function 0x71DA00, formerly called by CHudSA::CalcScreenCoors **/
-//
-//	// Get the static view matrix as D3DXMATRIX
-//	D3DXMATRIX m ( (float*)(0xB6FA2C) );
-//
-//	// Get the static virtual screen (x,y)-sizes
-//	DWORD *dwLenX = (DWORD*)(0xC17044);
-//	DWORD *dwLenY = (DWORD*)(0xC17048);
-//
-//	// Do a transformation
-//	vecScreen->x = vecWorld->z * m._31 + vecWorld->y * m._21 + vecWorld->x * m._11 + m._41;
-//	vecScreen->y = vecWorld->z * m._32 + vecWorld->y * m._22 + vecWorld->x * m._12 + m._42;
-//	vecScreen->z = vecWorld->z * m._33 + vecWorld->y * m._23 + vecWorld->x * m._13 + m._43;
-//
-//	// Get the correct screen coordinates
-//	float fRecip = 1.0f / vecScreen->z;
-//	vecScreen->x *= fRecip * (*dwLenX);
-//	vecScreen->y *= fRecip * (*dwLenY);
-//}
 
 // Function taken from the MTA:SA source code (MTA10/core/CGraphics.cpp)
 void CalcScreenCoors ( D3DXVECTOR3 *vecWorld, D3DXVECTOR3 *vecScreen )
@@ -1632,10 +1609,48 @@ void renderVehicleTags ( void )
 						screenPosition.fY + 1.0f + ESP_tag_vehicle_pixelOffsetY + ESP_tag_vehicle_D3DBox_pixelOffsetY,
 						vh - 2.0f, 9.0f, vcolor );
 
-		_snprintf_s( buf, sizeof(buf), "Health: %0.2f", vh );
+		_snprintf_s( buf, sizeof(buf), "Health: %d", (int)vh );
 		pD3DFontFixedSmall->PrintShadow( screenPosition.fX + 4.0f,
 										 screenPosition.fY - h + 13.0f + ESP_tag_vehicle_pixelOffsetY,
 										 D3DCOLOR_ARGB(90, 0, 255, 0), buf );
+
+/*
+// trailer debugging visualizations
+		CVector vecTowBarPos, vecTowHitchPos;
+		iterVehicle->GetTowBarPos( &vecTowBarPos );
+		iterVehicle->GetTowHitchPos( &vecTowHitchPos );
+		// plot vehicle position box
+		render->D3DBox( screenPosition.fX,
+						screenPosition.fY,
+						5.0f,
+						5.0f,
+						D3DCOLOR_ARGB(255, 0, 0, 255) );
+		// plot Tow Bar box
+		poss.x = vecTowBarPos.fX;
+		poss.y = vecTowBarPos.fY;
+		poss.z = vecTowBarPos.fZ;
+		CalcScreenCoors( &poss, &screenposs );
+		screenPosition.fX = screenposs.x;
+		screenPosition.fY = screenposs.y;
+		render->D3DBox( screenPosition.fX,
+						screenPosition.fY,
+						10.0f,
+						10.0f,
+						D3DCOLOR_ARGB(255, 0, 255, 0) );
+		// plot Tow Hitch box
+		poss.x = vecTowHitchPos.fX;
+		poss.y = vecTowHitchPos.fY;
+		poss.z = vecTowHitchPos.fZ;
+		CalcScreenCoors( &poss, &screenposs );
+		screenPosition.fX = screenposs.x;
+		screenPosition.fY = screenposs.y;
+		render->D3DBox( screenPosition.fX,
+						screenPosition.fY,
+						10.0f,
+						10.0f,
+						D3DCOLOR_ARGB(255, 255, 0, 0) );
+*/
+
 	}
 }
 
