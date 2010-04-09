@@ -17,11 +17,9 @@ COMMITTING:
 
 TEST:
 fix Unjacker
-which vehicle models use hitch & don't work with Keep Trailer as stands
 
 
 TODO:
-add vehicle models that use hitch to Keep Trailer logic, to use the hitch instead
 make sure F12 panic key & clean screenshots is disabling everything
 
 

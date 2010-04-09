@@ -957,8 +957,7 @@ void cheat_handle_vehicle_blinking_carlights ( struct vehicle_info *vinfo, float
 	 ||	 class_id == VEHICLE_CLASS_TRAILER
 	 ||	 class_id == VEHICLE_CLASS_AIRPLANE
 	 ||	 class_id == VEHICLE_CLASS_HELI
-	 ||	 class_id == VEHICLE_CLASS_BIKE )
-	 return;
+	 ||	 class_id == VEHICLE_CLASS_BIKE ) return;
 
 	// enables car lights any time of day, not synced
 	// we need a better way to do this that can be disabled
@@ -1115,8 +1114,7 @@ void cheat_handle_vehicle_keepTrailer ( struct vehicle_info *vinfo, float time_d
 			{
 				// new variables to be used with R* classes
 				CVehicle	*cveh, *cvehtrailer;
-				CVector		cvehGrav, rotationAxis, vecVehHitchPos, vecTrailerHitchPos, vecTrailerHitchPosOffset,
-					vecTrailerPos;
+				CVector		cvehGrav, rotationAxis, vecVehTowBarPos, vecTrailerHitchPos, vecTrailerPos;
 				CVector		vZero ( 0.0f, 0.0f, 0.0f );
 				CMatrix		cvehMatrix;
 				float		theta;
@@ -1170,16 +1168,10 @@ void cheat_handle_vehicle_keepTrailer ( struct vehicle_info *vinfo, float time_d
 					}
 
 					// fix trailer position
-
-					// this should either use the bar or the hitch depending on vehicle model
-					// needs testing to make sure what all vehicle models use the hitch
-					//cveh->GetTowHitchPos( &vecVehHitchPos );
-					cveh->GetTowBarPos( &vecVehHitchPos );
-
+					cveh->GetTowBarPos( &vecVehTowBarPos );
 					cvehtrailer->GetTowHitchPos( &vecTrailerHitchPos );
 					vecTrailerPos = cvehtrailer->GetInterface()->Placeable.matrix->vPos;
-					vecTrailerHitchPosOffset = vecTrailerHitchPos - vecTrailerPos;
-					vecTrailerPos += ( vecVehHitchPos - vecTrailerHitchPos ) - vecTrailerHitchPosOffset;
+					vecTrailerPos += vecVehTowBarPos - vecTrailerHitchPos;
 					cvehtrailer->SetPosition( &vecTrailerPos );
 
 					// prevent collision from altering speed/spin
@@ -1187,6 +1179,8 @@ void cheat_handle_vehicle_keepTrailer ( struct vehicle_info *vinfo, float time_d
 					//cheat_state->_generic.nocols_change_tick = GetTickCount();
 					cveh->GetVehicleInterface()->vecVelocityCollision = &vZero;
 					cveh->GetVehicleInterface()->vecSpinCollision = &vZero;
+					cvehtrailer->GetVehicleInterface()->vecVelocityCollision = &vZero;
+					cvehtrailer->GetVehicleInterface()->vecSpinCollision = &vZero;
 				}
 				else
 				{
