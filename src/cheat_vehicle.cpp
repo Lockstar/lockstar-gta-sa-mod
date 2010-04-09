@@ -925,6 +925,13 @@ void cheat_handle_vehicle_blinking_carlights ( struct vehicle_info *vinfo, float
 {
 	traceLastFunc( "cheat_handle_blinking_carlights()" );
 
+	int class_id = gta_vehicle_get_by_id( vinfo->base.model_alt_id )->class_id;
+	if ( vinfo->vehicle_type != VEHICLE_TYPE_CAR
+	 ||	 class_id == VEHICLE_CLASS_TRAILER
+	 ||	 class_id == VEHICLE_CLASS_AIRPLANE
+	 ||	 class_id == VEHICLE_CLASS_HELI
+	 ||	 class_id == VEHICLE_CLASS_BIKE ) return;
+
 	if ( KEY_PRESSED(set.key_blinking_car_lights) )
 	{
 		// reset lights damage
@@ -951,13 +958,6 @@ void cheat_handle_vehicle_blinking_carlights ( struct vehicle_info *vinfo, float
 	struct actor_info	*actor_self = actor_info_get( ACTOR_SELF, ACTOR_ALIVE );
 	if ( vinfo->passengers[0] != actor_self )
 		return;
-
-	int class_id = gta_vehicle_get_by_id( vinfo->base.model_alt_id )->class_id;
-	if ( vinfo->vehicle_type != VEHICLE_TYPE_CAR
-	 ||	 class_id == VEHICLE_CLASS_TRAILER
-	 ||	 class_id == VEHICLE_CLASS_AIRPLANE
-	 ||	 class_id == VEHICLE_CLASS_HELI
-	 ||	 class_id == VEHICLE_CLASS_BIKE ) return;
 
 	// enables car lights any time of day, not synced
 	// we need a better way to do this that can be disabled
