@@ -2033,7 +2033,9 @@ static int menu_callback_players_vehwarp ( int op, struct menu_item *item )
 		if ( g_Players->pRemotePlayer[id]->bytePlayerState == PLAYER_STATE_DRIVER
 		 ||	 g_Players->pRemotePlayer[id]->bytePlayerState == PLAYER_STATE_PASSENGER )
 		{
-			vehicleJumper( getPlayerVehicleGTAScriptingID(id) );
+			int jumpToID = getPlayerVehicleGTAScriptingID( id );
+			if ( jumpToID > 0 )
+				vehicleJumper( jumpToID );
 		}
 		else
 		{

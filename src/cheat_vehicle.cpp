@@ -1421,6 +1421,7 @@ void cheat_handle_vehicle_spiderWheels ( struct vehicle_info *vinfo, float time_
 			}
 
 			// set the gravity/camera
+			offsetVector.ZeroNearZero();
 			cheat_vehicle_setGravity( cveh, offsetVector );
 		}
 	}

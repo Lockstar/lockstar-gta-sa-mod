@@ -65,7 +65,6 @@ static void cheat_main_actor ( float time_diff )
 				cheat_state->_generic.car_jacked = false;
 				return;
 			}
-
 			cheat_state->_generic.anti_carjackTick = 0;
 			cheat_state->_generic.car_jacked = false;
 			ScriptCommand( &put_actor_in_car, 1, cheat_state->_generic.car_jacked_last_vehicle_id );
