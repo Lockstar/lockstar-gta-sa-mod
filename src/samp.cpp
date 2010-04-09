@@ -689,29 +689,6 @@ int getPlayerState ( int iPlayerID )
 	return g_Players->pRemotePlayer[iPlayerID]->bytePlayerState;
 }
 
-/*
-int getPlayerVehicleGTAScriptingID ( int iPlayerID )
-{
-	uint32_t	car;
-
-	if ( iPlayerID != ACTOR_SELF )
-	{
-		if ( g_Players == NULL )
-		{
-			ScriptCommand ( &get_actor_car, 1, &car );
-			return car;
-		}
-
-		ScriptCommand ( &get_actor_car, g_Players->pRemotePlayer[iPlayerID]->pSAMP_Actor->ulGTA_Ped_ID, &car );
-		return car;
-	}
-	else
-	{
-		ScriptCommand ( &get_actor_car, 1, &car );
-		return car;
-	}
-}
-*/
 int getPlayerVehicleGTAScriptingID ( int iPlayerID )
 {
 	// fix to always return our own vehicle always if that's what's being asked for
@@ -720,7 +697,8 @@ int getPlayerVehicleGTAScriptingID ( int iPlayerID )
 		stSAMPVehicle	*sampveh = g_Vehicles->pSAMP_Vehicle[g_Players->pLocalPlayer->sCurrentVehicleID];
 		if ( sampveh )
 		{
-			return (int)( ((DWORD) sampveh->pGTA_Vehicle) - (DWORD) pool_vehicle->start ) / 2584;
+			return ScriptCarId( sampveh->pGTA_Vehicle );
+			//return (int)( ((DWORD) sampveh->pGTA_Vehicle) - (DWORD) pool_vehicle->start ) / 2584;
 		}
 		else
 			return 0;
@@ -735,12 +713,8 @@ int getPlayerVehicleGTAScriptingID ( int iPlayerID )
 		return 0;
 
 	// return the remote player's vehicle
-	return (int)
-		(
-			((DWORD) g_Players->pRemotePlayer[iPlayerID]->pSAMP_Vehicle->pGTA_Vehicle) -
-			(DWORD) pool_vehicle->start
-		) /
-				2584;
+	return ScriptCarId( g_Players->pRemotePlayer[iPlayerID]->pSAMP_Vehicle->pGTA_Vehicle );
+			
 }
 
 void spectatePlayer ( int iID )
