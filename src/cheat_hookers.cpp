@@ -193,7 +193,6 @@ bool _cdecl VehicleCamStart ( DWORD dwCam, DWORD pVehicleInterface )
 
 void _declspec ( naked ) HOOK_VehicleCamStart ()
 {
-	traceLastFunc( "HOOK_VehicleCamStart()" );
 	_asm
 	{
 		push edi
@@ -215,13 +214,13 @@ void _declspec ( naked ) HOOK_VehicleCamStart ()
 // ---------------------------------------------------
 void _cdecl VehicleCamTargetZTweak ( CVector *pvecCamTarget, float fTargetZTweak )
 {
+	traceLastFunc( "VehicleCamTargetZTweak()" );
 	// Replacement for "vecCamTarget = vecCarPosition + (0, 0, 1)*fZTweak"
 	*pvecCamTarget += gravcam_matGravity.vUp * fTargetZTweak;
 }
 
 void _declspec ( naked ) HOOK_VehicleCamTargetZTweak ()
 {
-	traceLastFunc( "HOOK_VehicleCamTargetZTweak()" );
 	_asm
 	{
 		fstp st
@@ -250,6 +249,7 @@ void _declspec ( naked ) HOOK_VehicleCamTargetZTweak ()
 // ---------------------------------------------------
 void _cdecl VehicleCamLookDir1 ( DWORD dwCam, DWORD pVehicleInterface )
 {
+	traceLastFunc( "VehicleCamLookDir1()" );
 	// For the same reason as in VehicleCamStart, inverse transform the camera's lookdir
 	// at this point
 	CVector *pvecLookDir = ( CVector * ) ( dwCam + 0x190 );
@@ -258,7 +258,6 @@ void _cdecl VehicleCamLookDir1 ( DWORD dwCam, DWORD pVehicleInterface )
 
 void _declspec ( naked ) HOOK_VehicleCamLookDir1 ()
 {
-	traceLastFunc( "HOOK_VehicleCamLookDir1()" );
 	_asm
 	{
 		mov eax, 0x59C910	// CVector::Normalise
@@ -298,7 +297,6 @@ bool _cdecl VehicleCamLookDir2 ( DWORD dwCam )
 
 void _declspec ( naked ) HOOK_VehicleCamLookDir2 ()
 {
-	traceLastFunc( "HOOK_VehicleCamLookDir2()" );
 	_asm
 	{
 		push esi
@@ -324,7 +322,6 @@ void _cdecl VehicleCamHistory ( DWORD dwCam, CVector *pvecTarget, float fTargetT
 
 void _declspec ( naked ) HOOK_VehicleCamHistory ()
 {
-	traceLastFunc( "HOOK_VehicleCamHistory()" );
 	_asm
 	{
 		push[esp + 0x0 + 0x7C]	// zoom
@@ -357,7 +354,6 @@ void _cdecl VehicleCamUp ( DWORD dwCam )
 
 void _declspec ( naked ) HOOK_VehicleCamUp ()
 {
-	traceLastFunc( "HOOK_VehicleCamUp()" );
 	_asm
 	{
 		mov edx, ecx
@@ -395,7 +391,6 @@ void _cdecl VehicleCamEnd ( DWORD pVehicleInterface )
 
 void _declspec ( naked ) HOOK_VehicleCamEnd ()
 {
-	traceLastFunc( "HOOK_VehicleCamEnd()" );
 	_asm
 	{
 		mov ds : [0xB6F020], edx
@@ -419,7 +414,6 @@ void _cdecl VehicleLookBehind ( DWORD dwCam, CVector *pvecEntityPos, float fDist
 
 void _declspec ( naked ) HOOK_VehicleLookBehind ()
 {
-	traceLastFunc( "HOOK_VehicleLookBehind()" );
 	_asm
 	{
 		push[esp + 0x14]
@@ -454,7 +448,6 @@ void _cdecl VehicleLookAside ( DWORD dwCam, CVector *pvecEntityPos, float fDirec
 
 void _declspec ( naked ) HOOK_VehicleLookAside ()
 {
-	traceLastFunc( "HOOK_VehicleLookAside" );
 	_asm
 	{
 		push[esp + 0x14]
