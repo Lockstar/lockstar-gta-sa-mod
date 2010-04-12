@@ -491,7 +491,11 @@ struct actor_info
 
 	uint8_t				__unknown_1376[4];			/* 1376 */
 
-	CEntitySAInterface	*pContactEntity;			/* 1384 - touching a CEntitySAInterface */
+	union
+	{
+		CEntitySAInterface	*pContactEntity;	/* 1384 - touching a CEntitySAInterface */
+		struct vehicle_info *vehicle_contact;	/* 1384 - standing on top of vehicle */
+	};
 
 	float				vehicle_contact_dist[3];	/* 1388 - distance to the middle of the car standing on */
 	uint8_t				__unknown_1400[12];			/* 1400 - somehow related to vehicle_contact */

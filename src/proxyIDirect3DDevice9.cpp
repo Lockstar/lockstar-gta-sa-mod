@@ -1108,7 +1108,7 @@ void renderPlayerTags ( void )
 		return;
 
 	//Enable samp Nametags and exit this function, if panic key
-	if ( cheat_state->_generic.cheat_panic_enabled )
+	if ( cheat_state->_generic.cheat_panic_enabled || !cheat_state->render_player_tags)
 	{
 		sampPatchDisableNameTags( 0 );
 		return;
@@ -1932,13 +1932,14 @@ void renderScoreList ()
 	lowest = 115.0f;
 
 	int max_amount_players = ( pPresentParam.BackBufferHeight - 110.0f - lowest ) / ( 1.0f + pD3DFont->DrawHeight() );
-	max_amount_players -= 2;	//1
+	max_amount_players -= 3;
 	int			rendered_players = 0;
 	static int	current_player = 0;
 	float		loc[2] = { ( pPresentParam.BackBufferWidth / 8 ) * 2.0f, 100.0f };
 
 	if ( amount_players < max_amount_players )
 	{
+		max_amount_players += 1;
 		current_player = 0;
 		if ( amount_players < max_amount_players / 2 )
 		{
@@ -1950,12 +1951,11 @@ void renderScoreList ()
 	}
 	else if ( amount_players > max_amount_players )
 	{
-		max_amount_players -= 1;
 		if ( KEY_PRESSED(VK_NEXT) )
 		{
 			current_player += max_amount_players;
-			if ( current_player > (amount_players - max_amount_players) )
-				current_player = amount_players - max_amount_players + 2;
+			if ( current_player > (3+amount_players-max_amount_players) )
+				current_player = 2+amount_players-max_amount_players;
 		}
 		else if ( KEY_PRESSED(VK_PRIOR) )
 		{
@@ -2555,6 +2555,13 @@ void renderPlayerInfo ( int iPlayerID )
 
 	if ( g_Players->pRemotePlayer[iPlayerID] != NULL )
 	{
+		sprintf( buf, "Is NPC: %d", g_Players->pRemotePlayer[iPlayerID]->iIsNPC );
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		sprintf( buf, "Team ID: %u", g_Players->pRemotePlayer[iPlayerID]->byteTeamID );
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+
 		if ( g_Players->pRemotePlayer[iPlayerID]->pSAMP_Actor == NULL )
 		{
 			pD3DFontFixed->PrintShadow( 20.0f, y, D3DCOLOR_XRGB(200, 0, 0), "Player is streamed out or invalid." );
@@ -2562,13 +2569,7 @@ void renderPlayerInfo ( int iPlayerID )
 		}
 		else
 		{
-			sprintf( buf, "Is NPC: %d", g_Players->pRemotePlayer[iPlayerID]->iIsNPC );
-			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
-			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
 			sprintf( buf, "Player state: %u", g_Players->pRemotePlayer[iPlayerID]->bytePlayerState );
-			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
-			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
-			sprintf( buf, "Team ID: %u", g_Players->pRemotePlayer[iPlayerID]->byteTeamID );
 			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
 			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
 			sprintf( buf, "Actor position: %0.2f, %0.2f, %0.2f", g_Players->pRemotePlayer[iPlayerID]->fActorPosition[0],
