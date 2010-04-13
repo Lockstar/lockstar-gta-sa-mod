@@ -386,7 +386,7 @@ struct actor_info					*actor_info_get ( int id, int flags );
 struct vehicle_info					*vehicle_info_get ( int id, int flags );
 
 // called by TIME_GET macro
-uint32_t							__time_get ( void );
+uint64_t							__time_get ( void );
 
 // m0d functions, eventually some of this will become part of the m0d framework
 void								cheat_state_text ( const char *fmt, ... );

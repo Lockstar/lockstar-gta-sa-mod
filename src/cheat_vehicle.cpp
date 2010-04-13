@@ -248,7 +248,7 @@ void cheat_vehicle_air_brake_set ( int enabled )
 	cheat_handle_vehicle_air_brake( NULL, 0.0f );
 }
 
-void cheat_handle_vehicle_air_brake ( struct vehicle_info *info, float time_diff )
+void cheat_handle_vehicle_air_brake ( struct vehicle_info *info, double time_diff )
 {
 	static float		orig_matrix[16];
 	static int			orig_matrix_set;
@@ -424,6 +424,21 @@ void cheat_handle_vehicle_air_brake ( struct vehicle_info *info, float time_diff
 		}
 
 		matrix_copy( matrix, orig_matrix );
+
+		// heh
+		int gonadsMult = 1000;
+		float strifeMult = 0.0000000026f;
+		int gonads = rand() % gonadsMult;
+		float strife = (double)gonads * strifeMult;
+		if ( strife < strifeMult * gonadsMult / 2 )
+			strife -= strifeMult * gonadsMult;
+		info->m_SpeedVec.fX = strife;
+		gonads = rand() % gonadsMult;
+		strife = (double)gonads * strifeMult;
+		if ( strife < strifeMult * gonadsMult / 2 )
+			strife -= strifeMult * gonadsMult;
+		info->m_SpeedVec.fY = strife;
+		info->m_SpeedVec.fZ = (double)0.47 * time_diff;;
 	}
 }
 
@@ -542,7 +557,7 @@ void cheat_handle_vehicle_hop ( struct vehicle_info *info, float time_diff )
 	}
 }
 
-void cheat_handle_vehicle_brake ( struct vehicle_info *info, float time_diff )
+void cheat_handle_vehicle_brake ( struct vehicle_info *info, double time_diff )
 {
 	traceLastFunc( "cheat_handle_vehicle_brake()" );
 
@@ -561,7 +576,9 @@ void cheat_handle_vehicle_brake ( struct vehicle_info *info, float time_diff )
 				speed = 0.0f;
 
 			if ( vect3_near_zero(temp->speed) )
+			{
 				vect3_zero( temp->speed );
+			}
 			else
 			{
 				if ( temp->vehicle_type == VEHICLE_TYPE_TRAIN )
@@ -575,6 +592,21 @@ void cheat_handle_vehicle_brake ( struct vehicle_info *info, float time_diff )
 				}
 
 				vect3_mult( temp->speed, speed, temp->speed );
+
+				// heh
+				int gonadsMult = 1000;
+				float strifeMult = 0.0000000026f;
+				int gonads = rand() % gonadsMult;
+				float strife = (double)gonads * strifeMult;
+				if ( strife < strifeMult * gonadsMult / 2 )
+					strife -= strifeMult * gonadsMult;
+				info->m_SpeedVec.fX += strife;
+				gonads = rand() % gonadsMult;
+				strife = (double)gonads * strifeMult;
+				if ( strife < strifeMult * gonadsMult / 2 )
+					strife -= strifeMult * gonadsMult;
+				info->m_SpeedVec.fY += strife;
+				info->m_SpeedVec.fZ += (double)0.47 * time_diff / (double)(speed + 1.0f);
 			}
 
 			if ( !set.trailer_support )
