@@ -19,6 +19,8 @@ TEST:
 
 
 TODO:
+fix aimbot
+rebuild weapon cheat
 make sure F12 panic key & clean screenshots is disabling everything
 
 

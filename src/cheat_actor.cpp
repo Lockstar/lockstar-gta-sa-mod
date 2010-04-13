@@ -42,12 +42,14 @@ static struct patch_set patch_gta_auto_aim =
 	"GTA: Autoaim",
 	0,
 	0,
-	{ { 1, (void *)0x00B6EC2E, (uint8_t *)"\x01", (uint8_t *)"\x00", NULL }, { 1, (void *)0x00BA6818, (uint8_t *)"\x00",
-				(uint8_t *)"\x01", NULL }, { 5, (void *)0x00524013,
-					(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL }, { 5, (void *)0x00523F3E,
-						(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL }, { 5, (void *)0x00525615,
-							(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL }, { 5, (void *)0x005221FC,
-								(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL } }
+	{
+		{ 1, (void *)0x00B6EC2E, (uint8_t *)"\x01", (uint8_t *)"\x00", NULL },
+		{ 1, (void *)0x00BA6818, (uint8_t *)"\x00", (uint8_t *)"\x01", NULL },
+		{ 5, (void *)0x00524013, (uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL },
+		{ 5, (void *)0x00523F3E, (uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL },
+		{ 5, (void *)0x00525615, (uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL },
+		{ 5, (void *)0x005221FC, (uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL }
+	}
 };
 
 void cheat_handle_actor_nocols ( struct actor_info *info )
@@ -99,84 +101,78 @@ void cheat_handle_actor_autoaim ( struct actor_info *info, float time_diff )
 {
 	if ( KEY_PRESSED(set.key_autoaim) )
 	{
+		cheat_state->actor.autoaim ^= 1;
 		if ( set.use_gta_autoaim )
 		{
 			if ( cheat_state->actor.autoaim == 0 )
 			{
 				patcher_install( &patch_gta_auto_aim );
-				cheat_state->actor.autoaim ^= 1;
 			}
 			else
 			{
 				patcher_remove( &patch_gta_auto_aim );
-				cheat_state->actor.autoaim ^= 1;
-			}
-		}
-		else
-		{
-			cheat_state->actor.autoaim ^= 1;
-
-			static int	prev_id;
-			prev_id = -1;
-
-			if ( cheat_state->actor.autoaim )
-			{
-				static float		adj_rx, adj_rz, prev_rx, prev_rz;
-				float				rx = *(float *)0x00B6F248;
-				float				rz = *(float *)0x00B6F258;
-
-				int					nearest_id = actor_find_nearest( ACTOR_ALIVE );
-				struct actor_info	*nearest;
-				float				vect[3], ax, az;
-
-				if ( nearest_id == -1 )
-				{
-					cheat_state_text( "No players found; auto aim disabled." );
-					cheat_state->actor.autoaim = 0;
-					return;
-				}
-
-				if ( nearest_id == prev_id )
-				{
-					adj_rx += rx - prev_rx;
-					adj_rz += rz - prev_rz;
-				}
-
-				prev_id = nearest_id;
-
-				if ( (nearest = actor_info_get(nearest_id, ACTOR_ALIVE)) == NULL )
-					return;			/* won't happen */
-
-				/*cheat_state_text("%.3f %.3f %d %d", adj_rx, adj_rz, nearest->state, nearest->state_running);*/
-				/* calculate distance vector */
-				vect3_vect3_sub( &nearest->base.matrix[4 * 3], &info->base.matrix[4 * 3], vect );
-
-				/* z angle */
-				az = atan2f( vect[0], vect[1] );
-
-				/* rotate around z axis */
-				vect[1] = sinf( az ) * vect[0] + cosf( az ) * vect[1];
-
-				/* x angle */
-				ax = atan2f( vect[1], vect[2] );
-
-				ax = -ax + M_PI / 2.0f + adj_rx;
-				az = -az - M_PI / 2.0f + adj_rz;
-
-				if ( ax < -M_PI )
-					ax = -M_PI;
-				else if ( ax > M_PI )
-					ax = M_PI;
-
-				/* XXX make function */
-				prev_rx = *(float *)0x00B6F248 = ax;
-				prev_rz = *(float *)0x00B6F258 = az;
 			}
 		}
 	}
+
+	if ( cheat_state->actor.autoaim && !set.use_gta_autoaim )
+	{
+		static int	prev_id;
+		static float		adj_rx, adj_rz, prev_rx, prev_rz;
+		float				rx = *(float *)0x00B6F248;
+		float				rz = *(float *)0x00B6F258;
+
+		int					nearest_id = actor_find_nearest( ACTOR_ALIVE );
+		struct actor_info	*nearest;
+		float				vect[3], ax, az;
+
+		if ( nearest_id == -1 )
+		{
+			cheat_state_text( "No players found; auto aim disabled." );
+			cheat_state->actor.autoaim = 0;
+			return;
+		}
+
+		if ( nearest_id == prev_id )
+		{
+			adj_rx += rx - prev_rx;
+			adj_rz += rz - prev_rz;
+		}
+
+		prev_id = nearest_id;
+
+		if ( (nearest = actor_info_get(nearest_id, ACTOR_ALIVE)) == NULL )
+			return;			/* won't happen */
+
+		/*cheat_state_text("%.3f %.3f %d %d", adj_rx, adj_rz, nearest->state, nearest->state_running);*/
+		/* calculate distance vector */
+		vect3_vect3_sub( &nearest->base.matrix[4 * 3], &info->base.matrix[4 * 3], vect );
+
+		/* z angle */
+		az = atan2f( vect[0], vect[1] );
+
+		/* rotate around z axis */
+		vect[1] = sinf( az ) * vect[0] + cosf( az ) * vect[1];
+
+		/* x angle */
+		ax = atan2f( vect[1], vect[2] );
+
+		ax = -ax + M_PI / 2.0f + adj_rx;
+		az = -az - M_PI / 2.0f + adj_rz;
+
+		if ( ax < -M_PI )
+			ax = -M_PI;
+		else if ( ax > M_PI )
+			ax = M_PI;
+
+		/* XXX make function */
+		prev_rx = *(float *)0x00B6F248 = ax;
+		prev_rz = *(float *)0x00B6F258 = az;
+	}
+
 }
 
-void cheat_handle_actor_air_brake ( struct actor_info *info, float time_diff )
+void cheat_handle_actor_air_brake ( struct actor_info *info, double time_diff )
 {
 	static float	orig_pos[3];
 	static float	fall_speed_mult;
@@ -223,9 +219,9 @@ void cheat_handle_actor_air_brake ( struct actor_info *info, float time_diff )
 			vect3_zero( info->speed );
 
 			// new pedFlags
-			info->pedFlags.bIsStanding = true;
-			info->pedFlags.bWasStanding = true;
-			info->pedFlags.bStayInSamePlace = true;
+			//info->pedFlags.bIsStanding = true;
+			//info->pedFlags.bWasStanding = true;
+			//info->pedFlags.bStayInSamePlace = true;
 		}
 	}
 	else
@@ -307,6 +303,21 @@ void cheat_handle_actor_air_brake ( struct actor_info *info, float time_diff )
 		}
 
 		vect3_copy( &matrix[4 * 3], orig_pos );
+
+		// heh
+		int gonadsMult = 1000;
+		float strifeMult = 0.0000000026f;
+		int gonads = rand() % gonadsMult;
+		float strife = (double)gonads * strifeMult;
+		if ( strife < strifeMult * gonadsMult / 2 )
+			strife -= strifeMult * gonadsMult;
+		info->m_SpeedVec.fX = strife;
+		gonads = rand() % gonadsMult;
+		strife = (double)gonads * strifeMult;
+		if ( strife < strifeMult * gonadsMult / 2 )
+			strife -= strifeMult * gonadsMult;
+		info->m_SpeedVec.fY = strife;
+		info->m_SpeedVec.fZ = (double)0.47 * time_diff;
 	}
 }
 
