@@ -384,9 +384,11 @@ void _cdecl VehicleCamEnd ( DWORD pVehicleInterface )
 	CVehicle	*pVehicle = pPools->GetVehicle( (DWORD *)pVehicleInterface );
 	if ( !pVehicle )
 		return;
-
+	traceLastFunc( "VehicleCamEnd() has CVehicle*" );
 	pVehicle->SetMatrix( &gravcam_matVehicleTransform );
+	traceLastFunc( "VehicleCamEnd() matrix has been set" );
 	pVehicle->SetMoveSpeed( &gravcam_vecVehicleVelocity );
+	traceLastFunc( "VehicleCamEnd() move speed has been set, returning" );
 }
 
 void _declspec ( naked ) HOOK_VehicleCamEnd ()

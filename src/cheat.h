@@ -23,8 +23,9 @@
 /* only works for vehicles atm */
 
 //#define TELEPORT_DETACHABLES
-#define MSEC_TO_TIME( v )	( (uint32_t) (v) * 10 )
+#define MSEC_TO_TIME( v )	( (uint64_t) (v) * 10 )
 #define TIME_TO_FLOAT( v )	( (float)((double)(v) / (double)MSEC_TO_TIME(1000)) )
+#define TIME_TO_DOUBLE( v )	( (double)((double)(v) / (double)MSEC_TO_TIME(1000)) )
 
 // main pool addresses
 #define ACTOR_POOL_POINTER		0x00B74490
@@ -432,7 +433,14 @@ struct actor_info
 	struct object_base	base;					/* 65 */
 	uint8_t				flags;					/* 66 immunities */
 	uint8_t				__unknown_67[1];		/* 67 */
-	float				speed[3];				/* 68 */
+	union	/* 68 */
+	{
+		struct
+		{
+			CVector m_SpeedVec;
+		};
+		float	speed[3];
+	};
 	float				spin[3];				/* 80 */
 	float				speed_rammed[3];		/* 92 */
 	float				spin_rammed[3];			/* 104 */
@@ -789,7 +797,7 @@ static struct patch_set patch_vehicle_inf_NOS =
 /* __time_current is set in cheat_hook(). the time is "cached".
    by doing this we save some CPU time, and we get a constant time */
 #define time_get()	__time_current
-extern uint32_t				__time_current;
+extern uint64_t				__time_current;
 
 extern struct pool			*pool_actor;
 extern struct pool			*pool_vehicle;

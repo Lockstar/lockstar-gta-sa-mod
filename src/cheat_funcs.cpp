@@ -818,7 +818,7 @@ void gta_blow_all_cars ()
    will wrap after 119.3 hours (should be ok though,
    since SA-MP usually crashes at least once every hour,
    and very few people play for 119 hours straight... */
-uint32_t __time_get ( void )
+uint64_t __time_get ( void )
 {
 	static int				init = 0;
 	static ULARGE_INTEGER	init_time;
@@ -829,7 +829,7 @@ uint32_t __time_get ( void )
 	time_now.LowPart = ft.dwLowDateTime;
 	time_now.HighPart = ft.dwHighDateTime;
 
-	time_now.QuadPart /= 1000;	/* convert to 100 usec */
+	time_now.QuadPart /= (uint64_t)1000;	/* convert to 100 usec */
 
 	if ( !init )
 	{
@@ -837,7 +837,7 @@ uint32_t __time_get ( void )
 		init = 1;
 	}
 
-	return ( uint32_t ) ( time_now.QuadPart - init_time.QuadPart );
+	return ( uint64_t ) ( time_now.QuadPart - init_time.QuadPart );
 }
 
 void cheat_state_text ( const char *fmt, ... )
