@@ -31,7 +31,7 @@
 // old camera thing, still used in RenderMapDot()
 float						*cam_matrix = (float *)0xB6F99C;
 
-uint32_t					__time_current;
+uint64_t					__time_current;
 struct pool					*pool_actor;
 struct pool					*pool_vehicle;
 
@@ -90,7 +90,7 @@ static void cheat_main_actor ( float time_diff )
 	//cheat_handle_spiderFeet(info, time_diff);
 }
 
-static void cheat_main_vehicle ( float time_diff )
+static void cheat_main_vehicle ( double time_diff )
 {
 	traceLastFunc( "cheat_main_vehicle()" );
 
@@ -150,7 +150,7 @@ void cheat_hook ( HWND wnd )
 	traceLastFunc( "cheat_hook()" );
 
 	// get the time
-	static uint32_t time_last;
+	static uint64_t time_last;
 	__time_current = __time_get();
 
 	// for looping
@@ -383,7 +383,7 @@ void cheat_hook ( HWND wnd )
 		// do stuff :p
 		if ( cheat_state->state == CHEAT_STATE_VEHICLE )
 		{
-			cheat_main_vehicle( TIME_TO_FLOAT(time_get() - time_last) );
+			cheat_main_vehicle( TIME_TO_DOUBLE(time_get() - time_last) );
 		}
 		else if ( cheat_state->state == CHEAT_STATE_ACTOR )
 		{
