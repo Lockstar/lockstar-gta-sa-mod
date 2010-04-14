@@ -2592,6 +2592,8 @@ void renderPlayerInfo ( int iPlayerID )
 				sprintf( buf, " Seat ID: %u", g_Players->pRemotePlayer[iPlayerID]->byteSeatID );
 				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
 				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+#ifdef M0D_DEV
+				//user probably doesn't care about the Matrix
 				for ( int iRow = 0; iRow < 4; iRow++ )
 				{
 					for ( int iCol = 0; iCol < 3; iCol++ )
@@ -2603,6 +2605,7 @@ void renderPlayerInfo ( int iPlayerID )
 						( y ) += 1.0f + pD3DFontFixed->DrawHeight();
 					}
 				}
+#endif
 			}
 		}
 	}
