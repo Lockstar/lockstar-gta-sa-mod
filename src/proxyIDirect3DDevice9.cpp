@@ -3561,13 +3561,29 @@ HRESULT proxyIDirect3DDevice9::EndScene ( void )
 #ifdef M0D_DEV
 			if ( !set.flickering_problem )
 			{
-				pD3DFontFixed->PrintShadow( 0.0f, 0.0f, D3DCOLOR_ARGB(255, 0, 255, 0), NAME );
+				if ( set.screenshot_clean )
+				{
+					if ( !isPornographyMasterControlRunning )
+						pD3DFontFixed->PrintShadow( 0.0f, 0.0f, D3DCOLOR_ARGB(255, 0, 255, 0), NAME );
+				}
+				else
+				{
+					pD3DFontFixed->PrintShadow( 0.0f, 0.0f, D3DCOLOR_ARGB(255, 0, 255, 0), NAME );
+				}
 			}
 			else
 			{
 				if ( game_inited )
 					if ( !gta_menu_active() )
-						pD3DFontFixed->PrintShadow( 0.0f, 0.0f, D3DCOLOR_ARGB(255, 0, 255, 0), NAME );
+						if ( set.screenshot_clean )
+						{
+							if ( !isPornographyMasterControlRunning )
+								pD3DFontFixed->PrintShadow( 0.0f, 0.0f, D3DCOLOR_ARGB(255, 0, 255, 0), NAME );
+						}
+						else
+						{
+							pD3DFontFixed->PrintShadow( 0.0f, 0.0f, D3DCOLOR_ARGB(255, 0, 255, 0), NAME );
+						}
 			}
 #endif // M0D_DEV
 			if ( set.d3dtext_hud )
