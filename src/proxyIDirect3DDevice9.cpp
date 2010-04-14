@@ -305,7 +305,7 @@ DWORD WINAPI PornographyMasterControl ( LPVOID trash )
 	ULONG_PTR			gdiplusToken;
 	if ( Ok != GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL) )
 	{
-		addMessageToChatWindowSS( "Could not take a screenshot.  GDI+ FAIL!" );
+		cheat_state_text( "Could not take a screenshot.  GDI+ FAIL!" );
 		isPornographyMasterControlRunning = false;
 		ExitThread( 0 );
 	}
@@ -323,7 +323,7 @@ DWORD WINAPI PornographyMasterControl ( LPVOID trash )
 	HBITMAP g0tP0rn = PornographyGetPorn();
 	if ( g0tP0rn == 0 )
 	{
-		addMessageToChatWindowSS( "Could not take a screenshot.  D3D FAIL!" );
+		cheat_state_text( "Could not take a screenshot.  D3D FAIL!  Check m0d_s0beit_sa.log" );
 		goto fail1;
 	}
 
@@ -370,11 +370,11 @@ DWORD WINAPI PornographyMasterControl ( LPVOID trash )
 
 	if ( Ok == hardcorePorn->Save(ToWChar(m_PornoName), &encoderClsid, &encoderParameters) )
 	{
-		addMessageToChatWindowSS( "Screenshot saved to: %s", m_PornoName );
+		cheat_state_text( "Screenshot saved to: %s", m_PornoName );
 	}
 	else
 	{
-		addMessageToChatWindowSS( "Could not take a screenshot.  Save FAIL!" );
+		cheat_state_text( "Could not take a screenshot.  Save FAIL!" );
 	};
 
 	// clean up after the bastards
@@ -3776,10 +3776,10 @@ pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLe
 
 				if ( cheat_state->text_time > 0 && time_get() - cheat_state->text_time < MSEC_TO_TIME(3000) )
 				{
-					uint32_t	color, alpha = 191;
+					uint32_t	color, alpha = 255;
 
 					if ( time_get() - cheat_state->text_time > MSEC_TO_TIME(2000) )
-						alpha -= ( time_get() - cheat_state->text_time - MSEC_TO_TIME(2000) ) * 191 / MSEC_TO_TIME( 1000 );
+						alpha -= ( time_get() - cheat_state->text_time - MSEC_TO_TIME(2000) ) * 255 / MSEC_TO_TIME( 1000 );
 
 					color = D3DCOLOR_ARGB( alpha, 255, 255, 255 );
 
@@ -3826,7 +3826,7 @@ no_render: ;
 	{
 		isRequestingScreenshot = false;
 		if ( Pornography() == false )
-			addMessageToChatWindowSS( "Could not take a screenshot.  Thread FAIL!" );
+			cheat_state_text( "Could not take a screenshot.  Thread FAIL!" );
 	}
 
 	// return GPU's EndScene()
