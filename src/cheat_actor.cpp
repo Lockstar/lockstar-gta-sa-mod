@@ -109,27 +109,10 @@ void cheat_handle_actor_autoaim ( struct actor_info *info, float time_diff )
 			if ( cheat_state->actor.autoaim == 1 )
 			{
 				patcher_install( &patch_gta_auto_aim );
-				if ( patch_gta_auto_aim.failed )
-					Log( "aimbot patch: init failed" );
-				if ( !patch_gta_auto_aim.installed )
-					Log( "aimbot patch: install failed" );
-
-				//CControllerConfigManager *controller = pGameInterface->GetControllerConfigManager();
-				//controller->SetInputType(0);
-				//controller->SetControllerKeyAssociatedWithAction(AIM_WEAPON, 1, MOUSE);
-				/*
-				CPlayerInfoSA *cplayerInfoSA = (CPlayerInfoSA*)pGameInterface->GetPlayerInfo();
-				CPlayerPed *cplayer = cplayerInfoSA->GetPlayerPed();
-				eWeaponSlot weaponSlot = cplayer->GetCurrentWeaponSlot();
-				CWeaponInfo *weaponInfo = cplayer->GetWeapon(weaponSlot)->GetInfo();
-				weaponInfo->SetTargetRange(100.0f);
-				*/
 			}
 			else
 			{
 				patcher_remove( &patch_gta_auto_aim );
-
-				//pGameInterface->GetControllerConfigManager()->SetInputType(1);
 			}
 		}
 	}
