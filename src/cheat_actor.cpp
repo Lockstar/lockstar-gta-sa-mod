@@ -123,7 +123,7 @@ void cheat_handle_actor_autoaim ( struct actor_info *info, float time_diff )
 				eWeaponSlot weaponSlot = cplayer->GetCurrentWeaponSlot();
 				CWeaponInfo *weaponInfo = cplayer->GetWeapon(weaponSlot)->GetInfo();
 				weaponInfo->SetTargetRange(100.0f);
-*/
+				*/
 			}
 			else
 			{
