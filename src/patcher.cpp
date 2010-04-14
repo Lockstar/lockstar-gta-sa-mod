@@ -38,6 +38,8 @@ char *dumb_hex_dump ( void *data, uint32_t len )
 
 int patcher_install ( struct patch_set *patch )
 {
+	traceLastFunc( "patcher_install()" );
+
 	int i;
 
 	/* previous initialization failed; always return error. */
@@ -122,6 +124,8 @@ int patcher_install ( struct patch_set *patch )
 
 int patcher_remove ( struct patch_set *patch )
 {
+	traceLastFunc( "patcher_remove()" );
+
 	int i;
 
 	if ( patch->failed )

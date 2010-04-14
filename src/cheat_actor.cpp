@@ -37,23 +37,10 @@ void cheat_actor_teleport ( struct actor_info *info, const float pos[3], int int
 	gta_interior_id_set( interior_id );
 }
 
-static struct patch_set patch_gta_auto_aim =
-{
-	"GTA: Autoaim",
-	0,
-	0,
-	{
-		{ 1, (void *)0x00B6EC2E, (uint8_t *)"\x01", (uint8_t *)"\x00", NULL },
-		{ 1, (void *)0x00BA6818, (uint8_t *)"\x00", (uint8_t *)"\x01", NULL },
-		{ 5, (void *)0x00524013, (uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL },
-		{ 5, (void *)0x00523F3E, (uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL },
-		{ 5, (void *)0x00525615, (uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL },
-		{ 5, (void *)0x005221FC, (uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL }
-	}
-};
-
 void cheat_handle_actor_nocols ( struct actor_info *info )
 {
+	traceLastFunc( "cheat_handle_actor_nocols()" );
+
 	if ( !cheat_state->_generic.nocols_enabled && !cheat_state->_generic.nocols_toggled )
 		return;
 
@@ -97,27 +84,59 @@ void cheat_handle_actor_nocols ( struct actor_info *info )
 	}
 }
 
+static struct patch_set patch_gta_auto_aim =
+{
+	"GTA: Autoaim",
+	0,
+	0,
+	{ { 1, (void *)0x00B6EC2E, (uint8_t *)"\x01", (uint8_t *)"\x00", NULL }, { 1, (void *)0x00BA6818, (uint8_t *)"\x00",
+				(uint8_t *)"\x01", NULL }, { 5, (void *)0x00524013,
+					(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL }, { 5, (void *)0x00523F3E,
+						(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL }, { 5, (void *)0x00525615,
+							(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL }, { 5, (void *)0x005221FC,
+								(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL } }
+};
+
 void cheat_handle_actor_autoaim ( struct actor_info *info, float time_diff )
 {
+	traceLastFunc( "cheat_handle_actor_autoaim()" );
+
 	if ( KEY_PRESSED(set.key_autoaim) )
 	{
 		cheat_state->actor.autoaim ^= 1;
 		if ( set.use_gta_autoaim )
 		{
-			if ( cheat_state->actor.autoaim == 0 )
+			if ( cheat_state->actor.autoaim == 1 )
 			{
 				patcher_install( &patch_gta_auto_aim );
+				if ( patch_gta_auto_aim.failed )
+					Log( "aimbot patch: init failed" );
+				if ( !patch_gta_auto_aim.installed )
+					Log( "aimbot patch: install failed" );
+
+				//CControllerConfigManager *controller = pGameInterface->GetControllerConfigManager();
+				//controller->SetInputType(0);
+				//controller->SetControllerKeyAssociatedWithAction(AIM_WEAPON, 1, MOUSE);
+				/*
+				CPlayerInfoSA *cplayerInfoSA = (CPlayerInfoSA*)pGameInterface->GetPlayerInfo();
+				CPlayerPed *cplayer = cplayerInfoSA->GetPlayerPed();
+				eWeaponSlot weaponSlot = cplayer->GetCurrentWeaponSlot();
+				CWeaponInfo *weaponInfo = cplayer->GetWeapon(weaponSlot)->GetInfo();
+				weaponInfo->SetTargetRange(100.0f);
+*/
 			}
 			else
 			{
 				patcher_remove( &patch_gta_auto_aim );
+
+				//pGameInterface->GetControllerConfigManager()->SetInputType(1);
 			}
 		}
 	}
 
 	if ( cheat_state->actor.autoaim && !set.use_gta_autoaim )
 	{
-		static int	prev_id;
+		static int			prev_id;
 		static float		adj_rx, adj_rz, prev_rx, prev_rz;
 		float				rx = *(float *)0x00B6F248;
 		float				rz = *(float *)0x00B6F258;
@@ -142,7 +161,7 @@ void cheat_handle_actor_autoaim ( struct actor_info *info, float time_diff )
 		prev_id = nearest_id;
 
 		if ( (nearest = actor_info_get(nearest_id, ACTOR_ALIVE)) == NULL )
-			return;			/* won't happen */
+			return; /* won't happen */
 
 		/*cheat_state_text("%.3f %.3f %d %d", adj_rx, adj_rz, nearest->state, nearest->state_running);*/
 		/* calculate distance vector */
@@ -169,11 +188,12 @@ void cheat_handle_actor_autoaim ( struct actor_info *info, float time_diff )
 		prev_rx = *(float *)0x00B6F248 = ax;
 		prev_rz = *(float *)0x00B6F258 = az;
 	}
-
 }
 
 void cheat_handle_actor_air_brake ( struct actor_info *info, double time_diff )
 {
+	traceLastFunc( "cheat_handle_actor_air_brake()" );
+
 	static float	orig_pos[3];
 	static float	fall_speed_mult;
 	static int		was_enabled;
@@ -207,35 +227,25 @@ void cheat_handle_actor_air_brake ( struct actor_info *info, double time_diff )
 	}
 
 	if ( !cheat_state->actor.air_brake )
-		was_enabled = 0;
-
-	if ( cheat_state->actor.air_brake )
 	{
-#define PARACHUTE_ACTIVE	( info->weapon_slot == 11 && info->weapon[11].id == 46 )
-		/* prevent movement */
-		if ( !PARACHUTE_ACTIVE )
+		was_enabled = 0;
+		cheat_state->actor.air_brake_slowmo = 0;
+	}
+	else
+	{
+		float	*matrix = info->base.matrix;
+
+		// if there's no parachute
+		if ( !(info->weapon_slot == 11 && info->weapon[11].id == 46) )
 		{
 			vect3_copy( orig_pos, &info->base.matrix[4 * 3] );
 			vect3_zero( info->speed );
 
 			// new pedFlags
-			//info->pedFlags.bIsStanding = true;
-			//info->pedFlags.bWasStanding = true;
-			//info->pedFlags.bStayInSamePlace = true;
-		}
-	}
-	else
-	{
-		cheat_state->actor.air_brake = 0;
-		cheat_state->actor.air_brake_slowmo = 0;
-	}
+			info->pedFlags.bIsStanding = true;
+			info->pedFlags.bWasStanding = true;
+			info->pedFlags.bStayInSamePlace = true;
 
-	if ( cheat_state->actor.air_brake )
-	{
-		float	*matrix = info->base.matrix;
-
-		if ( !PARACHUTE_ACTIVE )
-		{
 			static uint32_t time_start;
 			float			d[4] = { 0.0f, 0.0f, 0.0f, time_diff * set.air_brake_speed };
 
@@ -285,7 +295,9 @@ void cheat_handle_actor_air_brake ( struct actor_info *info, double time_diff )
 				matrix[4 * 3 + 2] += out[2] * d[3];
 			}
 		}
-		else		/* PARACHUTE_ACTIVE */
+
+		// parachute
+		else
 		{
 			if ( KEY_DOWN(set.key_air_brake_up) )
 				fall_speed_mult += time_diff / 2.0f;
@@ -305,10 +317,10 @@ void cheat_handle_actor_air_brake ( struct actor_info *info, double time_diff )
 		vect3_copy( &matrix[4 * 3], orig_pos );
 
 		// heh
-		int gonadsMult = 1000;
-		float strifeMult = 0.0000000026f;
-		int gonads = rand() % gonadsMult;
-		float strife = (double)gonads * strifeMult;
+		int		gonadsMult = 1000;
+		float	strifeMult = 0.00001f;
+		int		gonads = rand() % gonadsMult;
+		float	strife = (double)gonads * strifeMult;
 		if ( strife < strifeMult * gonadsMult / 2 )
 			strife -= strifeMult * gonadsMult;
 		info->m_SpeedVec.fX = strife;
@@ -317,7 +329,6 @@ void cheat_handle_actor_air_brake ( struct actor_info *info, double time_diff )
 		if ( strife < strifeMult * gonadsMult / 2 )
 			strife -= strifeMult * gonadsMult;
 		info->m_SpeedVec.fY = strife;
-		info->m_SpeedVec.fZ = (double)0.47 * time_diff;
 	}
 }
 

@@ -61,12 +61,16 @@ void CPhysical_ApplyGravity ( DWORD dwThis )
 		CPed	*pPedSelf = getSelfCPed();
 		if ( pVehicle->GetDriver() == pPedSelf || pVehicle->IsPassenger(pPedSelf) )
 		{
-			// We're in the vehicle, use our gravity vector
-			CVector vecGravity, vecMoveSpeed;
-			pVehicle->GetGravity( &vecGravity );
-			pVehicle->GetMoveSpeed( &vecMoveSpeed );
-			vecMoveSpeed += vecGravity * fTimeStep * fGravity;
-			pVehicle->SetMoveSpeed( &vecMoveSpeed );
+			// we're in the vehicle
+			if ( !cheat_state->vehicle.air_brake )
+			{
+				// use our gravity vector
+				CVector vecGravity, vecMoveSpeed;
+				pVehicle->GetGravity( &vecGravity );
+				pVehicle->GetMoveSpeed( &vecMoveSpeed );
+				vecMoveSpeed += vecGravity * fTimeStep * fGravity;
+				pVehicle->SetMoveSpeed( &vecMoveSpeed );
+			}
 		}
 		else if ( pVehicle->GetTowedByVehicle() )
 		{
@@ -92,19 +96,31 @@ void CPhysical_ApplyGravity ( DWORD dwThis )
 			*(float *)( dwThis + 0x4C ) -= fTimeStep * fGravity;
 		}
 	}
-
-	/*
 	else if (dwType == 3)
 	{
-		// SpiderFeet, not working yet when touching ground
-		struct actor_info *ainfo_self = actor_info_get(ACTOR_SELF, 0);
-		if (dwThis == (DWORD)ainfo_self)
+		// It's a ped
+		CPed *pPed = pPools->GetPed( (DWORD *)dwThis );
+		CPed	*pPedSelf = getSelfCPed();
+
+		if ( pPed == pPedSelf )
 		{
-			// it's our CPedSA, and SpiderFeet is enabled - use the gravity vector
+			if ( cheat_state->actor.air_brake )
+			{
+				// don't apply gravity
+			}
+			else
+			{
+				// apply regular downward gravity
+				*(float *)(dwThis + 0x4C) -= fTimeStep * fGravity;
+			}
+
+			/*
+			// old SpiderFeet not-very-working code
 			CVector vecGravity = cheat_state->actor.gravityVector;
 			CVector vecMoveSpeed = GTAfunc_GetMoveSpeed(&ainfo_self->base);
 			vecMoveSpeed += vecGravity * fTimeStep * fGravity;
 			GTAfunc_SetMoveSpeed(&ainfo_self->base, vecMoveSpeed);
+			*/
 		}
 		else
 		{
@@ -112,7 +128,6 @@ void CPhysical_ApplyGravity ( DWORD dwThis )
 			*(float *)(dwThis + 0x4C) -= fTimeStep * fGravity;
 		}
 	}
-	*/
 	else
 	{
 		// apply regular downward gravity (+0x4C == m_vecMoveSpeed.fZ)

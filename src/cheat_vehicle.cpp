@@ -262,6 +262,7 @@ void cheat_handle_vehicle_air_brake ( struct vehicle_info *info, double time_dif
 
 	traceLastFunc( "cheat_handle_vehicle_air_brake()" );
 
+	// handle key presses
 	if ( set.air_brake_toggle )
 	{
 		if ( KEY_PRESSED(set.key_air_brake_mod) )
@@ -283,17 +284,19 @@ void cheat_handle_vehicle_air_brake ( struct vehicle_info *info, double time_dif
 			cheat_state->vehicle.air_brake_slowmo = 0;
 	}
 
-	if ( cheat_state->vehicle.air_brake && !orig_matrix_set )
-	{
-		matrix_copy( info->base.matrix, orig_matrix );
-		orig_matrix_set = 1;
-	}
-
+	// do airbrake
 	if ( !cheat_state->vehicle.air_brake )
-		orig_matrix_set = 0;
-
-	if ( cheat_state->vehicle.air_brake )
 	{
+		orig_matrix_set = 0;
+		cheat_state->vehicle.air_brake_slowmo = 0;
+	}
+	else
+	{
+		if ( !orig_matrix_set )
+		{
+			matrix_copy( info->base.matrix, orig_matrix );
+			orig_matrix_set = 1;
+		}
 		if ( !KEY_DOWN(set.key_unflip) )	/* allow the unflip rotation feature to work */
 			matrix_copy( orig_matrix, info->base.matrix );
 
@@ -307,10 +310,7 @@ void cheat_handle_vehicle_air_brake ( struct vehicle_info *info, double time_dif
 			if ( !set.trailer_support )
 				break;
 		}
-	}
 
-	if ( cheat_state->vehicle.air_brake )
-	{
 		static uint32_t time_start;
 		float			*matrix = info->base.matrix;
 		float			d[4] = { 0.0f, 0.0f, 0.0f, time_diff * set.air_brake_speed };
@@ -427,7 +427,7 @@ void cheat_handle_vehicle_air_brake ( struct vehicle_info *info, double time_dif
 
 		// heh
 		int gonadsMult = 1000;
-		float strifeMult = 0.0000000026f;
+		float strifeMult = 0.000001f;
 		int gonads = rand() % gonadsMult;
 		float strife = (double)gonads * strifeMult;
 		if ( strife < strifeMult * gonadsMult / 2 )
@@ -438,7 +438,12 @@ void cheat_handle_vehicle_air_brake ( struct vehicle_info *info, double time_dif
 		if ( strife < strifeMult * gonadsMult / 2 )
 			strife -= strifeMult * gonadsMult;
 		info->m_SpeedVec.fY = strife;
-		info->m_SpeedVec.fZ = (double)0.47 * time_diff;;
+		strifeMult = 0.000000001f;
+		gonads = rand() % gonadsMult;
+		strife = (double)gonads * strifeMult;
+		if ( strife < strifeMult * gonadsMult / 2 )
+			strife -= strifeMult * gonadsMult;
+		info->m_SpeedVec.fZ = strife;
 	}
 }
 
@@ -529,24 +534,27 @@ void cheat_handle_vehicle_hop ( struct vehicle_info *info, float time_diff )
 		CVehicle	*cveh = pGameInterface->GetPools()->GetVehicle( (DWORD *)info );
 		CVector		vecSpeedAdd, vecMoveSpeed;
 		float		theDotProduct;
+		bool		isBigHop = false;
+		bool		isHopThisFrame = false;
 		cveh->GetGravity( &vecSpeedAdd );
 		vecSpeedAdd = -vecSpeedAdd;
+
+		cveh->GetMoveSpeed( &vecMoveSpeed );
+		theDotProduct = vecMoveSpeed.DotProduct( &vecSpeedAdd );
+		if ( theDotProduct < set.vehicle_hop_speed / 2.0f )
+			isHopThisFrame = true;
+		if ( theDotProduct < -0.1f )
+			isBigHop = true;
 
 		for ( ; cveh != NULL; cveh = cveh->GetTowedVehicle() )
 		{
 			cveh->GetMoveSpeed( &vecMoveSpeed );
-			theDotProduct = vecMoveSpeed.DotProduct( &vecSpeedAdd );
-			if ( theDotProduct < set.vehicle_hop_speed / 2.0f )
+			if ( isHopThisFrame )
 			{
-				if ( theDotProduct < 0.0f )
-				{
+				if ( isBigHop )
 					vecMoveSpeed += ( vecSpeedAdd * (set.vehicle_hop_speed * 2.0f) );
-				}
 				else
-				{
 					vecMoveSpeed += ( vecSpeedAdd * (set.vehicle_hop_speed / 2.0f) );
-				}
-
 				cveh->SetMoveSpeed( &vecMoveSpeed );
 			}
 
@@ -564,7 +572,7 @@ void cheat_handle_vehicle_brake ( struct vehicle_info *info, double time_diff )
 	float				speed;
 	struct vehicle_info *temp;
 
-	if ( KEY_DOWN(set.key_brake_mod) )
+	if ( KEY_DOWN(set.key_brake_mod) && !cheat_state->vehicle.air_brake )
 	{
 		for ( temp = info; temp != NULL; temp = temp->trailer )
 		{
@@ -595,7 +603,7 @@ void cheat_handle_vehicle_brake ( struct vehicle_info *info, double time_diff )
 
 				// heh
 				int gonadsMult = 1000;
-				float strifeMult = 0.0000000026f;
+				float strifeMult = 0.0000001f;
 				int gonads = rand() % gonadsMult;
 				float strife = (double)gonads * strifeMult;
 				if ( strife < strifeMult * gonadsMult / 2 )
@@ -606,7 +614,6 @@ void cheat_handle_vehicle_brake ( struct vehicle_info *info, double time_diff )
 				if ( strife < strifeMult * gonadsMult / 2 )
 					strife -= strifeMult * gonadsMult;
 				info->m_SpeedVec.fY += strife;
-				info->m_SpeedVec.fZ += (double)0.47 * time_diff / (double)(speed + 1.0f);
 			}
 
 			if ( !set.trailer_support )

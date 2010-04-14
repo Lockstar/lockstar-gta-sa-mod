@@ -568,6 +568,8 @@ void cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *act
 
 void cheat_handle_stick ( struct vehicle_info *vehicle_info, struct actor_info *actor_info, float time_diff )
 {
+	traceLastFunc( "cheat_handle_stick()" );
+
 	struct object_base	*base_stick, *base_self;
 	struct actor_info	*actor_stick;
 	struct vehicle_info *vehicle_stick;
