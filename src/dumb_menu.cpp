@@ -2035,6 +2035,7 @@ static int menu_callback_players_vehwarp ( int op, struct menu_item *item )
 		{
 			//need car id in memory for vehicleJumper
 			if ( g_Players->pRemotePlayer[id] != NULL
+			 &&	 g_Players->pRemotePlayer[id]->pSAMP_Vehicle != NULL
 			 &&	 g_Players->pRemotePlayer[id]->pSAMP_Vehicle->pGTA_Vehicle != NULL )
 			{
 				vehicleJumper( (int)(((DWORD) g_Players->pRemotePlayer[id]->pSAMP_Vehicle->pGTA_Vehicle) -

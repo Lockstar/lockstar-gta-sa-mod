@@ -1108,7 +1108,7 @@ void renderPlayerTags ( void )
 		return;
 
 	//Enable samp Nametags and exit this function, if panic key
-	if ( cheat_state->_generic.cheat_panic_enabled || !cheat_state->render_player_tags)
+	if ( cheat_state->_generic.cheat_panic_enabled || !cheat_state->render_player_tags )
 	{
 		sampPatchDisableNameTags( 0 );
 		return;
@@ -1954,8 +1954,8 @@ void renderScoreList ()
 		if ( KEY_PRESSED(VK_NEXT) )
 		{
 			current_player += max_amount_players;
-			if ( current_player > (3+amount_players-max_amount_players) )
-				current_player = 2+amount_players-max_amount_players;
+			if ( current_player > (3 + amount_players - max_amount_players) )
+				current_player = 2 + amount_players - max_amount_players;
 		}
 		else if ( KEY_PRESSED(VK_PRIOR) )
 		{
@@ -2539,16 +2539,65 @@ void renderVehiclePoolStructure ( int iVehicleIDToDebug )
 #endif
 void renderPlayerInfo ( int iPlayerID )
 {
+	if ( (KEY_DOWN(VK_TAB) && set.d3dtext_score)
+	 ||	 (*(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 && !set.d3dtext_score) ) return;
+
+	if ( GetAsyncKeyState(VK_F1) < 0 )
+		return;
+	if ( GetAsyncKeyState(VK_F5) < 0 )
+		return;
+	if ( GetAsyncKeyState(VK_F10) < 0 )
+		return;
+
+	if ( cheat_state->_generic.cheat_panic_enabled )
+		return;
+
 	D3DCOLOR	color;
 	float		y = 0.0f;
 	( y ) += 300.0f;
 
-	if ( iPlayerID == -2 )
-		goto renderPlayerInfo_renderLocal;
+	char	buf[512];
 
+	//Localplayer
+	if ( iPlayerID == -2 )
+	{
+		color = D3DCOLOR_ARGB( 0xFF, 0xFF, 0x00, 0x00 );
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, "Local Player Info" );
+
+		color = D3DCOLOR_ARGB( 0xFF, 0x99, 0x99, 0x99 );
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		sprintf( buf, "Name: %s", g_Players->szLocalPlayerName );
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		sprintf( buf, "Team ID: %u", g_Players->pLocalPlayer->byteTeam );
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+
+		vehicle_info	*vinfo = vehicle_info_get( VEHICLE_SELF, VEHICLE_ALIVE );
+		if ( vinfo == NULL )
+			return;
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, "Vehicle" );
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		sprintf( buf, " Vehicle ID: %u", g_Players->pLocalPlayer->sCurrentVehicleID );
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+#ifdef M0D_DEV
+		for ( int iRow = 0; iRow < 4; iRow++ )
+		{
+			for ( int iCol = 0; iCol < 3; iCol++ )
+			{
+				sprintf( buf, " MATRIX[4*%d+%d]: %0.3f", iRow, iCol, vinfo->base.matrix[4 * iRow + iCol] );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			}
+		}
+#endif
+		return;
+	}
+
+	//Remote Player
 	color = samp_color_get( iPlayerID );
 
-	char	buf[512];
 	sprintf( buf, "Infos on player %s(%d)", getPlayerName(iPlayerID), iPlayerID );
 	pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
 	( y ) += 1.0f + pD3DFontFixed->DrawHeight();
@@ -2557,10 +2606,10 @@ void renderPlayerInfo ( int iPlayerID )
 	{
 		sprintf( buf, "Is NPC: %d", g_Players->pRemotePlayer[iPlayerID]->iIsNPC );
 		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
-			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
 		sprintf( buf, "Team ID: %u", g_Players->pRemotePlayer[iPlayerID]->byteTeamID );
 		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
-			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
 
 		if ( g_Players->pRemotePlayer[iPlayerID]->pSAMP_Actor == NULL )
 		{
@@ -2583,17 +2632,29 @@ void renderPlayerInfo ( int iPlayerID )
 			sprintf( buf, "Actor armor: %0.2f", g_Players->pRemotePlayer[iPlayerID]->fActorArmor );
 			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
 			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			sprintf( buf, "Actor Speed: %0.2f km/h",
+					 (float)(vect3_length(g_Players->pRemotePlayer[iPlayerID]->fActorMoveSpeed) * 170) );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
 			if ( g_Players->pRemotePlayer[iPlayerID]->pSAMP_Vehicle != NULL )
 			{
 				pD3DFontFixed->PrintShadow( 20.0f, y, color, "The player is in a vehicle" );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
 				sprintf( buf, " Vehicle ID: %u", g_Players->pRemotePlayer[iPlayerID]->sVehicleID );
 				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
 				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
 				sprintf( buf, " Seat ID: %u", g_Players->pRemotePlayer[iPlayerID]->byteSeatID );
 				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
 				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				if ( g_Players->pRemotePlayer[iPlayerID]->byteSeatID == 0 )
+				{
+					sprintf( buf, " Vehicle Speed: %0.2f km/h",
+							 (float)(vect3_length(g_Players->pRemotePlayer[iPlayerID]->fVehicleMoveSpeed) * 170) );
+					pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+					( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				}
+
 #ifdef M0D_DEV
-				//user probably doesn't care about the Matrix
 				for ( int iRow = 0; iRow < 4; iRow++ )
 				{
 					for ( int iCol = 0; iCol < 3; iCol++ )
@@ -2611,26 +2672,6 @@ void renderPlayerInfo ( int iPlayerID )
 	}
 
 	return;
-renderPlayerInfo_renderLocal: ;
-	color = D3DCOLOR_ARGB( 0xFF, 0xFF, 0x00, 0x00 );
-	pD3DFontFixed->PrintShadow( 20.0f, y, color, "Local Player Info" );
-	( y ) += 1.0f + pD3DFontFixed->DrawHeight();
-
-	vehicle_info	*vinfo = vehicle_info_get( VEHICLE_SELF, VEHICLE_ALIVE );
-	if ( vinfo == NULL )
-		return;
-	color = D3DCOLOR_ARGB( 0xFF, 0x99, 0x99, 0x99 );
-	pD3DFontFixed->PrintShadow( 20.0f, y, color, "Vehicle" );
-	( y ) += 1.0f + pD3DFontFixed->DrawHeight();
-	for ( int iRow = 0; iRow < 4; iRow++ )
-	{
-		for ( int iCol = 0; iCol < 3; iCol++ )
-		{
-			sprintf( buf, " MATRIX[4*%d+%d]: %0.3f", iRow, iCol, vinfo->base.matrix[4 * iRow + iCol] );
-			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
-			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
-		}
-	}
 }
 
 extern bool screenshot;
