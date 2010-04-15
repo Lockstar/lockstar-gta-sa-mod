@@ -58,7 +58,7 @@ int cheat_panic ( void )
 			CPed	*pPedSelf = pPools->GetPedFromRef( CPOOLS_PED_SELF_REF );
 			if ( pPedSelf->GetVehicle() )
 			{
-				CVehicle *pVehicleSelf = pPedSelf->GetVehicle();
+				CVehicle	*pVehicleSelf = pPedSelf->GetVehicle();
 				pVehicleSelf->SetGravity( &CVector(0.0, 0.0, -1.0) );
 				pVehicleSelf->GetInterface()->nImmunities &= ~VEHICLE_FLAGS_INVULNERABLE;
 				if ( pVehicleSelf->GetHealth() > 1000.0f )

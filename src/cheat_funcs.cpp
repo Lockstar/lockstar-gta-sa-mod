@@ -829,7 +829,7 @@ uint64_t __time_get ( void )
 	time_now.LowPart = ft.dwLowDateTime;
 	time_now.HighPart = ft.dwHighDateTime;
 
-	time_now.QuadPart /= (uint64_t)1000;	/* convert to 100 usec */
+	time_now.QuadPart /= ( uint64_t ) 1000; /* convert to 100 usec */
 
 	if ( !init )
 	{
@@ -1278,10 +1278,10 @@ int actor_find_nearest ( int flags )
 		return -1;
 
 	const struct actor_info *info;
-	float	vect[3];
-	float	dist = -1.0f;
-	int		id_nearest = -1;
-	int		n;
+	float					vect[3];
+	float					dist = -1.0f;
+	int						id_nearest = -1;
+	int						n;
 
 	for ( n = 0; n < pool_actor->size; n++ )
 	{

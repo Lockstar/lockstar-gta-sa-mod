@@ -96,10 +96,10 @@ void CPhysical_ApplyGravity ( DWORD dwThis )
 			*(float *)( dwThis + 0x4C ) -= fTimeStep * fGravity;
 		}
 	}
-	else if (dwType == 3)
+	else if ( dwType == 3 )
 	{
 		// It's a ped
-		CPed *pPed = pPools->GetPed( (DWORD *)dwThis );
+		CPed	*pPed = pPools->GetPed( (DWORD *)dwThis );
 		CPed	*pPedSelf = getSelfCPed();
 
 		if ( pPed == pPedSelf )
@@ -111,7 +111,7 @@ void CPhysical_ApplyGravity ( DWORD dwThis )
 			else
 			{
 				// apply regular downward gravity
-				*(float *)(dwThis + 0x4C) -= fTimeStep * fGravity;
+				*(float *)( dwThis + 0x4C ) -= fTimeStep * fGravity;
 			}
 
 			/*
@@ -125,7 +125,7 @@ void CPhysical_ApplyGravity ( DWORD dwThis )
 		else
 		{
 			// apply regular downward gravity
-			*(float *)(dwThis + 0x4C) -= fTimeStep * fGravity;
+			*(float *)( dwThis + 0x4C ) -= fTimeStep * fGravity;
 		}
 	}
 	else
