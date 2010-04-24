@@ -177,6 +177,7 @@ DWORD	RETURN_VehicleLookAside = 0x520FDC;
 bool _cdecl VehicleCamStart ( DWORD dwCam, DWORD pVehicleInterface )
 {
 	traceLastFunc( "VehicleCamStart()" );
+
 	// Inverse transform some things so that they match a downward pointing gravity.
 	// This way SA's gravity-goes-downward assumptive code can calculate the camera
 	// spherical coords correctly. Of course we restore these after the camera function
@@ -230,6 +231,7 @@ void _declspec ( naked ) HOOK_VehicleCamStart ()
 void _cdecl VehicleCamTargetZTweak ( CVector *pvecCamTarget, float fTargetZTweak )
 {
 	traceLastFunc( "VehicleCamTargetZTweak()" );
+
 	// Replacement for "vecCamTarget = vecCarPosition + (0, 0, 1)*fZTweak"
 	*pvecCamTarget += gravcam_matGravity.vUp * fTargetZTweak;
 }
@@ -265,6 +267,7 @@ void _declspec ( naked ) HOOK_VehicleCamTargetZTweak ()
 void _cdecl VehicleCamLookDir1 ( DWORD dwCam, DWORD pVehicleInterface )
 {
 	traceLastFunc( "VehicleCamLookDir1()" );
+
 	// For the same reason as in VehicleCamStart, inverse transform the camera's lookdir
 	// at this point
 	CVector *pvecLookDir = ( CVector * ) ( dwCam + 0x190 );
@@ -291,6 +294,7 @@ void _declspec ( naked ) HOOK_VehicleCamLookDir1 ()
 bool _cdecl VehicleCamLookDir2 ( DWORD dwCam )
 {
 	traceLastFunc( "VehicleCamLookDir2()" );
+
 	// Calculates the look direction vector for the vehicle camera. This vector
 	// is later multiplied by a factor and added to the vehicle position by SA
 	// to obtain the final camera position.
@@ -329,6 +333,7 @@ void _declspec ( naked ) HOOK_VehicleCamLookDir2 ()
 void _cdecl VehicleCamHistory ( DWORD dwCam, CVector *pvecTarget, float fTargetTheta, float fRadius, float fZoom )
 {
 	traceLastFunc( "VehicleCamHistory()" );
+
 	float	fPhi = *(float *)( dwCam + 0xBC );
 	CVector vecDir = -gravcam_matGravity.vRight * cos( fPhi ) * cos( fTargetTheta ) - gravcam_matGravity.vFront * sin( fPhi ) * cos( fTargetTheta ) + gravcam_matGravity.vUp * sin( fTargetTheta );
 	( (CVector *) (dwCam + 0x1D8) )[0] = *pvecTarget - vecDir * fRadius;
@@ -357,6 +362,7 @@ void _declspec ( naked ) HOOK_VehicleCamHistory ()
 void _cdecl VehicleCamUp ( DWORD dwCam )
 {
 	traceLastFunc( "VehicleCamUp()" );
+
 	// Calculates the up vector for the vehicle camera.
 	CVector *pvecUp = ( CVector * ) ( dwCam + 0x1B4 );
 	CVector *pvecLookDir = ( CVector * ) ( dwCam + 0x190 );
@@ -395,6 +401,7 @@ void _declspec ( naked ) HOOK_VehicleCamUp ()
 void _cdecl VehicleCamEnd ( DWORD pVehicleInterface )
 {
 	traceLastFunc( "VehicleCamEnd()" );
+
 	// Restore the things that we inverse transformed in VehicleCamStart
 	CVehicle	*pVehicle = pPools->GetVehicle( (DWORD *)pVehicleInterface );
 	if ( !pVehicle )
@@ -424,6 +431,7 @@ void _declspec ( naked ) HOOK_VehicleCamEnd ()
 void _cdecl VehicleLookBehind ( DWORD dwCam, CVector *pvecEntityPos, float fDistance )
 {
 	traceLastFunc( "VehicleLookBehind()" );
+
 	// Custom calculation of the camera position when looking behind while in
 	// vehicle cam mode, taking in account custom gravity
 	*( CVector * ) ( dwCam + 0x19C ) = *pvecEntityPos + ( gravcam_matVehicleTransform.vFront + gravcam_matGravity.vUp * 0.2f ) * fDistance;
@@ -458,6 +466,7 @@ void _declspec ( naked ) HOOK_VehicleLookBehind ()
 void _cdecl VehicleLookAside ( DWORD dwCam, CVector *pvecEntityPos, float fDirectionFactor, float fDistance )
 {
 	traceLastFunc( "VehicleLookAside" );
+
 	// Custom calculation of the camera position when looking left/right while in
 	// vehicle cam mode, taking in account custom gravity
 	*( CVector * ) ( dwCam + 0x19C ) = *pvecEntityPos + ( -gravcam_matVehicleTransform.vRight * fDirectionFactor + gravcam_matGravity.vUp * 0.2f ) * fDistance;

@@ -136,6 +136,7 @@ static void cheat_main_vehicle ( double time_diff )
 	cheat_handle_vehicle_engine( info, time_diff );
 	cheat_handle_vehicle_brakedance( info, time_diff );
 	cheat_handle_vehicle_blinking_carlights( info, time_diff );
+	cheat_handle_vehicle_fly( info, time_diff );
 	cheat_handle_vehicle_keepTrailer( info, time_diff );
 	cheat_handle_vehicle_repair_car( info, time_diff );
 	cheat_handle_vehicle_fast_exit( info, time_diff );

@@ -25,7 +25,7 @@
 //#define TELEPORT_DETACHABLES
 #define MSEC_TO_TIME( v )	( (uint64_t) (v) * 10 )
 #define TIME_TO_FLOAT( v )	( (float)((double)(v) / (double)MSEC_TO_TIME(1000)) )
-#define TIME_TO_DOUBLE( v )	( (double)((double)(v) / (double)MSEC_TO_TIME(1000)) )
+#define TIME_TO_DOUBLE( v ) ( (double)((double)(v) / (double)MSEC_TO_TIME(1000)) )
 
 // main pool addresses
 #define ACTOR_POOL_POINTER		0x00B74490
@@ -36,6 +36,9 @@
 #define VEHICLE_SELF			- 1
 #define OBJECT_POOL_POINTER		0x00B7449C
 #define BUILDING_POOL_POINTER	0x00B74498
+
+// other addresses
+#define GTA_KEYS	0xB73458
 
 // CPed actor states
 #define ACTOR_STATE_DRIVING		50
@@ -180,6 +183,7 @@ struct cheat_state_vehicle
 	int		blinking_carlights_state;
 	int		blinking_carlights_turnstate;
 	DWORD	blinking_carlights_lastblink;
+	int		fly;
 };
 
 struct cheat_state_teleport
@@ -407,32 +411,32 @@ struct object_base
 	uint8_t			wSeedColFlags;			// 32
 	uint8_t			wSeedVisibleFlags;		// 33
 	uint16_t		model_alt_id;			// 34 - model index
-	uint8_t			__unknown_36[4];		// 36
+	uint8_t			__unknown_36[4];		// 36 - collision related (objects only?)
 
 	//CReferences *pReferences; //36
 	uint32_t		*m_pLastRenderedLink;	// 40 CLink<CEntity*>* m_pLastRenderedLink;
 	uint16_t		timer;			// 44
 	uint8_t			m_iplIndex;		// 46 used to define which IPL file object is in
 	uint8_t			interior_id;	// 47
-	uint8_t			__unknown_48[6];			// 48
+	uint8_t			__unknown_48[6];		// 48
 
 	//********* BEGIN CEntityInfo **********//
-	uint8_t			nType : 3;					// 54 what type is the entity (2 == Vehicle)
-	uint8_t			nStatus : 5;				// 54 control status
+	uint8_t			nType : 3;				// 54 what type is the entity (2 == Vehicle)
+	uint8_t			nStatus : 5;			// 54 control status
 
 	// 55 alignment
 	//********* END CEntityInfo **********//
-	uint8_t			__unknown_56[9];			// 56
-	uint8_t			nImmunities;				// 65
-	uint8_t			__unknown_66;				// 66
+	uint8_t			__unknown_56[9];		// 56
+	uint8_t			nImmunities;			// 65
+	uint8_t			__unknown_66;			// 66
 };
 
 struct actor_info
 {
 #pragma pack( 1 )
-	struct object_base	base;					/* 65 */
-	uint8_t				flags;					/* 66 immunities */
-	uint8_t				__unknown_67[1];		/* 67 */
+	struct object_base	base;				/* 65 */
+	uint8_t				flags;				/* 66 immunities */
+	uint8_t				__unknown_67[1];	/* 67 */
 	union	/* 68 */
 	{
 		struct
@@ -441,15 +445,15 @@ struct actor_info
 		};
 		float	speed[3];
 	};
-	float				spin[3];				/* 80 */
-	float				speed_rammed[3];		/* 92 */
-	float				spin_rammed[3];			/* 104 */
-	uint8_t				__unknown_116[60];		/* 116 */
-	void				*__unknown_176;			/* 176 - pointer to a "entry node info" pool item */
-	void				*__unknown_180;			/* 180 - pointer to a "ptr node Double" pool item */
+	float				spin[3];			/* 80 */
+	float				speed_rammed[3];	/* 92 */
+	float				spin_rammed[3];		/* 104 */
+	uint8_t				__unknown_116[60];	/* 116 */
+	void				*__unknown_176;		/* 176 - pointer to a "entry node info" pool item */
+	void				*__unknown_180;		/* 180 - pointer to a "ptr node Double" pool item */
 
 	//collision data
-	DWORD				collision_flags;		/* 184 - 2nd byte = currently colliding 1/0, or actively
+	DWORD				collision_flags;	/* 184 - 2nd byte = currently colliding 1/0, or actively
 										  running against (0x2), 3rd byte = type colliding with
 										  (1 = road, 4=pavement, 35 = object, 3f=car).. unsure about 3rd byte*/
 	void				*last_touched_object;	/* 188 - You can touch roads - those are considered buildings */
@@ -457,7 +461,7 @@ struct actor_info
 	uint8_t				__unknown_196[16];		/* 196 */
 	float				speed_z;			/* 212 */
 	float				collision_time_216; /* 216 - collision timer? */
-	void				*collision_thing;	/* 220 - pointer to current thing colliding with */
+	void				*collision_current_obj;		/* 220 - pointer to current thing colliding with */
 	uint8_t				collision_something[12];	/* 224 - related to collision */
 	float				collision_last_coord[3];	/* 236 - coordination of last collision */
 
@@ -491,13 +495,13 @@ struct actor_info
 	float				hitpoints;			/* 1344 */
 	float				hitpoints_max;		/* 1348 - hmm, does not seem to be right.. it's set to "100.1318519" or something like that */
 	float				armor;	/* 1352 */
-	uint8_t				__unknown_1356[12];			/* 1356 */
+	uint8_t				__unknown_1356[12];		/* 1356 */
 
-	float				fCurrentRotation;			/* 1368 */
-	float				fTargetRotation;			/* 1372 */
-	float				fRotationSpeed;				/* 1376 */
+	float				fCurrentRotation;		/* 1368 */
+	float				fTargetRotation;		/* 1372 */
+	float				fRotationSpeed;			/* 1376 */
 
-	uint8_t				__unknown_1376[4];			/* 1376 */
+	uint8_t				__unknown_1376[4];		/* 1376 */
 
 	union
 	{
@@ -505,10 +509,10 @@ struct actor_info
 		struct vehicle_info *vehicle_contact;	/* 1384 - standing on top of vehicle */
 	};
 
-	float				vehicle_contact_dist[3];	/* 1388 - distance to the middle of the car standing on */
-	uint8_t				__unknown_1400[12];			/* 1400 - somehow related to vehicle_contact */
-	void				*item_contact;		/* 1412 - standing on top of vehicle/object/building/...*/
-	uint8_t				__unknown_1416[4];	/* 1416 */
+	float	vehicle_contact_dist[3];			/* 1388 - distance to the middle of the car standing on */
+	uint8_t __unknown_1400[12]; /* 1400 - somehow related to vehicle_contact */
+	void	*item_contact;		/* 1412 - standing on top of vehicle/object/building/...*/
+	uint8_t __unknown_1416[4];	/* 1416 */
 
 	union
 	{
@@ -554,114 +558,115 @@ struct vehicle_info
 		};
 		float	spin[3];
 	};
-	float				speed_rammed[3];	/* 92 - speed from collision, will be added to speed[3] */
-	float				spin_rammed[3];		/* 104 - spin from collision, will be added to spin[3] */
+	float						speed_rammed[3];	/* 92 - speed from collision, will be added to speed[3] */
+	float						spin_rammed[3];		/* 104 - spin from collision, will be added to spin[3] */
 
-	uint8_t				__unknown_116[20];	/* 116 */
+	uint8_t						__unknown_116[20];	/* 116 */
 
 	// handling should start here
-	uint8_t				__unknown_136[4];	/* 136 */
-	float				mass;		/* 140 - vehicle mass from handling.cfg */
-	float				turn_mass;	/* 144 - turn mass */
-	float				grip_div;	/* 148 - grip divisor */
-	float				mass_to_grip_mult;		/* 152 - mass to grip multiplier */
-	float				fTurnMass;				/* 156 - 0.05 or 0.1 */
-	float				grip_level_norm;		/* 160 - normalized grip level */
-	float				center_of_mass[3];		/* 164 - center of mass */
-	void				*__unknown_176;			/* 176 - pointer to a "entry node info" pool item */
-	void				*__unknown_180;			/* 180 - pointer to a "ptr node Double" pool item */
+	uint8_t						__unknown_136[4];	/* 136 */
+	float						mass;		/* 140 - vehicle mass from handling.cfg */
+	float						turn_mass;	/* 144 - turn mass */
+	float						grip_div;	/* 148 - grip divisor */
+	float						mass_to_grip_mult;		/* 152 - mass to grip multiplier */
+	float						fTurnMass;				/* 156 - 0.05 or 0.1 */
+	float						grip_level_norm;		/* 160 - normalized grip level */
+	float						center_of_mass[3];		/* 164 - center of mass */
+	void						*__unknown_176;			/* 176 - pointer to a "entry node info" pool item */
+	void						*__unknown_180;			/* 180 - pointer to a "ptr node Double" pool item */
 
 	//collision data
-	DWORD				collision_flags;		/* 184 - 2nd byte = currently colliding 1/0, or actively
+	DWORD						collision_flags;		/* 184 - 2nd byte = currently colliding 1/0, or actively
 										  running against (0x02), being moved/rammed (0x03), 1st byte = 0, if noone inside and colliding
 										  with actor, else ever 0x0a*/
-	void				*last_touched_object;	/* 188 - You can touch roads - those are considered buildings */
-	void				*last_collided_object;	/* 192 - pointer to last collided object.. not for ALL collisions?!? */
-	uint8_t				__unknown_196[20];		/* 196 */
-	float				collision_something;	/* 216 - collision timer?*/
-	void				*collision_current_obj; /* 220 - pointer to current thing colliding with */
+	void						*last_touched_object;	/* 188 - You can touch roads - those are considered buildings */
+	void						*last_collided_object;	/* 192 - pointer to last collided object.. not for ALL collisions?!? */
+	uint8_t						__unknown_196[20];		/* 196 */
+	float						collision_something;	/* 216 - collision timer?*/
+	void						*collision_current_obj; /* 220 - pointer to current thing colliding with */
 
 	// end of handling should be here
-	uint8_t				__unknown_224[12];		/* 224 */
-	float				collision_position[3];	/* 236 - last collision coordinates */
-	uint8_t				__unknown_248[68];		/* 248 */
-	void				*__unknown_316;			/* 316 - pointer to this something in this structure */
-	uint8_t				__unknown_320[157];		/* 320 */
-	uint8_t				in_vehicle;			/* 477 */
-	uint8_t				__unknown_478[422]; /* 478 */
+	uint8_t						__unknown_224[12];		/* 224 */
+	float						collision_position[3];	/* 236 - last collision coordinates */
+	uint8_t						__unknown_248[68];		/* 248 */
+	void						*__unknown_316;			/* 316 - pointer to this something in this structure */
+	uint8_t						__unknown_320[157];		/* 320 */
+	uint8_t						in_vehicle;			/* 477 */
+	uint8_t						__unknown_478[422]; /* 478 */
 
-	tHandlingDataSA		*pHandlingData;		/* 900 */
-	uint8_t				__unknown_904[100]; /* 904 */
-	uint32_t			hFlagsLocal;		/* 1004 */
-	uint8_t				__unknown_1008[56]; /* 1008 - AutoPilot */
-	CVehicleFlags		m_nVehicleFlags;	/* 1064 - 60 bits/flags */
-	uint32_t			m_TimeOfCreation;	/* 1072 - GetTimeInMilliseconds when this vehicle was created. */
+	tHandlingDataSA				*pHandlingData;		/* 900 */
+	struct physicalFlyParams	*pFlyData;			/* 904 */
+	uint8_t						__unknown_908[96];	/* 908 */
+	uint32_t					hFlagsLocal;		/* 1004 */
+	uint8_t						__unknown_1008[56]; /* 1008 - AutoPilot */
+	CVehicleFlags				m_nVehicleFlags;	/* 1064 - 60 bits/flags */
+	uint32_t					m_TimeOfCreation;	/* 1072 - GetTimeInMilliseconds when this vehicle was created. */
 
-	uint8_t				color[4];			/* 1076 - as in carcolors.dat - body, stripe, body2, stripe2 */
-	uint32_t			modding[8];			/* 1080 - modding data */
-	float				wheel_size;			/* 1112 */
-	unsigned short		CarAlarmState;		/* 1116 - time left for car alarm to sound in ms */
-	unsigned short		ForcedRandomSeed;	/* 1118 - if this is non-zero the random wander gets deterministic */
-	struct actor_info	*passengers[9];		/* 1120 (pointer to the passenger player structs) */
+	uint8_t						color[4];			/* 1076 - as in carcolors.dat - body, stripe, body2, stripe2 */
+	uint32_t					modding[8];			/* 1080 - modding data */
+	float						wheel_size;			/* 1112 */
+	unsigned short				CarAlarmState;		/* 1116 - time left for car alarm to sound in ms */
+	unsigned short				ForcedRandomSeed;	/* 1118 - if this is non-zero the random wander gets deterministic */
+	struct actor_info			*passengers[9];		/* 1120 (pointer to the passenger player structs) */
 
-	unsigned char		m_nNumPassengers;	/* 1156 */
-	unsigned char		m_nNumGettingIn;	/* 1157 */
-	unsigned char		m_nGettingInFlags;	/* 1158 */
-	unsigned char		m_nGettingOutFlags; /* 1159 */
-	unsigned char		m_nMaxPassengers;	/* 1160 */
-	unsigned char		m_windowsOpenFlags; /* 1161 */
-	char				m_nNitroBoosts;		/* 1162 */
-	char				m_nSpecialColModel; /* 1163 */
-	DWORD				*pEntityWeAreOnForVisibilityCheck;	/* 1164 - we need a CEntity */
-	DWORD				*m_pFire;			/* 1168 - CFire*/
+	unsigned char				m_nNumPassengers;	/* 1156 */
+	unsigned char				m_nNumGettingIn;	/* 1157 */
+	unsigned char				m_nGettingInFlags;	/* 1158 */
+	unsigned char				m_nGettingOutFlags; /* 1159 */
+	unsigned char				m_nMaxPassengers;	/* 1160 */
+	unsigned char				m_windowsOpenFlags; /* 1161 */
+	char						m_nNitroBoosts;		/* 1162 */
+	char						m_nSpecialColModel; /* 1163 */
+	DWORD						*pEntityWeAreOnForVisibilityCheck;	/* 1164 - we need a CEntity */
+	DWORD						*m_pFire;			/* 1168 - CFire*/
 
-	float				steer_angles[2];	/* 1172 - steer angles */
-	float				gas_pedal;			/* 1180 - gas pedal */
-	float				break_pedal;		/* 1184 - break pedal */
+	float						steer_angles[2];	/* 1172 - steer angles */
+	float						gas_pedal;			/* 1180 - gas pedal */
+	float						break_pedal;		/* 1184 - break pedal */
 
 	// 1188
-	unsigned char		VehicleCreatedBy;	// Contains information on whether this vehicle can be deleted or not. Probably only need this or IsLocked.
-	short				ExtendedRemovalRange;
+	unsigned char				VehicleCreatedBy;	// Contains information on whether this vehicle can be deleted or not. Probably only need this or IsLocked.
+	short						ExtendedRemovalRange;
 
 	// this padding probably isn't in the right place.
-	uint8_t				__unknown_1191;
+	uint8_t						__unknown_1191;
 
 	//1192
-	unsigned char		car_bomb : 3;		// 0 = None. 1 = Timed. 2 = On ignition, 3 = remotely set ? 4 = Timed Bomb has been activated. 5 = On ignition has been activated.
-	unsigned char		OverrideLights : 2; // uses enum NO_CAR_LIGHT_OVERRIDE, FORCE_CAR_LIGHTS_OFF, FORCE_CAR_LIGHTS_ON
-	unsigned char		WinchType : 2;		// Does this vehicle use a winch?
+	unsigned char				car_bomb : 3;		// 0 = None. 1 = Timed. 2 = On ignition, 3 = remotely set ? 4 = Timed Bomb has been activated. 5 = On ignition has been activated.
+	unsigned char				OverrideLights : 2; // uses enum NO_CAR_LIGHT_OVERRIDE, FORCE_CAR_LIGHTS_OFF, FORCE_CAR_LIGHTS_ON
+	unsigned char				WinchType : 2;		// Does this vehicle use a winch?
 
 	// this padding probably isn't in the right place.
-	uint8_t				__unknown_1193;
+	uint8_t						__unknown_1193;
 
 	//1194
-	unsigned char		m_GunsCycleIndex : 2;		// Cycle through alternate gun hardpoints on planes/helis
-	unsigned char		m_OrdnanceCycleIndex : 2;	// Cycle through alternate ordnance hardpoints on planes/helis
+	unsigned char				m_GunsCycleIndex : 2;		// Cycle through alternate gun hardpoints on planes/helis
+	unsigned char				m_OrdnanceCycleIndex : 2;	// Cycle through alternate ordnance hardpoints on planes/helis
 
 	// 1195
-	unsigned char		nUsedForCover;			// Has n number of cops hiding/attempting to hid behind it
-	unsigned char		AmmoInClip;				// Used to make the guns on boat do a reload.
-	unsigned char		PacMansCollected;
-	unsigned char		PedsPositionForRoadBlock;
-	unsigned char		NumPedsForRoadBlock;
+	unsigned char				nUsedForCover;			// Has n number of cops hiding/attempting to hid behind it
+	unsigned char				AmmoInClip;				// Used to make the guns on boat do a reload.
+	unsigned char				PacMansCollected;
+	unsigned char				PedsPositionForRoadBlock;
+	unsigned char				NumPedsForRoadBlock;
 
 	//1200
-	float				nBodyDirtLevel;			// Dirt level of vehicle body texture: 0.0f=fully clean, 15.0f=maximum dirt visible, it may be altered at any time while vehicle's cycle of lige
+	float						nBodyDirtLevel;			// Dirt level of vehicle body texture: 0.0f=fully clean, 15.0f=maximum dirt visible, it may be altered at any time while vehicle's cycle of lige
 
 	// values used by transmission
-	unsigned char		m_nCurrentGear;			/* 1204 */
-	float				m_fGearChangeCount;		/* 1205 */
-	float				m_fWheelSpinForAudio;	/* 1209 */
-	uint8_t				__unknown_1213[3];		/* 1213 */
+	unsigned char				m_nCurrentGear;			/* 1204 */
+	float						m_fGearChangeCount;		/* 1205 */
+	float						m_fWheelSpinForAudio;	/* 1209 */
+	uint8_t						__unknown_1213[3];		/* 1213 */
 
-	float				hitpoints;			/* 1216 */
-	void				*pulling_truck;		/* 1220 - vehicle_info - pulling truck */
-	struct vehicle_info *trailer;			/* 1224 - pointer to the currently attached trailer; 0 if theres no trailer */
-	uint8_t				__unknown_1228[44]; /* 1228 */
-	uint32_t			door_status;		/* 1272 - car door status (1:Opened 2:Locked) */
-	uint8_t				__unknown_1276[148];	/* 1276 */
-	uint8_t				vehicle_type;			/* 1424 - VEHICLE_TYPE_* */
-	uint8_t				__unknown_1425[19];		/* 1425 */
+	float						hitpoints;			/* 1216 */
+	void						*pulling_truck;		/* 1220 - vehicle_info - pulling truck */
+	struct vehicle_info			*trailer;			/* 1224 - pointer to the currently attached trailer; 0 if theres no trailer */
+	uint8_t						__unknown_1228[44]; /* 1228 */
+	uint32_t					door_status;		/* 1272 - car door status (1:Opened 2:Locked) */
+	uint8_t						__unknown_1276[148];	/* 1276 */
+	uint8_t						vehicle_type;			/* 1424 - VEHICLE_TYPE_* */
+	uint8_t						__unknown_1425[19];		/* 1425 */
 
 	union
 	{
@@ -754,11 +759,35 @@ struct object_info
 	uint8_t				__unknown_256[8];	/* 256 */
 	float				height_to_actor;	/* 264 - when attached height difference to actor, else 0*/
 	uint8_t				__unknown_268[4];	/* 268 */
-	float				pitch;	/* 272 - rotation, pitch */
-	float				roll;	/* 276 - rotation, roll */
+	float				pitch;	/* 272 - rotation, pitch (attached) */
+	float				roll;	/* 276 - rotation, roll (attached) */
 	uint8_t				__unknown_280[68];	/* 280 */
 	float				scale;	/* 348 - Scale */
 	uint8_t				__unknown_352[59];	/* 352 */
+};
+
+//Only for flying
+struct physicalFlyParams
+{
+#pragma pack( 1 )
+	float	__itsNull;	/* 0 */
+	float	heightIncreaseRel[2];	/* 4 - Related to (Heli only?) height */
+	float	circleAround;			/* 12 - Heli/Plane */
+	float	changeDir;		/* 16 - Speed changing Direction (negative = change against the speed vector) */
+	float	changeDir_side; /* 20 */
+	float	roll_lr;		/* 24 */
+	float	__unknown_28;	/* 28 */
+	float	pitch;			/* 32 */
+	float	__unknown_36;	/* 36 */
+	float	_multPitch;		/* 40 - pitch related */
+	float	finalPitch_;	/* 44 */
+	float	_unknownMultipliers_isOne[2];	/* 48 */
+	float	_orientationMultiplier;			/* 56 - somehow orientation related */
+	float	_SpeedMultiplier_isOne;			/* 60 */
+	float	pitchMultiplier;	/* 64 - keep it >0 */
+	float	rollMultiplier;		/* 68 */
+	float	circleMultiplier;	/* 72 */
+	//following values = global for all vehs (?)
 };
 
 struct checkpoint
@@ -785,6 +814,7 @@ struct vehicle_state
 	struct vehicle_info		*trailerPtr;
 };
 
+/* global patch */
 static struct patch_set patch_vehicle_inf_NOS =
 {
 	"Vehicle Infinite NOS",
@@ -792,6 +822,15 @@ static struct patch_set patch_vehicle_inf_NOS =
 	0,
 	{ { 1, (void *)0x006A3FFA, (uint8_t *)"\x7A", (uint8_t *)"\xEB", (uint8_t *)"\x7A" }, { 2, (void *)0x006A3FB9,
 				(uint8_t *)"\xFE\xC8", (uint8_t *)"\x90\x90", (uint8_t *)"\xFE\xC8" } }
+};
+
+static struct patch_set patch_NotAPlane =
+{
+	"Its Not A Plane",			//aka deactivate flying for planes
+	0,
+	0,
+	{ 17, (void *)0x006CC46F,
+			(uint8_t *)"\x51\x8B\x4C\x24\x20\x52\x50\x51\x6A\x03\x8B\xCE\xE8\x70\xC1\x00\x00", NULL, NULL }
 };
 
 /* __time_current is set in cheat_hook(). the time is "cached".

@@ -647,6 +647,8 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.hud_indicator_inveh_brkdance, "true" );
 	if ( (ent = ini_register_entry("hud_indicator_inveh_spider", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.hud_indicator_inveh_spider, "true" );
+	if ( (ent = ini_register_entry("hud_indicator_inveh_fly", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.hud_indicator_inveh_fly, "true" );
 
 	if ( (ent = ini_register_entry("hud_indicator_onfoot_airbrk", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.hud_indicator_onfoot_airbrk, "true" );
@@ -755,6 +757,13 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.key_brkd_leftward, "u" );
 	if ( (ent = ini_register_entry("brkdance_velocity", TYPE_FLOAT)) != NULL )
 		ini_register_data( ent, &set.brkdance_velocity, "1.0" );
+
+	if ( (ent = ini_register_entry("key_fly_vehicle", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_fly_vehicle, "oem_period" );
+	if ( (ent = ini_register_entry("fly_heliMode", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.fly_heliMode, "true" );
+	if ( (ent = ini_register_entry("fly_hydraMode", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.fly_hydraMode, "true" );
 
 	if ( (ent = ini_register_entry("key_rejoin", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_rejoin, "b" );
