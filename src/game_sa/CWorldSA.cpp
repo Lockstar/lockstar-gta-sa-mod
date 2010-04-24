@@ -246,7 +246,7 @@ BYTE CWorldSA::GetLevelFromPosition(CVector * vecPosition)
 float CWorldSA::FindGroundZForPosition(float fX, float fY)
 {
 	DEBUG_TRACE("FLOAT CWorldSA::FindGroundZForPosition(FLOAT fX, FLOAT fY)");
-	DWORD dwFunc = FUNC_FindGroundZFor3DCoord;
+	DWORD dwFunc = FUNC_FindGroundZForCoord;//FUNC_FindGroundZFor3DCoord;
 	FLOAT fReturn = 0;
 	_asm
 	{
