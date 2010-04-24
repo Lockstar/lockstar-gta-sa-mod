@@ -846,6 +846,8 @@ void RenderMapDot ( const float self_pos[3], const float pos[16], DWORD color, c
 int iShowVehicles;
 void RenderMap ( void )
 {
+	traceLastFunc( "renderMap()" );
+
 	struct actor_info	*self = actor_info_get( ACTOR_SELF, ACTOR_ALIVE );
 	if ( self == NULL )
 		return;
@@ -1168,8 +1170,26 @@ void renderPlayerTags ( void )
 		// get SAMP's player id
 		iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
 
+		// RC Vehicle fix
+		if ( iterPed->GetVehicle() != NULL && iSAMPID != selfSAMPID )
+		{
+			if ( gta_vehicle_get_by_id(iterPed->GetVehicle()->GetModelIndex())->class_id == VEHICLE_CLASS_MINI
+			 &&	 iterPed->GetVehicle()->GetDriver() == iterPed )
+			{
+				CVector *pos = iterPed->GetVehicle()->GetPosition();
+				iterPosition = *pos;
+			}
+			else
+			{
+				iterPosition = iterPed->GetInterface()->Placeable.matrix->vPos;
+			}
+		}
+		else
+		{
+			iterPosition = iterPed->GetInterface()->Placeable.matrix->vPos;
+		}
+
 		// check if it's farther than set.player_tags_dist
-		iterPosition = iterPed->GetInterface()->Placeable.matrix->vPos;
 		ourPosMinusIter = ourPosition - iterPosition;
 		if ( ourPosMinusIter.Length() > set.player_tags_dist )
 		{
@@ -1650,7 +1670,6 @@ void renderVehicleTags ( void )
 						10.0f,
 						D3DCOLOR_ARGB(255, 255, 0, 0) );
 */
-
 	}
 }
 
@@ -1690,6 +1709,8 @@ void RenderTeleportTexts ( void )
 
 void RenderPickupTexts ( void )
 {
+	traceLastFunc( "renderPickupTexts()" );
+
 	struct actor_info	*self = actor_info_get( ACTOR_SELF, 0 );
 	if ( g_SAMP->pPool_Pickup == NULL )
 		return;
@@ -1731,6 +1752,8 @@ void RenderPickupTexts ( void )
 
 void RenderObjectTexts ( void )
 {
+	traceLastFunc( "renderObjectTexts()" );
+
 	struct actor_info	*self = actor_info_get( ACTOR_SELF, 0 );
 	if ( g_SAMP->pPool_Object == NULL )
 		return;
@@ -1774,6 +1797,8 @@ void RenderObjectTexts ( void )
 
 void renderPlayerInfoList ( void )
 {
+	traceLastFunc( "renderPlayerInfoList()" );
+
 	if ( gta_menu_active() )
 		return;
 
@@ -1797,7 +1822,9 @@ void renderPlayerInfoList ( void )
 	if ( self == NULL )
 		return;
 
-	float						width = 50.0f, height = 10.0f;
+	//chat window is on the left
+	float						width = ( pPresentParam.BackBufferWidth / 8 ) * 2;
+	float						height = 20.0f;
 
 	const struct vehicle_entry	*vehicle;
 	char						buf[256];
@@ -1968,14 +1995,14 @@ void renderScoreList ()
 		current_player = 0;
 
 	loc[1] -= 1.0f + pD3DFont->DrawHeight();
-	render->D3DBox( loc[0] - 10.0f, loc[1] - 2.0f, (pPresentParam.BackBufferWidth / 8) * 4.0f,
-					pD3DFont->DrawHeight() + 3.0f, D3DCOLOR_ARGB(150, 200, 200, 200) );
+	render->D3DBox( loc[0] - 10.0f, loc[1] - 2.0f, (pPresentParam.BackBufferWidth / 2), pD3DFont->DrawHeight() + 3.0f,
+					D3DCOLOR_ARGB(150, 200, 200, 200) );
 	_snprintf_s( buffer, sizeof(buffer), "%s (%s:%d) Connected Players: %d", g_SAMP->szHostname, g_SAMP->szIP,
 				 g_SAMP->ulPort, amount_players );
 	pD3DFont->PrintShadow( loc[0], loc[1], D3DCOLOR_ARGB(200, 255, 255, 255), buffer );
 	loc[1] += 10.0f + pD3DFont->DrawHeight();
 
-	render->D3DBox( loc[0] - 10.0f, loc[1] - 10.0f, (pPresentParam.BackBufferWidth / 8) * 4.0f,
+	render->D3DBox( loc[0] - 10.0f, loc[1] - 10.0f, (pPresentParam.BackBufferWidth / 2),
 					pPresentParam.BackBufferHeight - loc[1] - lowest, D3DCOLOR_ARGB(150, 100, 100, 100) );
 
 	_snprintf_s( buffer, sizeof(buffer), "%s (%d)", g_Players->szLocalPlayerName, g_Players->sLocalPlayerID );
@@ -2022,6 +2049,8 @@ void renderScoreList ()
 
 void renderKillList ( void )
 {
+	traceLastFunc( "renderKillList()" );
+
 	if ( g_DeathList == NULL )
 		return;
 
@@ -2113,6 +2142,8 @@ void renderKillList ( void )
 float	fYChatPosAdj = 167.0f;
 void renderChat ( void )
 {
+	traceLastFunc( "renderChat()" );
+
 	if ( g_Chat == NULL )
 		return;
 
@@ -2539,6 +2570,8 @@ void renderVehiclePoolStructure ( int iVehicleIDToDebug )
 #endif
 void renderPlayerInfo ( int iPlayerID )
 {
+	traceLastFunc( "renderPlayerInfo()" );
+
 	if ( (KEY_DOWN(VK_TAB) && set.d3dtext_score)
 	 ||	 (*(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 && !set.d3dtext_score) ) return;
 
@@ -2578,9 +2611,13 @@ void renderPlayerInfo ( int iPlayerID )
 			return;
 		pD3DFontFixed->PrintShadow( 20.0f, y, color, "Vehicle" );
 		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
-		sprintf( buf, " Vehicle ID: %u", g_Players->pLocalPlayer->sCurrentVehicleID );
-		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
-		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		if ( vinfo->passengers[0] == actor_info_get(ACTOR_SELF, ACTOR_ALIVE) )
+		{
+			sprintf( buf, " Vehicle ID: %u", g_Players->pLocalPlayer->sCurrentVehicleID );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		}
+
 #ifdef M0D_DEV
 		for ( int iRow = 0; iRow < 4; iRow++ )
 		{
@@ -2618,12 +2655,10 @@ void renderPlayerInfo ( int iPlayerID )
 		}
 		else
 		{
+			float	position[3];
+			vect3_copy( &g_Players->pRemotePlayer[iPlayerID]->fActorPosition[0], position );
+
 			sprintf( buf, "Player state: %u", g_Players->pRemotePlayer[iPlayerID]->bytePlayerState );
-			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
-			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
-			sprintf( buf, "Actor position: %0.2f, %0.2f, %0.2f", g_Players->pRemotePlayer[iPlayerID]->fActorPosition[0],
-					 g_Players->pRemotePlayer[iPlayerID]->fActorPosition[1],
-					 g_Players->pRemotePlayer[iPlayerID]->fActorPosition[2] );
 			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
 			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
 			sprintf( buf, "Actor health: %0.2f", g_Players->pRemotePlayer[iPlayerID]->fActorHealth );
@@ -2632,18 +2667,26 @@ void renderPlayerInfo ( int iPlayerID )
 			sprintf( buf, "Actor armor: %0.2f", g_Players->pRemotePlayer[iPlayerID]->fActorArmor );
 			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
 			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
-			sprintf( buf, "Actor Speed: %0.2f km/h",
-					 (float)(vect3_length(g_Players->pRemotePlayer[iPlayerID]->fActorMoveSpeed) * 170) );
-			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
-			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
 			if ( g_Players->pRemotePlayer[iPlayerID]->pSAMP_Vehicle != NULL )
 			{
+				vect3_copy( &g_Players->pRemotePlayer[iPlayerID]->pSAMP_Vehicle->pGTA_Vehicle->base.matrix[4 * 3],
+							position );
 				pD3DFontFixed->PrintShadow( 20.0f, y, color, "The player is in a vehicle" );
 				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
 				sprintf( buf, " Vehicle ID: %u", g_Players->pRemotePlayer[iPlayerID]->sVehicleID );
 				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
 				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, " Vehicle Type: %s", gta_vehicle_get_by_id(
+							 g_Players->pRemotePlayer[iPlayerID]->pSAMP_Vehicle->pGTA_Vehicle->base.model_alt_id)->name );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
 				sprintf( buf, " Seat ID: %u", g_Players->pRemotePlayer[iPlayerID]->byteSeatID );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, " Vehicle Position: %0.2f %0.2f %0.2f",
+						 g_Players->pRemotePlayer[iPlayerID]->pSAMP_Vehicle->pGTA_Vehicle->base.matrix[4 * 3],
+						 g_Players->pRemotePlayer[iPlayerID]->pSAMP_Vehicle->pGTA_Vehicle->base.matrix[4 * 3 + 1],
+						 g_Players->pRemotePlayer[iPlayerID]->pSAMP_Vehicle->pGTA_Vehicle->base.matrix[4 * 3 + 2] );
 				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
 				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
 				if ( g_Players->pRemotePlayer[iPlayerID]->byteSeatID == 0 )
@@ -2652,6 +2695,26 @@ void renderPlayerInfo ( int iPlayerID )
 							 (float)(vect3_length(g_Players->pRemotePlayer[iPlayerID]->fVehicleMoveSpeed) * 170) );
 					pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
 					( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				}
+				else
+				{
+					struct actor_info	*driver = g_Players->pRemotePlayer[iPlayerID]->pSAMP_Vehicle->pGTA_Vehicle->
+						passengers[0];
+					if ( driver != NULL )
+					{
+						int sampid_driver = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)driver )];
+						if ( g_Players->pRemotePlayer[sampid_driver] != NULL )
+						{
+							sprintf( buf, " Vehicle Speed: %0.2f km/h", (float)
+										 (vect3_length(g_Players->pRemotePlayer[sampid_driver]->fVehicleMoveSpeed) * 170) );
+							pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+							( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+							sprintf( buf, " Vehicle Driver: %s (%d)", g_Players->szPlayerName[sampid_driver],
+									 sampid_driver );
+							pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+							( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+						}
+					}
 				}
 
 #ifdef M0D_DEV
@@ -2668,6 +2731,28 @@ void renderPlayerInfo ( int iPlayerID )
 				}
 #endif
 			}
+			else
+			{
+				sprintf( buf, "Actor position: %0.2f, %0.2f, %0.2f",
+						 g_Players->pRemotePlayer[iPlayerID]->fActorPosition[0],
+						 g_Players->pRemotePlayer[iPlayerID]->fActorPosition[1],
+						 g_Players->pRemotePlayer[iPlayerID]->fActorPosition[2] );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, "Actor Speed: %0.2f km/h",
+						 (float)(vect3_length(g_Players->pRemotePlayer[iPlayerID]->fActorMoveSpeed) * 170) );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			}
+
+			CPed	*pPedSelf = pPools->GetPedFromRef( CPOOLS_PED_SELF_REF );
+			CVector *pos_self;
+			pos_self = pPedSelf->GetPosition();
+
+			float	self_pos[3] = { pos_self->fX, pos_self->fY, pos_self->fZ };
+			sprintf( buf, "Distance: %0.2f", vect3_dist(position, self_pos) );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
 		}
 	}
 
@@ -2787,11 +2872,9 @@ void renderSAMP ( void )
 	}
 }
 
-typedef float ( *FindGroundZForCoord_t ) (float x, float y);
-FindGroundZForCoord_t	FindGroundZForCoord = ( FindGroundZForCoord_t ) 0x569660;
 void mapMenuTeleport ( void )
 {
-	if ( (*(int *)0xBA6774 != 0) && GetAsyncKeyState(VK_RBUTTON) & 1 )
+	if ( (*(int *)0xBA6774 != 0) && GetAsyncKeyState(VK_RBUTTON) & 1 && pGameInterface != NULL )
 	{
 		// ty to Racer_S for this
 		float	mapPos[3];
@@ -2803,7 +2886,7 @@ void mapMenuTeleport ( void )
 				gta_interior_id_set( 0 );
 				mapPos[0] = *pos;
 				mapPos[1] = *( pos + 1 );
-				mapPos[2] = FindGroundZForCoord( mapPos[0], mapPos[1] ) + 2.0f;
+				mapPos[2] = pGameInterface->GetWorld()->FindGroundZForPosition( mapPos[0], mapPos[1] ) + 2.0f;
 				cheat_teleport( mapPos, 0 );
 			}
 		}
@@ -3756,6 +3839,11 @@ HRESULT proxyIDirect3DDevice9::EndScene ( void )
 					if ( set.hud_indicator_inveh_spider )
 					{
 						HUD_TEXT_TGL( x, cheat_state->vehicle.spiderWheels_on ? color_enabled : color_disabled, "Spider" );
+					}
+
+					if ( set.hud_indicator_inveh_fly )
+					{
+						HUD_TEXT_TGL( x, cheat_state->vehicle.fly ? color_enabled : color_disabled, "Fly" );
 					}
 
 					RenderVehicleHPBar();

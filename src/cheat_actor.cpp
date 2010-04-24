@@ -55,7 +55,7 @@ void cheat_handle_actor_nocols ( struct actor_info *info )
 	}
 
 	//need to force the player into car while nocols activated (safety checks by gta)
-	uint8_t *enter_exit_key = (uint8_t *)0xB73476;
+	uint8_t *enter_exit_key = ( uint8_t * ) ( GTA_KEYS + 0x1E );
 	if ( cheat_state->_generic.nocols_enabled && *enter_exit_key == 0xff )
 	{
 		int					id = vehicle_find_nearest( VEHICLE_ALIVE | VEHICLE_EMPTY );

@@ -20,8 +20,6 @@
 	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
 
 */
-#define SAMP_FUNC_SKIN					0x36FA0
-#define SAMP_FUNC_VEHICLE				0x37010
 
 #define SAMP_PLAYER_MAX					500
 #define SAMP_VEHICLE_MAX				2000
@@ -206,14 +204,14 @@ struct stLocalPlayer
 	float				fSpawnRot;
 	int					iSpawnWeapon[3];
 	int					iSpawnAmmo[3];
+	uint8_t				byteUnknown_2[4];
 	int					iSpawnClassLoaded;
-	int					iSpawnClassID;
 	uint32_t			ulSpawnSelectionTick;
 	uint32_t			ulSpawnSelectionStart;
 	int					isSpectating;
-	uint8_t				byteUnknown_2;	// 0xFF
-	uint8_t				byteUnknown_3;
+	uint8_t				byteUnknown_3;		// 0xFF
 	uint8_t				byteUnknown_4;
+	uint8_t				byteUnknown_5;
 	uint32_t			ulSendTick;
 	uint32_t			ulSpectateTick;
 	uint32_t			ulAimTick;
@@ -230,6 +228,8 @@ struct stLocalPlayer
 	int					iIsWasted;
 	struct stOnFootData onFootData;
 	struct stInCarData	inCarData;
+	uint8_t				bytesUnknown_410[111];
+	int					iSpawnClassID;
 };
 
 struct stRemotePlayer

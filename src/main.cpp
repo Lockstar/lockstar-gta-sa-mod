@@ -143,7 +143,10 @@ void setDebugPointer ( void *ptr )
 
 	if ( debug->hist_pos < DEBUG_HIST_LEN )
 	{
-		debug->hist_pos++;
+		if ( debug->ptr[debug->hist_pos] != NULL && ptr != NULL )
+			debug->hist_pos++;
+		else if ( debug->hist_pos == 1 && ptr == NULL )
+			debug->hist_pos++;
 	}
 	else
 	{

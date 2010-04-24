@@ -37,6 +37,7 @@ void	cheat_vehicle_air_brake_set ( int enabled );
 void	cheat_handle_vehicle_engine ( struct vehicle_info *vehicle_info, float time_diff );
 void	cheat_handle_vehicle_brakedance ( struct vehicle_info *vehicle_info, float time_diff );
 void	cheat_handle_vehicle_blinking_carlights ( struct vehicle_info *vehicle_info, float time_diff );
+void	cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_diff );
 void	cheat_handle_vehicle_keepTrailer ( struct vehicle_info *vehicle_info, float time_diff );
 void	cheat_handle_vehicle_fast_exit ( struct vehicle_info *vehicle_info, float time_diff );
 void	cheat_handle_vehicle_repair_car ( struct vehicle_info *vehicle_info, float time_diff );

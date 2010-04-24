@@ -54,7 +54,6 @@ int cheat_panic ( void )
 				actor_info->weapon_slot = 0;
 			}
 
-
 			CPed	*pPedSelf = pPools->GetPedFromRef( CPOOLS_PED_SELF_REF );
 			if ( pPedSelf->GetVehicle() )
 			{
@@ -178,6 +177,8 @@ void cheat_handle_debug ( HWND wnd )
 			debug->hist_pos--;
 			hist_chng = 1;
 		}
+		else if ( debug->hist_pos == 0 )
+			setDebugPointer( (void *)NULL );
 	}
 
 	/* change data type */

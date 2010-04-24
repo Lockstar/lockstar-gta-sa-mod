@@ -215,6 +215,7 @@ struct settings
 	int						hud_indicator_inveh_stick;
 	int						hud_indicator_inveh_brkdance;
 	int						hud_indicator_inveh_spider;
+	int						hud_indicator_inveh_fly;
 
 	int						hud_indicator_onfoot_airbrk;
 	int						hud_indicator_onfoot_stick;
@@ -309,6 +310,10 @@ struct settings
 	int						key_brkd_rightward;
 	int						key_brkd_leftward;
 	float					brkdance_velocity;
+
+	int						key_fly_vehicle;
+	int						fly_heliMode;
+	int						fly_hydraMode;
 
 	int						key_rejoin;
 	int						rejoin_delay;
