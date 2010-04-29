@@ -469,7 +469,10 @@ void _cdecl VehicleLookAside ( DWORD dwCam, CVector *pvecEntityPos, float fDirec
 
 	// Custom calculation of the camera position when looking left/right while in
 	// vehicle cam mode, taking in account custom gravity
-	*( CVector * ) ( dwCam + 0x19C ) = *pvecEntityPos + ( -gravcam_matVehicleTransform.vRight * fDirectionFactor + gravcam_matGravity.vUp * 0.2f ) * fDistance;
+	if ( !cheat_state->vehicle.fly )
+	{
+		*( CVector * ) ( dwCam + 0x19C ) = *pvecEntityPos + ( -gravcam_matVehicleTransform.vRight * fDirectionFactor + gravcam_matGravity.vUp * 0.2f ) * fDistance;
+	}
 }
 
 void _declspec ( naked ) HOOK_VehicleLookAside ()
@@ -494,7 +497,7 @@ void _declspec ( naked ) HOOK_VehicleLookAside ()
 void _cdecl CVehicle_constructor_hook ( CVehicleSAInterface *vehicle )
 {
 	// create & add new CVehicle to CPools
-	CVehicle	*CVeh = pGameInterface->GetPools()->AddVehicle( (DWORD *)vehicle );
+	CVehicle	*CVeh = pPools->AddVehicle( (DWORD *)vehicle );
 	CVeh->SetGravity( GravityNormal );
 }
 
@@ -521,8 +524,8 @@ void _declspec ( naked ) HOOK_CVehicle_constructor ()
 void _cdecl CVehicle_destructor_hook ( CVehicleSAInterface *vehicle )
 {
 	// remove CVehicle from CPools and delete
-	CVehicle	*CVeh_toDelete = pGameInterface->GetPools()->GetVehicle( (DWORD *)vehicle );
-	pGameInterface->GetPools()->RemoveVehicle( CVeh_toDelete, false );
+	CVehicle	*CVeh_toDelete = pPools->GetVehicle( (DWORD *)vehicle );
+	pPools->RemoveVehicle( CVeh_toDelete, false );
 }
 
 #define HOOKPOS_CVehicle_destructor 0x6E2B40
@@ -549,7 +552,7 @@ void _declspec ( naked ) HOOK_CVehicle_destructor ()
 void _cdecl CPed_constructor_hook ( CPedSAInterface *ped )
 {
 	// create & add new CPed to CPools
-	pGameInterface->GetPools()->AddPed( (DWORD *)ped );
+	pPools->AddPed( (DWORD *)ped );
 }
 
 #define HOOKPOS_CPed_constructor	0x5E8606
@@ -577,8 +580,8 @@ void _declspec ( naked ) HOOK_CPed_constructor ()
 void _cdecl CPed_destructor_hook ( CPedSAInterface *ped )
 {
 	// remove CPed from CPools and delete
-	CPed	*CPed_toDelete = pGameInterface->GetPools()->GetPed( (DWORD *)ped );
-	pGameInterface->GetPools()->RemovePed( CPed_toDelete, false );
+	CPed	*CPed_toDelete = pPools->GetPed( (DWORD *)ped );
+	pPools->RemovePed( CPed_toDelete, false );
 }
 
 #define HOOKPOS_CPed_destructor 0x5E8620
