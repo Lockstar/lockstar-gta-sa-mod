@@ -3,8 +3,9 @@ Version 4.1.0.0
 * Fixed so many things that it's retarded to list them here.
 * Added menu to add upgrades (Wangs/etc) to your vehicle anywhere.
 * Added SpiderWheels, drive on anything! Default: Numpad 5
+
 * Added toggleable infinite NOS. Default: Numpad 0
-* Added switchable car lights. Default: f2 to switch modes.
+* Added switchable car lights. Default: F2 to switch modes.
 * Added toggleable vehicle collisions except for your vehicle.
 * Added left & right 90 degree buttons to Quick Turn. Default: [ and ]
 * Added function in menu (GTA->Cheats) to avoid loosing Trailer.
@@ -22,7 +23,7 @@ TODO:
 fix aimbot
 rebuild weapon cheat
 make sure F12 panic key & clean screenshots is disabling everything
-make sure scorelist is not hiding players by accident anymore
+
 
 
 
