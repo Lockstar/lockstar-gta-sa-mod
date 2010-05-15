@@ -1116,70 +1116,81 @@ void cheat_handle_vehicle_blinking_carlights ( struct vehicle_info *vinfo, float
 	return;
 }
 
-void cheat_handle_vehicle_fly( struct vehicle_info *vehicle_info, float time_diff)
+void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_diff )
 {
 	traceLastFunc( "cheat_handle_vehicle_fly()" );
 
-	if ( vehicle_info == NULL)
+	if ( vehicle_info == NULL || pGameInterface == NULL )
 		return;
 
-	if( KEY_PRESSED(set.key_fly_vehicle) )
+	if ( KEY_PRESSED(set.key_fly_vehicle) )
 	{
 		cheat_state->vehicle.fly ^= 1;
 	}
 
-	if(patch_NotAPlane.installed && !cheat_state->vehicle.fly)
-		patcher_remove(&patch_NotAPlane);
-
-	int class_id = gta_vehicle_get_by_id( vehicle_info->base.model_alt_id )->class_id;
-	if ( class_id == VEHICLE_CLASS_HELI )
-		return;
+	if ( patch_NotAPlane.installed && !cheat_state->vehicle.fly )
+		patcher_remove( &patch_NotAPlane );
 
 	if ( cheat_state->vehicle.fly )
 	{
-		if(class_id == VEHICLE_CLASS_AIRPLANE && !patch_NotAPlane.installed)
-			patcher_install(&patch_NotAPlane);
-		else if(class_id != VEHICLE_CLASS_AIRPLANE && patch_NotAPlane.installed)
-			patcher_remove(&patch_NotAPlane);
+		int class_id = gta_vehicle_get_by_id( vehicle_info->base.model_alt_id )->class_id;
+		if ( class_id == VEHICLE_CLASS_HELI )
+			return;
+
+		if ( !patch_NotAPlane.installed && class_id == VEHICLE_CLASS_AIRPLANE )
+			patcher_install( &patch_NotAPlane );
+		else if ( patch_NotAPlane.installed && class_id != VEHICLE_CLASS_AIRPLANE )
+			patcher_remove( &patch_NotAPlane );
 
 		struct vehicle_info *temp;
+		DWORD				func = 0x006D85F0;
 		for ( temp = vehicle_info; temp != NULL; temp = temp->trailer )
 		{
-			if(temp->base.model_alt_id == 520)
+			// what model is this, and why is this here, comment stuff like this pls
+			if ( temp->base.model_alt_id == 520 )
 				continue;
 
-			class_id = gta_vehicle_get_by_id( temp->base.model_alt_id )->class_id;
 			DWORD	mecar = ( DWORD ) temp;
-			DWORD	func = 0x006D85F0;
+			class_id = gta_vehicle_get_by_id( temp->base.model_alt_id )->class_id;
 
-			if(set.fly_hydraMode && pGameInterface != NULL)
+			if ( set.fly_multiMode )
 			{
-				float height;
-				height = pGameInterface->GetWorld()->FindGroundZForPosition(temp->base.matrix[4*3],temp->base.matrix[4*3+1]);
-				height = temp->base.matrix[4*3+2] - height;
-				if(height <= 25.0f && height >= -10.0f)
+				float	height;
+				height = pGameInterface->GetWorld()->FindGroundZForPosition( temp->base.matrix[4 * 3],
+																			 temp->base.matrix[4 * 3 + 1] );
+				height = temp->base.matrix[4 * 3 + 2] - height;
+				if ( height <= 30.0f && height >= -10.0f )
 					set.fly_heliMode = 1;
-				else 
+				else
 					set.fly_heliMode = 0;
 			}
 
-			if( class_id == VEHICLE_CLASS_BIKE || set.fly_heliMode )
+			if ( set.fly_heliMode )
+			{
+				if ( class_id == VEHICLE_CLASS_BIKE )
+				{
+					temp->pFlyData->circleAround = -0.0003f;
+					temp->pFlyData->pitch = 0.005f;
+					temp->pFlyData->roll_lr = -0.01f;	// rolling isn't working with bikes correctly yet
+				}
+				else
+				{
+					temp->pFlyData->circleAround = -0.0003f;
+					temp->pFlyData->pitch = 0.005f;
+					temp->pFlyData->roll_lr = -0.005f;
+				}
+			}
+			else
 			{
 				temp->pFlyData->circleAround = -0.0003f;
-				temp->pFlyData->pitch = 0.005f;
-				//a/d - left/right -- rolling isn't working with bikes correctly yet
-				temp->pFlyData->roll_lr = -0.005f;
-			}else
-			{
-				temp->pFlyData->circleAround = -0.0001f;
-				temp->pFlyData->pitch = 0.0002f;
+				temp->pFlyData->pitch = 0.0005f;
 				temp->pFlyData->roll_lr = 0.002f;
 			}
 
-			float one = 0.9997f;
-			float min = -0.9997f;
+			float	one = 0.9997f;
+			float	min = -0.9997f;
 
-			if( class_id <= VEHICLE_CLASS_HEAVY && !set.fly_heliMode )//gta cheat
+			if ( class_id <= VEHICLE_CLASS_HEAVY && !set.fly_heliMode ) //gta cheat
 			{
 				__asm push 0x0C61C3FF6
 				__asm push 0x0C61C3FF6
@@ -1189,48 +1200,79 @@ void cheat_handle_vehicle_fly( struct vehicle_info *vehicle_info, float time_dif
 			else
 			{
 				//great code is making not that great code out of this
-				if(*(uint8_t*)(GTA_KEYS+0x1C)==0xFF)//accel
+				if ( *(uint8_t *) (GTA_KEYS + 0x1C) == 0xFF )			//accel
+				{
 					__asm push min
-				else if(*(uint8_t*)(GTA_KEYS+0x20)==0xFF)//brake
+				}
+				else if ( *(uint8_t *) (GTA_KEYS + 0x20) == 0xFF )		//brake
+				{
 					__asm push one
+				}
 				else
+				{
 					__asm push 0
+				}
 
-				if(*(uint8_t*)(GTA_KEYS+0x1)==0xFF)//left
+				if ( *(uint8_t *) (GTA_KEYS + 0x1) == 0xFF )			//left
+				{
 					__asm push min
-				else if(*(uint8_t*)(GTA_KEYS+0x0)==0x80)//right
+				}
+				else if ( *(uint8_t *) (GTA_KEYS + 0x0) == 0x80 )		//right
+				{
 					__asm push one
+				}
 				else
+				{
 					__asm push 0
+				}
 
-				if(*(uint8_t*)(GTA_KEYS+0x3)==0xFF)//steer forward
+				if ( *(uint8_t *) (GTA_KEYS + 0x3) == 0xFF )			//steer forward
+				{
 					__asm push min
-				else if(*(uint8_t*)(GTA_KEYS+0x2)==0x80)//steer down
+				}
+				else if ( *(uint8_t *) (GTA_KEYS + 0x2) == 0x80 )		//steer down
+				{
 					__asm push one
+				}
 				else
+				{
 					__asm push 0
+				}
 
-				if(*(uint8_t*)(GTA_KEYS+0xE)==0xFF)//look left
+				if ( *(uint8_t *) (GTA_KEYS + 0xE) == 0xFF )			//look left
+				{
 					__asm push one
-				else if(*(uint8_t*)(GTA_KEYS+0xA)==0xFF)//Look right
+				}
+				else if ( *(uint8_t *) (GTA_KEYS + 0xA) == 0xFF )		//Look right
+				{
 					__asm push min
+				}
 				else
+				{
 					__asm push 0
+				}
 			}
-		
-			//1fast plane,2heli,6heli, 8 airbreak alike
-			if(set.fly_heliMode)
+
+			// 1 fast plane, 2 heli, 6 heli, 8 airbreak alike
+			if ( set.fly_heliMode )
+			{
 				__asm push 6
+			}
 			else
-				__asm push  1
+			{
+				__asm push 1
+			}
+
 			__asm mov ecx, mecar
 			__asm call func
 
-			if (!set.trailer_support)
+			// no trailer support
+			if ( !set.trailer_support )
 				return;
 
+			// sorta fix trailer spin
 			if ( temp != vehicle_info )
-				vect3_copy(vehicle_info->spin,temp->spin);
+				vect3_copy( vehicle_info->spin, temp->spin );
 		}
 	}
 }

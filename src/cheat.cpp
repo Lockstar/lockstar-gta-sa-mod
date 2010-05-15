@@ -375,8 +375,8 @@ void cheat_hook ( HWND wnd )
 
 		//////////////////////////////////////////////////////////////////
 		// this should be removed after reworking weapon cheat function //
-		if ( set.restore_weapons_after_death )
-			* (uint8_t *)0x5E6320 = 0xC3;
+		//if ( set.restore_weapons_after_death )
+		//	* (uint8_t *)0x5E6320 = 0xC3;
 
 		cheat_handle_unlock();
 		cheat_handle_checkpoint();

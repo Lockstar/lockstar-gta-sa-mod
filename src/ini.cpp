@@ -761,9 +761,9 @@ static void ini_init ( void )
 	if ( (ent = ini_register_entry("key_fly_vehicle", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_fly_vehicle, "oem_period" );
 	if ( (ent = ini_register_entry("fly_heliMode", TYPE_BOOL)) != NULL )
-		ini_register_data( ent, &set.fly_heliMode, "true" );
+		ini_register_data( ent, &set.fly_heliMode, "false" );
 	if ( (ent = ini_register_entry("fly_hydraMode", TYPE_BOOL)) != NULL )
-		ini_register_data( ent, &set.fly_hydraMode, "true" );
+		ini_register_data( ent, &set.fly_multiMode, "true" );
 
 	if ( (ent = ini_register_entry("key_rejoin", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_rejoin, "b" );
