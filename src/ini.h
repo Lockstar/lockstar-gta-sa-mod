@@ -315,7 +315,7 @@ struct settings
 
 	int						key_fly_vehicle;
 	int						fly_heliMode;
-	int						fly_hydraMode;
+	int						fly_multiMode;
 
 	int						key_rejoin;
 	int						rejoin_delay;
