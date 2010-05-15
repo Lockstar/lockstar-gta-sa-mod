@@ -499,8 +499,9 @@ HRESULT CD3DFont::Print ( float x, float y, DWORD color, const char *szText )
 
 HRESULT CD3DFont::PrintShadow ( float x, float y, DWORD color, const char *szText )
 {
+	DWORD shadow = D3DCOLOR_ARGB((BYTE)HIBYTE(HIWORD(color)), 0, 0, 0);
 	if ( set.render_text_shadows )
-		Print( x + 1, y + 1, 0xCC000000, szText );
+		Print( x + 1, y + 1, shadow, szText );
 	Print( x, y, color, szText );
 
 	return S_OK;
