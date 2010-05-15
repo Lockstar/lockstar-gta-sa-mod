@@ -1116,32 +1116,12 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 {
 	traceLastFunc( "cheat_handle_vehicle_fly()" );
 
-	if ( vehicle_info == NULL)
-	{
-		if ( !cheat_state->_generic.cheat_panic_enabled )
-			return;
-
-		if ( patch_NotAPlane.installed )
-			patcher_remove( &patch_NotAPlane );
-
-		struct vehicle_info *veh_self = vehicle_info_get( VEHICLE_SELF, NULL );
-		if ( veh_self == NULL )
-			return;
-		if ( gta_vehicle_get_by_id(veh_self->base.model_alt_id)->class_id == VEHICLE_CLASS_AIRPLANE )
-		{
-			veh_self->pFlyData->circleAround = -0.0001f;
-			veh_self->pFlyData->pitch = 0.0002f;
-			veh_self->pFlyData->roll_lr = 0.002f;
-		}
-
-		wasActivated = false;
+	if ( vehicle_info == NULL || pGameInterface == NULL )
 		return;
-	}
 
 	if ( KEY_PRESSED(set.key_fly_vehicle) )
 	{
 		cheat_state->vehicle.fly ^= 1;
-		wasActivated = true;
 	}
 
 	if ( patch_NotAPlane.installed && !cheat_state->vehicle.fly )
@@ -1153,9 +1133,9 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 		if ( class_id == VEHICLE_CLASS_HELI )
 			return;
 
-		if ( class_id == VEHICLE_CLASS_AIRPLANE && !patch_NotAPlane.installed )
+		if ( !patch_NotAPlane.installed && class_id == VEHICLE_CLASS_AIRPLANE )
 			patcher_install( &patch_NotAPlane );
-		else if ( class_id != VEHICLE_CLASS_AIRPLANE && patch_NotAPlane.installed )
+		else if ( patch_NotAPlane.installed && class_id != VEHICLE_CLASS_AIRPLANE )
 			patcher_remove( &patch_NotAPlane );
 
 		struct vehicle_info *temp;
@@ -1193,7 +1173,6 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 				{
 					temp->pFlyData->circleAround = -0.0003f;
 					temp->pFlyData->pitch = 0.005f;
-
 					temp->pFlyData->roll_lr = -0.005f;
 				}
 			}
@@ -1206,6 +1185,7 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 
 			float	one = 0.9997f;
 			float	min = -0.9997f;
+
 			if ( class_id <= VEHICLE_CLASS_HEAVY && !set.fly_heliMode ) //gta cheat
 			{
 				__asm push 0x0C61C3FF6
@@ -1215,9 +1195,6 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 			}
 			else
 			{
-				float	one = 0.9997f;
-				float	min = -0.9997f;
-
 				//great code is making not that great code out of this
 				if ( *(uint8_t *) (GTA_KEYS + 0x1C) == 0xFF )			//accel
 				{
@@ -1293,11 +1270,6 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 			if ( temp != vehicle_info )
 				vect3_copy( vehicle_info->spin, temp->spin );
 		}
-	}else if(class_id == VEHICLE_CLASS_AIRPLANE && wasActivated == true )
-	{
-		vehicle_info->pFlyData->circleAround = -0.0001f;
-		vehicle_info->pFlyData->pitch = 0.0002f;
-		vehicle_info->pFlyData->roll_lr = 0.002f;
 	}
 }
 
