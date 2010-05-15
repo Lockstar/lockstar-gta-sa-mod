@@ -87,6 +87,10 @@ static void cheat_main_actor ( float time_diff )
 	cheat_handle_actor_autoaim( info, time_diff );
 	cheat_handle_actor_nocols( info );
 
+	//fix for passenger drive by bug
+	if ( info->pedFlags.bInVehicle )
+		cheat_handle_vehicle_fast_exit( NULL, time_diff );
+
 	//cheat_handle_spiderFeet(info, time_diff);
 }
 

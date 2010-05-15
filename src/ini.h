@@ -75,6 +75,8 @@ struct settings
 
 	int						secondary_key;
 
+	int						mod_commands_activated;
+
 	int						key_anti_freeze;
 
 	int						hp_indestructible;

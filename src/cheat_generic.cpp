@@ -79,6 +79,12 @@ int cheat_panic ( void )
 			pstate_actor_hp = patch_actor_hp.installed;
 			patcher_remove( &patch_actor_hp );
 
+			// not working for some reason
+			// 		patcher_remove( &patch_NotAPlane );
+			cheat_handle_vehicle_fly(NULL, 0.0f);
+
+			//patcher_remove( &patch_vehicle_inf_NOS );
+
 			for ( i = 0; i < INI_PATCHES_MAX; i++ )
 			{
 				// added to not remove volatile patches

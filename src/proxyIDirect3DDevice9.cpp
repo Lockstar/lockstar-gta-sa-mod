@@ -1823,25 +1823,65 @@ void renderPlayerInfoList ( void )
 		return;
 
 	//chat window is on the left
-	float						width = ( pPresentParam.BackBufferWidth / 8 ) * 2;
+	float						width = ( pPresentParam.BackBufferWidth / 4 );
 	float						height = 20.0f;
 
 	const struct vehicle_entry	*vehicle;
 	char						buf[256];
 	float						pos[3];
 
-	if ( getPlayerCount() == 1 )
+	int							amount_players = getPlayerCount();
+	if ( amount_players == 1 )
 	{
 		pD3DFont->PrintShadow( width, height, D3DCOLOR_XRGB(255, 255, 255), "There are no more players but you" );
 		return;
 	}
 
+	int			max_amount_players = ( pPresentParam.BackBufferHeight ) / ( 1.0f + pD3DFont->DrawHeight() );
+	max_amount_players -= 2;
+	int			rendered_players = 0;
+	static int	current_player = 0;
+	static int	current_player_id = 0;
+
+	/***/
+	if ( amount_players > max_amount_players )
+	{
+		if ( KEY_PRESSED(VK_NEXT) )
+		{
+			current_player += max_amount_players;
+			if ( current_player > (amount_players - max_amount_players) )
+				current_player = 1 + amount_players - max_amount_players;
+			current_player_id = getNthPlayerID(current_player);
+		}
+		else if ( KEY_PRESSED(VK_PRIOR) )
+		{
+			current_player -= max_amount_players;
+			if ( current_player < 0 )
+			{
+				current_player = 0;
+				current_player_id = 0;
+			}
+			else
+				current_player_id = getNthPlayerID(current_player);
+		}
+	}
+	else
+	{
+		current_player = 0;
+		current_player_id = 0;	
+	}
+	/***/
+
 	int i;
-	for ( i = 0; i < SAMP_PLAYER_MAX; i++ )
+	for ( i = current_player_id; i < SAMP_PLAYER_MAX; i++ )
 	{
 		D3DCOLOR	color = MENU_COLOR_DEFAULT;
 		if ( g_Players->iIsListed[i] != 1 )
 			continue;
+
+		rendered_players++;
+		if ( rendered_players >= max_amount_players )
+			return;
 
 		if ( g_Players->pRemotePlayer[i]->pSAMP_Actor == NULL )
 		{
@@ -1959,36 +1999,43 @@ void renderScoreList ()
 	lowest = 115.0f;
 
 	int max_amount_players = ( pPresentParam.BackBufferHeight - 110.0f - lowest ) / ( 1.0f + pD3DFont->DrawHeight() );
-	max_amount_players -= 3;
+	max_amount_players -= 2;
 	int			rendered_players = 0;
 	static int	current_player = 0;
-	float		loc[2] = { ( pPresentParam.BackBufferWidth / 8 ) * 2.0f, 100.0f };
+	static int	current_player_id = 0;
+	float		loc[2] = { ( pPresentParam.BackBufferWidth / 4 ), 100.0f };
 
 	if ( amount_players < max_amount_players )
 	{
-		max_amount_players += 1;
 		current_player = 0;
+		current_player_id = 0;
 		if ( amount_players < max_amount_players / 2 )
 		{
 			loc[1] = ( pPresentParam.BackBufferHeight / 4 );
 			lowest = pPresentParam.BackBufferHeight - loc[1] - ( (amount_players + 2) * (1.0f + pD3DFont->DrawHeight()) );
 		}
 		else
-			loc[1] += ( 1.0f + pD3DFont->DrawHeight() ) * ( (max_amount_players + 1) - amount_players );
+			loc[1] += ( 1.0f + pD3DFont->DrawHeight() ) * ( (max_amount_players) - amount_players );
 	}
 	else if ( amount_players > max_amount_players )
 	{
 		if ( KEY_PRESSED(VK_NEXT) )
 		{
 			current_player += max_amount_players;
-			if ( current_player > (3 + amount_players - max_amount_players) )
-				current_player = 2 + amount_players - max_amount_players;
+			if ( current_player > (amount_players - max_amount_players) )
+				current_player = 1 + amount_players - max_amount_players;
+			current_player_id = getNthPlayerID(current_player);
 		}
 		else if ( KEY_PRESSED(VK_PRIOR) )
 		{
 			current_player -= max_amount_players;
 			if ( current_player < 0 )
+			{
 				current_player = 0;
+				current_player_id = 0;
+			}
+			else
+				current_player_id = getNthPlayerID(current_player);
 		}
 	}
 	else
@@ -2008,15 +2055,15 @@ void renderScoreList ()
 	_snprintf_s( buffer, sizeof(buffer), "%s (%d)", g_Players->szLocalPlayerName, g_Players->sLocalPlayerID );
 	pD3DFont->PrintShadow( loc[0], loc[1], samp_color_get(g_Players->sLocalPlayerID), buffer );
 
-	loc[0] += ( pPresentParam.BackBufferWidth / 8 ) * 2;
+	loc[0] += ( pPresentParam.BackBufferWidth / 4 );
 	_snprintf_s( buffer, sizeof(buffer), "%d", g_Players->iLocalPlayerScore );
 	pD3DFont->PrintShadow( loc[0], loc[1], samp_color_get(g_Players->sLocalPlayerID), buffer );
 
-	loc[0] += ( pPresentParam.BackBufferWidth / 8 ) * 2 - 70.0f;
+	loc[0] += ( pPresentParam.BackBufferWidth / 4 ) - 70.0f;
 	_snprintf_s( buffer, sizeof(buffer), "%d", g_Players->iLocalPlayerPing );
 	pD3DFont->PrintShadow( loc[0], loc[1], samp_color_get(g_Players->sLocalPlayerID), buffer );
 
-	for ( int i = current_player; i < SAMP_PLAYER_MAX; i++ )
+	for ( int i = current_player_id; i < SAMP_PLAYER_MAX; i++ )
 	{
 		if ( g_Players->iIsListed[i] != 1 )
 			continue;
@@ -2024,7 +2071,7 @@ void renderScoreList ()
 			continue;
 
 		rendered_players++;
-		loc[0] = ( pPresentParam.BackBufferWidth / 8 ) * 2.0f;
+		loc[0] = ( pPresentParam.BackBufferWidth / 4 );
 		loc[1] += 1.0f + pD3DFont->DrawHeight();
 
 		if ( g_Players->iIsNPC[i] == 1 )
@@ -2034,15 +2081,15 @@ void renderScoreList ()
 
 		pD3DFont->PrintShadow( loc[0], loc[1], samp_color_get(i), buffer );
 
-		loc[0] += ( pPresentParam.BackBufferWidth / 8 ) * 2;
+		loc[0] += ( pPresentParam.BackBufferWidth / 4 );
 		_snprintf_s( buffer, sizeof(buffer), "%d", g_Players->iScore[i] );
 		pD3DFont->PrintShadow( loc[0], loc[1], samp_color_get(i), buffer );
 
-		loc[0] += ( pPresentParam.BackBufferWidth / 8 ) * 2 - 70.0f;
+		loc[0] += ( pPresentParam.BackBufferWidth / 4 ) - 70.0f;
 		_snprintf_s( buffer, sizeof(buffer), "%d", g_Players->iPing[i] );
 		pD3DFont->PrintShadow( loc[0], loc[1], samp_color_get(i), buffer );
 
-		if ( rendered_players > max_amount_players )
+		if ( rendered_players >= max_amount_players )
 			return;
 	}
 }
@@ -2165,7 +2212,6 @@ void renderChat ( void )
 	}
 
 	static int	chat_last = -1, chat_render;
-	mmm_yummy_poop( g_Chat, &g_Chat->iChatWindowMode, &chat_last, &chat_render, "chat text" );
 
 	if ( KEY_RELEASED(VK_TAB) && !set.d3dtext_chat && set.d3dtext_score )
 	{
@@ -2173,6 +2219,8 @@ void renderChat ( void )
 		chat_last = 2;
 		chat_render = 0;
 	}
+
+	mmm_yummy_poop( g_Chat, &g_Chat->iChatWindowMode, &chat_last, &chat_render, "chat text" );
 
 	if ( chat_render && !gta_menu_active() )
 	{
@@ -2326,7 +2374,7 @@ void renderMainSAMPStructure ()
 	sprintf( buf, "byteAllowInteriorWeapons: %u", g_SAMP->byteAllowInteriorWeapons );
 	pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
 	( y ) += 1.0f + pD3DFontFixed->DrawHeight();
-	sprintf( buf, "byteUnknown_5: %u", g_SAMP->byteUnknown_5 );
+	sprintf( buf, "byteNoNametagsBehindWalls: %u", g_SAMP->byteNoNametagsBehindWalls );
 	pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
 	( y ) += 1.0f + pD3DFontFixed->DrawHeight();
 	sprintf( buf, "fGravity: %0.4f", g_SAMP->fGravity );
@@ -2791,6 +2839,10 @@ void renderSAMP ( void )
 		if ( isBadPtr_writeAny(g_DeathList, sizeof(stKillInfo)) )
 			return;
 
+		//init modCommands
+		if ( set.mod_commands_activated )
+			init_samp_chat_cmds();
+
 		g_renderSAMP_initSAMPstructs = 1;
 	}
 
@@ -2850,7 +2902,8 @@ void renderSAMP ( void )
 			renderPlayerPoolStructure( iDebuggingPlayer );
 		}
 
-		//renderVehiclePoolStructure(8);
+		if ( iDebugVehicle != -1 )
+			renderVehiclePoolStructure( iDebugVehicle );
 #endif
 		if ( !a )
 		{

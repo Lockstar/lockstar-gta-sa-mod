@@ -25,8 +25,10 @@
 #define SAMP_VEHICLE_MAX				2000
 #define SAMP_PICKUP_MAX					2048
 #define SAMP_OBJECTS_MAX				254
-#define MAX_3DTEXT						1024
+#define MAX_3DTEXT						2048
+#define MAX_GANGZONES					1024
 #define MAX_PLAYER_NAME					29
+#define ALLOWED_PLAYER_NAME_LENGTH		20
 
 #define SAMP_INFO_OFFSET				0xEDDCC
 #define SAMP_CHAT_INFO_OFFSET			0xEDDBC
@@ -104,7 +106,7 @@ struct stSAMP
 	uint8_t					byteWorldTime_Minute;
 	uint8_t					byteUnknown_4;
 	uint8_t					byteAllowInteriorWeapons;
-	uint8_t					byteUnknown_5;
+	uint8_t					byteNoNametagsBehindWalls;
 	float					fGravity;
 	uint8_t					byteUnknown_6;
 	uint8_t					byteUnknown_7;
@@ -221,7 +223,8 @@ struct stLocalPlayer
 	uint32_t			ulUnknownTick_3;
 	uint32_t			ulUnknownTick_4;
 	uint8_t				byteCurrentInterior;
-	uint8_t				byteUnknown[30];
+	uint8_t				byteUnknown[26];
+	struct stSAMPPed	*pSAMP_Actor;
 	uint16_t			sCurrentVehicleID;
 	uint16_t			sLastVehicleID;
 	int					iIsActive;
@@ -264,9 +267,21 @@ struct stRemotePlayer
 struct stSAMPPed
 {
 #pragma pack( 1 )
-	void				*pUnknown;
+	void				*pVTBL_sampPed;
 	struct actor_info	*pGTA_Ped;
 	uint32_t			ulGTA_Ped_ID;
+	int					usingCellPhone;
+	struct actor_info	*pGTA_Ped_;
+	uint8_t				byteUnknown[33];
+	int					DrinkingOrSmoking;
+	int					object_in_hand;			//ulGTA_Object_ID (?)
+	int					drunkLevel;
+	int					isUrinating;
+	uint8_t				byteUrinateCount[3];	//foshu?
+	uint8_t				byteUnknown_3[6];
+	int					isDancing;
+	int					danceStyle;
+	int					danceMove;
 };
 
 struct stVehiclePool
@@ -280,7 +295,7 @@ struct stVehiclePool
 struct stSAMPVehicle
 {
 #pragma pack( 1 )
-	void				*pUnknown;
+	void				*pVTBL_Vehicle;
 	struct vehicle_info *pGTA_Vehicle;
 	uint32_t			ulGTA_Vehicle_ID;
 };
@@ -288,7 +303,7 @@ struct stSAMPVehicle
 struct stObject
 {
 #pragma pack( 1 )
-	void				*pUnknown_1;
+	void				*pVTBL_Object;
 	struct object_info	*pGTAObject;
 	uint32_t			ulGTA_Ped_ID;
 };
@@ -387,11 +402,12 @@ struct stTranslateGTASAMP_pedPool
 void											update_translateGTASAMP_vehiclePool ( void );
 void											update_translateGTASAMP_pedPool ( void );
 
-void											cmd_change_server ( char *param );
-void											cmd_current_server ( char *param );
-bool											findstrinstr ( char *find, char *text );
-void											cmd_tele_loc ( char *param );
-void											cmd_tele_locations ();
+#ifdef M0D_DEV
+extern int										iDebugVehicle;
+void											cmd_debug_vehicle ( char *param );
+#endif
+
+bool											findstrinstr ( char *text, char *find );
 
 int												isBadPtr_SAMP_iVehicleID ( int iVehicleID );
 int												isBadPtr_SAMP_iPlayerID ( int iPlayerID );
@@ -408,6 +424,7 @@ D3DCOLOR										samp_color_get_trans ( int id, DWORD trans );
 
 void											sampMainCheat ();
 
+int												getNthPlayerID ( int n );
 int												getPlayerCount ( void );
 int												getVehicleCount ( void );
 
@@ -427,6 +444,8 @@ uint32_t										getVehicleGTAScriptingIDFromVehicleID ( int iVehicleID );
 
 int												samp_vehicle_find_nearest ( int flags );
 
+bool											get_isModCommandsActive ();
+void											init_samp_chat_cmds ();
 void											addClientCommand ( char *text, int function );
 void											addToChatWindow ( char *text, D3DCOLOR textColor );
 void											addMessageToChatWindow ( const char *text, ... );

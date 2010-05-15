@@ -94,11 +94,32 @@ void update_translateGTASAMP_pedPool ( void )
 
 //ClientCommands
 
+#ifdef M0D_DEV
+int iDebugVehicle = -1;
+void cmd_debug_vehicle ( char *param )
+{
+	if ( strlen(param) == 0 )
+	{
+		addMessageToChatWindow( "/debug_vehicle <vehicleid>" );
+		return;
+	}
+
+	int veh_id = atoi( param );
+	if ( veh_id > SAMP_VEHICLE_MAX || veh_id < -1 )
+	{
+		addMessageToChatWindow( "/debug_vehicle <vehicleid>" );
+		return;
+	}
+
+	iDebugVehicle = veh_id;
+	return;
+}
+#endif
 
 extern int	joining_server;
 void cmd_change_server ( char *param )	//127.0.0.1 7777 Username Password
 {
-	traceLastFunc( "change_server" );
+	traceLastFunc( "cmd_change_server()" );
 
 	char	*result;
 	bool	success = false;
@@ -114,17 +135,13 @@ void cmd_change_server ( char *param )	//127.0.0.1 7777 Username Password
 	{
 		if ( result == NULL && !success )
 		{
-			//		addMessageToChatWindow("USAGE: /m0d_change_server <ip> <port> <Username> <Password>");
-			addMessageToChatWindow( "USAGE: /m0d_change_server <ip> <port> <Username>" );
-
-			//		addMessageToChatWindow("USAGE2: /m0d_change_server <ip> <port>");
-			//		addMessageToChatWindow("Username and/or Password will be ignored if they are set to NULL");
-			addMessageToChatWindow( "Username will be ignored if it is set to NULL or left out." );
+			addMessageToChatWindow( "USAGE: /m0d_change_server <ip> <port> <Username> <Server Password>" );
+			addMessageToChatWindow( "Variables that are set to \"NULL\" (capitalized) will be ignored." );
+			addMessageToChatWindow( "If you set the Password to \"NULL\" it is set to <no server password>." );
+			addMessageToChatWindow( "Username and password can also be left out completely." );
 			strcpy( g_SAMP->szIP, IP );
 			g_SAMP->ulPort = Port;
 			strcpy( LocalName, g_Players->szLocalPlayerName );
-
-			//		setPassword("");
 			return;
 		}
 		else if ( result == NULL && success )
@@ -133,38 +150,51 @@ void cmd_change_server ( char *param )	//127.0.0.1 7777 Username Password
 			return;
 		}
 
-		//Log( "%i is %s", i, result );
 		switch ( i )
 		{
 		case 0:
-			strcpy( g_SAMP->szIP, result );
+			if ( strcmp(result, "NULL") != 0 )
+				strcpy( g_SAMP->szIP, result );
 			break;
 
 		case 1:
-			g_SAMP->ulPort = atoi( result );
+			if ( strcmp(result, "NULL") != 0 )
+				g_SAMP->ulPort = atoi( result );
 			success = true;
 			break;
 
 		case 2:
 			if ( strcmp(result, "NULL") != 0 )
-				strcpy( g_Players->szLocalPlayerName, result );
+			{
+				if ( strlen(result) > ALLOWED_PLAYER_NAME_LENGTH )
+					addMessageToChatWindow( "Username was too long - adjusted size." );
+				strncpy( g_Players->szLocalPlayerName, result, ALLOWED_PLAYER_NAME_LENGTH );
+			}
 			break;
 
-		// crashing often - but it worked before :P
-		//		case 3:
-		//			if(strcmp(result,"NULL")!=0)
-		//				setPassword(result);
-		//			break;
+		case 3:
+			if ( strcmp(result, "NULL") != 0 )
+				setPassword( result );
+			else
+				setPassword( "" );
+			break;
+
 		default:
 			{
-				//				addMessageToChatWindow("USAGE: /m0d_change_server <ip> <port> <Username> <Password>");
-				addMessageToChatWindow( "USAGE: /m0d_change_server <ip> <port> <Username>" );
-				addMessageToChatWindow( "Username will be ignored if set to NULL or left out." );
+				addMessageToChatWindow( "Too many variables." );
+				addMessageToChatWindow( "USAGE: /m0d_change_server <ip> <port> <Username> <Server Password>" );
+				addMessageToChatWindow( "Variables that are set to \"NULL\" (capitalized) will be ignored." );
+				addMessageToChatWindow( "If you set the Password to \"NULL\" it is set to <no server password>." );
+				addMessageToChatWindow( "Username and password can also be left out completely." );
 				strcpy( g_SAMP->szIP, IP );
 				g_SAMP->ulPort = Port;
 				strcpy( LocalName, g_Players->szLocalPlayerName );
+				if ( i >= 3 )
+				{
+					addMessageToChatWindow( "Setting password to <no server password>." );
+					setPassword( "" );
+				}
 
-				//				setPassword("");
 				return;
 			}
 		}
@@ -177,20 +207,37 @@ void cmd_current_server ( char *param )
 {
 	addMessageToChatWindow( "Server Name: %s", g_SAMP->szHostname );
 	addMessageToChatWindow( "Server Address: %s:%i", g_SAMP->szIP, g_SAMP->ulPort );
-	addMessageToChatWindow( "Username: %s", g_Players->szLocalPlayerName, g_Players->iLocalPlayerPing );
+	addMessageToChatWindow( "Username: %s", g_Players->szLocalPlayerName );
 }
 
-bool findstrinstr ( char *find, char *text )
+bool findstrinstr ( char *text, char *find )
 {
+	char	*realtext = (char *)calloc( strlen(text), sizeof(char) );
+	char	*subtext = (char *)calloc( strlen(find), sizeof(char) );
 	char	*result;
-	char	temp, subtext[64];
+	char	temp;
 	int		i = 0;
-	for ( int j = 0; j < 64; j++ )
+
+	//lower case text
+	while ( text[i] && i <= (int)strlen(text) )
 	{
-		if ( !isalpha(find[j]) )
-			find[j] = '.';
+		temp = text[i];
+		if ( isupper(temp) )
+			temp = tolower( temp );
+		realtext[i] = temp;
+		i++;
 	}
 
+	//replace unwanted characters/spaces with dots
+	i = 0;
+	while ( find[i] && i <= (int)strlen(find) )
+	{
+		if ( !isalpha(find[i]) )
+			find[i] = '.';
+		i++;
+	}
+
+	//split, lower case and find every part of find in text
 	result = strtok( find, "." );
 	while ( result != NULL )
 	{
@@ -205,7 +252,7 @@ bool findstrinstr ( char *find, char *text )
 			i++;
 		}
 
-		if ( strstr(text, subtext) == NULL )
+		if ( strstr(realtext, subtext) == NULL )
 			return false;
 		result = strtok( NULL, "." );
 	}
@@ -217,35 +264,18 @@ void cmd_tele_loc ( char *param )
 {
 	if ( strlen(param) == 0 )
 	{
-		addMessageToChatWindow( "USAGE: /m0d_tele_location <location name>" );
+		addMessageToChatWindow( "USAGE: /m0d_tele_loc <location name>" );
 		addMessageToChatWindow( "Use /m0d_tele_locations to show the location names." );
 		addMessageToChatWindow( "The more specific you are on location name the better the result." );
 		return;
 	}
 
-	char	temp, tele[64];
 	for ( int i = 0; i < STATIC_TELEPORT_MAX; i++ )
 	{
 		if ( strlen(set.static_teleport_name[i]) == 0 || vect3_near_zero(set.static_teleport[i].pos) )
 			continue;
 
-		int j;
-		for ( j = 0; j < 64; j++ )
-		{
-			tele[j] = 0;
-		}
-
-		j = 0;
-		while ( set.static_teleport_name[i][j] && j < 64 )
-		{
-			temp = set.static_teleport_name[i][j];
-			if ( isupper(temp) )
-				temp = tolower( temp );
-			tele[j] = temp;
-			j++;
-		}
-
-		if ( !findstrinstr(param, tele) )
+		if ( !findstrinstr(set.static_teleport_name[i], param) )
 			continue;
 
 		cheat_state_text( "Teleported to: %s.", set.static_teleport_name[i] );
@@ -267,7 +297,7 @@ void cmd_tele_locations ()
 		addMessageToChatWindow( "%s", set.static_teleport_name[i] );
 	}
 
-	addMessageToChatWindow( "To teleport use the menu or: /m0d_tele_location <location name>" );
+	addMessageToChatWindow( "To teleport use the menu or: /m0d_tele_loc <location name>" );
 }
 
 // new functions to check for bad pointers
@@ -568,6 +598,26 @@ void sampMainCheat ()
 	}
 }
 
+int getNthPlayerID ( int n )
+{
+	int thisplayer = 0;
+	for( int i = 0; i <= SAMP_PLAYER_MAX; i++ )
+	{
+		if ( g_Players->iIsListed[i] != 1 )
+			continue;
+		if ( g_Players->sLocalPlayerID == i )
+			continue;
+		if ( thisplayer < n )
+		{
+			thisplayer++;
+			continue;
+		}
+		return i;
+	}
+	//shouldnt happen
+	return -1;
+}
+
 int getPlayerCount ( void )
 {
 	if ( g_Players == NULL )
@@ -714,7 +764,6 @@ int getPlayerVehicleGTAScriptingID ( int iPlayerID )
 
 	// return the remote player's vehicle
 	return ScriptCarId( g_Players->pRemotePlayer[iPlayerID]->pSAMP_Vehicle->pGTA_Vehicle );
-			
 }
 
 void spectatePlayer ( int iID )
@@ -845,20 +894,49 @@ uint32_t getVehicleGTAScriptingIDFromVehicleID ( int iVehicleID )
 	return g_Vehicles->pSAMP_Vehicle[iVehicleID]->ulGTA_Vehicle_ID;
 }
 
-#define FUNC_ADDCLIENTCMD		0x377A0
-#define SAMP_ADDCLIENTCMD_DATA	0xEDDC0
+#define FUNC_ADDCLIENTCMD	0x377A0
 void addClientCommand ( char *text, int function )
 {
 	if ( text == NULL || function == NULL )
 		return;
 
-	uint32_t	data = g_dwSAMP_Addr + SAMP_ADDCLIENTCMD_DATA;
+	uint32_t	data = g_dwSAMP_Addr + SAMP_CHAT_INPUT_INFO_OFFSET;
 	uint32_t	func = g_dwSAMP_Addr + FUNC_ADDCLIENTCMD;
 	__asm mov eax, data
 	__asm mov ecx, [eax]
 	__asm push function
 	__asm push text
 	__asm call func
+}
+
+bool	modcommands = false;
+bool get_isModCommandsActive ()
+{
+	return modcommands;
+}
+
+void init_samp_chat_cmds ()
+{
+	if ( modcommands == true )
+	{
+		return;
+	}
+	else
+	{
+		cheat_state_text( "initiated modcommands" );
+		modcommands = true;
+	}
+
+	addClientCommand( "m0d_change_server", (int)cmd_change_server );
+	addClientCommand( "m0d_current_server", (int)cmd_current_server );
+	addClientCommand( "m0d_tele_loc", (int)cmd_tele_loc );
+	addClientCommand( "m0d_teleport_location", (int)cmd_tele_loc );
+	addClientCommand( "m0d_tele_locations", (int)cmd_tele_locations );
+	addClientCommand( "m0d_teleport_locations", (int)cmd_tele_locations );
+
+#ifdef M0D_DEV
+	addClientCommand( "debug_vehicle", (int)cmd_debug_vehicle );
+#endif
 }
 
 struct gui	*gui_samp_cheat_state_text = &set.guiset[2];
@@ -1186,7 +1264,6 @@ uint8_t _declspec ( naked ) chatboxlog_hook ( void )
 	__asm jmp chatboxlog_hook_continue
 }
 
-DWORD	server_message_jmp;
 uint8_t _declspec ( naked ) server_message_hook ( void )
 {
 	int		thismsg;
@@ -1197,7 +1274,8 @@ uint8_t _declspec ( naked ) server_message_hook ( void )
 
 	static char		last_servermsg[512];
 	static DWORD	allow_show_again = GetTickCount();
-	if ( strcmp(last_servermsg, (char *)thismsg) != NULL || GetTickCount() > allow_show_again )
+	if ( (strcmp(last_servermsg, (char *)thismsg) != NULL || GetTickCount() > allow_show_again)
+	 ||	 cheat_state->_generic.cheat_panic_enabled )
 	{
 		addToChatWindow( (char *)thismsg, thiscolor );
 		strcpy( last_servermsg, (char *)thismsg );
@@ -1206,11 +1284,9 @@ uint8_t _declspec ( naked ) server_message_hook ( void )
 
 	__asm mov ebx, g_dwSAMP_Addr
 	__asm add ebx, 0x369C3
-	__asm mov server_message_jmp, ebx
-	__asm jmp server_message_jmp
+	__asm jmp ebx
 }
 
-DWORD	client_message_jmp;
 uint8_t _declspec ( naked ) client_message_hook ( void )
 {
 	int			thismsg;
@@ -1222,7 +1298,8 @@ uint8_t _declspec ( naked ) client_message_hook ( void )
 	__asm mov id, eax
 
 	static DWORD allow_show_again = GetTickCount();
-	if ( strcmp(last_clientmsg[id], (char *)thismsg) != NULL || GetTickCount() > allow_show_again )
+	if ( (strcmp(last_clientmsg[id], (char *)thismsg) != NULL || GetTickCount() > allow_show_again)
+	 ||	 cheat_state->_generic.cheat_panic_enabled )
 	{
 		DWORD	func = g_dwSAMP_Addr + 0xD870;
 		__asm mov ecx, back
@@ -1234,8 +1311,7 @@ uint8_t _declspec ( naked ) client_message_hook ( void )
 
 	__asm mov ebx, g_dwSAMP_Addr
 	__asm add ebx, 0x8D46
-	__asm mov client_message_jmp, ebx
-	__asm jmp client_message_jmp
+	__asm jmp ebx
 }
 
 #define SAMP_HOOKPOS_ServerMessage	0x369AC

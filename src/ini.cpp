@@ -803,6 +803,9 @@ static void ini_init ( void )
 			ini_register_data( ent, set.server + i, "" );
 	}
 
+	if ( (ent = ini_register_entry("mod_commands_activated", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.mod_commands_activated, "false" );
+
 	// keybinder
 	if ( (ent = ini_register_entry("chat_secondary_key", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.chat_secondary_key, "oem_comma" );

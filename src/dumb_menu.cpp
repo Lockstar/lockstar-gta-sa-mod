@@ -141,6 +141,7 @@
 #define ID_DEBUG_SAMP_CHAT_IPT_INFO			8
 #define ID_DEBUG_SAMP_KILL_INFO				9
 #define ID_DEBUG_SAMP_VEHICLE_LIST			10
+#define ID_DEBUG_SAMP_LOCAL_SAMPPED			11
 
 #define ID_HUDIND_BAR						0
 #define ID_HUDIND_TSHADOWS					1
@@ -175,7 +176,6 @@
 #define ID_MENU_SAMPMISC_RENDEROBJTXT		14
 #define ID_MENU_SAMPMISC_RENDERPCKTXT		15
 #define ID_MENU_SAMPMISC_M0DCOMMANDS		16
-static bool modcommands = false;
 
 #define ID_MENU_SPECIAL_ACTION_NONE				0
 #define ID_MENU_SPECIAL_ACTION_USEJETPACK		2
@@ -1815,7 +1815,7 @@ static int menu_callback_sampmisc ( int op, struct menu_item *item )
 				return cheat_state->_generic.pickuptexts;
 
 			case ID_MENU_SAMPMISC_M0DCOMMANDS:
-				return modcommands;
+				return get_isModCommandsActive();
 			}
 		}
 
@@ -1892,13 +1892,7 @@ static int menu_callback_sampmisc ( int op, struct menu_item *item )
 				{
 					if ( KEY_PRESSED(VK_RETURN) )
 					{	// i know
-						modcommands = true;
-						addClientCommand( "m0d_change_server", (int)cmd_change_server );
-						addClientCommand( "m0d_current_server", (int)cmd_current_server );
-						addClientCommand( "m0d_tele_location", (int)cmd_tele_loc );
-						addClientCommand( "m0d_teleport_location", (int)cmd_tele_loc );
-						addClientCommand( "m0d_tele_locations", (int)cmd_tele_locations );
-						addClientCommand( "m0d_teleport_locations", (int)cmd_tele_locations );
+						init_samp_chat_cmds();
 					}
 				}
 				break;
@@ -2290,6 +2284,10 @@ static int menu_callback_debug ( int op, struct menu_item *item )
 
 		case ID_DEBUG_SAMP_VEHICLE_LIST:
 			setDebugPointer( (void *)g_Vehicles );
+			break;
+
+		case ID_DEBUG_SAMP_LOCAL_SAMPPED:
+			setDebugPointer( (void *)g_Players->pLocalPlayer->pSAMP_Actor );
 			break;
 
 		default:
@@ -2987,6 +2985,7 @@ void menu_maybe_init ( void )
 		menu_item_add( menu_debug, NULL, "SA:MP Chat info", ID_DEBUG_SAMP_CHAT_INFO, MENU_COLOR_DEFAULT, NULL );
 		menu_item_add( menu_debug, NULL, "SA:MP Input info", ID_DEBUG_SAMP_CHAT_IPT_INFO, MENU_COLOR_DEFAULT, NULL );
 		menu_item_add( menu_debug, NULL, "SA:MP Kill info", ID_DEBUG_SAMP_KILL_INFO, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_debug, NULL, "SA:MP Local SAMP-PED", ID_DEBUG_SAMP_LOCAL_SAMPPED, MENU_COLOR_DEFAULT, NULL );
 	}
 
 	// misc -> HUD indicators

@@ -1110,26 +1110,43 @@ void cheat_handle_vehicle_blinking_carlights ( struct vehicle_info *vinfo, float
 
 	// reset counter
 	cheat_state->vehicle.blinking_carlights_lastblink = GetTickCount();
-
-	// not needed for the end of a void returning function
-	//but it looks nice
-	return;
 }
 
-void cheat_handle_vehicle_fly( struct vehicle_info *vehicle_info, float time_diff)
+void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_diff )
 {
 	traceLastFunc( "cheat_handle_vehicle_fly()" );
 
-	if ( vehicle_info == NULL)
-		return;
-
-	if( KEY_PRESSED(set.key_fly_vehicle) )
+	static bool wasActivated = false;
+	if ( vehicle_info == NULL )
 	{
-		cheat_state->vehicle.fly ^= 1;
+		if ( !cheat_state->_generic.cheat_panic_enabled )
+			return;
+
+		if ( patch_NotAPlane.installed )
+			patcher_remove( &patch_NotAPlane );
+
+		struct vehicle_info *veh_self = vehicle_info_get( VEHICLE_SELF, NULL );
+		if ( veh_self == NULL )
+			return;
+		if ( gta_vehicle_get_by_id(veh_self->base.model_alt_id)->class_id == VEHICLE_CLASS_AIRPLANE )
+		{
+			veh_self->pFlyData->circleAround = -0.0001f;
+			veh_self->pFlyData->pitch = 0.0002f;
+			veh_self->pFlyData->roll_lr = 0.002f;
+		}
+
+		wasActivated = false;
+		return;
 	}
 
-	if(patch_NotAPlane.installed && !cheat_state->vehicle.fly)
-		patcher_remove(&patch_NotAPlane);
+	if ( KEY_PRESSED(set.key_fly_vehicle) )
+	{
+		cheat_state->vehicle.fly ^= 1;
+		wasActivated = true;
+	}
+
+	if ( patch_NotAPlane.installed && !cheat_state->vehicle.fly )
+		patcher_remove( &patch_NotAPlane );
 
 	int class_id = gta_vehicle_get_by_id( vehicle_info->base.model_alt_id )->class_id;
 	if ( class_id == VEHICLE_CLASS_HELI )
@@ -1137,49 +1154,50 @@ void cheat_handle_vehicle_fly( struct vehicle_info *vehicle_info, float time_dif
 
 	if ( cheat_state->vehicle.fly )
 	{
-		if(class_id == VEHICLE_CLASS_AIRPLANE && !patch_NotAPlane.installed)
-			patcher_install(&patch_NotAPlane);
-		else if(class_id != VEHICLE_CLASS_AIRPLANE && patch_NotAPlane.installed)
-			patcher_remove(&patch_NotAPlane);
+		if ( class_id == VEHICLE_CLASS_AIRPLANE && !patch_NotAPlane.installed )
+			patcher_install( &patch_NotAPlane );
+		else if ( class_id != VEHICLE_CLASS_AIRPLANE && patch_NotAPlane.installed )
+			patcher_remove( &patch_NotAPlane );
 
 		struct vehicle_info *temp;
 		for ( temp = vehicle_info; temp != NULL; temp = temp->trailer )
 		{
-			if(temp->base.model_alt_id == 520)
+			if ( temp->base.model_alt_id == 520 )
 				continue;
 
 			class_id = gta_vehicle_get_by_id( temp->base.model_alt_id )->class_id;
+
 			DWORD	mecar = ( DWORD ) temp;
 			DWORD	func = 0x006D85F0;
 
-			if(set.fly_hydraMode && pGameInterface != NULL)
+			if ( set.fly_hydraMode && pGameInterface != NULL )
 			{
-				float height;
-				height = pGameInterface->GetWorld()->FindGroundZForPosition(temp->base.matrix[4*3],temp->base.matrix[4*3+1]);
-				height = temp->base.matrix[4*3+2] - height;
-				if(height <= 25.0f && height >= -10.0f)
+				float	height;
+				height = pGameInterface->GetWorld()->FindGroundZForPosition( temp->base.matrix[4 * 3],
+																			 temp->base.matrix[4 * 3 + 1] );
+				height = temp->base.matrix[4 * 3 + 2] - height;
+				if ( height <= 25.0f && height >= -10.0f )
 					set.fly_heliMode = 1;
-				else 
+				else
 					set.fly_heliMode = 0;
 			}
 
-			if( class_id == VEHICLE_CLASS_BIKE || set.fly_heliMode )
+			if ( class_id == VEHICLE_CLASS_BIKE || set.fly_heliMode )
 			{
 				temp->pFlyData->circleAround = -0.0003f;
 				temp->pFlyData->pitch = 0.005f;
+
 				//a/d - left/right -- rolling isn't working with bikes correctly yet
 				temp->pFlyData->roll_lr = -0.005f;
-			}else
+			}
+			else
 			{
 				temp->pFlyData->circleAround = -0.0001f;
 				temp->pFlyData->pitch = 0.0002f;
 				temp->pFlyData->roll_lr = 0.002f;
 			}
 
-			float one = 0.9997f;
-			float min = -0.9997f;
-
-			if( class_id <= VEHICLE_CLASS_HEAVY && !set.fly_heliMode )//gta cheat
+			if ( class_id <= VEHICLE_CLASS_HEAVY && !set.fly_heliMode )//gta cheat
 			{
 				__asm push 0x0C61C3FF6
 				__asm push 0x0C61C3FF6
@@ -1188,8 +1206,11 @@ void cheat_handle_vehicle_fly( struct vehicle_info *vehicle_info, float time_dif
 			}
 			else
 			{
+				float	one = 0.9997f;
+				float	min = -0.9997f;
+
 				//great code is making not that great code out of this
-				if(*(uint8_t*)(GTA_KEYS+0x1C)==0xFF)//accel
+				if ( *(uint8_t *) (GTA_KEYS + 0x1C) == 0xFF )//accel
 					__asm push min
 				else if(*(uint8_t*)(GTA_KEYS+0x20)==0xFF)//brake
 					__asm push one
@@ -1232,6 +1253,11 @@ void cheat_handle_vehicle_fly( struct vehicle_info *vehicle_info, float time_dif
 			if ( temp != vehicle_info )
 				vect3_copy(vehicle_info->spin,temp->spin);
 		}
+	}else if(class_id == VEHICLE_CLASS_AIRPLANE && wasActivated == true )
+	{
+		vehicle_info->pFlyData->circleAround = -0.0001f;
+		vehicle_info->pFlyData->pitch = 0.0002f;
+		vehicle_info->pFlyData->roll_lr = 0.002f;
 	}
 }
 
@@ -1373,6 +1399,7 @@ void cheat_handle_vehicle_keepTrailer ( struct vehicle_info *vinfo, float time_d
 	}
 }
 
+// remove vehicle_info variable + move into cheat_generic (?)
 void cheat_handle_vehicle_fast_exit ( struct vehicle_info *vehicle_info, float time_diff )
 {
 	traceLastFunc( "cheat_handle_fast_exit()" );
@@ -1586,25 +1613,25 @@ void cheat_handle_vehicle_spiderWheels ( struct vehicle_info *vinfo, float time_
 	}
 	else if ( cheat_state->vehicle.spiderWheels_Enabled )
 	{
+		// remove anti bike falloff patch if needed
+		if ( m_SpiderWheels_falloffFound && m_SpiderWheels_falloffEnabled )
+		{
+			if ( patchBikeFalloff_set->installed || patchBikeFalloff_set->failed )
+			{
+				patcher_remove( patchBikeFalloff_set );
+			}
+
+			m_SpiderWheels_falloffEnabled = false;
+		}
+
 		// loop through the vehicle and any trailers
 		for ( vehicle_info * temp = vinfo; temp != NULL; temp = temp->trailer )
 		{
 			// get vehicle
-			CVehicle	*cveh = pGameInterface->GetPools()->GetVehicle( (DWORD *)vinfo );
+			CVehicle	*cveh = pGameInterface->GetPools()->GetVehicle( (DWORD *)temp );
 
 			// disable spider wheels with normal gravity vector
 			CVector		offsetVector ( 0.0, 0.0, -1.0 );
-
-			// remove anti bike falloff patch if needed
-			if ( m_SpiderWheels_falloffFound && m_SpiderWheels_falloffEnabled )
-			{
-				if ( patchBikeFalloff_set->installed || patchBikeFalloff_set->failed )
-				{
-					patcher_remove( patchBikeFalloff_set );
-				}
-
-				m_SpiderWheels_falloffEnabled = false;
-			}
 
 			// set the gravity/camera
 			cheat_vehicle_setGravity( cveh, offsetVector );
