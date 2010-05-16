@@ -1116,20 +1116,45 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 {
 	traceLastFunc( "cheat_handle_vehicle_fly()" );
 
-	if ( vehicle_info == NULL || pGameInterface == NULL )
+	static bool wasActivated = false;
+	// getting passed a NULL pointer from cheat_panic, so we can remove the patch and reapply airplane physics
+	if ( vehicle_info == NULL )
+	{
+		if ( !cheat_state->_generic.cheat_panic_enabled )
+			return;
+
+		if ( patch_NotAPlane.installed )
+			patcher_remove( &patch_NotAPlane );
+
+		struct vehicle_info *veh_self = vehicle_info_get( VEHICLE_SELF, NULL );
+		if ( veh_self == NULL )
+			return;
+		if ( gta_vehicle_get_by_id(veh_self->base.model_alt_id)->class_id == VEHICLE_CLASS_AIRPLANE )
+		{
+			veh_self->pFlyData->circleAround = -0.0003f;
+			veh_self->pFlyData->pitch = 0.0005f;
+			veh_self->pFlyData->roll_lr = 0.002f;
+		}
+
+		wasActivated = false;
+		return;
+	}
+
+	if ( pGameInterface == NULL )
 		return;
 
 	if ( KEY_PRESSED(set.key_fly_vehicle) )
 	{
 		cheat_state->vehicle.fly ^= 1;
+		wasActivated = true;
 	}
 
 	if ( patch_NotAPlane.installed && !cheat_state->vehicle.fly )
 		patcher_remove( &patch_NotAPlane );
 
+	int class_id = gta_vehicle_get_by_id( vehicle_info->base.model_alt_id )->class_id;
 	if ( cheat_state->vehicle.fly )
 	{
-		int class_id = gta_vehicle_get_by_id( vehicle_info->base.model_alt_id )->class_id;
 		if ( class_id == VEHICLE_CLASS_HELI )
 			return;
 
@@ -1142,7 +1167,7 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 		DWORD				func = 0x006D85F0;
 		for ( temp = vehicle_info; temp != NULL; temp = temp->trailer )
 		{
-			// what model is this, and why is this here, comment stuff like this pls
+			// ignore hydra (seems to use some special functions to fly)
 			if ( temp->base.model_alt_id == 520 )
 				continue;
 
@@ -1161,7 +1186,7 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 					set.fly_heliMode = 0;
 			}
 
-			if ( set.fly_heliMode )
+			if ( set.fly_heliMode || class_id == VEHICLE_CLASS_BIKE )
 			{
 				if ( class_id == VEHICLE_CLASS_BIKE )
 				{
@@ -1195,7 +1220,6 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 			}
 			else
 			{
-				//great code is making not that great code out of this
 				if ( *(uint8_t *) (GTA_KEYS + 0x1C) == 0xFF )			//accel
 				{
 					__asm push min
@@ -1270,6 +1294,11 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 			if ( temp != vehicle_info )
 				vect3_copy( vehicle_info->spin, temp->spin );
 		}
+	}else if(class_id == VEHICLE_CLASS_AIRPLANE && wasActivated )
+	{
+		vehicle_info->pFlyData->circleAround = -0.0003f;
+		vehicle_info->pFlyData->pitch = 0.0005f;
+		vehicle_info->pFlyData->roll_lr = 0.002f;
 	}
 }
 
