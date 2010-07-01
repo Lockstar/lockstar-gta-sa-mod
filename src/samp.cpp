@@ -203,6 +203,43 @@ void cmd_change_server ( char *param )	//127.0.0.1 7777 Username Password
 	}
 }
 
+void cmd_change_server_fav ( char *param )
+{
+	traceLastFunc( "cmd_change_server_fav()" );
+
+	if ( strlen(param) == 0 )
+	{
+		addMessageToChatWindow( "/m0d_fav_server <server name/part of server name>" );
+		return;
+	}
+
+	char	IP[257], LocalName[29];
+	int		Port;
+	strcpy( IP, g_SAMP->szIP );
+	Port = g_SAMP->ulPort;
+	strcpy( LocalName, g_Players->szLocalPlayerName );
+
+	for ( int i = 0; i < INI_SERVERS_MAX; i++ )
+	{
+		if ( strlen(set.server[i].server_name) == 0 || strlen(set.server[i].ip) == 0 || set.server[i].port == 0 )
+			continue;
+
+		if ( !findstrinstr((char *)set.server[i].server_name, param) )
+			continue;
+
+		if ( !set.use_current_name )
+			strcpy( g_Players->szLocalPlayerName, set.server[i].nickname );
+		strcpy( g_SAMP->szIP, set.server[i].ip );
+		g_SAMP->ulPort = set.server[i].port;
+		setPassword( set.server[i].password );
+		joining_server = 1;
+		return;
+	}
+
+	addMessageToChatWindow( "/m0d_fav_server <server name/part of server name>" );
+	return;
+}
+
 void cmd_current_server ( char *param )
 {
 	addMessageToChatWindow( "Server Name: %s", g_SAMP->szHostname );
@@ -212,14 +249,18 @@ void cmd_current_server ( char *param )
 
 bool findstrinstr ( char *text, char *find )
 {
-	char	*realtext = (char *)calloc( strlen(text), sizeof(char) );
-	char	*subtext = (char *)calloc( strlen(find), sizeof(char) );
+	char	realtext[256];
+	char	subtext[256];
 	char	*result;
+	char	*next;
 	char	temp;
 	int		i = 0;
 
+	memset( realtext, 0, sizeof(char) * 255 );
+	memset( subtext, 0, sizeof(char) * 255 );
+
 	//lower case text
-	while ( text[i] && i <= (int)strlen(text) )
+	while ( text[i] != NULL && i <= (int)strlen(text) && i < 255 )
 	{
 		temp = text[i];
 		if ( isupper(temp) )
@@ -230,34 +271,36 @@ bool findstrinstr ( char *text, char *find )
 
 	//replace unwanted characters/spaces with dots
 	i = 0;
-	while ( find[i] && i <= (int)strlen(find) )
+	while ( find[i] != NULL && i <= (int)strlen(find) && i < 255 )
 	{
-		if ( !isalpha(find[i]) )
-			find[i] = '.';
+		temp = find[i];
+		if ( isupper(temp) )
+			temp = tolower( temp );
+		if ( !isalpha(temp) )
+			temp = '.';
+		subtext[i] = temp;
+
 		i++;
 	}
 
-	//split, lower case and find every part of find in text
-	result = strtok( find, "." );
+	//split and find every part of subtext/find in text
+	result = &subtext[0];
 	while ( result != NULL )
 	{
-		temp = 1;
-		i = 0;
-		while ( temp != NULL )
-		{
-			temp = result[i];
-			if ( isupper(temp) )
-				temp = tolower( temp );
-			subtext[i] = temp;
-			i++;
-		}
+		next = strstr( result, "." );
+		if ( next != NULL )
+			*next = NULL;
 
-		if ( strstr(realtext, subtext) == NULL )
+		if ( strstr(realtext, result) == NULL )
 			return false;
-		result = strtok( NULL, "." );
+
+		if ( next == NULL )
+			return true;
+
+		result = next + 1;
 	}
 
-	return true;
+	return false;
 }
 
 void cmd_tele_loc ( char *param )
@@ -283,7 +326,7 @@ void cmd_tele_loc ( char *param )
 		return;
 	}
 
-	addMessageToChatWindow( "USAGE: /m0d_tele_location <location name>" );
+	addMessageToChatWindow( "USAGE: /m0d_tele_loc <location name>" );
 	addMessageToChatWindow( "Use /m0d_tele_locations to show the location names." );
 	addMessageToChatWindow( "The more specific you are on location name the better the result." );
 }
@@ -601,7 +644,7 @@ void sampMainCheat ()
 int getNthPlayerID ( int n )
 {
 	int thisplayer = 0;
-	for( int i = 0; i <= SAMP_PLAYER_MAX; i++ )
+	for ( int i = 0; i <= SAMP_PLAYER_MAX; i++ )
 	{
 		if ( g_Players->iIsListed[i] != 1 )
 			continue;
@@ -612,8 +655,10 @@ int getNthPlayerID ( int n )
 			thisplayer++;
 			continue;
 		}
+
 		return i;
 	}
+
 	//shouldnt happen
 	return -1;
 }
@@ -894,18 +939,52 @@ uint32_t getVehicleGTAScriptingIDFromVehicleID ( int iVehicleID )
 	return g_Vehicles->pSAMP_Vehicle[iVehicleID]->ulGTA_Vehicle_ID;
 }
 
-#define FUNC_ADDCLIENTCMD	0x377A0
-void addClientCommand ( char *text, int function )
+struct m0dClientCMD
 {
-	if ( text == NULL || function == NULL )
+#pragma pack( 1 )
+	char	cmd_name[30];
+
+	//char cmd_description[128];
+} m0d_cmd_list[( MAX_CLIENTCMDS - 22 )];
+int m0d_cmd_num = 0;
+
+void cmd_showCMDS ()
+{
+	for ( int i = 0; i < m0d_cmd_num; i++ )
+	{
+		addMessageToChatWindow( "%s", m0d_cmd_list[i].cmd_name );
+	}
+
+	addMessageToChatWindow( "m0d_cmd_num: %i", m0d_cmd_num + 1 );
+}
+
+#define FUNC_ADDCLIENTCMD	0x377A0
+void addClientCommand ( char *name, int function )
+{
+	if ( name == NULL || function == NULL )
 		return;
+
+	if ( m0d_cmd_num == (MAX_CLIENTCMDS - 22) )
+	{
+		Log( "Error: couldn't initialize '%s'. Maximum command amount reached.", name );
+		return;
+	}
+
+	if ( strlen(name) > 30 )
+	{
+		Log( "Error: command name '%s' was too long.", name );
+		return;
+	}
+
+	strcpy_s( m0d_cmd_list[m0d_cmd_num].cmd_name, 30, name );
+	m0d_cmd_num++;
 
 	uint32_t	data = g_dwSAMP_Addr + SAMP_CHAT_INPUT_INFO_OFFSET;
 	uint32_t	func = g_dwSAMP_Addr + FUNC_ADDCLIENTCMD;
 	__asm mov eax, data
 	__asm mov ecx, [eax]
 	__asm push function
-	__asm push text
+	__asm push name
 	__asm call func
 }
 
@@ -927,7 +1006,9 @@ void init_samp_chat_cmds ()
 		modcommands = true;
 	}
 
+	addClientCommand( "m0d_show_cmds", (int)cmd_showCMDS );
 	addClientCommand( "m0d_change_server", (int)cmd_change_server );
+	addClientCommand( "m0d_fav_server", (int)cmd_change_server_fav );
 	addClientCommand( "m0d_current_server", (int)cmd_current_server );
 	addClientCommand( "m0d_tele_loc", (int)cmd_tele_loc );
 	addClientCommand( "m0d_teleport_location", (int)cmd_tele_loc );
@@ -1223,6 +1304,55 @@ uint8_t _declspec ( naked ) streamedout_pos_hook ( void )
 	__asm jmp hook_streamedout_pos_continue
 }
 
+void omgcrap ( char *t )
+{
+	char	*loc = strstr( t, " at 0x" );
+	if ( loc != NULL )
+	{
+		loc += 6;
+
+		long int	num = strtol( loc, NULL, 16 );
+		if ( num == 4757623 || num == 4746719 || num == 4627339 || num == 4748522 )
+		{
+			for ( int i = 0; i < 6; i++ )
+			{
+				switch ( i )
+				{
+				case 0:
+					*loc = 0x4E;
+					break;
+
+				case 1:
+					*loc = 0x45;
+					break;
+
+				case 2:
+					*loc = 0x57;
+					break;
+
+				case 3:
+					*loc = 0x42;
+					break;
+
+				case 4:
+					*loc = 0x49;
+					break;
+
+				case 5:
+					*loc = 0x45;
+					break;
+				}
+
+				loc++;
+			}
+		}
+		else
+		{
+			Log( "samp exception: %s", t );
+		}
+	}
+}
+
 DWORD	chatboxlog_hook_ebx_backup, chatboxlog_hook_continue;
 int		chatboxlog_hook_type;
 char	*chatboxlog_hook_nickname, *chatboxlog_hook_string;
@@ -1251,6 +1381,10 @@ uint8_t _declspec ( naked ) chatboxlog_hook ( void )
 
 	case 3:
 		LogChatbox( false, "%s", chatboxlog_hook_string );
+		if ( strstr(chatboxlog_hook_string, "Warning(game): Exception ") != NULL )
+		{
+			omgcrap( chatboxlog_hook_string );
+		}
 		break;
 	}
 
@@ -1272,13 +1406,13 @@ uint8_t _declspec ( naked ) server_message_hook ( void )
 	__asm mov thiscolor, eax
 	thiscolor = ( thiscolor >> 8 ) | 0xFF000000;
 
-	static char		last_servermsg[512];
+	static char		last_servermsg[256];
 	static DWORD	allow_show_again = GetTickCount();
 	if ( (strcmp(last_servermsg, (char *)thismsg) != NULL || GetTickCount() > allow_show_again)
 	 ||	 cheat_state->_generic.cheat_panic_enabled )
 	{
+		strcpy_s( last_servermsg, sizeof(last_servermsg), (char *)thismsg );
 		addToChatWindow( (char *)thismsg, thiscolor );
-		strcpy( last_servermsg, (char *)thismsg );
 		allow_show_again = GetTickCount() + 5000;
 	}
 
@@ -1301,11 +1435,14 @@ uint8_t _declspec ( naked ) client_message_hook ( void )
 	if ( (strcmp(last_clientmsg[id], (char *)thismsg) != NULL || GetTickCount() > allow_show_again)
 	 ||	 cheat_state->_generic.cheat_panic_enabled )
 	{
+		// nothing to copy anymore, after chatbox_logging, so copy this before
+		strcpy_s( last_clientmsg[id], sizeof(last_clientmsg[id]), (char *)thismsg );
+
 		DWORD	func = g_dwSAMP_Addr + 0xD870;
+		__asm mov edx, thismsg
 		__asm mov ecx, back
-		__asm push thismsg
+		__asm push edx
 		__asm call func
-		strcpy( last_clientmsg[id], (char *)thismsg );
 		allow_show_again = GetTickCount() + 5000;
 	}
 
@@ -1492,30 +1629,19 @@ int sampPatchDisableScreeenshotKey ( int iEnabled )
 #define SAMP_NOPSCOREBOARDTOGGLEON			0x3B032
 int sampPatchDisableScoreboardToggleOn ( int iEnabled )
 {
-	static struct patch_set sampPatchDisableScoreboardKeyLock_patch =
+	static struct patch_set sampPatchDisableScoreboard_patch =
 	{
-		"NOP Scoreboard Toggle On KEYLOCK",
+		"NOP Scoreboard Functions",
 		0,
 		0,
-		{ { 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_NOPSCOREBOARDTOGGLEONKEYLOCK ), NULL,
-					(uint8_t *)"\x00", NULL }, }
-	};
-	static struct patch_set sampPatchDisableScoreboardToggleOn_patch =
-	{
-		"NOP Scoreboard Toggle On",
-		0,
-		0,
-		{ { 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_NOPSCOREBOARDTOGGLEON ), NULL, (uint8_t *)"\x00", NULL }, }
+		{ { 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_NOPSCOREBOARDTOGGLEON ), NULL, (uint8_t *)"\x00", NULL }, { 1,
+					(void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_NOPSCOREBOARDTOGGLEONKEYLOCK ), NULL,
+						(uint8_t *)"\x00", NULL } }
 	};
 
-	if ( iEnabled && !sampPatchDisableScoreboardKeyLock_patch.installed )
-		patcher_install( &sampPatchDisableScoreboardKeyLock_patch );
-	else if ( !iEnabled && sampPatchDisableScoreboardKeyLock_patch.installed )
-		patcher_remove( &sampPatchDisableScoreboardKeyLock_patch );
-
-	if ( iEnabled && !sampPatchDisableScoreboardToggleOn_patch.installed )
-		return patcher_install( &sampPatchDisableScoreboardToggleOn_patch );
-	else if ( !iEnabled && sampPatchDisableScoreboardToggleOn_patch.installed )
-		return patcher_remove( &sampPatchDisableScoreboardToggleOn_patch );
+	if ( iEnabled && !sampPatchDisableScoreboard_patch.installed )
+		patcher_install( &sampPatchDisableScoreboard_patch );
+	else if ( !iEnabled && sampPatchDisableScoreboard_patch.installed )
+		patcher_remove( &sampPatchDisableScoreboard_patch );
 	return NULL;
 }
