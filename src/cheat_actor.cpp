@@ -94,7 +94,10 @@ static struct patch_set patch_gta_auto_aim =
 					(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL }, { 5, (void *)0x00523F3E,
 						(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL }, { 5, (void *)0x00525615,
 							(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL }, { 5, (void *)0x005221FC,
-								(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL } }
+								(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL }, { 6, (void *)0x0060E08E,
+									(uint8_t *)"\x0F\x85\x79\x02\x00\x00", NULL, NULL }, { 6, (void *)0x0060E6B1,
+										(uint8_t *)"\x0F\x85\xAC\x00\x00\x00", NULL, NULL }
+	}
 };
 
 void cheat_handle_actor_autoaim ( struct actor_info *info, float time_diff )
@@ -104,10 +107,14 @@ void cheat_handle_actor_autoaim ( struct actor_info *info, float time_diff )
 	if ( KEY_PRESSED(set.key_autoaim) )
 	{
 		cheat_state->actor.autoaim ^= 1;
+
 		if ( set.use_gta_autoaim )
 		{
 			if ( cheat_state->actor.autoaim == 1 )
 			{
+				// set to default value, in case joypad aiming already activated
+				*(char *)0x00B6EC2E = 1;
+				*(char *)0x00BA6818 = 0;
 				patcher_install( &patch_gta_auto_aim );
 			}
 			else

@@ -607,6 +607,261 @@ void _declspec ( naked ) HOOK_CPed_destructor ()
 // ---------------------------------------------------
 // ---------------------------------------------------
 // ---------------------------------------------------
+#define HOOKPOS_PlayerCollision 0x54C968
+#define RET_PlayerCollision		0x54CF8D
+DWORD	RETURN_PlayerCollision_jmp = RET_PlayerCollision;
+DWORD	RETURN_PlayerCollision = 0x54C96E;
+DWORD	PlayerCollision_eax_back, PlayerCollision_ebx_back;
+DWORD	PlayerCollision_edi_back, PlayerCollision_esi_back;
+DWORD	PlayerCollision_esp_back;
+DWORD	PlayerCollision_tmp;
+float	PlayerCollision_cmp = 0.8f;
+void _declspec ( naked ) HOOK_PlayerCollision ()
+{
+	__asm mov PlayerCollision_edi_back, edi
+	__asm mov PlayerCollision_eax_back, eax
+	__asm mov PlayerCollision_ebx_back, ebx
+	__asm mov PlayerCollision_esi_back, esi
+	__asm mov PlayerCollision_esp_back, esp
+
+	__asm pushad
+	traceLastFunc( "HOOK_PlayerCollision()" );
+	PlayerCollision_tmp = set.key_disable_Wall_Collisions;
+
+	__asm push PlayerCollision_tmp
+	__asm call KEY_DOWN
+	__asm add esp, 0x04
+	__asm test eax, eax
+	__asm jz regularout
+
+	// no collisions while flying
+	PlayerCollision_tmp = cheat_state->vehicle.fly;
+	__asm cmp PlayerCollision_tmp, 1
+	__asm je forceout
+
+	__asm push 0
+	__asm push 0xFFFFFFFF
+	__asm call vehicle_info_get
+	__asm mov esi, eax
+	__asm add esp, 0x0C
+
+	// get actor
+	__asm test esi, esi
+	__asm jnz proceed
+
+	__asm push 0
+	__asm push 0xFFFFFFFF
+	__asm call actor_info_get
+	__asm mov esi, eax
+	__asm add esp, 0x0C
+
+	__asm test esi, esi
+	__asm jz regularout
+	__asm jnz proceed_noveh
+
+proceed:
+	// check if we got a plane
+	__asm mov PlayerCollision_tmp, eax
+	if ( gta_vehicle_get_by_id( ((vehicle_info*)PlayerCollision_tmp)->base.model_alt_id )->class_id 
+		== VEHICLE_CLASS_AIRPLANE )
+	{
+		goto forceout;
+	}
+
+proceed_noveh:
+	// player positioning
+	__asm mov ecx, [esi + 0x14]
+	__asm fld[ecx + 0x08]			//rotate left/right
+	__asm fld[ecx + 0x18]			//up/down
+	__asm fld dword ptr[ecx + 0x38]
+
+	// object positioning
+	__asm mov ecx, PlayerCollision_edi_back
+	__asm mov ecx, [ecx + 0x14]
+
+	// check, if object is over player - no collision
+	__asm fld dword ptr[ecx + 0x38]
+	__asm fcompp
+	__asm fnstsw ax
+	__asm fwait
+	__asm sahf
+	__asm ja forceout_floatfloat
+
+	//rotation to the front or back
+	__asm fld[ecx + 0x18]
+	__asm fsubp st( 1 ), st
+	__asm ftst
+	__asm fstsw ax
+	__asm fwait
+	__asm sahf
+	__asm ja nochange_one
+	__asm fchs
+
+nochange_one:
+	__asm fld PlayerCollision_cmp
+	__asm fcompp
+	__asm fstsw ax
+	__asm fwait
+	__asm sahf
+	__asm ja forceout_float
+	__asm jmp regularout_float
+
+regularout_float:
+	__asm fcomp	st(1)
+regularout:
+	__asm popad
+	__asm mov eax, PlayerCollision_eax_back
+	__asm mov ebx, PlayerCollision_ebx_back
+	__asm mov edi, PlayerCollision_edi_back
+	__asm mov esi, PlayerCollision_esi_back
+	__asm mov esp, PlayerCollision_esp_back
+	__asm cmp eax, ebx
+	__asm jng RET_PlayerCollision
+	__asm jmp RETURN_PlayerCollision
+
+forceout_floatfloat:
+	__asm fcomp st(1)
+forceout_float:
+	__asm fcomp	st(1)
+forceout:
+	__asm popad
+	__asm mov esi, PlayerCollision_esi_back
+	__asm mov edi, PlayerCollision_edi_back
+	__asm mov ebx, PlayerCollision_ebx_back
+	__asm mov eax, PlayerCollision_eax_back
+	__asm mov esp, PlayerCollision_esp_back
+	__asm jmp RETURN_PlayerCollision_jmp
+}
+
+#define HOOKPOS_PlayerCollision_CrashFixX	0x0469FD4
+DWORD	playercol_crashFixX_ecx_back;
+DWORD	playercol_crashFixX_edx_back;
+DWORD	playercol_crashFixX_temp_back;
+void _declspec ( naked ) PlayerCollision_CrashFixX ()
+{
+	__asm
+	{
+		mov playercol_crashFixX_ecx_back, ecx
+		mov playercol_crashFixX_edx_back, edx
+		pushad
+		cmp eax, 874
+		jnz getout
+	}
+
+	traceLastFunc( "PlayerCollision_CrashFixX()" );
+	__asm
+	{
+		mov eax, g_SAMP
+		test eax, eax
+		jz getout
+		push 0
+		push 0xFFFFFFFF
+		call actor_info_get
+		mov playercol_crashFixX_temp_back, eax
+		pop eax
+		pop eax
+		mov eax, [ESI + 0x14]
+		inc eax
+		mov dx, [eax]
+		movzx eax, dx
+		mov eax, [0xA49960 + eax]
+		push eax
+		call GetActorByGtaId
+		mov ecx, playercol_crashFixX_temp_back
+		cmp eax, ecx
+		pop eax
+		jnz getout
+		mov eax, [esi + 0x14]
+		add eax, 4
+		mov dx, [eax]
+		movzx eax, dx
+		mov eax, [esi + eax * 4 + 0x3C]
+		push eax
+		call GetVehicleByGtaId
+		mov ecx, [eax + 0x460]
+		pop eax
+		test ecx, ecx
+		jz getout
+		mov playercol_crashFixX_ecx_back, 1096
+		getout:
+		popad
+		mov ecx, playercol_crashFixX_ecx_back
+		mov edx, playercol_crashFixX_edx_back
+		mov[esi + 0x00d2], dl
+		mov eax, HOOKPOS_PlayerCollision_CrashFixX
+		add eax, 0x06
+		jmp eax
+	}
+}
+
+#define HOOKPOS_PlayerCollision_CrashFix	0x00469ED6
+DWORD	playercol_crashfix_ecx_back;
+DWORD	playercol_crashfix_temp_back;
+void _declspec ( naked ) PlayerCollision_CrashFix ()
+{
+	__asm
+	{
+		mov playercol_crashfix_ecx_back, ecx
+		mov ecx, [esp + 0x04]
+		mov playercol_crashfix_temp_back, ecx
+		pushad
+		cmp eax, 874
+		jz checkmeForBugs
+		cmp eax, 1834
+		jz checkmeForBugs
+		jmp getout
+		checkmeForBugs:
+	}
+
+	traceLastFunc( "PlayerCollision_CrashFix()" );
+	__asm
+	{
+		mov eax, g_SAMP
+		test eax, eax
+		jz getout
+		mov eax, playercol_crashfix_temp_back
+		mov ecx, g_dwSAMP_Addr
+		add ecx, 0x3356E
+		cmp ecx, eax
+		je getout
+		mov eax, [edi + 0x04]
+		push eax
+		call GetVehicleByGtaId
+		mov ecx, [eax + 0x460]
+		pop eax
+		test ecx, ecx
+		jz getout
+		push 0
+		push 0xFFFFFFFF
+		call actor_info_get
+		mov playercol_crashfix_temp_back, eax
+		pop eax
+		pop eax
+		mov eax, [edi]
+		push eax
+		call GetActorByGtaId
+		mov ecx, playercol_crashfix_temp_back
+		cmp eax, ecx
+		pop eax
+		jnz getout
+		popad
+		mov ecx, playercol_crashfix_ecx_back
+		push 2
+		mov eax, 0x464080
+		call eax
+		pop ecx
+		mov eax, HOOKPOS_PlayerCollision_CrashFix
+		add eax, 0x22
+		jmp eax
+		getout:
+		popad
+		mov ecx, playercol_crashfix_ecx_back
+		mov[ecx + 0x00d2], dl
+		mov eax, HOOKPOS_PlayerCollision_CrashFix
+		add eax, 0x06
+		jmp eax
+	}
+}
 
 // hook installers
 void cheat_hookers_installhooks ( void )
@@ -625,6 +880,10 @@ void cheat_hookers_installhooks ( void )
 	HookInstall( HOOKPOS_CVehicle_destructor, (DWORD) HOOK_CVehicle_destructor, 6 );
 	HookInstall( HOOKPOS_CPed_constructor, (DWORD) HOOK_CPed_constructor, 6 );
 	HookInstall( HOOKPOS_CPed_destructor, (DWORD) HOOK_CPed_destructor, 6 );
+
+	HookInstall( HOOKPOS_PlayerCollision, (DWORD) HOOK_PlayerCollision, 6 );
+	HookInstall( HOOKPOS_PlayerCollision_CrashFix, (DWORD) PlayerCollision_CrashFix, 6 );
+	HookInstall( HOOKPOS_PlayerCollision_CrashFixX, (DWORD) PlayerCollision_CrashFixX, 6 );
 
 	// calls
 	HookInstallCall( CALL_VehicleCamUp, (DWORD) HOOK_VehicleCamUp );

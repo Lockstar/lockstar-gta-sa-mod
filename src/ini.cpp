@@ -392,6 +392,8 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.key_blinking_car_lights, "&0" );
 	if ( (ent = ini_register_entry("key_keep_trailer", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_keep_trailer, "&0" );
+	if ( (ent = ini_register_entry("key_disable_Wall_Collisions", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_disable_Wall_Collisions, "&0" );
 
 	// repair car
 	if ( (ent = ini_register_entry("key_repair_car", TYPE_KEY)) != NULL )
@@ -689,6 +691,7 @@ static void ini_init ( void )
 	if ( (ent = ini_register_entry("logo_enable", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.logo_enable, "true" );
 
+	/* samp stuff */
 	if ( (ent = ini_register_entry("d3dtext_chat", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.d3dtext_chat, "false" );
 	if ( (ent = ini_register_entry("d3dtext_chat_lines", TYPE_INT)) != NULL )
@@ -760,10 +763,10 @@ static void ini_init ( void )
 
 	if ( (ent = ini_register_entry("key_fly_vehicle", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_fly_vehicle, "oem_period" );
+	if ( (ent = ini_register_entry("key_flyMode_change", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_flyMode_change, "oem_comma" );
 	if ( (ent = ini_register_entry("fly_heliMode", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.fly_heliMode, "false" );
-	if ( (ent = ini_register_entry("fly_hydraMode", TYPE_BOOL)) != NULL )
-		ini_register_data( ent, &set.fly_multiMode, "true" );
 
 	if ( (ent = ini_register_entry("key_rejoin", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_rejoin, "b" );
