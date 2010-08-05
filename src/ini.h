@@ -84,6 +84,7 @@ struct settings
 
 	int						key_autoaim_toggle;
 	int						key_autoaim_aim;
+	int						use_gta_autoaim;
 
 	int						key_map;
 	int						key_map_show_vehicles;

@@ -108,32 +108,132 @@ void cheat_handle_actor_autoaim ( struct actor_info *info, double time_diff )
 	if ( KEY_PRESSED(set.key_autoaim_toggle) )
 	{
 		cheat_state->actor.autoaim ^= 1;
-	}
-
-	// should we be trying to aim or not?
-	bool isAimKeyDown = false;
-	CControllerConfigManager *pPadConfig = pGameInterface->GetControllerConfigManager();
-	if ( pPadConfig->GetInputType() )
-	{
-		// mouse + keyboard
-		if ( KEY_DOWN(pPadConfig->GetControllerKeyAssociatedWithAction(FIRE, MOUSE)) )
+		if ( set.use_gta_autoaim )
 		{
-			isAimKeyDown = true;
-		}
-		else if ( KEY_DOWN(pPadConfig->GetControllerKeyAssociatedWithAction(FIRE, KEYBOARD)) )
-		{
-			isAimKeyDown = true;
-		}
-	}
-	else
-	{
-		// gamepad
-		if ( KEY_DOWN(pPadConfig->GetControllerKeyAssociatedWithAction(FIRE, JOYSTICK)) )
-		{
-			isAimKeyDown = true;
+			if ( cheat_state->actor.autoaim == 1 )
+			{
+				// set to default value, in case joypad aiming already activated
+				*(char *)0x00B6EC2E = 1;
+				*(char *)0x00BA6818 = 0;
+				patcher_install( &patch_gta_auto_aim );
+			}
+			else
+			{
+				patcher_remove( &patch_gta_auto_aim );
+			}
 		}
 	}
 
+	if ( !set.use_gta_autoaim )
+	{
+
+		// should we be trying to aim or not?
+		bool isAimKeyDown = false;
+		CControllerConfigManager *pPadConfig = pGameInterface->GetControllerConfigManager();
+		if ( pPadConfig->GetInputType() )
+		{
+			// mouse + keyboard
+			if ( KEY_DOWN(pPadConfig->GetControllerKeyAssociatedWithAction(FIRE, MOUSE)) )
+			{
+				isAimKeyDown = true;
+			}
+			else if ( KEY_DOWN(pPadConfig->GetControllerKeyAssociatedWithAction(FIRE, KEYBOARD)) )
+			{
+				isAimKeyDown = true;
+			}
+		}
+		else
+		{
+			// gamepad
+			if ( KEY_DOWN(pPadConfig->GetControllerKeyAssociatedWithAction(FIRE, JOYSTICK)) )
+			{
+				isAimKeyDown = true;
+			}
+		}
+
+		// let's aim, shall we?
+		if ( cheat_state->actor.autoaim )//&& isAimKeyDown )
+		{
+			// only for certain weapons
+			eWeaponSlot selfSlot = pPedSelf->GetCurrentWeaponSlot();
+			switch ( selfSlot )
+			{
+			case WEAPONSLOT_TYPE_UNARMED:
+			case WEAPONSLOT_TYPE_MELEE:
+			case WEAPONSLOT_TYPE_THROWN:
+			case WEAPONSLOT_TYPE_SPECIAL:
+			case WEAPONSLOT_TYPE_GIFT:
+			case WEAPONSLOT_TYPE_PARACHUTE:
+			case WEAPONSLOT_TYPE_DETONATOR:
+				// we don't want to aim for these weapons
+				return;
+			//case WEAPONSLOT_TYPE_HANDGUN:
+			//case WEAPONSLOT_TYPE_SHOTGUN:
+			//case WEAPONSLOT_TYPE_SMG:
+			//case WEAPONSLOT_TYPE_MG:
+			//case WEAPONSLOT_TYPE_RIFLE:
+			//case WEAPONSLOT_TYPE_HEAVY:
+			}
+
+			// OLD ASS AIM
+			static int			prev_id;
+			static float		adj_rx, adj_rz, prev_rx, prev_rz;
+			float				rx = *(float *)0x00B6F248;
+			float				rz = *(float *)0x00B6F258;
+
+			int					nearest_id = actor_find_nearest( ACTOR_ALIVE );
+			struct actor_info	*nearest;
+			float				vect[3], ax, az;
+
+			if ( nearest_id == -1 )
+			{
+				cheat_state_text( "No players found; auto aim disabled." );
+				cheat_state->actor.autoaim = 0;
+				return;
+			}
+
+			if ( nearest_id == prev_id )
+			{
+				adj_rx += rx - prev_rx;
+				adj_rz += rz - prev_rz;
+			}
+
+			prev_id = nearest_id;
+
+			if ( (nearest = actor_info_get(nearest_id, ACTOR_ALIVE)) == NULL )
+				return; /* won't happen */
+
+			/*cheat_state_text("%.3f %.3f %d %d", adj_rx, adj_rz, nearest->state, nearest->state_running);*/
+			/* calculate distance vector */
+			vect3_vect3_sub( &nearest->base.matrix[4 * 3], &info->base.matrix[4 * 3], vect );
+
+			/* z angle */
+			az = atan2f( vect[0], vect[1] );
+
+			/* rotate around z axis */
+			vect[1] = sinf( az ) * vect[0] + cosf( az ) * vect[1];
+
+			/* x angle */
+			ax = atan2f( vect[1], vect[2] );
+
+			ax = -ax + M_PI / 2.0f + adj_rx;
+			az = -az - M_PI / 2.0f + adj_rz;
+
+			if ( ax < -M_PI )
+				ax = -M_PI;
+			else if ( ax > M_PI )
+				ax = M_PI;
+
+			/* XXX make function */
+			prev_rx = *(float *)0x00B6F248 = ax;
+			prev_rz = *(float *)0x00B6F258 = az;
+		}
+	}
+
+
+
+
+/*
 	// let's aim, shall we?
 	if ( cheat_state->actor.autoaim )//&& isAimKeyDown )
 	{
@@ -191,7 +291,7 @@ char buf[128];
 		SelfWeapCamFront.fX = pSelfWeapCamFront->fX;
 		SelfWeapCamFront.fY = pSelfWeapCamFront->fY;
 		SelfWeapCamFront.fZ = pSelfWeapCamFront->fZ;
-
+*/
 /*
 		SelfWeapCamFront.fX = 1.0f;
 		SelfWeapCamFront.fY = 0.0f;
@@ -212,7 +312,7 @@ sprintf( buf, "m_fTrueBeta: %.4f", pSelfWeaponCam1->GetInterface()->m_fTrueBeta 
 pD3DFontFixed->PrintShadow(450, 50 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
 lineSpace += 12;
 */
-
+/*
 		CVector ffFront = SelfWeapCamFront;
 
 		// weapon fire offset, switch of X and Y so it points north
@@ -335,74 +435,8 @@ lineSpace += 12;
 		}
 
 	}
+*/
 
-
-
-
-
-
-
-
-
-
-
-
-
-	// OLD ASS AIM
-	if ( 1 == 2 )
-	{
-		static int			prev_id;
-		static float		adj_rx, adj_rz, prev_rx, prev_rz;
-		float				rx = *(float *)0x00B6F248;
-		float				rz = *(float *)0x00B6F258;
-
-		int					nearest_id = actor_find_nearest( ACTOR_ALIVE );
-		struct actor_info	*nearest;
-		float				vect[3], ax, az;
-
-		if ( nearest_id == -1 )
-		{
-			cheat_state_text( "No players found; auto aim disabled." );
-			cheat_state->actor.autoaim = 0;
-			return;
-		}
-
-		if ( nearest_id == prev_id )
-		{
-			adj_rx += rx - prev_rx;
-			adj_rz += rz - prev_rz;
-		}
-
-		prev_id = nearest_id;
-
-		if ( (nearest = actor_info_get(nearest_id, ACTOR_ALIVE)) == NULL )
-			return; /* won't happen */
-
-		/*cheat_state_text("%.3f %.3f %d %d", adj_rx, adj_rz, nearest->state, nearest->state_running);*/
-		/* calculate distance vector */
-		vect3_vect3_sub( &nearest->base.matrix[4 * 3], &info->base.matrix[4 * 3], vect );
-
-		/* z angle */
-		az = atan2f( vect[0], vect[1] );
-
-		/* rotate around z axis */
-		vect[1] = sinf( az ) * vect[0] + cosf( az ) * vect[1];
-
-		/* x angle */
-		ax = atan2f( vect[1], vect[2] );
-
-		ax = -ax + M_PI / 2.0f + adj_rx;
-		az = -az - M_PI / 2.0f + adj_rz;
-
-		if ( ax < -M_PI )
-			ax = -M_PI;
-		else if ( ax > M_PI )
-			ax = M_PI;
-
-		/* XXX make function */
-		prev_rx = *(float *)0x00B6F248 = ax;
-		prev_rz = *(float *)0x00B6F258 = az;
-	}
 }
 
 void cheat_handle_actor_air_brake ( struct actor_info *info, double time_diff )

@@ -553,6 +553,8 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.key_autoaim_toggle, "z" );
 	if ( (ent = ini_register_entry("key_autoaim_aim", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_autoaim_aim, "lbutton" );
+	if ( (ent = ini_register_entry("use_gta_autoaim", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.use_gta_autoaim, "false" );
 
 	/* map */
 	if ( (ent = ini_register_entry("key_map", TYPE_KEY)) != NULL )
@@ -767,8 +769,6 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.key_flyMode_change, "oem_comma" );
 	if ( (ent = ini_register_entry("fly_heliMode", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.fly_heliMode, "false" );
-	if ( (ent = ini_register_entry("fly_multiMode", TYPE_BOOL)) != NULL )
-		ini_register_data( ent, &set.fly_multiMode, "false" );
 
 	if ( (ent = ini_register_entry("key_rejoin", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_rejoin, "b" );
