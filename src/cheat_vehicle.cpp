@@ -1203,6 +1203,7 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 		return;
 	}
 
+	// this should never happen
 	if ( pGameInterface == NULL )
 		return;
 
@@ -1210,9 +1211,7 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 		set.fly_heliMode = !set.fly_heliMode;
 
 	if ( KEY_PRESSED(set.key_fly_vehicle) )
-	{
 		cheat_state->vehicle.fly ^= 1;
-	}
 
 	// ignore hydra and RC Baron (they seem to use some special functions to fly)
 	if ( vehicle_info->base.model_alt_id == 520 || vehicle_info->base.model_alt_id == 464 )
@@ -1260,7 +1259,7 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 			// fly physics heli Mode / Bike
 			if ( set.fly_heliMode || class_id == VEHICLE_CLASS_BIKE )
 			{
-				temp->pFlyData->pitch = 0.005f;
+				temp->pFlyData->pitch = 0.0035f;
 				temp->pFlyData->circleAround = -0.0003f;
 
 				if ( class_id == VEHICLE_CLASS_BIKE )
@@ -1269,7 +1268,7 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 				}
 				else
 				{
-					temp->pFlyData->roll_lr = -0.005f;
+					temp->pFlyData->roll_lr = -0.004f;
 				}
 			}
 
@@ -1286,8 +1285,8 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 				else
 				{
 					temp->pFlyData->pitch = 0.0005f;
-					temp->pFlyData->roll_lr = 0.002f;
-					temp->pFlyData->circleAround = -0.0003f;
+					temp->pFlyData->roll_lr = 0.005f;
+					temp->pFlyData->circleAround = -0.0005f;
 				}
 			}
 

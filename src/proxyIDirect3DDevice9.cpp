@@ -2696,8 +2696,6 @@ void renderPlayerInfo ( int iPlayerID )
 	{
 		color = samp_color_get( iPlayerID );
 
-		float	position[3];
-
 		sprintf( buf, "Is NPC: %d", g_Players->pRemotePlayer[iPlayerID]->iIsNPC );
 		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
 		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
