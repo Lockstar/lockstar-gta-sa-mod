@@ -369,6 +369,7 @@ void cheat_hook ( HWND wnd )
 	cheat_handle_debug( wnd );
 	cheat_handle_misc();
 	cheat_handle_spoof_weapon();
+	cheat_handle_weapon();
 	gta_game_speed_set( cheat_state->game_speed );
 
 	if ( cheat_state->state != CHEAT_STATE_NONE )
@@ -376,7 +377,6 @@ void cheat_hook ( HWND wnd )
 		// generic stuff
 		cheat_handle_weapon_disable();
 		cheat_handle_money();
-		cheat_handle_weapon();
 
 		//////////////////////////////////////////////////////////////////
 		// this should be removed after reworking weapon cheat function //

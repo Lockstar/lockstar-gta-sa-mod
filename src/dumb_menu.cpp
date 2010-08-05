@@ -1547,16 +1547,17 @@ static int menu_callback_weapons ( int op, struct menu_item *item )
 		if ( set.weapon[weapon->slot] == weapon )
 		{
 			set.weapon[weapon->slot] = NULL;
-		}
-		else
-		{
-			randammo = ( rand() % set.ammo ) + 1;
-			randammoclip = ( rand() % set.ammo_clip ) + 1;
-			set.weapon[weapon->slot] = weapon;
-			gta_weapon_set( actor_info, set.weapon[weapon->slot]->slot, set.weapon[weapon->slot]->id, randammo,
-							randammoclip );
+			return 1;
 		}
 
+		set.weapon[weapon->slot] = weapon;
+
+		if ( !cheat_state->_generic.weapon )
+			return 1;
+
+		randammo = ( rand() % set.ammo ) + 1;
+		randammoclip = ( rand() % set.ammo_clip ) + 1;
+		gta_weapon_set( actor_info, set.weapon[weapon->slot]->slot, set.weapon[weapon->slot]->id, randammo, randammoclip );
 		return 1;
 	}
 

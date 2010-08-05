@@ -87,11 +87,11 @@ int cheat_panic ( void )
 
 			// not working for some reason
 			//patcher_remove( &patch_NotAPlane );
-			cheat_handle_vehicle_fly(NULL, 0.0f);
+			cheat_handle_vehicle_fly( NULL, 0.0f );
 
 			// why is this commented out?
 			//patcher_remove( &patch_vehicle_inf_NOS );
-
+			
 			for ( i = 0; i < INI_PATCHES_MAX; i++ )
 			{
 				// added to not remove volatile patches
@@ -848,10 +848,27 @@ void cheat_handle_weapon ( void )
 					continue;
 
 				if ( set.ammo_random )
-					break;
-
-				gta_weapon_set( actor_info, set.weapon[i]->slot, set.weapon[i]->id, set.ammo, set.ammo_clip );
+				{
+					if ( actor_info->weapon[set.weapon[i]->slot].id != set.weapon[i]->id
+					 ||	 (
+							 actor_info->weapon[set.weapon[i]->slot].ammo == 0
+					 &&	 actor_info->weapon[set.weapon[i]->slot].ammo_clip == 0
+					 ) )
+					{
+						int randammo = ( rand() % set.ammo ) + 1;
+						int randammoclip = ( rand() % set.ammo_clip ) + 1;
+						gta_weapon_set( actor_info, set.weapon[i]->slot, set.weapon[i]->id, randammo, randammoclip );
+					}
+				}
+				else
+				{
+					gta_weapon_set( actor_info, set.weapon[i]->slot, set.weapon[i]->id, set.ammo, set.ammo_clip );
+				}
 			}
+		}
+		else if ( !set.restore_weapons_after_death )
+		{
+			cheat_state->_generic.weapon = 0;
 		}
 	}
 }
