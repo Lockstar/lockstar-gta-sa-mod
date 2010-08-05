@@ -3,7 +3,7 @@ Version 4.1.0.0
 * Fixed so many things that it's retarded to list them here.
 * Added menu to add upgrades (Wangs/etc) to your vehicle anywhere.
 * Added SpiderWheels, drive on anything! Default: Numpad 5
-
+* Added new Method to fly vehicles (allows 'helicoptering') Default: .
 * Added toggleable infinite NOS. Default: Numpad 0
 * Added switchable car lights. Default: F2 to switch modes.
 * Added toggleable vehicle collisions except for your vehicle.

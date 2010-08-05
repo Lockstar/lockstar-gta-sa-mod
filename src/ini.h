@@ -115,6 +115,7 @@ struct settings
 
 	int						key_blinking_car_lights;
 	int						key_keep_trailer;
+	int						key_disable_Wall_Collisions;
 
 	int						key_repair_car;
 
@@ -314,8 +315,8 @@ struct settings
 	float					brkdance_velocity;
 
 	int						key_fly_vehicle;
+	int						key_flyMode_change;
 	int						fly_heliMode;
-	int						fly_multiMode;
 
 	int						key_rejoin;
 	int						rejoin_delay;

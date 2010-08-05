@@ -628,6 +628,7 @@ void cheat_handle_vehicle_nitro ( struct vehicle_info *info, float time_diff )
 	traceLastFunc( "cheat_handle_vehicle_nitro()" );
 
 	static uint32_t		timer;
+	static int			decelerating;
 	static float		speed_off;
 	float				pre_speed[3];
 	struct vehicle_info *temp;
@@ -638,6 +639,7 @@ void cheat_handle_vehicle_nitro ( struct vehicle_info *info, float time_diff )
 	if ( KEY_PRESSED(set.key_nitro_mod) )
 	{
 		speed_off = vect3_length( info->speed );
+		decelerating = 0;
 		timer = time_get();
 	}
 
@@ -660,9 +662,9 @@ void cheat_handle_vehicle_nitro ( struct vehicle_info *info, float time_diff )
 				if ( temp->vehicle_type == VEHICLE_TYPE_TRAIN )
 				{
 					if ( temp->m_fTrainSpeed < 0.0f && temp->m_fTrainSpeed > -set.nitro_high )
-						temp->m_fTrainSpeed -= set.nitro_high * time_diff;
+						temp->m_fTrainSpeed -= speed;
 					else if ( temp->m_fTrainSpeed < set.nitro_high )
-						temp->m_fTrainSpeed += set.nitro_high * time_diff;
+						temp->m_fTrainSpeed += speed;
 				}
 
 				vect3_normalize( temp->speed, temp->speed );
@@ -671,6 +673,62 @@ void cheat_handle_vehicle_nitro ( struct vehicle_info *info, float time_diff )
 					vect3_zero( temp->speed );
 			}
 
+			if ( !set.trailer_support )
+				break;
+		}
+
+		// heh
+		int		gonadsMult = 1000;
+		float	strifeMult = 0.0000001f;
+		int		gonads = rand() % gonadsMult;
+		float	strife = (double)gonads * strifeMult;
+		if ( strife < strifeMult * gonadsMult / 2 )
+			strife -= strifeMult * gonadsMult;
+		info->m_SpeedVec.fX += strife;
+		gonads = rand() % gonadsMult;
+		strife = (double)gonads * strifeMult;
+		if ( strife < strifeMult * gonadsMult / 2 )
+			strife -= strifeMult * gonadsMult;
+		info->m_SpeedVec.fY += strife;
+	}
+
+	if ( KEY_RELEASED(set.key_nitro_mod) )
+	{
+		if ( vect3_length(info->speed) > set.nitro_low )
+		{
+			speed_off = vect3_length( info->speed );
+			decelerating = 1;
+			timer = time_get();
+		}
+	}
+
+	if ( decelerating )
+	{
+		float	speed = set.nitro_low;
+		float	etime = TIME_TO_FLOAT( time_get() - timer );
+
+		if ( etime < set.nitro_decel_time )
+			speed = speed_off - ( speed_off - speed ) * ( etime / set.nitro_decel_time );
+		else
+			decelerating = 0;
+
+		for ( temp = info; temp != NULL; temp = temp->trailer )
+		{
+			if ( vect3_length(temp->speed) > speed )
+			{
+				vect3_normalize( temp->speed, temp->speed );
+				vect3_mult( temp->speed, speed, temp->speed );
+			}
+
+			/* // first fix trains before uncommenting this..
+			if ( temp->vehicle_type == VEHICLE_TYPE_TRAIN )
+			{
+				if ( temp->m_fTrainSpeed > speed )
+					temp->m_fTrainSpeed = vect3_length( temp->speed );
+				else if ( temp->m_fTrainSpeed < -speed )
+					temp->m_fTrainSpeed = -vect3_length( temp->speed );
+			}
+			*/
 			if ( !set.trailer_support )
 				break;
 		}
@@ -1116,138 +1174,178 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 {
 	traceLastFunc( "cheat_handle_vehicle_fly()" );
 
-	if ( vehicle_info == NULL || pGameInterface == NULL )
+	static bool					needRestorePphys = false;
+	static float				plane_orig_data[3];			// pitch, roll, circle
+	static struct vehicle_info	*last_plane;
+
+	// getting passed a NULL pointer from cheat_panic, so we can remove the patch and reapply airplane physics
+	if ( vehicle_info == NULL )
+	{
+		if ( !cheat_state->_generic.cheat_panic_enabled )
+			return;
+
+		if ( patch_NotAPlane.installed )
+			patcher_remove( &patch_NotAPlane );
+
+		struct vehicle_info *veh_self = vehicle_info_get( VEHICLE_SELF, NULL );
+
+		if ( veh_self == NULL )
+			return;
+
+		if ( gta_vehicle_get_by_id(veh_self->base.model_alt_id)->class_id == VEHICLE_CLASS_AIRPLANE )
+		{
+			veh_self->pFlyData->pitch = plane_orig_data[0];
+			veh_self->pFlyData->roll_lr = plane_orig_data[1];
+			veh_self->pFlyData->circleAround = plane_orig_data[2];
+			needRestorePphys = false;
+		}
+
 		return;
+	}
+
+	if ( pGameInterface == NULL )
+		return;
+
+	if ( KEY_PRESSED(set.key_flyMode_change) )
+		set.fly_heliMode = !set.fly_heliMode;
 
 	if ( KEY_PRESSED(set.key_fly_vehicle) )
 	{
 		cheat_state->vehicle.fly ^= 1;
 	}
 
+	// ignore hydra and RC Baron (they seem to use some special functions to fly)
+	if ( vehicle_info->base.model_alt_id == 520 || vehicle_info->base.model_alt_id == 464 )
+	{
+		if ( patch_NotAPlane.installed )
+			patcher_remove( &patch_NotAPlane );
+		return;
+	}
+
 	if ( patch_NotAPlane.installed && !cheat_state->vehicle.fly )
 		patcher_remove( &patch_NotAPlane );
 
+	int class_id = gta_vehicle_get_by_id( vehicle_info->base.model_alt_id )->class_id;
 	if ( cheat_state->vehicle.fly )
 	{
-		int class_id = gta_vehicle_get_by_id( vehicle_info->base.model_alt_id )->class_id;
 		if ( class_id == VEHICLE_CLASS_HELI )
 			return;
 
-		if ( !patch_NotAPlane.installed && class_id == VEHICLE_CLASS_AIRPLANE )
-			patcher_install( &patch_NotAPlane );
-		else if ( patch_NotAPlane.installed && class_id != VEHICLE_CLASS_AIRPLANE )
+		if ( class_id == VEHICLE_CLASS_AIRPLANE )
+		{
+			if ( last_plane != vehicle_info )
+			{
+				plane_orig_data[0] = vehicle_info->pFlyData->pitch;
+				plane_orig_data[1] = vehicle_info->pFlyData->roll_lr;
+				plane_orig_data[2] = vehicle_info->pFlyData->circleAround;
+				last_plane = vehicle_info;
+			}
+
+			if ( !patch_NotAPlane.installed )
+				patcher_install( &patch_NotAPlane );
+			needRestorePphys = true;
+		}
+		else if ( patch_NotAPlane.installed )
+		{
 			patcher_remove( &patch_NotAPlane );
+		}
 
 		struct vehicle_info *temp;
 		DWORD				func = 0x006D85F0;
 		for ( temp = vehicle_info; temp != NULL; temp = temp->trailer )
 		{
-			// what model is this, and why is this here, comment stuff like this pls
-			if ( temp->base.model_alt_id == 520 )
-				continue;
-
 			DWORD	mecar = ( DWORD ) temp;
 			class_id = gta_vehicle_get_by_id( temp->base.model_alt_id )->class_id;
 
-			if ( set.fly_multiMode )
+			// fly physics heli Mode / Bike
+			if ( set.fly_heliMode || class_id == VEHICLE_CLASS_BIKE )
 			{
-				float	height;
-				height = pGameInterface->GetWorld()->FindGroundZForPosition( temp->base.matrix[4 * 3],
-																			 temp->base.matrix[4 * 3 + 1] );
-				height = temp->base.matrix[4 * 3 + 2] - height;
-				if ( height <= 30.0f && height >= -10.0f )
-					set.fly_heliMode = 1;
-				else
-					set.fly_heliMode = 0;
-			}
+				temp->pFlyData->pitch = 0.005f;
+				temp->pFlyData->circleAround = -0.0003f;
 
-			if ( set.fly_heliMode )
-			{
 				if ( class_id == VEHICLE_CLASS_BIKE )
 				{
-					temp->pFlyData->circleAround = -0.0003f;
-					temp->pFlyData->pitch = 0.005f;
-					temp->pFlyData->roll_lr = -0.01f;	// rolling isn't working with bikes correctly yet
+					temp->pFlyData->roll_lr = -0.01f;		// rolling isn't working with bikes correctly yet
 				}
 				else
 				{
-					temp->pFlyData->circleAround = -0.0003f;
-					temp->pFlyData->pitch = 0.005f;
 					temp->pFlyData->roll_lr = -0.005f;
 				}
 			}
+
+			// fly physics plane Mode
 			else
 			{
-				temp->pFlyData->circleAround = -0.0003f;
-				temp->pFlyData->pitch = 0.0005f;
-				temp->pFlyData->roll_lr = 0.002f;
+				// use original physics for planes
+				if ( class_id == VEHICLE_CLASS_AIRPLANE )
+				{
+					vehicle_info->pFlyData->pitch = plane_orig_data[0];
+					vehicle_info->pFlyData->roll_lr = plane_orig_data[1];
+					vehicle_info->pFlyData->circleAround = plane_orig_data[2];
+				}
+				else
+				{
+					temp->pFlyData->pitch = 0.0005f;
+					temp->pFlyData->roll_lr = 0.002f;
+					temp->pFlyData->circleAround = -0.0003f;
+				}
 			}
 
+			//  steering  //
 			float	one = 0.9997f;
 			float	min = -0.9997f;
-
-			if ( class_id <= VEHICLE_CLASS_HEAVY && !set.fly_heliMode ) //gta cheat
+			if ( *(uint8_t *) (GTA_KEYS + 0x1C) == 0xFF )	//accel
 			{
-				__asm push 0x0C61C3FF6
-				__asm push 0x0C61C3FF6
-				__asm push 0x0C61C3FF6
-				__asm push 0x0C61C3FF6
+				__asm push min
+			}
+			else if ( *(uint8_t *) (GTA_KEYS + 0x20) == 0xFF )	//brake
+			{
+				__asm push one
 			}
 			else
 			{
-				//great code is making not that great code out of this
-				if ( *(uint8_t *) (GTA_KEYS + 0x1C) == 0xFF )			//accel
-				{
-					__asm push min
-				}
-				else if ( *(uint8_t *) (GTA_KEYS + 0x20) == 0xFF )		//brake
-				{
-					__asm push one
-				}
-				else
-				{
-					__asm push 0
-				}
-
-				if ( *(uint8_t *) (GTA_KEYS + 0x1) == 0xFF )			//left
-				{
-					__asm push min
-				}
-				else if ( *(uint8_t *) (GTA_KEYS + 0x0) == 0x80 )		//right
-				{
-					__asm push one
-				}
-				else
-				{
-					__asm push 0
-				}
-
-				if ( *(uint8_t *) (GTA_KEYS + 0x3) == 0xFF )			//steer forward
-				{
-					__asm push min
-				}
-				else if ( *(uint8_t *) (GTA_KEYS + 0x2) == 0x80 )		//steer down
-				{
-					__asm push one
-				}
-				else
-				{
-					__asm push 0
-				}
-
-				if ( *(uint8_t *) (GTA_KEYS + 0xE) == 0xFF )			//look left
-				{
-					__asm push one
-				}
-				else if ( *(uint8_t *) (GTA_KEYS + 0xA) == 0xFF )		//Look right
-				{
-					__asm push min
-				}
-				else
-				{
-					__asm push 0
-				}
+				__asm push 0
 			}
+
+			if ( *(uint8_t *) (GTA_KEYS + 0x1) == 0xFF )		//left
+			{
+				__asm push min
+			}
+			else if ( *(uint8_t *) (GTA_KEYS + 0x0) == 0x80 )	//right
+			{
+				__asm push one
+			}
+			else
+			{
+				__asm push 0
+			}
+
+			if ( *(uint8_t *) (GTA_KEYS + 0x3) == 0xFF )		//steer forward
+			{
+				__asm push min
+			}
+			else if ( *(uint8_t *) (GTA_KEYS + 0x2) == 0x80 )	//steer down
+			{
+				__asm push one
+			}
+			else
+			{
+				__asm push 0
+			}
+
+			if ( *(uint8_t *) (GTA_KEYS + 0xE) == 0xFF )		//look left
+			{
+				__asm push one
+			}
+			else if ( *(uint8_t *) (GTA_KEYS + 0xA) == 0xFF )	//Look right
+			{
+				__asm push min
+			}
+			else
+			{
+				__asm push 0
+			}
+			//   steering end    //
 
 			// 1 fast plane, 2 heli, 6 heli, 8 airbreak alike
 			if ( set.fly_heliMode )
@@ -1270,6 +1368,15 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 			if ( temp != vehicle_info )
 				vect3_copy( vehicle_info->spin, temp->spin );
 		}
+	}
+
+	// change airplane physics back to normal
+	else if ( class_id == VEHICLE_CLASS_AIRPLANE && needRestorePphys )
+	{
+		vehicle_info->pFlyData->pitch = plane_orig_data[0];
+		vehicle_info->pFlyData->roll_lr = plane_orig_data[1];
+		vehicle_info->pFlyData->circleAround = plane_orig_data[2];
+		needRestorePphys = false;
 	}
 }
 

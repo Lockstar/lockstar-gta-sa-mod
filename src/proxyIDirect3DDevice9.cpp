@@ -1831,8 +1831,9 @@ void renderPlayerInfoList ( void )
 		return;
 	}
 
-	int			max_amount_players = ( pPresentParam.BackBufferHeight ) / ( 1.0f + pD3DFont->DrawHeight() );
+	int max_amount_players = ( pPresentParam.BackBufferHeight ) / ( 1.0f + pD3DFont->DrawHeight() );
 	max_amount_players -= 2;
+
 	int			rendered_players = 0;
 	static int	current_player = 0;
 	static int	current_player_id = 0;
@@ -1845,7 +1846,7 @@ void renderPlayerInfoList ( void )
 			current_player += max_amount_players;
 			if ( current_player > (amount_players - max_amount_players) )
 				current_player = 1 + amount_players - max_amount_players;
-			current_player_id = getNthPlayerID(current_player);
+			current_player_id = getNthPlayerID( current_player );
 		}
 		else if ( KEY_PRESSED(VK_PRIOR) )
 		{
@@ -1856,13 +1857,13 @@ void renderPlayerInfoList ( void )
 				current_player_id = 0;
 			}
 			else
-				current_player_id = getNthPlayerID(current_player);
+				current_player_id = getNthPlayerID( current_player );
 		}
 	}
 	else
 	{
 		current_player = 0;
-		current_player_id = 0;	
+		current_player_id = 0;
 	}
 	/***/
 
@@ -1956,6 +1957,8 @@ void renderScoreList ()
 	if ( !set.d3dtext_score )
 		return;
 
+	memcpy_safe( (void *)(g_dwSAMP_Addr + 0x2D6B8), "\x74", 1 );
+
 	static int	patched = 0;
 	if ( cheat_state->_generic.cheat_panic_enabled && patched )
 	{
@@ -1977,9 +1980,10 @@ void renderScoreList ()
 	if ( !KEY_DOWN(VK_TAB) )
 		return;
 
-	//Close SAMP Scoreboard and SAMP Chat
+	//Close SAMP Scoreboard, SAMP Chat and Textdraws
 	*(char *)( (*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C ) = 0;
 	g_Chat->iChatWindowMode = 0;
+	memcpy_safe( (void *)(g_dwSAMP_Addr + 0x2D6B8), "\xEB", 1 );
 
 	uint32_t	samp_info = ( uint32_t ) g_SAMP;
 	uint32_t	func = g_dwSAMP_Addr + 0x6560;
@@ -1994,6 +1998,7 @@ void renderScoreList ()
 
 	int max_amount_players = ( pPresentParam.BackBufferHeight - 110.0f - lowest ) / ( 1.0f + pD3DFont->DrawHeight() );
 	max_amount_players -= 2;
+
 	int			rendered_players = 0;
 	static int	current_player = 0;
 	static int	current_player_id = 0;
@@ -2009,7 +2014,7 @@ void renderScoreList ()
 			lowest = pPresentParam.BackBufferHeight - loc[1] - ( (amount_players + 2) * (1.0f + pD3DFont->DrawHeight()) );
 		}
 		else
-			loc[1] += ( 1.0f + pD3DFont->DrawHeight() ) * ( (max_amount_players) - amount_players );
+			loc[1] += ( 1.0f + pD3DFont->DrawHeight() ) * ( (max_amount_players + 1) - amount_players );
 	}
 	else if ( amount_players > max_amount_players )
 	{
@@ -2018,7 +2023,7 @@ void renderScoreList ()
 			current_player += max_amount_players;
 			if ( current_player > (amount_players - max_amount_players) )
 				current_player = 1 + amount_players - max_amount_players;
-			current_player_id = getNthPlayerID(current_player);
+			current_player_id = getNthPlayerID( current_player );
 		}
 		else if ( KEY_PRESSED(VK_PRIOR) )
 		{
@@ -2029,7 +2034,7 @@ void renderScoreList ()
 				current_player_id = 0;
 			}
 			else
-				current_player_id = getNthPlayerID(current_player);
+				current_player_id = getNthPlayerID( current_player );
 		}
 	}
 	else
@@ -2603,8 +2608,22 @@ void renderVehiclePoolStructure ( int iVehicleIDToDebug )
 	sprintf( buf, "iIsListed(%d): %d", iVehicleIDToDebug, g_Vehicles->iIsListed[iVehicleIDToDebug] );
 	pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
 	( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+	if ( g_Vehicles->pSAMP_Vehicle[iVehicleIDToDebug] != NULL
+	 &&	 g_Vehicles->pSAMP_Vehicle[iVehicleIDToDebug]->pGTA_Vehicle != NULL )
+	{
+		CPed	*pPedSelf = pPools->GetPedFromRef( CPOOLS_PED_SELF_REF );
+		CVector *pos_self;
+		pos_self = pPedSelf->GetPosition();
+
+		float	self_pos[3] = { pos_self->fX, pos_self->fY, pos_self->fZ };
+		sprintf( buf, "Distance: %0.2f",
+				 vect3_dist(&g_Vehicles->pSAMP_Vehicle[iVehicleIDToDebug]->pGTA_Vehicle->base.matrix[4 * 3], self_pos) );
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+	}
 }
 #endif
+
 void renderPlayerInfo ( int iPlayerID )
 {
 	traceLastFunc( "renderPlayerInfo()" );
@@ -2622,7 +2641,7 @@ void renderPlayerInfo ( int iPlayerID )
 	if ( cheat_state->_generic.cheat_panic_enabled )
 		return;
 
-	D3DCOLOR	color;
+	D3DCOLOR	color = D3DCOLOR_ARGB( 0xFF, 0xFF, 0x00, 0x00 );
 	float		y = 0.0f;
 	( y ) += 300.0f;
 
@@ -2631,7 +2650,6 @@ void renderPlayerInfo ( int iPlayerID )
 	//Localplayer
 	if ( iPlayerID == -2 )
 	{
-		color = D3DCOLOR_ARGB( 0xFF, 0xFF, 0x00, 0x00 );
 		pD3DFontFixed->PrintShadow( 20.0f, y, color, "Local Player Info" );
 
 		color = D3DCOLOR_ARGB( 0xFF, 0x99, 0x99, 0x99 );
@@ -2670,14 +2688,16 @@ void renderPlayerInfo ( int iPlayerID )
 	}
 
 	//Remote Player
-	color = samp_color_get( iPlayerID );
-
 	sprintf( buf, "Infos on player %s(%d)", getPlayerName(iPlayerID), iPlayerID );
 	pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
 	( y ) += 1.0f + pD3DFontFixed->DrawHeight();
 
 	if ( g_Players->pRemotePlayer[iPlayerID] != NULL )
 	{
+		color = samp_color_get( iPlayerID );
+
+		float	position[3];
+
 		sprintf( buf, "Is NPC: %d", g_Players->pRemotePlayer[iPlayerID]->iIsNPC );
 		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
 		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
@@ -2724,6 +2744,10 @@ void renderPlayerInfo ( int iPlayerID )
 						 g_Players->pRemotePlayer[iPlayerID]->pSAMP_Vehicle->pGTA_Vehicle->base.matrix[4 * 3],
 						 g_Players->pRemotePlayer[iPlayerID]->pSAMP_Vehicle->pGTA_Vehicle->base.matrix[4 * 3 + 1],
 						 g_Players->pRemotePlayer[iPlayerID]->pSAMP_Vehicle->pGTA_Vehicle->base.matrix[4 * 3 + 2] );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, " Vehicle health: %d",
+						 (int)(g_Players->pRemotePlayer[iPlayerID]->pSAMP_Vehicle->pGTA_Vehicle->hitpoints / 10) );
 				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
 				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
 				if ( g_Players->pRemotePlayer[iPlayerID]->byteSeatID == 0 )
@@ -2846,6 +2870,12 @@ void renderSAMP ( void )
 		if ( isPornographyMasterControlRunning && set.screenshot_clean )
 		{
 			g_SAMP->fNameTagsDistance = 70.0f;
+
+			if ( g_Chat->iChatWindowMode == 0 && set.d3dtext_chat )
+				g_Chat->iChatWindowMode = 2;
+			if ( GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score )
+				* (char *)( (*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C ) = 1;
+
 			sampPatchDisableNameTags( 0 );
 
 			CPed	*pPedSelf = pPools->GetPedFromRef( CPOOLS_PED_SELF_REF );
