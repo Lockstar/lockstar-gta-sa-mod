@@ -25,7 +25,7 @@
 #define SAMP_DLL	"samp.dll"
 #define SAMP_CMP	"766A8B060FB6481451E8"
 
-// global same pointers
+// global samp pointers
 int								g_renderSAMP_initSAMPstructs;
 stSAMP							*g_SAMP;
 stPlayerPool					*g_Players;

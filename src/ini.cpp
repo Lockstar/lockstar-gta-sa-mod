@@ -547,10 +547,10 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.key_engine, "oem_1" );
 
 	/* auto aim */
-	if ( (ent = ini_register_entry("key_autoaim", TYPE_KEY)) != NULL )
-		ini_register_data( ent, &set.key_autoaim, "z" );
-	if ( (ent = ini_register_entry("use_gta_autoaim", TYPE_BOOL)) != NULL )
-		ini_register_data( ent, &set.use_gta_autoaim, "false" );
+	if ( (ent = ini_register_entry("key_autoaim_toggle", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_autoaim_toggle, "z" );
+	if ( (ent = ini_register_entry("key_autoaim_aim", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_autoaim_aim, "lbutton" );
 
 	/* map */
 	if ( (ent = ini_register_entry("key_map", TYPE_KEY)) != NULL )
@@ -762,8 +762,8 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.key_fly_vehicle, "oem_period" );
 	if ( (ent = ini_register_entry("fly_heliMode", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.fly_heliMode, "false" );
-	if ( (ent = ini_register_entry("fly_hydraMode", TYPE_BOOL)) != NULL )
-		ini_register_data( ent, &set.fly_multiMode, "true" );
+	if ( (ent = ini_register_entry("fly_multiMode", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.fly_multiMode, "false" );
 
 	if ( (ent = ini_register_entry("key_rejoin", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_rejoin, "b" );

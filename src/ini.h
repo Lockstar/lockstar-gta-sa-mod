@@ -82,8 +82,8 @@ struct settings
 	int						hp_indestructible;
 	int						hp_tire_support;
 
-	int						key_autoaim;
-	int						use_gta_autoaim;
+	int						key_autoaim_toggle;
+	int						key_autoaim_aim;
 
 	int						key_map;
 	int						key_map_show_vehicles;

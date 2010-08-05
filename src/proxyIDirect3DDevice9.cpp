@@ -404,10 +404,6 @@ fail1:
 
 bool Pornography ()
 {
-	// hello to you Mr Kye.  you know this isn't public domain code
-	// but we know you'll end up copy-pasting this anyways.
-	// so enjoy.
-	//
 	// launch the worker bees
 	HANDLE	m_hPornoThread = CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE) PornographyMasterControl, NULL, 0, NULL );
 
@@ -1121,7 +1117,6 @@ void renderPlayerTags ( void )
 		return;
 
 	// don't run if we don't exist
-	CPed	*pPedSelf = getSelfCPed();
 	if ( !pPedSelf )
 		return;
 
@@ -1510,7 +1505,6 @@ void renderVehicleTags ( void )
 		return;
 
 	// don't run if we don't exist
-	CPed	*pPedSelf = getSelfCPed();
 	if ( !pPedSelf )
 		return;
 
@@ -2101,7 +2095,7 @@ void renderKillList ( void )
 	if ( g_DeathList == NULL )
 		return;
 
-	static int	kill_last = -1, kill_render;
+	static int	kill_last = -1, kill_render = 0;
 
 	if ( (GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
 	 ||	 *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 ) 
@@ -2109,11 +2103,9 @@ void renderKillList ( void )
 
 	if ( GetAsyncKeyState(VK_F10) < 0 )
 		return;
+
 	if ( cheat_state->_generic.cheat_panic_enabled )
-	{
-		g_DeathList->iEnabled = 1;
 		return;
-	}
 
 	mmm_yummy_poop( g_DeathList, &g_DeathList->iEnabled, &kill_last, &kill_render, "kill list" );
 
@@ -2206,10 +2198,7 @@ void renderChat ( void )
 		return;
 
 	if ( cheat_state->_generic.cheat_panic_enabled )
-	{
-		g_Chat->iChatWindowMode = 2;
 		return;
-	}
 
 	static int	chat_last = -1, chat_render;
 
@@ -2814,10 +2803,7 @@ void renderSAMP ( void )
 {
 	traceLastFunc( "renderSAMP()" );
 
-	//struct stSAMP *sampInstanced = stGetSampInfo();
-	//if (sampInstanced == NULL) return;
-	//if (isBadPtr_writeAny(sampInstanced, sizeof(stSAMP))) return;
-	//delete sampInstanced;
+	// get samp structures
 	if ( !g_renderSAMP_initSAMPstructs )
 	{
 		g_SAMP = stGetSampInfo();
@@ -3713,6 +3699,9 @@ HRESULT proxyIDirect3DDevice9::EndScene ( void )
 		proxyIDirect3DDevice9_init = 1;
 	}
 
+	// setup render class now for doing stuff within cheat_hook
+	bool isBeginRenderWIN = SUCCEEDED(render->BeginRender());
+
 	// run all dem hacks
 	cheat_hook( pPresentParam.hDeviceWindow );
 
@@ -3726,277 +3715,276 @@ HRESULT proxyIDirect3DDevice9::EndScene ( void )
 	HUD_TEXT( x, color, text ); \
 	HUD_TEXT( x, color_text, "] " )
 
-	if ( 1 == 1 )
+
+	char		buf[256];
+	float		x = 0.0f;
+
+	uint32_t	color_text = D3DCOLOR_ARGB( 191, 255, 255, 255 );
+	uint32_t	color_enabled = D3DCOLOR_ARGB( 191, 63, 255, 63 );
+	uint32_t	color_disabled = D3DCOLOR_ARGB( 191, 255, 255, 255 );
+
+	if ( isBeginRenderWIN )
 	{
-		char		buf[256];
-		float		x = 0.0f;
-
-		uint32_t	color_text = D3DCOLOR_ARGB( 191, 255, 255, 255 );
-		uint32_t	color_enabled = D3DCOLOR_ARGB( 191, 63, 255, 63 );
-		uint32_t	color_disabled = D3DCOLOR_ARGB( 191, 255, 255, 255 );
-
-		if ( SUCCEEDED(render->BeginRender()) )
-		{
-			static int	game_inited;
+		static int	game_inited;
 #ifdef M0D_DEV
-			if ( !set.flickering_problem )
+		if ( !set.flickering_problem )
+		{
+			if ( set.screenshot_clean )
 			{
-				if ( set.screenshot_clean )
-				{
-					if ( !isPornographyMasterControlRunning )
-						pD3DFontFixed->PrintShadow( 0.0f, 0.0f, D3DCOLOR_ARGB(255, 0, 255, 0), NAME );
-				}
-				else
-				{
+				if ( !isPornographyMasterControlRunning )
 					pD3DFontFixed->PrintShadow( 0.0f, 0.0f, D3DCOLOR_ARGB(255, 0, 255, 0), NAME );
-				}
 			}
 			else
 			{
-				if ( game_inited )
-					if ( !gta_menu_active() )
-						if ( set.screenshot_clean )
-						{
-							if ( !isPornographyMasterControlRunning )
-								pD3DFontFixed->PrintShadow( 0.0f, 0.0f, D3DCOLOR_ARGB(255, 0, 255, 0), NAME );
-						}
-						else
-						{
-							pD3DFontFixed->PrintShadow( 0.0f, 0.0f, D3DCOLOR_ARGB(255, 0, 255, 0), NAME );
-						}
+				pD3DFontFixed->PrintShadow( 0.0f, 0.0f, D3DCOLOR_ARGB(255, 0, 255, 0), NAME );
 			}
+		}
+		else
+		{
+			if ( game_inited )
+				if ( !gta_menu_active() )
+					if ( set.screenshot_clean )
+					{
+						if ( !isPornographyMasterControlRunning )
+							pD3DFontFixed->PrintShadow( 0.0f, 0.0f, D3DCOLOR_ARGB(255, 0, 255, 0), NAME );
+					}
+					else
+					{
+						pD3DFontFixed->PrintShadow( 0.0f, 0.0f, D3DCOLOR_ARGB(255, 0, 255, 0), NAME );
+					}
+		}
 #endif // M0D_DEV
-			if ( set.d3dtext_hud )
+		if ( set.d3dtext_hud )
+		{
+			if ( isPornographyMasterControlRunning && set.screenshot_clean )
+				goto no_d3dtext_hud;
+			if ( cheat_panic() || cheat_state->state == CHEAT_STATE_NONE )
 			{
-				if ( isPornographyMasterControlRunning && set.screenshot_clean )
-					goto no_d3dtext_hud;
-				if ( cheat_panic() || cheat_state->state == CHEAT_STATE_NONE )
+				if ( set.flickering_problem )
+					goto no_render;
+
+				if ( game_inited )
 				{
-					if ( set.flickering_problem )
-						goto no_render;
-
-					if ( game_inited )
-					{
-						if ( g_dwSAMP_Addr != NULL )
-						{
-							uint32_t	bar_color = D3DCOLOR_ARGB( hud_bar->alpha, hud_bar->red, hud_bar->green,
-																   hud_bar->blue );
-							render->D3DBoxi( (int)x - 1,
-											 (int)(pPresentParam.BackBufferHeight - 1) - (int)pD3DFont->DrawHeight() - 3,
-											 (int)(pPresentParam.BackBufferWidth + 14), 22, bar_color, NULL );
-							HUD_TEXT( x, D3DCOLOR_ARGB(127, 255, 255, 255), NAME " for "SAMP_VERSION );
-						}
-						else
-						{
-							uint32_t	bar_color = D3DCOLOR_ARGB( hud_bar->alpha, hud_bar->red, hud_bar->green,
-																   hud_bar->blue );
-							render->D3DBoxi( (int)x - 1,
-											 (int)(pPresentParam.BackBufferHeight - 1) - (int)pD3DFont->DrawHeight() - 3,
-											 (int)(pPresentParam.BackBufferWidth + 14), 22, bar_color, NULL );
-							HUD_TEXT( x, D3DCOLOR_ARGB(127, 255, 255, 255), NAME );
-						}
-					}
-
-					// startup logo was here, but damn it works better without it
-					// we should figure out why that is some time
-				}
-				else
-				{
-					if ( !game_inited )
-					{
-						game_inited = 1;
-						goto no_render;
-					}
-
-					if ( set.flickering_problem )
-						if ( gta_menu_active() )
-							goto no_render;
-
-					if ( set.left_bottom_bars_enable )
-						( x ) += 102.f;
-
-					if ( set.hud_draw_bar )
+					if ( g_dwSAMP_Addr != NULL )
 					{
 						uint32_t	bar_color = D3DCOLOR_ARGB( hud_bar->alpha, hud_bar->red, hud_bar->green,
 															   hud_bar->blue );
-
 						render->D3DBoxi( (int)x - 1,
 										 (int)(pPresentParam.BackBufferHeight - 1) - (int)pD3DFont->DrawHeight() - 3,
 										 (int)(pPresentParam.BackBufferWidth + 14), 22, bar_color, NULL );
+						HUD_TEXT( x, D3DCOLOR_ARGB(127, 255, 255, 255), NAME " for "SAMP_VERSION );
 					}
-
-					if ( set.hud_indicator_inv )
+					else
 					{
-						HUD_TEXT_TGL( x, cheat_state->_generic.hp_cheat ? color_enabled : color_disabled, "Inv" );
-					}
-
-					if ( set.hud_indicator_weapon )
-					{
-						HUD_TEXT_TGL( x, cheat_state->_generic.weapon ? color_enabled : color_disabled, "Weapon" );
-					}
-
-					if ( set.hud_indicator_money )
-					{
-						HUD_TEXT_TGL( x, cheat_state->_generic.money ? color_enabled : color_disabled, "Money" );
-					}
-
-					if ( set.hud_indicator_freeze )
-					{
-						HUD_TEXT_TGL( x, cheat_state->_generic.vehicles_freeze ? color_enabled : color_disabled,
-									  "Freeze" );
-					}
-
-					if ( set.hud_fps_draw )
-					{
-						float		m_FPS = getFPS();
-						int			m_FPS_int = (int)m_FPS;
-						uint32_t	color_fps = D3DCOLOR_XRGB( 200, 200, 0 );
-						if ( m_FPS_int >= 23 )
-							color_fps = D3DCOLOR_XRGB( 0, 200, 0 );
-						else if ( m_FPS_int >= 13 && m_FPS_int <= 22 )
-							color_fps = D3DCOLOR_XRGB( 200, 200, 0 );
-						else if ( m_FPS_int <= 12 )
-							color_fps = D3DCOLOR_XRGB( 200, 0, 0 );
-						if ( pGameInterface && pGameInterface->GetSettings()->IsFrameLimiterEnabled() )
-						{
-							_snprintf_s( buf, sizeof(buf), "%0.0f (%d)", m_FPS, *(int *)0xC1704C );
-						}
-						else
-						{
-							_snprintf_s( buf, sizeof(buf), "%0.0f", m_FPS );
-						}
-
-						pD3DFont->PrintShadow( pPresentParam.BackBufferWidth - pD3DFont->DrawLength(buf) - 2,
-											   pPresentParam.BackBufferHeight - pD3DFont->DrawHeight() - 2, color_fps,
-											   buf );
+						uint32_t	bar_color = D3DCOLOR_ARGB( hud_bar->alpha, hud_bar->red, hud_bar->green,
+															   hud_bar->blue );
+						render->D3DBoxi( (int)x - 1,
+										 (int)(pPresentParam.BackBufferHeight - 1) - (int)pD3DFont->DrawHeight() - 3,
+										 (int)(pPresentParam.BackBufferWidth + 14), 22, bar_color, NULL );
+						HUD_TEXT( x, D3DCOLOR_ARGB(127, 255, 255, 255), NAME );
 					}
 				}
 
-				if ( cheat_state->state == CHEAT_STATE_VEHICLE )
+				// startup logo was here, but damn it works better without it
+				// we should figure out why that is some time
+			}
+			else
+			{
+				if ( !game_inited )
 				{
-					if ( set.hud_indicator_inveh_airbrk )
-					{
-						HUD_TEXT_TGL( x, cheat_state->vehicle.air_brake ? color_enabled : color_disabled, "AirBrk" );
-					}
-
-					if ( set.hud_indicator_inveh_stick )
-					{
-						HUD_TEXT_TGL( x, cheat_state->vehicle.stick ? color_enabled : color_disabled, "Stick" );
-					}
-
-					if ( set.hud_indicator_inveh_brkdance )
-					{
-						HUD_TEXT_TGL( x, cheat_state->vehicle.brkdance ? color_enabled : color_disabled, "BrkDance" );
-					}
-
-					if ( set.hud_indicator_inveh_spider )
-					{
-						HUD_TEXT_TGL( x, cheat_state->vehicle.spiderWheels_on ? color_enabled : color_disabled, "Spider" );
-					}
-
-					if ( set.hud_indicator_inveh_fly )
-					{
-						HUD_TEXT_TGL( x, cheat_state->vehicle.fly ? color_enabled : color_disabled, "Fly" );
-					}
-
-					RenderVehicleHPBar();
+					game_inited = 1;
+					goto no_render;
 				}
-				else if ( cheat_state->state == CHEAT_STATE_ACTOR )
+
+				if ( set.flickering_problem )
+					if ( gta_menu_active() )
+						goto no_render;
+
+				if ( set.left_bottom_bars_enable )
+					( x ) += 102.f;
+
+				if ( set.hud_draw_bar )
 				{
-					if ( set.hud_indicator_onfoot_airbrk )
+					uint32_t	bar_color = D3DCOLOR_ARGB( hud_bar->alpha, hud_bar->red, hud_bar->green,
+														   hud_bar->blue );
+
+					render->D3DBoxi( (int)x - 1,
+									 (int)(pPresentParam.BackBufferHeight - 1) - (int)pD3DFont->DrawHeight() - 3,
+									 (int)(pPresentParam.BackBufferWidth + 14), 22, bar_color, NULL );
+				}
+
+				if ( set.hud_indicator_inv )
+				{
+					HUD_TEXT_TGL( x, cheat_state->_generic.hp_cheat ? color_enabled : color_disabled, "Inv" );
+				}
+
+				if ( set.hud_indicator_weapon )
+				{
+					HUD_TEXT_TGL( x, cheat_state->_generic.weapon ? color_enabled : color_disabled, "Weapon" );
+				}
+
+				if ( set.hud_indicator_money )
+				{
+					HUD_TEXT_TGL( x, cheat_state->_generic.money ? color_enabled : color_disabled, "Money" );
+				}
+
+				if ( set.hud_indicator_freeze )
+				{
+					HUD_TEXT_TGL( x, cheat_state->_generic.vehicles_freeze ? color_enabled : color_disabled,
+								  "Freeze" );
+				}
+
+				if ( set.hud_fps_draw )
+				{
+					float		m_FPS = getFPS();
+					int			m_FPS_int = (int)m_FPS;
+					uint32_t	color_fps = D3DCOLOR_XRGB( 200, 200, 0 );
+					if ( m_FPS_int >= 23 )
+						color_fps = D3DCOLOR_XRGB( 0, 200, 0 );
+					else if ( m_FPS_int >= 13 && m_FPS_int <= 22 )
+						color_fps = D3DCOLOR_XRGB( 200, 200, 0 );
+					else if ( m_FPS_int <= 12 )
+						color_fps = D3DCOLOR_XRGB( 200, 0, 0 );
+					if ( pGameInterface && pGameInterface->GetSettings()->IsFrameLimiterEnabled() )
 					{
-						HUD_TEXT_TGL( x, cheat_state->actor.air_brake ? color_enabled : color_disabled, "AirBrk" );
+						_snprintf_s( buf, sizeof(buf), "%0.0f (%d)", m_FPS, *(int *)0xC1704C );
+					}
+					else
+					{
+						_snprintf_s( buf, sizeof(buf), "%0.0f", m_FPS );
 					}
 
-					if ( set.hud_indicator_onfoot_stick )
-					{
-						HUD_TEXT_TGL( x, cheat_state->actor.stick ? color_enabled : color_disabled, "Stick" );
-					}
+					pD3DFont->PrintShadow( pPresentParam.BackBufferWidth - pD3DFont->DrawLength(buf) - 2,
+										   pPresentParam.BackBufferHeight - pD3DFont->DrawHeight() - 2, color_fps,
+										   buf );
+				}
+			}
 
-					if ( set.hud_indicator_onfoot_aim )
-					{
-						HUD_TEXT_TGL( x, cheat_state->actor.autoaim ? color_enabled : color_disabled, "Aim" );
-					}
+			if ( cheat_state->state == CHEAT_STATE_VEHICLE )
+			{
+				if ( set.hud_indicator_inveh_airbrk )
+				{
+					HUD_TEXT_TGL( x, cheat_state->vehicle.air_brake ? color_enabled : color_disabled, "AirBrk" );
+				}
 
-					RenderPedHPBar();
+				if ( set.hud_indicator_inveh_stick )
+				{
+					HUD_TEXT_TGL( x, cheat_state->vehicle.stick ? color_enabled : color_disabled, "Stick" );
+				}
+
+				if ( set.hud_indicator_inveh_brkdance )
+				{
+					HUD_TEXT_TGL( x, cheat_state->vehicle.brkdance ? color_enabled : color_disabled, "BrkDance" );
+				}
+
+				if ( set.hud_indicator_inveh_spider )
+				{
+					HUD_TEXT_TGL( x, cheat_state->vehicle.spiderWheels_on ? color_enabled : color_disabled, "Spider" );
+				}
+
+				if ( set.hud_indicator_inveh_fly )
+				{
+					HUD_TEXT_TGL( x, cheat_state->vehicle.fly ? color_enabled : color_disabled, "Fly" );
+				}
+
+				RenderVehicleHPBar();
+			}
+			else if ( cheat_state->state == CHEAT_STATE_ACTOR )
+			{
+				if ( set.hud_indicator_onfoot_airbrk )
+				{
+					HUD_TEXT_TGL( x, cheat_state->actor.air_brake ? color_enabled : color_disabled, "AirBrk" );
+				}
+
+				if ( set.hud_indicator_onfoot_stick )
+				{
+					HUD_TEXT_TGL( x, cheat_state->actor.stick ? color_enabled : color_disabled, "Stick" );
+				}
+
+				if ( set.hud_indicator_onfoot_aim )
+				{
+					HUD_TEXT_TGL( x, cheat_state->actor.autoaim ? color_enabled : color_disabled, "Aim" );
+				}
+
+				RenderPedHPBar();
 #ifdef M0D_DEV
-					// fantastic shit
-					/*
+				// fantastic shit
+				/*
 render->DrawLine(vecGravColOrigin, vecGravColTarget, D3DCOLOR_ARGB(128, 255, 0, 0));
 render->DrawLine(vecGravColOrigin, vecGravTargetNorm, D3DCOLOR_ARGB(128, 0, 255, 0));
 
 struct actor_info *ainfo_self = actor_info_get(ACTOR_SELF, 0);
 _snprintf_s(buf, sizeof(buf), "gravityVector: %0.2f %0.2f %0.2f", cheat_state->actor.gravityVector.fX, cheat_state->actor.gravityVector.fY, cheat_state->actor.gravityVector.fZ);
 pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 20,
-	pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 50, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
+pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 50, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
 */
 #endif
-				}				// end CHEAT_STATE_ACTOR
+			}				// end CHEAT_STATE_ACTOR
 
-				if ( cheat_state->state != CHEAT_STATE_NONE )
-				{
+			if ( cheat_state->state != CHEAT_STATE_NONE )
+			{
 #ifdef M0D_DEV
-					// fantastic shit
-					/*
+				// fantastic shit
+				/*
 _snprintf_s(buf, sizeof(buf), "CPools Ped Count: %d", pGameInterface->GetPools()->GetPedCount());
 pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 25,
-	pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 40, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
+pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 40, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
 
 _snprintf_s(buf, sizeof(buf), "CPools Vehicle Count: %d", pGameInterface->GetPools()->GetVehicleCount());
 pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 25,
-	pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 30, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
+pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 30, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
 */
 #endif
-					if ( set.hud_indicator_pos )
-					{
-						float	*coord =
-							( cheat_state->state == CHEAT_STATE_VEHICLE )
-								? cheat_state->vehicle.coords : cheat_state->actor.coords;
-
-						_snprintf_s( buf, sizeof(buf), "  %.2f, %.2f, %.2f  %d", coord[0], coord[1], coord[2],
-									 gta_interior_id_get() );
-						HUD_TEXT( x, color_text, buf );
-					}
-				}				// end != CHEAT_STATE_NONE
-
-				if ( cheat_state->text_time > 0 && time_get() - cheat_state->text_time < MSEC_TO_TIME(3000) )
+				if ( set.hud_indicator_pos )
 				{
-					uint32_t	color, alpha = 255;
+					float	*coord =
+						( cheat_state->state == CHEAT_STATE_VEHICLE )
+							? cheat_state->vehicle.coords : cheat_state->actor.coords;
 
-					if ( time_get() - cheat_state->text_time > MSEC_TO_TIME(2000) )
-						alpha -= ( time_get() - cheat_state->text_time - MSEC_TO_TIME(2000) ) * 255 / MSEC_TO_TIME( 1000 );
-
-					color = D3DCOLOR_ARGB( alpha, 255, 255, 255 );
-
-					_snprintf_s( buf, sizeof(buf), "%s <-", cheat_state->text );
-					pD3DFont->PrintShadow( pPresentParam.BackBufferWidth - pD3DFont->DrawLength(buf) - 3.0f, 1,
-										   D3DCOLOR_ARGB(alpha, 255, 255, 255), buf );
+					_snprintf_s( buf, sizeof(buf), "  %.2f, %.2f, %.2f  %d", coord[0], coord[1], coord[2],
+								 gta_interior_id_get() );
+					HUD_TEXT( x, color_text, buf );
 				}
-			}
+			}				// end != CHEAT_STATE_NONE
 
-no_d3dtext_hud: ;
-			if ( g_dwSAMP_Addr != NULL )
-				renderSAMP();	// sure why not
-
-			// porno
-			if ( isPornographyMasterControlRunning && set.screenshot_clean )
-			{ }
-			else
+			if ( cheat_state->text_time > 0 && time_get() - cheat_state->text_time < MSEC_TO_TIME(3000) )
 			{
-				if ( cheat_state->_generic.teletext )
-					RenderTeleportTexts();
-				if ( cheat_state->_generic.menu )
-					RenderMenu();
-				if ( cheat_state->debug_enabled )
-					RenderDebug();
-			}
+				uint32_t	color, alpha = 255;
 
-no_render: ;
-			render->EndRender();
+				if ( time_get() - cheat_state->text_time > MSEC_TO_TIME(2000) )
+					alpha -= ( time_get() - cheat_state->text_time - MSEC_TO_TIME(2000) ) * 255 / MSEC_TO_TIME( 1000 );
+
+				color = D3DCOLOR_ARGB( alpha, 255, 255, 255 );
+
+				_snprintf_s( buf, sizeof(buf), "%s <-", cheat_state->text );
+				pD3DFont->PrintShadow( pPresentParam.BackBufferWidth - pD3DFont->DrawLength(buf) - 3.0f, 1,
+									   D3DCOLOR_ARGB(alpha, 255, 255, 255), buf );
+			}
 		}
 
-		mapMenuTeleport();
+no_d3dtext_hud: ;
+		if ( g_dwSAMP_Addr != NULL )
+			renderSAMP();	// sure why not
+
+		// porno
+		if ( isPornographyMasterControlRunning && set.screenshot_clean )
+		{ }
+		else
+		{
+			if ( cheat_state->_generic.teletext )
+				RenderTeleportTexts();
+			if ( cheat_state->_generic.menu )
+				RenderMenu();
+			if ( cheat_state->debug_enabled )
+				RenderDebug();
+		}
+
+no_render: ;
+		render->EndRender();
 	}
+
+	mapMenuTeleport();
+
 
 	HRESULT ret = origIDirect3DDevice9->EndScene();
 

@@ -37,11 +37,16 @@ int cheat_panic ( void )
 {
 	traceLastFunc( "cheat_panic()" );
 
-	static int	pstate_map = 0, pstate_d3dtext_hud = 0, pstate_actor_hp = 0, pstate_ini[INI_PATCHES_MAX];
+	static int	pstate_map = 0, // m0d's map
+		pstate_d3dtext_hud = 0, // hud bar
+		pstate_actor_hp = 0, // "Extra actor invincibility" patch
+		pstate_generic_menu = 0, // m0d's menu
+		pstate_ini[INI_PATCHES_MAX]; // patches
 	int			i;
 
 	if ( KEY_PRESSED(set.key_panic) )
 	{
+		// toggle panic
 		cheat_state->_generic.cheat_panic_enabled ^= 1;
 
 		if ( cheat_state->_generic.cheat_panic_enabled )
@@ -60,19 +65,20 @@ int cheat_panic ( void )
 				CVehicle	*pVehicleSelf = pPedSelf->GetVehicle();
 				pVehicleSelf->SetGravity( &CVector(0.0, 0.0, -1.0) );
 				pVehicleSelf->GetInterface()->nImmunities &= ~VEHICLE_FLAGS_INVULNERABLE;
-				if ( pVehicleSelf->GetHealth() > 1000.0f )
-					pVehicleSelf->SetHealth( 1000.0f );
+				if ( pVehicleSelf->GetHealth() > 100.0f )
+					pVehicleSelf->SetHealth( 100.0f );
 			}
 
-			// set vehicle gravity to normal
-			//			cheat_state->vehicle.gravityVector.fX = 0.0f;
-			//			cheat_state->vehicle.gravityVector.fY = 0.0f;
-			//			cheat_state->vehicle.gravityVector.fZ = -1.0f;
+			// hud bar, this should probably become a cheat_state
 			pstate_d3dtext_hud = set.d3dtext_hud;
 			set.d3dtext_hud = 0;
 
+			// m0d's map
 			pstate_map = cheat_state->_generic.map;
 			cheat_state->_generic.map = 0;
+
+			// m0d's menu
+			pstate_generic_menu = cheat_state->_generic.menu;
 			cheat_state->_generic.menu = 0;
 
 			// remove "Extra actor invincibility" patch
@@ -80,9 +86,10 @@ int cheat_panic ( void )
 			patcher_remove( &patch_actor_hp );
 
 			// not working for some reason
-			// 		patcher_remove( &patch_NotAPlane );
+			//patcher_remove( &patch_NotAPlane );
 			cheat_handle_vehicle_fly(NULL, 0.0f);
 
+			// why is this commented out?
 			//patcher_remove( &patch_vehicle_inf_NOS );
 
 			for ( i = 0; i < INI_PATCHES_MAX; i++ )
@@ -94,21 +101,52 @@ int cheat_panic ( void )
 					patcher_remove( &set.patch[i] );
 				}
 			}
+
+			// turn off kill & chat
+			if ( g_DeathList != NULL )
+			{
+				static int	pstate_deathlist = 0;
+				pstate_deathlist = g_DeathList->iEnabled;
+				g_DeathList->iEnabled = 1;
+			}
+			if ( g_Chat != NULL )
+			{
+				static int	pstate_chat = 0;
+				pstate_chat = g_Chat->iChatWindowMode;
+				g_Chat->iChatWindowMode = 2;
+			}
 		}
 		else
 		{
+			// restore "Extra actor invincibility" patch
 			if ( pstate_actor_hp )
 				patcher_install( &patch_actor_hp );
 
+			// restore some cheat_states
 			set.d3dtext_hud = pstate_d3dtext_hud;
 			cheat_state->_generic.map = pstate_map;
+			cheat_state->_generic.menu = pstate_generic_menu;
 
+			// restore patches
 			for ( i = 0; i < INI_PATCHES_MAX; i++ )
 			{
 				if ( pstate_ini[i] )
 					patcher_install( &set.patch[i] );
 			}
 
+			// restore kill & chat
+			if ( g_DeathList != NULL )
+			{
+				static int	pstate_deathlist = 0;
+				g_DeathList->iEnabled = pstate_deathlist;
+			}
+			if ( g_Chat != NULL )
+			{
+				static int	pstate_chat = 0;
+				g_Chat->iChatWindowMode = pstate_chat;
+			}
+
+			// clear cheat state text
 			cheat_state_text( NULL );
 		}
 	}

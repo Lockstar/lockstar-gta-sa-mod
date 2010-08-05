@@ -212,6 +212,7 @@ extern CCameraSA				g_CCamera;
 // new MTA externals
 extern CGameSA					*pGameInterface;
 extern CPools					*pPools;
+extern CPed						*pPedSelf;
 
 // externals
 #endif

@@ -450,7 +450,7 @@ extern const struct vehicle_entry	vehicle_list[VEHICLE_LIST_SIZE];
 extern const struct interiors		interiors_list[];
 
 // new functions making use of MTA/R* classes
-CPed								*getSelfCPed ( void );
 CVehicle							*getSelfCVehicle ( void );
 int									getVehicleGTAIDFromInterface ( DWORD *vehicle );
 int									getPedGTAIDFromInterface ( DWORD *ped );
+D3DXVECTOR3							CVecToD3DXVEC (CVector vec);

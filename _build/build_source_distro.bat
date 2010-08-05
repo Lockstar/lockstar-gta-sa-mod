@@ -16,7 +16,6 @@ SET m_SrcRelPath=%m_BaseRelPath%\src
 SET m_BinRelPath=%m_BaseRelPath%\bin
 SET m_BuildRelPath=%m_BaseRelPath%\_build
 SET m_OutputRelPath=%m_BaseRelPath%\_distro_source
-SET m_UtilityRelPath=utilities
 
 :: clean the house first
 IF EXIST "%m_TempRelPath%\" rmdir /S /Q "%m_TempRelPath%\"

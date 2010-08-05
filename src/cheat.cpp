@@ -38,7 +38,7 @@ struct pool					*pool_vehicle;
 static struct cheat_state	__cheat_state;
 struct cheat_state			*cheat_state = NULL;
 
-static void cheat_main_actor ( float time_diff )
+static void cheat_main_actor ( double time_diff )
 {
 	traceLastFunc( "cheat_main_actor()" );
 
@@ -293,8 +293,8 @@ void cheat_hook ( HWND wnd )
 			pGameInterface->StartGame();
 
 			// we have to add ourself to the pool first so that we are always the 1st ref
-			// use CPOOLS_PED_SELF_REF to GetPedFromRef
-			pGameInterface->GetPools()->AddPed( (DWORD *)actor_info );
+			// NEW --> use the global external: pPedSelf
+			pPedSelf = pGameInterface->GetPools()->AddPed( (DWORD *)actor_info );
 
 			// install all startup hooks
 			cheat_hookers_installhooks();
@@ -315,24 +315,25 @@ void cheat_hook ( HWND wnd )
 		}
 	}
 
-	static bool chat_once = false;
-	if ( set.d3dtext_chat && !chat_once )
+	static bool chat_set_once = false;
+	if ( !chat_set_once && set.d3dtext_chat )
 	{
 		if ( g_Chat != NULL && g_Chat->iChatWindowMode )
 		{
 			//Log("Disabling SA:MP chat text.");
 			g_Chat->iChatWindowMode = 0;
-			chat_once = true;
+			chat_set_once = true;
 		}
 	}
 
-	if ( set.d3dtext_kill )
+	// sets kill text to s0beit mode if enabled from INI
+	static bool kill_set_once = false;
+	if ( !kill_set_once && set.d3dtext_kill )
 	{
 		if ( g_DeathList != NULL && g_DeathList->iEnabled )
 		{
-			//Log("Disabling SA:MP kill list.");
 			g_DeathList->iEnabled = 0;
-			set.d3dtext_kill = 0;
+			kill_set_once = true;
 		}
 	}
 

@@ -17,6 +17,9 @@ COMMITTING:
 
 
 TEST:
+<Kimia> if you hold tab then hold F5, then release tab, then release
+	F5 then your chat windows font will change(of course i had d3d
+	score enabled)
 
 
 TODO:

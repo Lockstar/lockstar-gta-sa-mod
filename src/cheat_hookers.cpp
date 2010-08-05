@@ -32,7 +32,7 @@ DWORD	RETURN_CPhysical_ApplyGravity = 0x543093;
 
 void CPhysical_ApplyGravity ( DWORD dwThis )
 {
-	traceLastFunc( "CPhysical_ApplyGravity()" );
+	traceLastFunc( "CPhysical_ApplyGravity(): start" );
 
 	// dwThis should be coming from HOOK_CPhysical_ApplyGravity
 	DWORD	dwType;
@@ -43,6 +43,8 @@ void CPhysical_ApplyGravity ( DWORD dwThis )
 		call eax
 		mov dwType, eax
 	}
+
+	traceLastFunc( "CPhysical_ApplyGravity(): after CEntity::GetType" );
 
 	float	fTimeStep = *(float *)0xB7CB5C;
 	float	fGravity = *(float *)0x863984;
@@ -55,15 +57,16 @@ void CPhysical_ApplyGravity ( DWORD dwThis )
 		{
 			// apply regular downward gravity
 			*(float *)( dwThis + 0x4C ) -= fTimeStep * fGravity;
+			traceLastFunc( "CPhysical_ApplyGravity(): returning after non-pool vehicle" );
 			return;
 		}
 
-		CPed	*pPedSelf = getSelfCPed();
 		if ( pVehicle->GetDriver() == pPedSelf || pVehicle->IsPassenger(pPedSelf) )
 		{
 			// we're in the vehicle
 			if ( !cheat_state->vehicle.air_brake )
 			{
+				traceLastFunc( "CPhysical_ApplyGravity(): setting vehicle grav" );
 				// use our gravity vector
 				CVector vecGravity, vecMoveSpeed;
 				pVehicle->GetGravity( &vecGravity );
@@ -77,6 +80,7 @@ void CPhysical_ApplyGravity ( DWORD dwThis )
 			if ( pVehicle->GetTowedByVehicle()->GetDriver() == pPedSelf
 			 ||	 pVehicle->GetTowedByVehicle()->IsPassenger(pPedSelf) )
 			{
+				traceLastFunc( "CPhysical_ApplyGravity(): setting trailer grav" );
 				// It's our trailer, use our gravity vector
 				CVector vecGravity, vecMoveSpeed;
 				pVehicle->GetGravity( &vecGravity );
@@ -100,7 +104,6 @@ void CPhysical_ApplyGravity ( DWORD dwThis )
 	{
 		// It's a ped
 		CPed	*pPed = pPools->GetPed( (DWORD *)dwThis );
-		CPed	*pPedSelf = getSelfCPed();
 
 		if ( pPed == pPedSelf )
 		{
@@ -133,6 +136,7 @@ void CPhysical_ApplyGravity ( DWORD dwThis )
 		// apply regular downward gravity (+0x4C == m_vecMoveSpeed.fZ)
 		*(float *)( dwThis + 0x4C ) -= fTimeStep * fGravity;
 	}
+	traceLastFunc( "CPhysical_ApplyGravity(): end" );
 }
 
 uint8_t _declspec ( naked ) HOOK_CPhysical_ApplyGravity ( void )
@@ -553,6 +557,11 @@ void _cdecl CPed_constructor_hook ( CPedSAInterface *ped )
 {
 	// create & add new CPed to CPools
 	pPools->AddPed( (DWORD *)ped );
+	
+	// use this if the player ped ever becomes deleted, this will reset the pointer
+	// this only works if there's no other peds since the pool will resize automatically
+	//if ( pPools->GetPedRef( pPools->AddPed( (DWORD *)ped ) ) == CPOOLS_PED_SELF_REF )
+	//	pPedSelf = pPools->GetPedFromRef( CPOOLS_PED_SELF_REF );
 }
 
 #define HOOKPOS_CPed_constructor	0x5E8606

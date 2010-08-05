@@ -39,6 +39,7 @@ RsGlobalType			*g_RsGlobal = (RsGlobalType *)0xC17040;
 // new MTA main global variables
 CGameSA					*pGameInterface = NULL;
 CPools					*pPools = NULL;
+CPed					*pPedSelf = NULL;
 
 void traceLastFunc ( const char *szFunc )
 {

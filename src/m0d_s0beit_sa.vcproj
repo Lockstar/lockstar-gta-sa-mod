@@ -48,7 +48,6 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
 				AdditionalIncludeDirectories=".\;sparsehash\windows;sparsehash;game_sa"
 				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32;NDEBUG;_WINDOWS;_USRDLL;M0D_S0BEIT_SA_PROXY_EXPORTS"
@@ -59,9 +58,6 @@
 				UsePrecompiledHeader="1"
 				PrecompiledHeaderThrough="main.h"
 				WarningLevel="3"
-				WarnAsError="false"
-				Detect64BitPortabilityProblems="false"
-				DebugInformationFormat="0"
 				DisableSpecificWarnings="4995;4244;4996;4482;4409;4250;"
 			/>
 			<Tool
