@@ -1,0 +1,9 @@
+relre:.*[.]ncb
+relre:.*[.]user
+relre:.*[.]suo
+relre:d3d9[.]dll
+relre:_build[/]revision.txt
+relre:src/obj/.*
+relre:_DEV_installers/.*
+relre:_distro_installers/.*
+relre:_distro_source/.*
