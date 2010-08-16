@@ -770,25 +770,18 @@ bool CD3DRender::DrawLine ( const D3DXVECTOR3 &a, const D3DXVECTOR3 &b, DWORD dw
 	}
 
 	m_pD3Ddev->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_SELECTARG2 );
-
-	//m_pD3Ddev->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
 	m_pD3Ddev->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG2 );
+	//m_pD3Ddev->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
+	//m_pD3Ddev->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE );
 
-	//m_pD3Ddev->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
-	//m_pD3Ddev->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
-	//m_pD3Ddev->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
-	//m_pDevice->SetRenderState ( D3DRS_ZENABLE, false );
-	//m_pDevice->SetRenderState ( D3DRS_LIGHTING, false );
+	m_pD3Ddev->SetRenderState( D3DRS_CLIPPING, false );
+	m_pD3Ddev->SetRenderState ( D3DRS_ZENABLE, false );
+	//m_pD3Ddev->SetRenderState ( D3DRS_LIGHTING, false );
 	D3DLVERTEX	lineList[2];
-
-	// store FVF to restore original at the end of this function
-	DWORD		fvf;
-	m_pD3Ddev->GetFVF( &fvf );
-	m_pD3Ddev->SetFVF( D3DFVF_LVERTEX );
 
 	//////////////////////////////////////////////////
 	// Lock the vertex buffer and copy in the verts.
-	m_pD3Dbuf->Lock( 0, 0, (void **) &lineList, 0 );
+	m_pD3Dbuf->Lock( 0, 0, (void **) &lineList, D3DLOCK_DISCARD | D3DLOCK_NOSYSLOCK ); // flogs: D3DLOCK_NOSYSLOCK, D3DLOCK_DISCARD
 	{
 		lineList[0].x = a.x;
 		lineList[0].y = a.y;
@@ -805,6 +798,12 @@ bool CD3DRender::DrawLine ( const D3DXVECTOR3 &a, const D3DXVECTOR3 &b, DWORD dw
 
 	m_pD3Dbuf->Unlock();
 
+	// store FVF to restore original at the end of this function
+	DWORD		fvf;
+	m_pD3Ddev->GetFVF( &fvf );
+	m_pD3Ddev->SetFVF( D3DFVF_LVERTEX );
+	//m_pD3Ddev->SetFVF( D3DFVF_PRIMITIVES );
+
 	////////////////////////////////////////////////////
 	// Draw!
 	m_pD3Ddev->DrawPrimitiveUP( D3DPT_LINESTRIP, 1, lineList, sizeof(lineList) / 2 );
@@ -812,8 +811,10 @@ bool CD3DRender::DrawLine ( const D3DXVECTOR3 &a, const D3DXVECTOR3 &b, DWORD dw
 	// reset states
 	m_pD3Ddev->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE );
 	m_pD3Ddev->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_MODULATE );
+	m_pD3Ddev->SetRenderState ( D3DRS_ZENABLE, true );
+	m_pD3Ddev->SetRenderState( D3DRS_CLIPPING, true );
 
-	// reset FVF
+	// restore FVF
 	m_pD3Ddev->SetFVF( fvf );
 
 	CD3DBaseRender::EndRender();

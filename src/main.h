@@ -171,6 +171,9 @@
 #include "CPedDamageResponseSA.h"
 #include "CPedDamageResponseCalculatorSA.h"
 
+// selected MTA class includes
+#include "CDirect3DData.h"
+
 // normal includes
 #include "patcher.h"
 #include "CDetour.h"
@@ -213,6 +216,7 @@ extern CCameraSA				g_CCamera;
 extern CGameSA					*pGameInterface;
 extern CPools					*pPools;
 extern CPed						*pPedSelf;
+extern CDirect3DData			*pD3DData;
 
 // externals
 #endif

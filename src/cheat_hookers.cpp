@@ -136,7 +136,7 @@ void CPhysical_ApplyGravity ( DWORD dwThis )
 		// apply regular downward gravity (+0x4C == m_vecMoveSpeed.fZ)
 		*(float *)( dwThis + 0x4C ) -= fTimeStep * fGravity;
 	}
-	traceLastFunc( "CPhysical_ApplyGravity(): end" );
+	traceLastFunc( "CPhysical_ApplyGravity(): end, returning" );
 }
 
 uint8_t _declspec ( naked ) HOOK_CPhysical_ApplyGravity ( void )

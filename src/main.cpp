@@ -284,7 +284,6 @@ static int init ( void )
 			Log( "Failed to load %s", filename );
 			return 0;
 		}
-
 		orig_Direct3DCreate9 = ( D3DC9 ) GetProcAddress( g_hOrigDll, "Direct3DCreate9" );
 		if ( orig_Direct3DCreate9 == NULL )
 		{

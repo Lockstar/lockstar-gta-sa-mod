@@ -55,6 +55,7 @@
 				ExceptionHandling="0"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
+				FloatingPointModel="2"
 				UsePrecompiledHeader="1"
 				PrecompiledHeaderThrough="main.h"
 				WarningLevel="3"
@@ -1689,6 +1690,14 @@
 			Name="D3D9"
 			>
 			<File
+				RelativePath=".\CDirect3DData.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CDirect3DData.h"
+				>
+			</File>
+			<File
 				RelativePath=".\d3drender.cpp"
 				>
 			</File>
@@ -1781,6 +1790,10 @@
 				</Filter>
 			</Filter>
 		</Filter>
+		<File
+			RelativePath=".\ClassDiagram1.cd"
+			>
+		</File>
 		<File
 			RelativePath=".\m0d_s0beit_sa.def"
 			>

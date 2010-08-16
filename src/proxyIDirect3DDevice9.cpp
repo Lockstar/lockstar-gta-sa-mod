@@ -36,6 +36,7 @@ IDirect3DDevice9		*pRwD3DDevice = (IDirect3DDevice9 *) * (DWORD *)__RwD3DDevice;
 IDirect3DTexture9		*pSpriteTexture;
 D3DPRESENT_PARAMETERS	pPresentParam;
 D3DMATRIX				m_mViewMatrix, m_mProjMatrix, m_mWorldMatrix;
+CDirect3DData			*pD3DData =	new CDirect3DData();
 #pragma data_seg()
 bool					bD3DRenderInit;
 bool					bD3DWindowModeSet;
@@ -1099,7 +1100,7 @@ void renderPlayerTags ( void )
 		return;
 
 	if ( (GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
-	 ||	 *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 ) 
+	 ||	 *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 )
 		return;
 
 	if ( GetAsyncKeyState(VK_F10) < 0 )
@@ -1509,8 +1510,7 @@ void renderVehicleTags ( void )
 		return;
 
 	if ( (GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
-	 ||	 *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 ) 
-		return;
+	 ||	 *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 ) return;
 
 	if ( GetAsyncKeyState(VK_F10) < 0 )
 		return;
@@ -1543,12 +1543,13 @@ void renderVehicleTags ( void )
 	// iterate
 	while ( iter.pos < iter.end )
 	{
-		// map iterator CVehicleSA pointer to our CVehicle pointer
+		// map iterator CVehicleSA pointer to our CVehicleSA pointer
 		iterVehicle = iter.pos->second;
 
 		// advance to next CVehicleSA for next pass
 		iter.pos++;
 
+		// move past null pointers just in case
 		if ( !iterVehicle )
 			continue;
 
@@ -1587,7 +1588,7 @@ void renderVehicleTags ( void )
 		if ( screenposs.z < 1.f )
 			continue;
 
-		// D3DXVECTOR3 to CVector
+		// D3DXVECTOR3 to CVector2D
 		screenPosition.fX = screenposs.x;
 		screenPosition.fY = screenposs.y;
 
@@ -1628,7 +1629,7 @@ void renderVehicleTags ( void )
 										 screenPosition.fY - h + 13.0f + ESP_tag_vehicle_pixelOffsetY,
 										 D3DCOLOR_ARGB(90, 0, 255, 0), buf );
 
-/*
+		/*
 // trailer debugging visualizations
 		CVector vecTowBarPos, vecTowHitchPos;
 		iterVehicle->GetTowBarPos( &vecTowBarPos );
@@ -1797,8 +1798,7 @@ void renderPlayerInfoList ( void )
 		return;
 
 	if ( (GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
-	 ||	 *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 ) 
-		return;
+	 ||	 *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 ) return;
 
 	if ( GetAsyncKeyState(VK_F1) < 0 )
 		return;
@@ -1865,8 +1865,8 @@ void renderPlayerInfoList ( void )
 		current_player = 0;
 		current_player_id = 0;
 	}
-	/***/
 
+	/***/
 	int i;
 	for ( i = current_player_id; i < SAMP_PLAYER_MAX; i++ )
 	{
@@ -1989,7 +1989,6 @@ void renderScoreList ()
 	uint32_t	func = g_dwSAMP_Addr + 0x6560;
 	__asm mov ecx, samp_info
 	__asm call func
-
 	char buffer[512];
 
 	float	lowest;
@@ -2103,8 +2102,7 @@ void renderKillList ( void )
 	static int	kill_last = -1, kill_render = 0;
 
 	if ( (GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
-	 ||	 *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 ) 
-		return;
+	 ||	 *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 ) return;
 
 	if ( GetAsyncKeyState(VK_F10) < 0 )
 		return;
@@ -2192,8 +2190,7 @@ void renderChat ( void )
 		return;
 
 	if ( (KEY_DOWN(VK_TAB) && set.d3dtext_score)
-	 ||	 (*(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 && !set.d3dtext_score) ) 
-		return;
+	 ||	 (*(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 && !set.d3dtext_score) ) return;
 
 	if ( GetAsyncKeyState(VK_F1) < 0 )
 		return;
@@ -2623,7 +2620,6 @@ void renderVehiclePoolStructure ( int iVehicleIDToDebug )
 	}
 }
 #endif
-
 void renderPlayerInfo ( int iPlayerID )
 {
 	traceLastFunc( "renderPlayerInfo()" );
@@ -3393,7 +3389,7 @@ void proxyID3DDevice9_InitWindowMode ( D3DPRESENT_PARAMETERS *pPresentationParam
 		// title bar or not?
 		if ( set.window_mode_titlebar )
 		{
-			RECT	um;			// damn near killed um
+			RECT	um;		// damn near killed um
 
 			// add caption bar, etc
 			SetWindowLong( pPresentationParameters->hDeviceWindow, GWL_STYLE,
@@ -3508,6 +3504,9 @@ HRESULT proxyIDirect3DDevice9::Reset ( D3DPRESENT_PARAMETERS *pPresentationParam
 
 		// update the global Present Param struct AFTER original reset, only if it's ok
 		pPresentParam = *pPresentationParameters;
+
+		// Update our data.
+		pD3DData->StoreViewport( 0, 0, pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight );
 	}
 
 	// reporting problems is about all we can do here.
@@ -3539,12 +3538,16 @@ HRESULT proxyIDirect3DDevice9::Present ( CONST RECT *pSourceRect, CONST RECT *pD
 {
 	traceLastFunc( "proxyIDirect3DDevice9::Present()" );
 
-	// ATi flicker fix
-	// something is clearly not right here, lol
-	//D3DMATRIX *projMatrix = (D3DMATRIX*)(DWORD*)__RwD3D9ActiveViewProjTransform;
-	//origIDirect3DDevice9->SetTransform(D3DTS_PROJECTION, projMatrix);
+	// A fog flicker fix for some ATI cards
+	// this is screwing up right not for some reason
+	// check out the other pD3DData references for an idea of what this does
+	//
+	//D3DMATRIX projMatrix;
+	//pD3DData->GetTransform ( D3DTS_PROJECTION, &projMatrix );
+	//origIDirect3DDevice9->SetTransform ( D3DTS_PROJECTION, &projMatrix );
+
 	// get original function to return
-	return origIDirect3DDevice9->Present( pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion );;
+	return origIDirect3DDevice9->Present( pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion );
 }
 
 HRESULT proxyIDirect3DDevice9::GetBackBuffer ( UINT iSwapChain, UINT iBackBuffer, D3DBACKBUFFER_TYPE Type,
@@ -3728,7 +3731,7 @@ HRESULT proxyIDirect3DDevice9::EndScene ( void )
 	}
 
 	// setup render class now for doing stuff within cheat_hook
-	bool isBeginRenderWIN = SUCCEEDED(render->BeginRender());
+	bool	isBeginRenderWIN = SUCCEEDED( render->BeginRender() );
 
 	// run all dem hacks
 	cheat_hook( pPresentParam.hDeviceWindow );
@@ -3742,7 +3745,6 @@ HRESULT proxyIDirect3DDevice9::EndScene ( void )
 	HUD_TEXT( x, color_text, "[" ); \
 	HUD_TEXT( x, color, text ); \
 	HUD_TEXT( x, color_text, "] " )
-
 
 	char		buf[256];
 	float		x = 0.0f;
@@ -3833,11 +3835,9 @@ HRESULT proxyIDirect3DDevice9::EndScene ( void )
 
 				if ( set.hud_draw_bar )
 				{
-					uint32_t	bar_color = D3DCOLOR_ARGB( hud_bar->alpha, hud_bar->red, hud_bar->green,
-														   hud_bar->blue );
+					uint32_t	bar_color = D3DCOLOR_ARGB( hud_bar->alpha, hud_bar->red, hud_bar->green, hud_bar->blue );
 
-					render->D3DBoxi( (int)x - 1,
-									 (int)(pPresentParam.BackBufferHeight - 1) - (int)pD3DFont->DrawHeight() - 3,
+					render->D3DBoxi( (int)x - 1, (int)(pPresentParam.BackBufferHeight - 1) - (int)pD3DFont->DrawHeight() - 3,
 									 (int)(pPresentParam.BackBufferWidth + 14), 22, bar_color, NULL );
 				}
 
@@ -3858,8 +3858,7 @@ HRESULT proxyIDirect3DDevice9::EndScene ( void )
 
 				if ( set.hud_indicator_freeze )
 				{
-					HUD_TEXT_TGL( x, cheat_state->_generic.vehicles_freeze ? color_enabled : color_disabled,
-								  "Freeze" );
+					HUD_TEXT_TGL( x, cheat_state->_generic.vehicles_freeze ? color_enabled : color_disabled, "Freeze" );
 				}
 
 				if ( set.hud_fps_draw )
@@ -3883,8 +3882,7 @@ HRESULT proxyIDirect3DDevice9::EndScene ( void )
 					}
 
 					pD3DFont->PrintShadow( pPresentParam.BackBufferWidth - pD3DFont->DrawLength(buf) - 2,
-										   pPresentParam.BackBufferHeight - pD3DFont->DrawHeight() - 2, color_fps,
-										   buf );
+										   pPresentParam.BackBufferHeight - pD3DFont->DrawHeight() - 2, color_fps, buf );
 				}
 			}
 
@@ -4013,7 +4011,6 @@ no_render: ;
 
 	mapMenuTeleport();
 
-
 	HRESULT ret = origIDirect3DDevice9->EndScene();
 
 	// clean Pornography, thanks to STUNT COCK!!!
@@ -4043,26 +4040,9 @@ HRESULT proxyIDirect3DDevice9::Clear ( DWORD Count, CONST D3DRECT *pRects, DWORD
 
 HRESULT proxyIDirect3DDevice9::SetTransform ( D3DTRANSFORMSTATETYPE State, CONST D3DMATRIX *pMatrix )
 {
-	/*
-	switch (State)
-	{
-		case D3DTS_VIEW:
-			// Copy the real view matrix.
-			memcpy(&m_mViewMatrix, pMatrix, sizeof(D3DMATRIX));
-			break;
-		case D3DTS_PROJECTION:
-			// Copy the real projection marix.
-			memcpy(&m_mProjMatrix, pMatrix, sizeof(D3DMATRIX));
-			break;
-		case D3DTS_WORLD:
-			// Copy the real world matrix.
-			memcpy(&m_mWorldMatrix, pMatrix, sizeof(D3DMATRIX));
-			break;
-		default:
-			// Do nothing.
-			break;
-	}
-	*/
+	// Store the matrix
+	pD3DData->StoreTransform ( State, pMatrix );
+
 	return origIDirect3DDevice9->SetTransform( State, pMatrix );
 }
 
@@ -4078,6 +4058,9 @@ HRESULT proxyIDirect3DDevice9::MultiplyTransform ( D3DTRANSFORMSTATETYPE State, 
 
 HRESULT proxyIDirect3DDevice9::SetViewport ( CONST D3DVIEWPORT9 *pViewport )
 {
+	// Store matrix
+	pD3DData->StoreViewport ( pViewport->X, pViewport->Y, pViewport->Width, pViewport->Height );
+
 	return origIDirect3DDevice9->SetViewport( pViewport );
 }
 
