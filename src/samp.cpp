@@ -521,7 +521,6 @@ D3DCOLOR samp_color_get_trans ( int id, DWORD trans )
 	return ( color_table[id] >> 8 ) | trans;
 }
 
-extern int	iShowVehicles;
 void sampMainCheat ()
 {
 	traceLastFunc( "sampMainCheat()" );
@@ -553,9 +552,6 @@ void sampMainCheat ()
 		}
 	}
 
-	if ( KEY_PRESSED(set.key_map_show_vehicles) )
-		iShowVehicles ^= 1;
-
 	if ( KEY_DOWN(set.secondary_key) )
 	{
 		if ( KEY_PRESSED(set.key_player_info_list) )
@@ -571,11 +567,6 @@ void sampMainCheat ()
 
 		if ( KEY_PRESSED(set.key_respawn) )
 			playerSpawn();
-
-		if ( KEY_PRESSED(set.key_render_player_tags) )
-			cheat_state->render_player_tags ^= 1;
-		if ( KEY_PRESSED(set.key_render_vehicle_tags) )
-			cheat_state->render_vehicle_tags ^= 1;
 	}
 
 	if ( KEY_DOWN(set.chat_secondary_key) )
@@ -955,7 +946,9 @@ void cmd_showCMDS ()
 		addMessageToChatWindow( "%s", m0d_cmd_list[i].cmd_name );
 	}
 
+#ifdef M0D_DEV
 	addMessageToChatWindow( "m0d_cmd_num: %i", m0d_cmd_num + 1 );
+#endif
 }
 
 #define FUNC_ADDCLIENTCMD	0x377A0
@@ -1381,7 +1374,8 @@ uint8_t _declspec ( naked ) chatboxlog_hook ( void )
 
 	case 3:
 		LogChatbox( false, "%s", chatboxlog_hook_string );
-		if ( strstr(chatboxlog_hook_string, "Warning(game): Exception ") != NULL )
+		if ( strstr(chatboxlog_hook_string, "Warning(") != NULL
+			&& strstr(chatboxlog_hook_string, "): Exception 0x") != NULL )
 		{
 			omgcrap( chatboxlog_hook_string );
 		}
@@ -1409,7 +1403,7 @@ uint8_t _declspec ( naked ) server_message_hook ( void )
 	static char		last_servermsg[256];
 	static DWORD	allow_show_again = GetTickCount();
 	if ( (strcmp(last_servermsg, (char *)thismsg) != NULL || GetTickCount() > allow_show_again)
-	 ||	 cheat_state->_generic.cheat_panic_enabled )
+	 ||	 cheat_state->_generic.cheat_panic_enabled || !set.anti_spam )
 	{
 		strcpy_s( last_servermsg, sizeof(last_servermsg), (char *)thismsg );
 		addToChatWindow( (char *)thismsg, thiscolor );
@@ -1433,7 +1427,7 @@ uint8_t _declspec ( naked ) client_message_hook ( void )
 
 	static DWORD allow_show_again = GetTickCount();
 	if ( (strcmp(last_clientmsg[id], (char *)thismsg) != NULL || GetTickCount() > allow_show_again)
-	 ||	 cheat_state->_generic.cheat_panic_enabled )
+	 ||	 cheat_state->_generic.cheat_panic_enabled || !set.anti_spam )
 	{
 		// nothing to copy anymore, after chatbox_logging, so copy this before
 		strcpy_s( last_clientmsg[id], sizeof(last_clientmsg[id]), (char *)thismsg );
@@ -1640,8 +1634,8 @@ int sampPatchDisableScoreboardToggleOn ( int iEnabled )
 	};
 
 	if ( iEnabled && !sampPatchDisableScoreboard_patch.installed )
-		patcher_install( &sampPatchDisableScoreboard_patch );
+		return patcher_install( &sampPatchDisableScoreboard_patch );
 	else if ( !iEnabled && sampPatchDisableScoreboard_patch.installed )
-		patcher_remove( &sampPatchDisableScoreboard_patch );
+		return patcher_remove( &sampPatchDisableScoreboard_patch );
 	return NULL;
 }

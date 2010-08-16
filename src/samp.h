@@ -26,6 +26,7 @@
 #define SAMP_PICKUP_MAX					2048
 #define SAMP_OBJECTS_MAX				254
 #define MAX_3DTEXT						2048
+#define MAX_TEXTDRAW					2048
 #define MAX_GANGZONES					1024
 #define MAX_PLAYER_NAME					29
 #define ALLOWED_PLAYER_NAME_LENGTH		20
@@ -87,9 +88,9 @@ struct stSAMP
 	uint32_t				*ulConnectTick;
 	struct stPickupPool		*pPool_Pickup;
 	void					*pPool_Menu;
-	void					*pPool_Textdraw;
+	struct stTextdrawPool	*pPool_Textdraw;
 	void					*pPool_Gangzone;
-	void					*pPool_Text3D;
+	struct stTextLabelPool	*pPool_Text3D;
 	struct stPlayerPool		*pPool_Player;
 	struct stVehiclePool	*pPool_Vehicle;
 	struct stObjectPool		*pPool_Object;
@@ -126,6 +127,22 @@ struct stSAMP
 	char					szHostname[257];
 };
 
+struct stTextdraw
+{
+#pragma pack( 1 )
+	char	text[1024];
+	char	unknown[2095];
+	float	position[2];
+	char	unknown_[16];
+};
+
+struct stTextdrawPool
+{
+#pragma pack( 1 )
+	int					iIsListed[MAX_TEXTDRAW];
+	struct stTextdraw	*textdraw[MAX_TEXTDRAW];
+};
+
 struct stPickup
 {
 #pragma pack( 1 )
@@ -156,12 +173,38 @@ struct stPlayerPool
 	int						iPing[SAMP_PLAYER_MAX];
 };
 
+struct	stSAMPKeys
+{
+#pragma pack( 1 )
+	uint8_t		keys_primaryFire:1;
+	uint8_t		keys_horn__crouch:1;
+	uint8_t		keys_secondaryFire__shoot:1;
+	uint8_t		keys_accel__zoomOut:1;
+	uint8_t		keys_enterExitCar:1;
+	uint8_t		keys_decel__jump:1; // jump or zoom in
+	uint8_t		keys_circleRight:1;
+	uint8_t		keys_aim:1; // hydra auto aim or onFoot aim
+
+	uint8_t		keys_circleLeft:1;
+	uint8_t		keys_landingGear__lookback:1; // 512
+	uint8_t		keys_unknown__walkSlow:1;
+	uint8_t		keys_specialCtrlUp:1;
+	uint8_t		keys_specialCtrlDown:1;
+	uint8_t		keys_specialCtrlLeft:1;
+	uint8_t		keys_specialCtrlRight:1;
+	uint8_t		keys__unused:1;
+};
+
 struct stOnFootData
 {
 #pragma pack( 1 )
 	uint16_t	sLeftRightKeys;
 	uint16_t	sUpDownKeys;
-	uint16_t	sKeys;
+	union
+	{
+		uint16_t			sKeys;
+		struct stSAMPKeys	stSampKeys;
+	};
 	float		fPosition[3];
 	float		fRotation;
 	uint8_t		byteHealth;
@@ -179,20 +222,65 @@ struct stInCarData
 	uint16_t	sVehicleID;
 	uint16_t	sLeftRightKeys;
 	uint16_t	sUpDownKeys;
-	uint16_t	sKeys;
-	float		fRoll[3];
-	float		fDirection[3];
+	union
+	{
+		uint16_t				sKeys;
+		struct stSAMPKeys		stSampKeys;
+	};
+	float		fDirection;
+	float		fRoll[2];
+	float		fDirection_two;
 	float		fPosition[3];
 	float		fMoveSpeed[3];
 	float		fVehicleHealth;
 	uint8_t		bytePlayerHealth;
 	uint8_t		byteArmorHealth;
 	uint8_t		byteCurrentWeapon;
+	uint8_t		byteSiren;
 	uint8_t		byteLandingGearState;
-	uint8_t		byteUnknown_1;
-	uint8_t		byteUnknown_2;
-	float		fTrainSpeedOrHydraThrustAngle;
 	uint16_t	sTrailerID;
+	union
+	{
+		uint16_t	HydraThrustAngle[2];			//nearly same value
+		float		fTrainSpeed;
+	};
+};
+
+struct stPassengerData
+{
+#pragma pack( 1 )
+	uint16_t	sVehicleID;
+	uint8_t		byteSeatID;
+	uint8_t		byteCurrentWeapon;
+	uint8_t		byteHealth;
+	uint8_t		byteArmor;
+	uint16_t	sLeftRightKeys;
+	uint16_t	sUpDownKeys;
+	union
+	{
+		uint16_t				sKeys;
+		struct stSAMPKeys		stSampKeys;
+	};
+	float		fPosition[3];
+};
+
+struct stDamageData
+{
+#pragma pack( 1 )
+	uint16_t	sVehicleID_lastDamageProcessed;
+	int			iBumperDamage;
+	int			iDoorDamage;
+	uint8_t		byteLightDamage;
+	uint8_t		byteWheelDamage;
+};
+
+struct stSurfData
+{
+#pragma pack( 1 )
+	int			iIsSurfing;
+	float		fSurfPosition[3];
+	uint16_t	sSurfingVehicleID;
+	uint32_t	ulSurfTick;
 };
 
 struct stLocalPlayer
@@ -219,12 +307,15 @@ struct stLocalPlayer
 	uint32_t			ulSpectateTick;
 	uint32_t			ulAimTick;
 	uint32_t			ulStatsUpdateTick;
-	uint32_t			ulUnknownTick_1;
-	uint32_t			ulUnknownTick_2;
-	uint32_t			ulUnknownTick_3;
-	uint32_t			ulUnknownTick_4;
+	uint32_t			ulHeadTick;
+	uint32_t			ulUnknownTick;
+	uint32_t			ulPassengerUpdateTick;
+	uint8_t				byteDriveBy;
+	uint8_t				byteUnknown_226[3];
 	uint8_t				byteCurrentInterior;
-	uint8_t				byteUnknown[26];
+	uint8_t				byteIsInRCVehicle;
+	uint8_t				byteUnknown_231[3];
+	struct stSurfData	surfData;
 	struct stSAMPPed	*pSAMP_Actor;
 	uint16_t			sCurrentVehicleID;
 	uint16_t			sLastVehicleID;
@@ -232,8 +323,18 @@ struct stLocalPlayer
 	int					iIsWasted;
 	struct stOnFootData onFootData;
 	struct stInCarData	inCarData;
-	uint8_t				bytesUnknown_410[111];
+	uint8_t				bytesUnknown_410[107];
+	int					iClassSelectionOnDeath;
 	int					iSpawnClassID;
+	int					iRequestToSpawn;
+	int					iIsInSpawnScreen;
+	uint8_t				byteUnknown_519[2];
+	int					iSpectatePlayer;
+	uint8_t				byteUnknown_525[8];
+	uint8_t					previousWeapon[13];
+	int						previousAmmo[13];
+	struct stDamageData		vehicleDamageData;
+	uint8_t					byteIsSurfing;
 };
 
 struct stRemotePlayer
@@ -262,7 +363,11 @@ struct stRemotePlayer
 	float					fUnk_1[4];
 	float					fActorHealth;
 	float					fActorArmor;
-	uint8_t					bytePad_1[0x84];
+
+	uint8_t					bytePad_1[32];
+	struct stOnFootData		onFootData;
+	struct stInCarData		inCarData;
+	struct stPassengerData	passengerData;
 };
 
 struct stSAMPPed
@@ -314,6 +419,25 @@ struct stObjectPool
 #pragma pack( 1 )
 	int				iIsListed[SAMP_OBJECTS_MAX];
 	struct stObject *object[SAMP_OBJECTS_MAX];
+};
+
+struct stTextLabel
+{
+#pragma pack( 1 )
+	char		*pText;
+	DWORD		color;
+	float		fPosition[3];
+	float		fViewDistance;
+	uint8_t		byteShowBehindWalls;
+	uint16_t	sAttachedToPlayerID;
+	uint16_t	sAttachedToVehicleID;
+};
+
+struct stTextLabelPool
+{
+#pragma pack( 1 )
+	struct stTextLabel	textLabel[MAX_3DTEXT];
+	int					iIsListed[MAX_3DTEXT];
 };
 
 struct stChatEntry

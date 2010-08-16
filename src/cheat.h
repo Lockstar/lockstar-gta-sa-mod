@@ -199,6 +199,7 @@ struct cheat_state_generic
 	int		money;
 	int		weapon;
 	int		map;
+	int		map_vehicles;
 	int		menu;
 	int		spoof_weapon;	/* set to the weapon type id */
 	int		vehicles_unlock;
