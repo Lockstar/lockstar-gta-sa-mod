@@ -1213,8 +1213,9 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 	if ( KEY_PRESSED(set.key_fly_vehicle) )
 		cheat_state->vehicle.fly ^= 1;
 
-	// ignore hydra and RC Baron (they seem to use some special functions to fly)
-	if ( vehicle_info->base.model_alt_id == 520 || vehicle_info->base.model_alt_id == 464 )
+	// ignore hydra, RC Baron and RC Goblin (they seem to use some special functions to fly)
+	if ( vehicle_info->base.model_alt_id == 520 || vehicle_info->base.model_alt_id == 464
+		|| vehicle_info->base.model_alt_id == 501 )
 	{
 		if ( patch_NotAPlane.installed )
 			patcher_remove( &patch_NotAPlane );

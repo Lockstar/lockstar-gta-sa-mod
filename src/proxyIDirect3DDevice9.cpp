@@ -840,7 +840,7 @@ void RenderMapDot ( const float self_pos[3], const float pos[16], DWORD color, c
 	}
 }
 
-int iShowVehicles;
+
 void RenderMap ( void )
 {
 	traceLastFunc( "renderMap()" );
@@ -882,7 +882,8 @@ void RenderMap ( void )
 		}
 	}
 
-	if ( iShowVehicles )
+	if ( cheat_state->_generic.map_vehicles )
+
 	{
 		if ( g_dwSAMP_Addr != NULL )
 		{
@@ -988,9 +989,9 @@ void RenderVehicleHPBar ( void )
 		return;
 
 	bottom = pPresentParam.BackBufferHeight;
-	speed = vect3_length( vinfo->speed );
-	if ( speed > 260.0f )
-		speed = 260.0f;
+
+
+
 
 	if ( vinfo->hitpoints > 1000.0f )
 		hp = 100;
@@ -1020,8 +1021,13 @@ void RenderVehicleHPBar ( void )
 		pD3DFontFixed->PrintShadow( (float)(2), (float)(bottom - 20), D3DCOLOR_XRGB(255, 255, 255), text );
 	}
 
+	speed = vect3_length( vinfo->speed );
+	
 	if ( set.speedometer_enable )
 	{
+		if ( speed > 260.0f )
+			speed = 260.0f;
+
 		static float	mult = set.speedometer_multiplier;
 
 		float			rotationNeedle = 0.0f;
@@ -1099,17 +1105,23 @@ void renderPlayerTags ( void )
 	if ( gta_menu_active() )
 		return;
 
-	if ( (GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
-	 ||	 *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 )
+	if ( g_SAMP != NULL && ((GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
+	 ||	 *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1) ) 
+
+
 		return;
 
-	if ( GetAsyncKeyState(VK_F10) < 0 )
+	if ( g_SAMP != NULL && (GetAsyncKeyState(VK_F10) < 0) )
+
 		return;
 
-	//Enable samp Nametags and exit this function, if panic key
+	// Enable samp Nametags and exit this function, if panic key
+
 	if ( cheat_state->_generic.cheat_panic_enabled || !cheat_state->render_player_tags )
 	{
-		sampPatchDisableNameTags( 0 );
+		if ( g_SAMP != NULL )
+			sampPatchDisableNameTags( 0 );
+
 		return;
 	}
 
@@ -1122,7 +1134,9 @@ void renderPlayerTags ( void )
 		return;
 
 	//Disable samp Nametags
-	sampPatchDisableNameTags( 1 );
+	if ( g_SAMP != NULL )
+		sampPatchDisableNameTags( 1 );
+
 
 	// for tracking player states as we iterate through
 	bool	isPedESPCollided[SAMP_PLAYER_MAX];
@@ -1145,7 +1159,11 @@ void renderPlayerTags ( void )
 
 	// get our info
 	ourPosition = pPedSelf->GetInterface()->Placeable.matrix->vPos;
-	selfSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)pPedSelf->GetInterface() )];
+	if ( g_SAMP != NULL )
+		selfSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)pPedSelf->GetInterface() )];
+	else
+		selfSAMPID = (int)pPedSelf->GetArrayID();
+
 
 	// setup iterator
 	CPedSA		*iterPed = NULL;
@@ -1164,7 +1182,11 @@ void renderPlayerTags ( void )
 			continue;
 
 		// get SAMP's player id
-		iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
+		if ( g_SAMP != NULL )
+			iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
+		else
+			iSAMPID = (int)iterPed->GetArrayID();
+
 
 		// RC Vehicle fix
 		if ( iterPed->GetVehicle() != NULL && iSAMPID != selfSAMPID )
@@ -1237,7 +1259,11 @@ void renderPlayerTags ( void )
 			continue;
 
 		// get SAMP's player id
-		iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
+		if ( g_SAMP != NULL )
+			iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
+		else
+			iSAMPID = (int)iterPed->GetArrayID();
+
 
 		// filter out "ok" ESP
 		if ( !g_playerTagInfo[iSAMPID].isStairStacked
@@ -1264,7 +1290,11 @@ void renderPlayerTags ( void )
 					continue;
 
 				// get SAMP's player id
-				iSAMPID_Inner = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterInnerPed->GetPedInterface() )];
+				if ( g_SAMP != NULL )
+					iSAMPID_Inner = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterInnerPed->GetPedInterface() )];
+				else
+					iSAMPID_Inner = (int)iterInnerPed->GetArrayID();
+
 
 				// ignore if it's us or isPastMaxDistance
 				if ( iSAMPID_Inner == iSAMPID || g_playerTagInfo[iSAMPID_Inner].isPastMaxDistance )
@@ -1315,7 +1345,11 @@ void renderPlayerTags ( void )
 			continue;
 
 		// get SAMP's player id
-		iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
+		if ( g_SAMP != NULL )
+			iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
+		else
+			iSAMPID = (int)iterPed->GetArrayID();
+
 
 		// we isPastMaxDistance or stairstacked, move along
 		if ( g_playerTagInfo[iSAMPID].isPastMaxDistance || g_playerTagInfo[iSAMPID].isStairStacked )
@@ -1335,7 +1369,11 @@ void renderPlayerTags ( void )
 
 			// get SAMP's player id
 			//iterInnerPed->GetPedInterface()
-			iSAMPID_Inner = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterInnerPed->GetPedInterface() )];
+			if ( g_SAMP != NULL )
+				iSAMPID_Inner = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterInnerPed->GetPedInterface() )];
+			else
+				iSAMPID_Inner = (int)iterInnerPed->GetArrayID();
+
 
 			// filter out isPastMaxDistance, stairstacked, and same Ped
 			if ( g_playerTagInfo[iSAMPID].isPastMaxDistance
@@ -1423,18 +1461,24 @@ void renderPlayerTags ( void )
 			continue;
 
 		// get SAMP's player id
-		iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
+		if ( g_SAMP != NULL )
+			iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
+		else
+			iSAMPID = (int) iterPed->GetArrayID();
+
 
 		// ignore if isPastMaxDistance or if it's us
 		if ( g_playerTagInfo[iSAMPID].isPastMaxDistance || iSAMPID == selfSAMPID )
 			continue;
 
 		// make sure the player is actually there so we don't crash it
-		if ( isBadPtr_writeAny(g_Players->pRemotePlayer[iSAMPID], sizeof(stRemotePlayer)) )
+		if ( g_SAMP != NULL && isBadPtr_writeAny(g_Players->pRemotePlayer[iSAMPID], sizeof(stRemotePlayer)) )
+
 			continue;
 
 		// static bots (casino/ammunation) dont need fake names
-		if ( g_Players->pRemotePlayer[iSAMPID]->pSAMP_Actor == NULL )
+		if ( g_SAMP != NULL && g_Players->pRemotePlayer[iSAMPID]->pSAMP_Actor == NULL )
+
 			continue;
 
 		//if ( isBadPtr_writeAny(g_Players->pRemotePlayer[iSAMPID]->pSAMP_Actor, sizeof(stSAMPPed)) )
@@ -1443,18 +1487,36 @@ void renderPlayerTags ( void )
 			g_playerTagInfo[iSAMPID].tagOffsetY +
 			ESP_tag_player_pixelOffsetY;
 
-		D3DCOLOR	player_color = samp_color_get_trans( g_Players->pRemotePlayer[iSAMPID]->sPlayerID, 0xDD000000 );
+
 		h = pD3DFontSmall->DrawHeight();
-		_snprintf_s( buf, sizeof(buf), "%s (%d)", getPlayerName(iSAMPID), iSAMPID );
-		w = pD3DFontSmall->DrawLength( buf );
-		pD3DFontSmall->PrintShadow( g_playerTagInfo[iSAMPID].tagPosition.fX, playerBaseY - h, player_color, buf );
+		if ( g_SAMP != NULL )
+		{
+			D3DCOLOR	player_color;
+			player_color = samp_color_get_trans( g_Players->pRemotePlayer[iSAMPID]->sPlayerID, 0xDD000000 );
+			_snprintf_s( buf, sizeof(buf), "%s (%d)", getPlayerName(iSAMPID), iSAMPID );
+			w = pD3DFontSmall->DrawLength( buf );
+			pD3DFontSmall->PrintShadow( g_playerTagInfo[iSAMPID].tagPosition.fX, playerBaseY - h, player_color, buf );
+		}
+
+
+
 
 		// get Ped health
 		// works in single player, but SAMP maintains its own player health
 		//vh = iterPed->GetHealth();
 		// get samp health
-		vh = g_Players->pRemotePlayer[iSAMPID]->fActorHealth;
-		va = g_Players->pRemotePlayer[iSAMPID]->fActorArmor;
+		if ( g_SAMP != NULL )
+		{
+			vh = g_Players->pRemotePlayer[iSAMPID]->fActorHealth;
+			va = g_Players->pRemotePlayer[iSAMPID]->fActorArmor;
+		}
+		else
+		{
+			vh = iterPed->GetHealth();
+			va = iterPed->GetArmor();
+		}
+
+
 
 		D3DCOLOR	color = D3DCOLOR_ARGB( 75, 0, 200, 0 );
 		if ( vh > 100.0f )
@@ -1483,8 +1545,13 @@ void renderPlayerTags ( void )
 							D3DCOLOR_ARGB(111, 220, 220, 220) );
 		}
 
-		_snprintf_s( buf, sizeof(buf), "H: %d, A: %d", (int)g_Players->pRemotePlayer[iSAMPID]->fActorHealth,
-					 (int)g_Players->pRemotePlayer[iSAMPID]->fActorArmor );
+		if ( g_SAMP == NULL )
+			_snprintf_s( buf, sizeof(buf), "H: %d, A: %d", (int)iterPed->GetHealth(), (int)iterPed->GetArmor() );
+		else
+			_snprintf_s( buf, sizeof(buf), "H: %d, A: %d", (int)g_Players->pRemotePlayer[iSAMPID]->fActorHealth,
+						(int)g_Players->pRemotePlayer[iSAMPID]->fActorArmor );
+
+
 		pD3DFontFixedSmall->PrintShadow( g_playerTagInfo[iSAMPID].tagPosition.fX + 8.0f, playerBaseY - h + 12.0f,
 										 D3DCOLOR_ARGB(130, 0xFF, 0x6A, 0), buf );
 	}
@@ -1492,7 +1559,8 @@ void renderPlayerTags ( void )
 	// end render ESP tags
 }
 
-// render vehicle ESP in SAMP
+// render vehicle ESP
+
 void renderVehicleTags ( void )
 {
 	traceLastFunc( "renderVehicleTags()" );
@@ -1509,10 +1577,14 @@ void renderVehicleTags ( void )
 	if ( !pPedSelf )
 		return;
 
-	if ( (GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
-	 ||	 *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 ) return;
+	if ( g_SAMP != NULL && ((GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
+	 ||	 *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1) ) 
+		return;
 
-	if ( GetAsyncKeyState(VK_F10) < 0 )
+
+
+	if ( g_SAMP != NULL && (GetAsyncKeyState(VK_F10) < 0) )
+
 		return;
 
 	if ( cheat_state->_generic.cheat_panic_enabled )
@@ -1596,7 +1668,11 @@ void renderVehicleTags ( void )
 		vehicle = gta_vehicle_get_by_id( iterVehicle->GetModelIndex() );
 
 		// get SAMP's vehicle id
-		v = translateGTASAMP_vehiclePool.iSAMPID[getVehicleGTAIDFromInterface( (DWORD *)iterVehicle->GetVehicleInterface() )];
+		if ( g_SAMP != NULL )
+			v = translateGTASAMP_vehiclePool.iSAMPID[getVehicleGTAIDFromInterface( (DWORD *)iterVehicle->GetVehicleInterface() )];
+		else
+			v = (int)iterVehicle->GetArrayID(); 
+
 
 		/////////////////
 		// render time //
@@ -1710,6 +1786,10 @@ void RenderPickupTexts ( void )
 	if ( g_SAMP->pPool_Pickup == NULL )
 		return;
 
+	if ( (GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
+	 ||	 *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 ) 
+		return;
+
 	char	buf[32];
 	int		i;
 	if ( self != NULL )
@@ -1751,6 +1831,10 @@ void RenderObjectTexts ( void )
 
 	struct actor_info	*self = actor_info_get( ACTOR_SELF, 0 );
 	if ( g_SAMP->pPool_Object == NULL )
+		return;
+
+	if ( (GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
+	 ||	 *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 ) 
 		return;
 
 	char	buf[32];
@@ -2189,6 +2273,12 @@ void renderChat ( void )
 	if ( g_Chat == NULL )
 		return;
 
+	static int state_chatWindow = 0;
+	if ( KEY_PRESSED(VK_TAB) && set.d3dtext_score )
+	{
+		state_chatWindow = g_Chat->iChatWindowMode;
+	}
+
 	if ( (KEY_DOWN(VK_TAB) && set.d3dtext_score)
 	 ||	 (*(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEDDF8)) + 0x1C) == 1 && !set.d3dtext_score) ) return;
 
@@ -2204,11 +2294,22 @@ void renderChat ( void )
 
 	static int	chat_last = -1, chat_render;
 
-	if ( KEY_RELEASED(VK_TAB) && !set.d3dtext_chat && set.d3dtext_score )
+	if ( KEY_RELEASED(VK_TAB) && set.d3dscore )
+
 	{
-		g_Chat->iChatWindowMode = 2;
-		chat_last = 2;
-		chat_render = 0;
+		g_Chat->iChatWindowMode = state_chatWindow;
+		chat_last = g_Chat->iChatWindowMode;
+		if ( g_Chat->iChatWindowMode == 2 || g_Chat->iChatWindowMode == 1 )
+		{
+			chat_render = 0;
+		}
+		else
+		{
+			chat_render = 1;
+		}
+
+
+
 	}
 
 	mmm_yummy_poop( g_Chat, &g_Chat->iChatWindowMode, &chat_last, &chat_render, "chat text" );
@@ -2885,13 +2986,13 @@ void renderSAMP ( void )
 				RenderPickupTexts();
 			if ( cheat_state->_generic.objecttexts )
 				RenderObjectTexts();
-			if ( cheat_state->render_vehicle_tags )
-				renderVehicleTags();
+
+
 			if ( cheat_state->player_info_list )
 				renderPlayerInfoList();
-			if ( cheat_state->_generic.map )
-				RenderMap();
-			renderPlayerTags();
+
+
+
 			renderKillList();
 			renderChat();
 			renderScoreList();
@@ -4003,6 +4104,11 @@ no_d3dtext_hud: ;
 				RenderMenu();
 			if ( cheat_state->debug_enabled )
 				RenderDebug();
+			if ( cheat_state->render_vehicle_tags )
+				renderVehicleTags();
+			if ( cheat_state->_generic.map )
+				RenderMap();
+			renderPlayerTags();
 		}
 
 no_render: ;

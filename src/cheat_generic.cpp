@@ -44,6 +44,10 @@ int cheat_panic ( void )
 		pstate_ini[INI_PATCHES_MAX]; // patches
 	int			i;
 
+	// sa-mp related
+	static int	pstate_chat = 0, // chat
+		pstate_deathlist = 0; // deathlist
+
 	if ( KEY_PRESSED(set.key_panic) )
 	{
 		// toggle panic
@@ -105,13 +109,11 @@ int cheat_panic ( void )
 			// turn off kill & chat
 			if ( g_DeathList != NULL )
 			{
-				static int	pstate_deathlist = 0;
 				pstate_deathlist = g_DeathList->iEnabled;
 				g_DeathList->iEnabled = 1;
 			}
 			if ( g_Chat != NULL )
 			{
-				static int	pstate_chat = 0;
 				pstate_chat = g_Chat->iChatWindowMode;
 				g_Chat->iChatWindowMode = 2;
 			}
@@ -137,12 +139,10 @@ int cheat_panic ( void )
 			// restore kill & chat
 			if ( g_DeathList != NULL )
 			{
-				static int	pstate_deathlist = 0;
 				g_DeathList->iEnabled = pstate_deathlist;
 			}
 			if ( g_Chat != NULL )
 			{
-				static int	pstate_chat = 0;
 				g_Chat->iChatWindowMode = pstate_chat;
 			}
 
@@ -179,6 +179,19 @@ void cheat_handle_misc ( void )
 	if ( KEY_PRESSED(set.key_map) )
 	{
 		cheat_state->_generic.map ^= 1; /* toggle minimap */
+	}
+
+	if ( KEY_PRESSED(set.key_map_show_vehicles) )
+	{
+		cheat_state->_generic.map_vehicles ^= 1;
+	}
+
+	if ( KEY_DOWN(set.secondary_key) )
+	{
+		if ( KEY_PRESSED(set.key_render_player_tags) )
+			cheat_state->render_player_tags ^= 1;
+		if ( KEY_PRESSED(set.key_render_vehicle_tags) )
+			cheat_state->render_vehicle_tags ^= 1;
 	}
 
 	/* time */

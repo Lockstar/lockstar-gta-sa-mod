@@ -635,6 +635,11 @@ void _declspec ( naked ) HOOK_PlayerCollision ()
 
 	__asm pushad
 	traceLastFunc( "HOOK_PlayerCollision()" );
+
+	PlayerCollision_tmp = cheat_state->_generic.cheat_panic_enabled;
+	__asm cmp PlayerCollision_tmp, 1
+	__asm je regularout
+
 	PlayerCollision_tmp = set.key_disable_Wall_Collisions;
 
 	__asm push PlayerCollision_tmp

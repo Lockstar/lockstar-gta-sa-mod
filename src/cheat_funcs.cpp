@@ -198,7 +198,7 @@ const struct vehicle_entry	vehicle_list[VEHICLE_LIST_SIZE] =
 	{ 511, VEHICLE_CLASS_AIRPLANE, "Beagle", 1 },
 	{ 512, VEHICLE_CLASS_AIRPLANE, "Cropduster", 0 },
 	{ 513, VEHICLE_CLASS_AIRPLANE, "Stuntplane", 0 },
-	{ 514, VEHICLE_CLASS_HEAVY, "Linerunner", 1 },
+	{ 514, VEHICLE_CLASS_HEAVY, "Tanker", 1 },
 
 	/* semi truck */
 	{ 515, VEHICLE_CLASS_HEAVY, "Roadtrain", 1 },
