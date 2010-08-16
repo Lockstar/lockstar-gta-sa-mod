@@ -802,7 +802,7 @@ void CModelInfoSA::SetColModel ( CColModel* pColModel )
 			call	func
 			add		esp, 8
 		}
-		#pragma message(__LOC__ "(IJs) Document this function some time.")
+		//#pragma message(__LOC__ "(IJs) Document this function some time.")
     }
 }
 
@@ -836,7 +836,7 @@ void CModelInfoSA::RestoreColModel ( void )
 			    call	func
 			    add		esp, 8
 		    }
-		    #pragma message(__LOC__ "(IJs) Document this function some time.")
+		    //#pragma message(__LOC__ "(IJs) Document this function some time.")
 	    }
     }
 
