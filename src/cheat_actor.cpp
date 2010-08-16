@@ -152,7 +152,7 @@ void cheat_handle_actor_autoaim ( struct actor_info *info, double time_diff )
 		}
 
 		// let's aim, shall we?
-		if ( cheat_state->actor.autoaim )//&& isAimKeyDown )
+		if ( cheat_state->actor.autoaim && isAimKeyDown )
 		{
 			// only for certain weapons
 			eWeaponSlot selfSlot = pPedSelf->GetCurrentWeaponSlot();
@@ -175,136 +175,113 @@ void cheat_handle_actor_autoaim ( struct actor_info *info, double time_diff )
 			//case WEAPONSLOT_TYPE_HEAVY:
 			}
 
+
+/*
+			// NEW OLD ASS AIM
+
+			// settings
+			float fRange = 300.0f;
+
+			// variables
+			CVector vecStart, vecTarget;
+
+			// get the camera
+			CCamera* pCamera = pGame->GetCamera ();
+
+			//// Grab the active cam
+			//CCam* pActive = pCamera->GetCam ( pCamera->GetActiveCam () );
+
+			//// Grab the camera matrix
+			//CMatrix matCamera;
+			//pCamera->GetMatrix ( &matCamera );
+			//ecStart = matCamera.vPos;
+
+			//// Find the target position
+			//CVector vecFront = *pActive->GetFront ();
+			//vecFront.Normalize ();
+			//vecTarget = *pActive->GetSource () + vecFront * fRange;
+
+			// BONE_RIGHTHAND, BONE_RIGHTWRIST
+			// Grab the gun muzzle position
+			// this needs to also have the Z and left-right axis corrected and rotated
+			// so the rear of the barrel is matched too
+			eWeaponSlot eSlot = pPedSelf->GetCurrentWeaponSlot();
+			CWeapon* pPlayerWeapon = pPedSelf->GetWeapon( eSlot );
+			CWeaponInfo* pCurrentWeaponInfo = pPlayerWeapon->GetInfo();
+			CVector vecGunMuzzle = *pCurrentWeaponInfo->GetFireOffset();
+			pPedSelf->GetTransformedBonePosition( BONE_RIGHTWRIST, &vecGunMuzzle );
+
+			// Grab the target point
+			//pCamera->Find3rdPersonCamTargetVector( fRange, &vecGunMuzzle, &vecStart, &vecTarget );
+
+			CVector vecRightWrist;
+			pPedSelf->GetBonePosition( BONE_RIGHTWRIST, &vecRightWrist );
+
+			CVector vecAimMult = vecGunMuzzle - vecRightWrist;
+			vecAimMult.Normalize();
+			CVector vecAimEnd = vecGunMuzzle + (vecAimMult * 40.0f);
+
+			render->DrawLine( CVecToD3DXVEC(vecGunMuzzle), CVecToD3DXVEC(vecRightWrist), D3DCOLOR_ARGB(255, 0, 255, 0) );
+			render->DrawLine( CVecToD3DXVEC(vecGunMuzzle), CVecToD3DXVEC(vecAimEnd), D3DCOLOR_ARGB(255, 255, 0, 0) );
+*/
+
+
 			// OLD ASS AIM
-			static int			prev_id;
-			static float		adj_rx, adj_rz, prev_rx, prev_rz;
-			float				rx = *(float *)0x00B6F248;
-			float				rz = *(float *)0x00B6F258;
+			static int prev_id;
+			static float adj_rx, adj_rz, prev_rx, prev_rz;
+			float rx = *(float *)0x00B6F248;
+			float rz = *(float *)0x00B6F258;
 
-			int					nearest_id = actor_find_nearest( ACTOR_ALIVE );
-			struct actor_info	*nearest;
-			float				vect[3], ax, az;
+			int nearest_id = actor_find_nearest(ACTOR_ALIVE);
+			struct actor_info *nearest;
+			float vect[3], ax, az;
 
-			if ( nearest_id == -1 )
+			if(nearest_id == -1)
 			{
-				cheat_state_text( "No players found; auto aim disabled." );
+				cheat_state_text("No players found; auto aim disabled.");
 				cheat_state->actor.autoaim = 0;
 				return;
 			}
 
-			if ( nearest_id == prev_id )
+			if(nearest_id == prev_id)
 			{
 				adj_rx += rx - prev_rx;
 				adj_rz += rz - prev_rz;
 			}
-
 			prev_id = nearest_id;
 
-			if ( (nearest = actor_info_get(nearest_id, ACTOR_ALIVE)) == NULL )
-				return; /* won't happen */
+			if((nearest = actor_info_get(nearest_id, ACTOR_ALIVE)) == NULL)
+				return;  // won't happen
 
-			/*cheat_state_text("%.3f %.3f %d %d", adj_rx, adj_rz, nearest->state, nearest->state_running);*/
-			/* calculate distance vector */
-			vect3_vect3_sub( &nearest->base.matrix[4 * 3], &info->base.matrix[4 * 3], vect );
+			//cheat_state_text("%.3f %.3f %d %d", adj_rx, adj_rz, nearest->state, nearest->state_running);
 
-			/* z angle */
-			az = atan2f( vect[0], vect[1] );
+			// calculate distance vector
+			vect3_vect3_sub(&nearest->base.matrix[4*3], &info->base.matrix[4*3], vect);
 
-			/* rotate around z axis */
-			vect[1] = sinf( az ) * vect[0] + cosf( az ) * vect[1];
+			// z angle
+			az = atan2f(vect[0], vect[1]);
 
-			/* x angle */
-			ax = atan2f( vect[1], vect[2] );
+			// rotate around z axis
+			vect[1] = sinf(az) * vect[0] + cosf(az) * vect[1];
+
+			// x angle
+			ax = atan2f(vect[1], vect[2]);
 
 			ax = -ax + M_PI / 2.0f + adj_rx;
 			az = -az - M_PI / 2.0f + adj_rz;
 
-			if ( ax < -M_PI )
+			if(ax < -M_PI)
 				ax = -M_PI;
-			else if ( ax > M_PI )
+			else if(ax > M_PI)
 				ax = M_PI;
 
-			/* XXX make function */
+			// XXX make function
 			prev_rx = *(float *)0x00B6F248 = ax;
 			prev_rz = *(float *)0x00B6F258 = az;
-		}
-	}
 
-
-
-
+			
+			
 /*
-	// let's aim, shall we?
-	if ( cheat_state->actor.autoaim )//&& isAimKeyDown )
-	{
-		// only for certain weapons
-		eWeaponSlot selfSlot = pPedSelf->GetCurrentWeaponSlot();
-		switch ( selfSlot )
-		{
-		case WEAPONSLOT_TYPE_UNARMED:
-		case WEAPONSLOT_TYPE_MELEE:
-		case WEAPONSLOT_TYPE_THROWN:
-		case WEAPONSLOT_TYPE_SPECIAL:
-		case WEAPONSLOT_TYPE_GIFT:
-		case WEAPONSLOT_TYPE_PARACHUTE:
-		case WEAPONSLOT_TYPE_DETONATOR:
-			// we don't want to aim for these weapons
-			return;
-		//case WEAPONSLOT_TYPE_HANDGUN:
-		//case WEAPONSLOT_TYPE_SHOTGUN:
-		//case WEAPONSLOT_TYPE_SMG:
-		//case WEAPONSLOT_TYPE_MG:
-		//case WEAPONSLOT_TYPE_RIFLE:
-		//case WEAPONSLOT_TYPE_HEAVY:
-		}
-
-
-int lineSpace = 0;
-char buf[128];
-
-
-		// main aim vectors
-		CVector vecSelfAimPos, vecAimFromPos, vecAimToPos;
-
-		// reused rotation variables
-		float theta;
-		CVector vecRightBlank = CVector(1.0f, 1.0f, 0.0f);
-		CVector vecUpBlank = CVector(1.0f, 0.0f, 1.0f);
-
-		// get our position
-		pPedSelf->GetBonePosition(BONE_RIGHTHAND, &vecSelfAimPos);
-		CVector vecSelfPos = pPedSelf->GetInterface()->Placeable.matrix->vPos;
-
-
-
-
-		// get the weapon's cam object/s
-		//float rx = *(float *)0x00B6F248; // CCamSAInterface::m_fTargetBeta
-		//float rz = *(float *)0x00B6F258; // CCamSAInterface::m_fTrueAlpha
-		CCamSA *pSelfWeaponCam1 = new CCamSA((CCamSAInterface *)0x00B6F19C);
-		//CCamSA *pSelfWeaponCam2 = new CCamSA((CCamSAInterface *)0x00B6F3D4);
-		//CCamSA *pSelfWeaponCam3 = new CCamSA((CCamSAInterface *)0x00B6F60C);
-
-		// weapon cam vector
-		CVector *pSelfWeapCamFront = pSelfWeaponCam1->GetFront();
-		CVector SelfWeapCamFront;
-		SelfWeapCamFront.fX = pSelfWeapCamFront->fX;
-		SelfWeapCamFront.fY = pSelfWeapCamFront->fY;
-		SelfWeapCamFront.fZ = pSelfWeapCamFront->fZ;
-*/
-/*
-		SelfWeapCamFront.fX = 1.0f;
-		SelfWeapCamFront.fY = 0.0f;
-		SelfWeapCamFront.fZ = pSelfWeaponCam1->GetInterface()->m_fTrueAlpha;
-		// rotate vec toward aim
-		CMatrix weapAimRotate;
-		theta = M_PI / ( pSelfWeaponCam1->GetInterface()->m_fTrueBeta / 2 );
-		weapAimRotate.vFront = SelfWeapCamFront;
-		weapAimRotate = weapAimRotate.Rotate( &vecUpBlank, theta );
-
-		SelfWeapCamFront = weapAimRotate.vFront;
-
-
 sprintf( buf, "m_fTrueAlpha: %.4f", pSelfWeaponCam1->GetInterface()->m_fTrueAlpha );
 pD3DFontFixed->PrintShadow(450, 50 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
 lineSpace += 12;
@@ -312,131 +289,9 @@ sprintf( buf, "m_fTrueBeta: %.4f", pSelfWeaponCam1->GetInterface()->m_fTrueBeta 
 pD3DFontFixed->PrintShadow(450, 50 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
 lineSpace += 12;
 */
-/*
-		CVector ffFront = SelfWeapCamFront;
 
-		// weapon fire offset, switch of X and Y so it points north
-		CWeaponInfo *pPedSelfWeapInfo = pPedSelf->GetWeapon(pPedSelf->GetCurrentWeaponSlot())->GetInfo();
-		CVector *pSelfWeapFireOffset = pPedSelfWeapInfo->GetFireOffset();
-		CVector SelfWeapFireOffset;
-		SelfWeapFireOffset.fX = pSelfWeapFireOffset->fX;
-		SelfWeapFireOffset.fY = pSelfWeapFireOffset->fY;
-		SelfWeapFireOffset.fZ = pSelfWeapFireOffset->fZ;
-
-		// save this so we can restore proper length after offset rotation
-		float weapOffsetLength = SelfWeapFireOffset.Length();
-
-		// weapon offset rotation variables
-		CMatrix weapOffsetRotate;
-
-		// rotate offset toward north
-		theta = M_PI / 4.0f;
-		weapOffsetRotate.vFront = SelfWeapFireOffset;
-		weapOffsetRotate = weapOffsetRotate.Rotate( &vecUpBlank, -theta );
-
-		// normalize some values for offset rotation
-		SelfWeapCamFront.Normalize();
-		SelfWeapFireOffset.Normalize();
-
-		// rotate fire offset to aim
-		theta = acos( SelfWeapFireOffset.DotProduct(&SelfWeapCamFront) );
-		if ( theta > FLOAT_EPSILON )
-		{
-			SelfWeapFireOffset.CrossProduct( &SelfWeapCamFront );
-			SelfWeapFireOffset.Normalize();
-			SelfWeapFireOffset.ZeroNearZero();
-			weapOffsetRotate = weapOffsetRotate.Rotate( &SelfWeapFireOffset, -theta );
-		}
-		SelfWeapFireOffset = weapOffsetRotate.vFront * weapOffsetLength;
-
-
-sprintf( buf, "weapOffsetLength: %.4f", weapOffsetLength );
-pD3DFontFixed->PrintShadow(450, 50 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
-lineSpace += 12;
-sprintf( buf, "theta: %.4f", theta );
-pD3DFontFixed->PrintShadow(450, 50 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
-lineSpace += 12;
-
-
-		//CMatrix *pSelfWeapMatrix1 = (CMatrix *)0xB6FE40;
-		//CVector *pSelfWeapVec1 = (CVector *)0xB6FDA4;
-		//CVector *pSelfWeapVec2 = (CVector *)0xB6FDB8;
-		//CVector SelfWeapBoneOffset = pPedSelf->GetPedInterface()->pPlayerData->m_vecTargetBoneOffset;
-
-
-
-
-
-
-
-		// set the final aim variables
-		vecAimFromPos = vecSelfAimPos + SelfWeapFireOffset;
-		//vecAimToPos = vecSelfPos + (ffFront * 2);
-		vecAimToPos = vecAimFromPos + (ffFront * 10);
-		render->DrawLine(CVecToD3DXVEC(vecAimFromPos), CVecToD3DXVEC(vecAimToPos), D3DCOLOR_ARGB(128, 0, 255, 0));
-
-
-
-
-
-		// potentially great stuff tho
-		//pPedSelf->GetPedInterface()->pPlayerData->m_vecTargetBoneOffset;
-
-		//vecWeaponOffset = pPedSelf->GetWeapon(selfSlot)->GetInfo()->GetFireOffset();
-
-		//vecWeaponOffset = pPedSelf->GetPedInterface()->vecUnk5;
-		//vecWeaponOffset = pPedSelf->GetPedInterface()->vecUnk6;
-		//vecWeaponPos.fX = vecWeaponOffset->fX;
-		//vecWeaponPos.fY = vecWeaponOffset->fY;
-		//vecWeaponPos.fZ = vecWeaponOffset->fZ;
-
-		//vecWeaponPos = 
-
-
-
-
-
-
-
-
-		// setup iterator
-		CPedSA		*iterPed = NULL;
-		CVector		iterPedPos;
-
-
-		CPoolsSA	*pPools = reinterpret_cast < CPoolsSA * > ( pGameInterface->GetPools() );
-		CPoolsSA::pedPool_t::mapType::iterator iter = pPools->m_pedPool.map.begin();
-
-		// get variables for peds streamed in
-		while ( iter.pos < iter.end )
-		{
-			// map iterator pointer to our pointer
-			iterPed = iter.pos->second;
-
-			// advance to next item for next pass
-			iter.pos++;
-			if ( !iterPed )
-				continue;
-
-			// get CPed position
-			//iterPedPos = iterPed->GetInterface()->Placeable.matrix->vPos;
-			iterPed->GetBonePosition(BONE_SPINE1, &iterPedPos);
-			//iterPed->GetPedInterface()->pPlayerData->m_fLookPitch;
-			//iterPed->GetPedInterface()->vecUnk5;
-			//iterPed->GetPedInterface()->vecUnk6;
-
-			render->DrawLine(CVecToD3DXVEC(vecAimFromPos), CVecToD3DXVEC(iterPedPos), D3DCOLOR_ARGB(128, 255, 0, 0));
-
-			//render->DrawLine(vecGravColOrigin, vecGravTargetNorm, D3DCOLOR_ARGB(128, 0, 255, 0));
-
-
-			//pPedSelf->GetWeapon(WEAPONSLOT_TYPE_RIFLE)->GetInfo()->GetFireOffset()
-
-		}
-
-	}
-*/
-
+		} // if ( cheat_state->actor.autoaim )
+	} // if ( !set.use_gta_autoaim )
 }
 
 void cheat_handle_actor_air_brake ( struct actor_info *info, double time_diff )

@@ -1260,15 +1260,16 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 			if ( set.fly_heliMode || class_id == VEHICLE_CLASS_BIKE )
 			{
 				temp->pFlyData->pitch = 0.0035f;
-				temp->pFlyData->circleAround = -0.0003f;
 
 				if ( class_id == VEHICLE_CLASS_BIKE )
 				{
-					temp->pFlyData->roll_lr = -0.01f;		// rolling isn't working with bikes correctly yet
+					temp->pFlyData->roll_lr = -0.01f; // rolling isn't working with motorized bikes yet
+					temp->pFlyData->circleAround = -0.0006f;
 				}
 				else
 				{
 					temp->pFlyData->roll_lr = -0.004f;
+					temp->pFlyData->circleAround = -0.0003f;
 				}
 			}
 
@@ -1286,7 +1287,7 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 				{
 					temp->pFlyData->pitch = 0.0005f;
 					temp->pFlyData->roll_lr = 0.005f;
-					temp->pFlyData->circleAround = -0.0005f;
+					temp->pFlyData->circleAround = -0.001f;
 				}
 			}
 

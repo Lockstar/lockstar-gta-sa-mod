@@ -83,7 +83,6 @@ struct settings
 	int						hp_tire_support;
 
 	int						key_autoaim_toggle;
-	int						key_autoaim_aim;
 	int						use_gta_autoaim;
 
 	int						key_map;

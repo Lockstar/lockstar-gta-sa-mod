@@ -551,8 +551,6 @@ static void ini_init ( void )
 	/* auto aim */
 	if ( (ent = ini_register_entry("key_autoaim_toggle", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_autoaim_toggle, "z" );
-	if ( (ent = ini_register_entry("key_autoaim_aim", TYPE_KEY)) != NULL )
-		ini_register_data( ent, &set.key_autoaim_aim, "lbutton" );
 	if ( (ent = ini_register_entry("use_gta_autoaim", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.use_gta_autoaim, "false" );
 

@@ -65,8 +65,8 @@ int cheat_panic ( void )
 				CVehicle	*pVehicleSelf = pPedSelf->GetVehicle();
 				pVehicleSelf->SetGravity( &CVector(0.0, 0.0, -1.0) );
 				pVehicleSelf->GetInterface()->nImmunities &= ~VEHICLE_FLAGS_INVULNERABLE;
-				if ( pVehicleSelf->GetHealth() > 100.0f )
-					pVehicleSelf->SetHealth( 100.0f );
+				if ( pVehicleSelf->GetHealth() > 1000.0f )
+					pVehicleSelf->SetHealth( 1000.0f );
 			}
 
 			// hud bar, this should probably become a cheat_state
