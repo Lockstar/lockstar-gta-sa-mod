@@ -2294,7 +2294,7 @@ void renderChat ( void )
 
 	static int	chat_last = -1, chat_render;
 
-	if ( KEY_RELEASED(VK_TAB) && set.d3dscore )
+	if ( KEY_RELEASED(VK_TAB) && set.d3dtext_score )
 
 	{
 		g_Chat->iChatWindowMode = state_chatWindow;
