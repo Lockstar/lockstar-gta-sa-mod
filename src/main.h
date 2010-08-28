@@ -27,7 +27,7 @@
 #define _CRT_SECURE_NO_WARNINGS 1
 
 // main switch for development or release build
-#define M0D_DEV
+//#define M0D_DEV
 
 #define M0D_NAME		"m0d_s0beit_sa"
 #define M0D_VERSION		"v4.1.0.0"
@@ -195,6 +195,7 @@
 #include "proxyIDirect3D9.h"
 #include "proxyIDirect3DDevice9.h"
 
+// main.cpp functions
 void							traceLastFunc ( const char *szFunc );
 void							Log ( const char *fmt, ... );
 void							LogChatbox ( bool bLast, const char *fmt, ... );

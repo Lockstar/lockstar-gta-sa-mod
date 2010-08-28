@@ -184,6 +184,7 @@ struct cheat_state_vehicle
 	int		blinking_carlights_turnstate;
 	DWORD	blinking_carlights_lastblink;
 	int		fly;
+	float	hitpoints_last;
 };
 
 struct cheat_state_teleport
