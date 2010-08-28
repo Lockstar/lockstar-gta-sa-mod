@@ -56,7 +56,7 @@
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
 				FloatingPointModel="2"
-				UsePrecompiledHeader="1"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="main.h"
 				WarningLevel="3"
 				DisableSpecificWarnings="4995;4244;4996;4482;4409;4250;"
@@ -1791,16 +1791,20 @@
 			</Filter>
 		</Filter>
 		<File
-			RelativePath=".\ClassDiagram1.cd"
-			>
-		</File>
-		<File
 			RelativePath=".\m0d_s0beit_sa.def"
 			>
 		</File>
 		<File
 			RelativePath=".\main.cpp"
 			>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					UsePrecompiledHeader="1"
+				/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath=".\main.h"

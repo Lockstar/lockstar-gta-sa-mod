@@ -1,5 +1,11 @@
+m0d_s0beit_sa
+by jflm, nuckfuts, notaplane, and the game modification community
+http://code.google.com/p/m0d-s0beit-sa/
+
+
 Version 4.1.0.0
 * Support for SA-MP 0.3a.
+* This is the only official version of m0d_s0beit_sa for SA-MP 0.3a.
 * Fixed so many things that it's retarded to list them here.
 * Added menu to add upgrades (Wangs/etc) to your vehicle anywhere.
 * Added SpiderWheels, drive on anything! Default: Numpad 5
@@ -7,28 +13,11 @@ Version 4.1.0.0
 * Added toggleable infinite NOS. Default: Numpad 0
 * Added switchable car lights. Default: F2 to switch modes.
 * Added toggleable vehicle collisions except for your vehicle.
+* Added ability to walk/drive through walls.
 * Added left & right 90 degree buttons to Quick Turn. Default: [ and ]
 * Added function in menu (GTA->Cheats) to avoid loosing Trailer.
 * Added option in menu (GTA->Misc) to toggle windowed mode.
 * Added Nitro/Brake & 180 degree quick turn ability to trains.
-
-
-COMMITTING:
-
-
-TEST:
-<Kimia> if you hold tab then hold F5, then release tab, then release
-	F5 then your chat windows font will change(of course i had d3d
-	score enabled)
-
-
-TODO:
-fix aimbot
-rebuild weapon cheat
-make sure F12 panic key & clean screenshots is disabling everything
-
-
-
 
 Version 4.0.5.0
 * Final version for SA:MP v0.2.XU1_2 & U:MP vT3

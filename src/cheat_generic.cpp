@@ -41,7 +41,9 @@ int cheat_panic ( void )
 		pstate_d3dtext_hud = 0, // hud bar
 		pstate_actor_hp = 0, // "Extra actor invincibility" patch
 		pstate_generic_menu = 0, // m0d's menu
-		pstate_ini[INI_PATCHES_MAX]; // patches
+		pstate_infnos = 0, // infinite NOS
+		pstate_ini[INI_PATCHES_MAX],
+		pstate_dummy_aligner; // this should all be a structure, static = DOING IT WRONG
 	int			i;
 
 	// sa-mp related
@@ -57,20 +59,30 @@ int cheat_panic ( void )
 		{
 			struct actor_info	*actor_info = actor_info_get( ACTOR_SELF, ACTOR_ALIVE );
 
-			if ( actor_info != NULL )
+			if ( actor_info )
 			{
 				actor_info->flags &= ~ACTOR_FLAGS_INVULNERABLE;
 				actor_info->weapon_slot = 0;
 			}
 
-			CPed	*pPedSelf = pPools->GetPedFromRef( CPOOLS_PED_SELF_REF );
+			// remove infinite NOS
+			pstate_infnos = cheat_state->vehicle.infNOS_toggle_on;
+			cheat_state->vehicle.infNOS_toggle_on = false;
+			patcher_remove( &patch_vehicle_inf_NOS );
+
+			// we shouldn't have to update pPedSelf here
+			//CPed	*pPedSelf = pPools->GetPedFromRef( CPOOLS_PED_SELF_REF );
 			if ( pPedSelf->GetVehicle() )
 			{
 				CVehicle	*pVehicleSelf = pPedSelf->GetVehicle();
 				pVehicleSelf->SetGravity( &CVector(0.0, 0.0, -1.0) );
 				pVehicleSelf->GetInterface()->nImmunities &= ~VEHICLE_FLAGS_INVULNERABLE;
-				if ( pVehicleSelf->GetHealth() > 1000.0f )
-					pVehicleSelf->SetHealth( 1000.0f );
+				// remove inf NOS
+				if ( pstate_infnos )
+				{
+					pVehicleSelf->RemoveVehicleUpgrade( 1010 );
+					//pVehicleSelf->AddVehicleUpgrade( 1010 );
+				}
 			}
 
 			// hud bar, this should probably become a cheat_state
@@ -89,13 +101,9 @@ int cheat_panic ( void )
 			pstate_actor_hp = patch_actor_hp.installed;
 			patcher_remove( &patch_actor_hp );
 
-			// not working for some reason
-			//patcher_remove( &patch_NotAPlane );
+			// just call with null vehicle info to disable
 			cheat_handle_vehicle_fly( NULL, 0.0f );
 
-			// why is this commented out?
-			//patcher_remove( &patch_vehicle_inf_NOS );
-			
 			for ( i = 0; i < INI_PATCHES_MAX; i++ )
 			{
 				// added to not remove volatile patches
@@ -120,6 +128,28 @@ int cheat_panic ( void )
 		}
 		else
 		{
+			// restore infinite NOS
+			if ( pstate_infnos )
+			{
+				cheat_state->vehicle.infNOS_toggle_on = true;
+				patcher_install( &patch_vehicle_inf_NOS );
+			}
+
+			// vehicle stuff
+			CPed	*pPedSelf = pPools->GetPedFromRef( CPOOLS_PED_SELF_REF );
+			if ( pPedSelf->GetVehicle() )
+			{
+				CVehicle	*pVehicleSelf = pPedSelf->GetVehicle();
+				// restore inf NOS
+				if ( pstate_infnos )
+				{
+					pVehicleSelf->AddVehicleUpgrade( 1010 );
+				}
+				// set the vehicle health for damage reducer
+				cheat_state->vehicle.hitpoints_last = pVehicleSelf->GetHealth();
+			}
+
+
 			// restore "Extra actor invincibility" patch
 			if ( pstate_actor_hp )
 				patcher_install( &patch_actor_hp );
@@ -505,7 +535,6 @@ void cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *act
 
 	if ( vehicle_info != NULL )
 	{
-		static float		hitpoints_last = 1000.0f;
 		struct vehicle_info *info = vehicle_info;
 		struct vehicle_info *temp;
 
@@ -516,15 +545,16 @@ void cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *act
 			{
 				if ( cheat_state->vehicle.hp_damage_reduce_on && !near_zero(set.hp_damage_reduce) )
 				{
-					if ( info->hitpoints < hitpoints_last )
+					if ( info->hitpoints < cheat_state->vehicle.hitpoints_last )
 					{
-						float	diff = hitpoints_last - info->hitpoints;
+						float	diff = cheat_state->vehicle.hitpoints_last - info->hitpoints;
 
 						for ( temp = info; temp != NULL; temp = temp->trailer )
 						{
-							/* XXX - this is probably wrong :S */
-							temp->hitpoints = hitpoints_last - diff * ( 1.0f - set.hp_damage_reduce / 100.0f );
+							// XXX - this is probably wrong :S
+							temp->hitpoints = cheat_state->vehicle.hitpoints_last - diff * ( 1.0f - set.hp_damage_reduce / 100.0f );
 
+							// plus for SAMP trailer damage isn't synced
 							if ( !set.trailer_support )
 								break;
 						}
@@ -604,7 +634,7 @@ void cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *act
 			}
 		}
 
-		hitpoints_last = info->hitpoints;
+		cheat_state->vehicle.hitpoints_last = info->hitpoints;
 	}
 
 	if ( actor_info != NULL )
