@@ -126,10 +126,11 @@ void cheat_handle_actor_autoaim ( struct actor_info *info, double time_diff )
 
 	if ( !set.use_gta_autoaim )
 	{
-
 		// should we be trying to aim or not?
-		bool isAimKeyDown = false;
-		CControllerConfigManager *pPadConfig = pGameInterface->GetControllerConfigManager();
+		bool						isAimKeyDown = false;
+		CControllerConfigManager	*pPadConfig = pGameInterface->GetControllerConfigManager();
+
+		// doesnt seem to work in single player with pPadConfig and keyboard input?
 		if ( pPadConfig->GetInputType() )
 		{
 			// mouse + keyboard
@@ -227,52 +228,53 @@ void cheat_handle_actor_autoaim ( struct actor_info *info, double time_diff )
 
 
 			// OLD ASS AIM
-			static int prev_id;
-			static float adj_rx, adj_rz, prev_rx, prev_rz;
-			float rx = *(float *)0x00B6F248;
-			float rz = *(float *)0x00B6F258;
+			static int			prev_id;
+			static float		adj_rx, adj_rz, prev_rx, prev_rz;
+			float				rx = *(float *)0x00B6F248;
+			float				rz = *(float *)0x00B6F258;
 
-			int nearest_id = actor_find_nearest(ACTOR_ALIVE);
-			struct actor_info *nearest;
-			float vect[3], ax, az;
+			int					nearest_id = actor_find_nearest( ACTOR_ALIVE );
+			struct actor_info	*nearest;
+			float				vect[3], ax, az;
 
-			if(nearest_id == -1)
+			if ( nearest_id == -1 )
 			{
-				cheat_state_text("No players found; auto aim disabled.");
+				cheat_state_text( "No players found; auto aim disabled." );
 				cheat_state->actor.autoaim = 0;
 				return;
 			}
 
-			if(nearest_id == prev_id)
+			if ( nearest_id == prev_id )
 			{
 				adj_rx += rx - prev_rx;
 				adj_rz += rz - prev_rz;
 			}
+
 			prev_id = nearest_id;
 
-			if((nearest = actor_info_get(nearest_id, ACTOR_ALIVE)) == NULL)
-				return;  // won't happen
+			if ( (nearest = actor_info_get(nearest_id, ACTOR_ALIVE)) == NULL )
+				return; // won't happen
 
 			//cheat_state_text("%.3f %.3f %d %d", adj_rx, adj_rz, nearest->state, nearest->state_running);
 
 			// calculate distance vector
-			vect3_vect3_sub(&nearest->base.matrix[4*3], &info->base.matrix[4*3], vect);
+			vect3_vect3_sub( &nearest->base.matrix[4 * 3], &info->base.matrix[4 * 3], vect );
 
 			// z angle
-			az = atan2f(vect[0], vect[1]);
+			az = atan2f( vect[0], vect[1] );
 
 			// rotate around z axis
-			vect[1] = sinf(az) * vect[0] + cosf(az) * vect[1];
+			vect[1] = sinf( az ) * vect[0] + cosf( az ) * vect[1];
 
 			// x angle
-			ax = atan2f(vect[1], vect[2]);
+			ax = atan2f( vect[1], vect[2] );
 
 			ax = -ax + M_PI / 2.0f + adj_rx;
 			az = -az - M_PI / 2.0f + adj_rz;
 
-			if(ax < -M_PI)
+			if ( ax < -M_PI )
 				ax = -M_PI;
-			else if(ax > M_PI)
+			else if ( ax > M_PI )
 				ax = M_PI;
 
 			// XXX make function

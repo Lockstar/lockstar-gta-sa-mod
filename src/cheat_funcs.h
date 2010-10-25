@@ -343,6 +343,7 @@ const struct vehicle_upgrade_info	cveh_upgrade_info[VEHICLE_UPGRADES_COUNT] =
 // this blows the doors off Microsoft's version, mmmmkay
 int									isBadPtr_GTA_pVehicleInfo ( vehicle_info *p_VehicleInfo );
 int									isBadPtr_GTA_pActorInfo ( actor_info *p_ActorInfo );
+int									isBadPtr_GTA_pBuildingInfo ( DWORD p_BuildingInfo );
 bool								isBadPtr_handlerAny ( void *pointer, ULONG size, DWORD dwFlags );
 bool								isBadPtr_readAny ( void *pointer, ULONG size );
 bool								isBadPtr_writeAny ( void *pointer, ULONG size );
@@ -453,4 +454,4 @@ extern const struct interiors		interiors_list[];
 CVehicle							*getSelfCVehicle ( void );
 int									getVehicleGTAIDFromInterface ( DWORD *vehicle );
 int									getPedGTAIDFromInterface ( DWORD *ped );
-D3DXVECTOR3							CVecToD3DXVEC (CVector vec);
+D3DXVECTOR3							CVecToD3DXVEC ( CVector vec );

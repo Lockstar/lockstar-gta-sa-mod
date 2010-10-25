@@ -236,6 +236,8 @@ struct cheat_state_generic
 	DWORD	nocols_change_tick;
 
 	int		cheat_panic_enabled;
+
+	int		unrelatedToAnything;
 };
 
 struct cheat_state_hooks
@@ -482,7 +484,38 @@ struct actor_info
 	//CPlayerPedDataSAInterface *pPlayerData; /* 1152 */
 	ped_intelligence	*animation;			/* 1148 - Ped Intelligence */
 
-	uint8_t				__unknown_1152[92]; /* 1152 */
+	uint8_t				__unknown_1152[12]; /* 1152 */
+
+	// relative body-part-positions
+	void				*pNeck;				/* 1164 - void* pNeck
+	  (pChest?)
+	   - 4 unknown
+	   - float height
+	   - float front/back
+	   - float left/right
+	   - void* pObject
+	   (same struct for the following body-part-pointers [except pLeft/RightArm])
+	*/
+	void				*pHead;				/* 1168 */
+	void				*pLeftArm;			/* 1172 */
+	void				*pRightArm;			/* 1176 */
+	void				*pLeftLowArm;		/* 1180 */
+	void				*pRightLowArm;		/* 1184 */
+	void				*pLeftLeg;			/* 1188 */
+	void				*pRightLeg;			/* 1192 */
+	void				*pLeftLowLeg;		/* 1196 */
+	void				*pRightLowLeg;		/* 1200 */
+	void				*pRightMidLeg;		/* 1204 */
+	void				*pLeftMidLeg;		/* 1208 */
+	void				*pLeftMidArm;		/* 1212 */
+	void				*pRightMidArm;		/* 1216 */
+	void				*pLeftShoulder;		/* 1220 */
+	void				*pRightShoulder;	/* 1224 */
+	void				*pChest;			/* 1228 */
+	void				*pMouth;			/* 1232 */
+	// end of body-part-positions
+
+	uint8_t				__unknown_1236[8];	/* 1236 */
 	float				runspeed;			/* 1244 */
 	uint8_t				__unknown_1248[36]; /* 1248 */
 	uint16_t			muzzle_flash;		/* 1284 */
@@ -695,7 +728,17 @@ struct vehicle_info
 	unsigned char		lights_status_rear : 1;
 
 	// end of light damage states
-	uint8_t				__unknown_1457[7];			/* 1457 - 1475 related to doorHood (byte??)*/
+	uint8_t				__unknown_1457[3];			/* 1457 - 1475 related to doorHood (byte??)*/
+
+	// misc damage states
+	unsigned char		car_status_left : 4;		/* 1460 - 0 = ok, 1 = damaged, 2 = free movement, 3 = lost - same status codes for following bumper/windshield */
+	unsigned char		car_status_right : 4;
+	uint8_t				car_bumper_status;			/* 1461 - unknown */
+	unsigned char		car_windshield_status : 4;
+	unsigned char		car_bumper_status_front : 4;
+	uint8_t				car_bumper_status_rear;
+	// end of misc damage states
+
 	CTrainFlags			m_trainFlags;				/* 1464 */
 	uint8_t				__unknown_1468[8];			/* 1468 */
 	float				doorHood_dist;				/* 1476 - positive = open */

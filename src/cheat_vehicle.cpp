@@ -154,11 +154,6 @@ void cheat_vehicle_teleport ( struct vehicle_info *info, const float pos[3], int
 	}
 }
 
-void cheat_handle_vehicle_unjacker ( struct vehicle_info *info, float time_diff )
-{
-	//ds
-}
-
 //Making the vehicle instant jumping and the trailer attaching easier
 void cheat_handle_vehicle_nocols ( struct vehicle_info *info )
 {
@@ -579,7 +574,7 @@ void cheat_handle_vehicle_brake ( struct vehicle_info *info, double time_diff )
 		{
 			speed = vect3_length( temp->speed );
 			vect3_normalize( temp->speed, temp->speed );
-			speed -= time_diff * set.brake_mult;
+			speed -= time_diff * set.brake_mult / 1.3f;
 
 			if ( speed < 0.0f )
 				speed = 0.0f;
@@ -1214,8 +1209,9 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 		cheat_state->vehicle.fly ^= 1;
 
 	// ignore hydra, RC Baron and RC Goblin (they seem to use some special functions to fly)
-	if ( vehicle_info->base.model_alt_id == 520 || vehicle_info->base.model_alt_id == 464
-		|| vehicle_info->base.model_alt_id == 501 )
+	if ( vehicle_info->base.model_alt_id == 520
+	 ||	 vehicle_info->base.model_alt_id == 464
+	 ||	 vehicle_info->base.model_alt_id == 501 )
 	{
 		if ( patch_NotAPlane.installed )
 			patcher_remove( &patch_NotAPlane );
@@ -1264,7 +1260,7 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 
 				if ( class_id == VEHICLE_CLASS_BIKE )
 				{
-					temp->pFlyData->roll_lr = -0.01f; // rolling isn't working with motorized bikes yet
+					temp->pFlyData->roll_lr = -0.01f;			// rolling isn't working with motorized bikes yet
 					temp->pFlyData->circleAround = -0.0006f;
 				}
 				else
@@ -1280,9 +1276,9 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 				// use original physics for planes
 				if ( class_id == VEHICLE_CLASS_AIRPLANE )
 				{
-					vehicle_info->pFlyData->pitch = plane_orig_data[0];
-					vehicle_info->pFlyData->roll_lr = plane_orig_data[1];
-					vehicle_info->pFlyData->circleAround = plane_orig_data[2];
+					temp->pFlyData->pitch = plane_orig_data[0];
+					temp->pFlyData->roll_lr = plane_orig_data[1];
+					temp->pFlyData->circleAround = plane_orig_data[2];
 				}
 				else
 				{
@@ -1292,10 +1288,15 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 				}
 			}
 
+			if ( vect3_length( temp->speed ) < 0.0f )
+			{
+				continue;
+			}
+
 			//  steering  //
 			float	one = 0.9997f;
 			float	min = -0.9997f;
-			if ( *(uint8_t *) (GTA_KEYS + 0x1C) == 0xFF )	//accel
+			if ( *(uint8_t *) (GTA_KEYS + 0x1C) == 0xFF )		//accel
 			{
 				__asm push min
 			}

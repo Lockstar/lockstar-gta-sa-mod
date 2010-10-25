@@ -1058,3 +1058,54 @@ void cheat_handle_emo ( struct vehicle_info *vehicle_info, struct actor_info *ac
 		}
 	}
 }
+
+// sa-mp only
+void cheat_handle_antiHijack ( actor_info *ainfo, vehicle_info *veh, float time_diff )
+{
+	if ( g_SAMP == NULL )
+		return;
+
+	traceLastFunc( "cheat_handle_antiHijack()" );
+
+	if ( set.anti_carjacking && veh == NULL )
+	{
+		if ( cheat_state->_generic.got_vehicle_id )
+			cheat_state->_generic.got_vehicle_id = false;
+		if ( cheat_state->_generic.anti_carjackTick
+		 &&	 cheat_state->_generic.anti_carjackTick < (GetTickCount() - 500)
+		 &&	 cheat_state->_generic.car_jacked )
+		{
+			if ( cheat_state->_generic.car_jacked_last_vehicle_id == 0 )
+			{
+				showGameText( "~r~Unable To Unjack~w~!", 1000, 5 );
+				cheat_state->_generic.anti_carjackTick = 0;
+				cheat_state->_generic.car_jacked = false;
+				return;
+			}
+
+			cheat_state->_generic.anti_carjackTick = 0;
+			cheat_state->_generic.car_jacked = false;
+			cheat_state->_generic.unrelatedToAnything = 1337;
+			ScriptCommand( &put_actor_in_car, 1, cheat_state->_generic.car_jacked_last_vehicle_id );
+			cheat_state->_generic.unrelatedToAnything = 0x1337;
+
+			struct vehicle_info *veh = GetVehicleByGtaId( cheat_state->_generic.car_jacked_last_vehicle_id );
+			//if ( veh != NULL )
+			//	vect3_copy( cheat_state->_generic.car_jacked_lastPos, &veh->base.matrix[4 * 3] );
+			showGameText( "~r~Car Unjacked~w~!", 1000, 5 );
+			return;
+		}
+	}
+	else if ( set.anti_carjacking )
+	{
+		if ( veh->passengers[0] == actor_info_get(ACTOR_SELF, 0) )
+		{
+			if ( !cheat_state->_generic.got_vehicle_id )
+			{
+				cheat_state->_generic.car_jacked_last_vehicle_id = getPlayerVehicleGTAScriptingID( ACTOR_SELF );
+				if ( cheat_state->_generic.car_jacked_last_vehicle_id > 0 )
+					cheat_state->_generic.got_vehicle_id = true;
+			}
+		}
+	}
+}

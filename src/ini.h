@@ -22,10 +22,10 @@
 */
 #define INI_STRLEN_MAX		64	/* including null */
 #define INI_PATCHES_MAX		96
-#define INI_SAMPPATCHES_MAX 64
+#define INI_SAMPPATCHES_MAX 128 /*64*/
 #define INI_SERVERS_MAX		64
 #define INI_CHATMSGS_MAX	64
-#define INI_GUI_MAX			9
+#define INI_GUI_MAX			8
 
 struct settings_coord
 {
@@ -241,6 +241,8 @@ struct settings
 
 	int						logo_enable;
 
+	int						wallhack;
+
 	int						d3dtext_chat;
 	int						d3dtext_chat_lines;
 
@@ -251,6 +253,7 @@ struct settings
 	int						chatbox_logging;
 
 	int						nametags_show;
+	int						disable_line_of_sight;
 	float					line_of_sight_dist;
 	int						markers_show;
 
@@ -320,6 +323,8 @@ struct settings
 
 	int						key_rejoin;
 	int						rejoin_delay;
+
+	int						send_spec_data;
 
 	int						samp_runanimation_cj;
 

@@ -491,6 +491,25 @@ int isBadPtr_GTA_pActorInfo ( actor_info *p_ActorInfo )
 	return p_ActorInfo->base.matrix == NULL;
 }
 
+int isBadPtr_GTA_pBuildingInfo ( DWORD p_BuildingInfo )
+{
+	if ( p_BuildingInfo == NULL )
+		return 1;
+
+	struct pool *pool_building = *(struct pool **)BUILDING_POOL_POINTER;
+	if ( pool_building == NULL || pool_building->start == NULL || pool_building->size <= 0 )
+		return 1;
+
+	if ( !
+			 (
+			 (DWORD) p_BuildingInfo >= (DWORD) pool_building->start && (DWORD) p_BuildingInfo <=
+			 ((DWORD) pool_building->start + (pool_building->size * 56))
+ ) )
+		return 1;
+
+	return 0;
+}
+
 bool isBadPtr_handlerAny ( void *pointer, ULONG size, DWORD dwFlags )
 {
 	DWORD						dwSize;
@@ -1708,6 +1727,9 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 		||	us == 1016
 		||	us == 1000;
 
+	case 490:
+		return us == 1002 || us == 1016 || us == 1000 || us == 1020 || us == 1021 || us == 1019;
+
 	case 491:
 		return us == 1142
 		||	us == 1143
@@ -1762,6 +1784,22 @@ bool isUpgradeCompatible ( int iModelID, vehicle_info *vinfo )
 		||	us == 1008
 		||	us == 1009
 		||	us == 1010;
+
+	case 505:
+		return us == 1005
+		||	us == 1004
+		||	us == 1020
+		||	us == 1019
+		||	us == 1018
+		||	us == 1013
+		||	us == 1024
+		||	us == 1008
+		||	us == 1009
+		||	us == 1010
+		||	us == 1006
+		||	us == 1002
+		||	us == 1016
+		||	us == 1000;
 
 	case 506:
 		return us == 1009;
@@ -3094,7 +3132,7 @@ int getPedGTAIDFromInterface ( DWORD *ped )
 	return (int)( (DWORD) ped - (DWORD) pool_actor->start ) / 1988;
 }
 
-D3DXVECTOR3 CVecToD3DXVEC (CVector vec)
+D3DXVECTOR3 CVecToD3DXVEC ( CVector vec )
 {
 	return D3DXVECTOR3( vec.fX, vec.fY, vec.fZ );
 }
