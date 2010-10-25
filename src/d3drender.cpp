@@ -282,8 +282,8 @@ HRESULT CD3DFont::Initialize ( IDirect3DDevice9 *pD3Ddev )
 	int		iHeight = -m_fontHeight * (int)GetDeviceCaps( hDC, LOGPIXELSY ) / 72;
 
 	HFONT	hFont = CreateFont( iHeight, 0, 0, 0, (m_dwCreateFlags & FCR_BOLD) ? FW_BOLD : FW_NORMAL,
-								m_dwCreateFlags & FCR_ITALICS, false, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
-								CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, VARIABLE_PITCH, m_szFontName );
+								m_dwCreateFlags & FCR_ITALICS, false, false, DEFAULT_CHARSET, OUT_TT_PRECIS,
+								CLIP_DEFAULT_PRECIS, PROOF_QUALITY, VARIABLE_PITCH, m_szFontName );
 
 	if ( hFont == NULL )
 	{
@@ -329,8 +329,8 @@ HRESULT CD3DFont::Initialize ( IDirect3DDevice9 *pD3Ddev )
 		GetTextExtentPoint32( hDC, &ch, 1, &size );
 		if ( m_dwCreateFlags & FCR_BORDER )
 		{
-			size.cx += 2;
-			size.cy += 2;
+			size.cx += 3;
+			size.cy += 3;
 		}
 
 		if ( x + size.cx + m_chrSpacing > m_texWidth )
@@ -338,8 +338,8 @@ HRESULT CD3DFont::Initialize ( IDirect3DDevice9 *pD3Ddev )
 			x = m_chrSpacing;
 			if ( y + size.cy * 2 + 2 < m_texHeight )
 				y += size.cy + 1;
-			else
-				Log( "BUG: Font does not fit in texture." );
+			//else
+				//Log( "BUG: Font does not fit in texture." );
 		}
 
 		RECT	rect = { x, y, x + size.cx, y + size.cy };
@@ -499,9 +499,12 @@ HRESULT CD3DFont::Print ( float x, float y, DWORD color, const char *szText )
 
 HRESULT CD3DFont::PrintShadow ( float x, float y, DWORD color, const char *szText )
 {
-	DWORD shadow = D3DCOLOR_ARGB((BYTE)HIBYTE(HIWORD(color)), 0, 0, 0);
+
 	if ( set.render_text_shadows )
+	{
+		DWORD shadow = D3DCOLOR_ARGB((BYTE)HIBYTE(HIWORD(color)), 0, 0, 0);
 		Print( x + 1, y + 1, shadow, szText );
+	}
 	Print( x, y, color, szText );
 
 	return S_OK;

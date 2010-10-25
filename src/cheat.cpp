@@ -49,30 +49,7 @@ static void cheat_main_actor ( double time_diff )
 		return;
 	}
 
-	// this should be moved into a cheat handler
-	if ( set.anti_carjacking )
-	{
-		if ( cheat_state->_generic.got_vehicle_id )
-			cheat_state->_generic.got_vehicle_id = false;
-		if ( cheat_state->_generic.anti_carjackTick
-		 &&	 cheat_state->_generic.anti_carjackTick < (GetTickCount() - 1000)
-		 &&	 cheat_state->_generic.car_jacked )
-		{
-			if ( cheat_state->_generic.car_jacked_last_vehicle_id == 0 )
-			{
-				showGameText( "~r~Unable To Unjack~w~!", 1000, 5 );
-				cheat_state->_generic.anti_carjackTick = 0;
-				cheat_state->_generic.car_jacked = false;
-				return;
-			}
-			cheat_state->_generic.anti_carjackTick = 0;
-			cheat_state->_generic.car_jacked = false;
-			ScriptCommand( &put_actor_in_car, 1, cheat_state->_generic.car_jacked_last_vehicle_id );
-			vect3_copy( cheat_state->_generic.car_jacked_lastPos, &actor_info_get(VEHICLE_SELF, 0)->base.matrix[4 * 3] );
-			showGameText( "~r~Car Unjacked~w~!", 1000, 5 );
-			return;
-		}
-	}
+	cheat_handle_antiHijack( info, NULL, time_diff );
 
 	vect3_copy( &info->base.matrix[4 * 3], cheat_state->actor.coords );
 	cheat_handle_freeze_vehicles( NULL, info );
@@ -102,19 +79,7 @@ static void cheat_main_vehicle ( double time_diff )
 	if ( info == NULL )
 		return;
 
-	// this should have its own handler
-	if ( set.anti_carjacking )
-	{
-		if ( info->passengers[0] == actor_info_get(ACTOR_SELF, 0) )
-		{
-			if ( g_SAMP != NULL && !cheat_state->_generic.got_vehicle_id )
-			{
-				cheat_state->_generic.car_jacked_last_vehicle_id = getPlayerVehicleGTAScriptingID( ACTOR_SELF );
-				if ( cheat_state->_generic.car_jacked_last_vehicle_id > 0 )
-					cheat_state->_generic.got_vehicle_id = true;
-			}
-		}
-	}
+	cheat_handle_antiHijack( NULL, info, time_diff );
 
 	// copy vehicle coords to cheat_state storage
 	vect3_copy( &info->base.matrix[4 * 3], cheat_state->vehicle.coords );

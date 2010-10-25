@@ -177,16 +177,16 @@ typedef HRESULT ( WINAPI *HRESULT_VOID ) (void);
 typedef HRESULT ( WINAPI *HRESULT_BOOL ) ( BOOL );
 
 // externals
-extern unsigned long	ulFullScreenRefreshRate;
-extern D3DC9			orig_Direct3DCreate9;
-extern CD3DRender		*render;
-extern CD3DFont			*pD3DFont;
-extern CD3DFont			*pD3DFontFixed;
-extern CD3DFont			*pD3DFontSmall;
-extern CD3DFont			*pD3DFontFixedSmall;
-extern CD3DFont			*pD3DFontChat;
-extern D3DPRESENT_PARAMETERS pPresentParam; // updated after a successful Reset()
+extern unsigned long			ulFullScreenRefreshRate;
+extern D3DC9					orig_Direct3DCreate9;
+extern CD3DRender				*render;
+extern CD3DFont					*pD3DFont;
+extern CD3DFont					*pD3DFontFixed;
+extern CD3DFont					*pD3DFont_sampStuff;
+extern CD3DFont					*pD3DFontFixedSmall;
+extern CD3DFont					*pD3DFontChat;
+extern D3DPRESENT_PARAMETERS	pPresentParam;	// updated after a successful Reset()
 
 // externals
 // functions
-void					toggleWindowedMode ( void );
+void							toggleWindowedMode ( void );

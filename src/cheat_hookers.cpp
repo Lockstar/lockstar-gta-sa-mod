@@ -835,10 +835,17 @@ void _declspec ( naked ) PlayerCollision_CrashFix ()
 		jz getout
 		mov eax, playercol_crashfix_temp_back
 		mov ecx, g_dwSAMP_Addr
-		add ecx, 0x3356E
+		add ecx, 0x32B8E
 		cmp ecx, eax
 		je getout
+	}
+		playercol_crashfix_temp_back = cheat_state->_generic.unrelatedToAnything;
+	__asm
+	{
+		mov eax, playercol_crashfix_temp_back
+		cmp eax, 0x539
 		mov eax, [edi + 0x04]
+		je getout
 		push eax
 		call GetVehicleByGtaId
 		mov ecx, [eax + 0x460]

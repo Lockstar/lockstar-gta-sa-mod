@@ -691,6 +691,9 @@ static void ini_init ( void )
 	if ( (ent = ini_register_entry("logo_enable", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.logo_enable, "true" );
 
+	if ( (ent = ini_register_entry("wallhack", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.wallhack, "false" );
+
 	/* samp stuff */
 	if ( (ent = ini_register_entry("d3dtext_chat", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.d3dtext_chat, "false" );
@@ -709,6 +712,8 @@ static void ini_init ( void )
 
 	if ( (ent = ini_register_entry("nametags_show", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.nametags_show, "false" );
+	if ( (ent = ini_register_entry("disable_line_of_sight", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.disable_line_of_sight, "false" );
 	if ( (ent = ini_register_entry("line_of_sight_dist", TYPE_FLOAT)) != NULL )
 		ini_register_data( ent, &set.line_of_sight_dist, "70.0" );
 	if ( (ent = ini_register_entry("markers_show", TYPE_BOOL)) != NULL )
@@ -772,6 +777,9 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.key_rejoin, "b" );
 	if ( (ent = ini_register_entry("rejoin_delay", TYPE_INT)) != NULL )
 		ini_register_data( ent, &set.rejoin_delay, "5000" );
+
+	if ( (ent = ini_register_entry("send_spec_data", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.send_spec_data, "false" );
 
 	if ( (ent = ini_register_entry("key_vehicles_freeze", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_vehicles_freeze, "pause" );

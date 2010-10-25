@@ -73,6 +73,7 @@
 #define ID_CHEAT_HANDLING					170
 #define ID_CHEAT_KEEP_TRAILER				180
 #define ID_CHEAT_NOCOLS						190
+#define ID_CHEAT_WALLHACK					200
 
 #define ID_CHEAT_INVULN_ACTOR				0
 #define ID_CHEAT_INVULN_VEHICLE				1
@@ -171,11 +172,12 @@
 #define ID_MENU_SAMPMISC_GAMESTATE			9
 #define ID_MENU_SAMPMISC_SPECIALACTION		12
 #define ID_MENU_SAMPMISC_SAMP_CJ_ANIM		13
+#define ID_MENU_SAMPMISC_SAMP_DRUNK			14
 #define ID_MENU_SAMPMISC_TELEOBJECT			109
 #define ID_MENU_SAMPMISC_TELEPICKUP			110
-#define ID_MENU_SAMPMISC_RENDEROBJTXT		14
-#define ID_MENU_SAMPMISC_RENDERPCKTXT		15
-#define ID_MENU_SAMPMISC_M0DCOMMANDS		16
+#define ID_MENU_SAMPMISC_RENDEROBJTXT		15
+#define ID_MENU_SAMPMISC_RENDERPCKTXT		16
+#define ID_MENU_SAMPMISC_M0DCOMMANDS		17
 
 #define ID_MENU_SPECIAL_ACTION_NONE				0
 #define ID_MENU_SPECIAL_ACTION_USEJETPACK		2
@@ -262,8 +264,8 @@ static void menu_cheats_mods_populate ( struct menu *menu )
 		return;
 
 	struct actor_info	*ainfo = actor_info_get( ACTOR_SELF, 0 );
-	if ( vinfo->passengers[0] != ainfo )
-		return;
+	//if ( vinfo->passengers[0] != ainfo )
+	//	return;
 
 	// some variables
 	int		iModelID = vinfo->base.model_alt_id;
@@ -321,11 +323,13 @@ static void menu_cheats_spoof_kill_populate ( struct menu *menu )
 
 		if ( g_Players->iIsListed[i] != 1 )
 			continue;
-		if ( g_Players->pRemotePlayer[i]->pSAMP_Actor == NULL )
+		if ( g_Players->pRemotePlayer[i]->pPlayerData == NULL )
+			continue;
+		if ( g_Players->pRemotePlayer[i]->pPlayerData->pSAMP_Actor == NULL )
 			continue;
 
 		if ( g_Players->pRemotePlayer[i] != NULL )
-			color = samp_color_get( g_Players->pRemotePlayer[i]->sPlayerID );
+			color = samp_color_get( i );
 
 		snprintf( text, sizeof(text), "Fake killed by %s (ID: %d)", getPlayerName(i), i );
 
@@ -363,6 +367,9 @@ static void menu_vehicles_populate ( struct menu *menu, int class_id )
 			if ( actor_self != NULL )
 				vect3_vect3_sub( &info->base.matrix[4 * 3], &actor_self->base.matrix[4 * 3], dist );
 
+			if ( vect3_near_zero( &info->base.matrix[4 * 3] ) )
+				continue;
+
 			snprintf( name, sizeof(name), "%s (%.2fm%s)", vehicle->name, vect3_length(dist),
 					  (info->passengers[0] == NULL) ? "" : ", Occupied" );
 
@@ -386,16 +393,16 @@ static void menu_players_warp_populate ( struct menu *menu )
 
 		if ( g_Players->iIsListed[i] != 1 )
 			continue;
-
-		//if(g_Players->pRemotePlayer[i] == NULL) continue;
-		//if(g_Players->pRemotePlayer[i]->pSAMP_Actor == NULL) continue;
-		if ( vect3_near_zero(g_stStreamedOutInfo.fPlayerPos[i]) )
+		if(g_Players->pRemotePlayer[i] == NULL)
 			continue;
 
-		if ( g_Players->pRemotePlayer[i] == NULL )
+		// can obtain position data?
+		if(	vect3_near_zero(g_stStreamedOutInfo.fPlayerPos[i]) 
+			&& (g_Players->pRemotePlayer[i]->pPlayerData == NULL || 
+			g_Players->pRemotePlayer[i]->pPlayerData->pSAMP_Actor == NULL) ) 
 			continue;
-		else
-			color = samp_color_get( g_Players->pRemotePlayer[i]->sPlayerID );
+
+		color = samp_color_get( i );
 		snprintf( text, sizeof(text), "%s (ID: %d)", getPlayerName(i), i );
 		menu_item_add( menu, NULL, text, i, color, NULL );
 	}
@@ -418,15 +425,17 @@ static void menu_players_vehwarp_populate ( struct menu *menu )
 			continue;
 		if ( g_Players->pRemotePlayer[i] == NULL )
 			continue;
-		if ( g_Players->pRemotePlayer[i]->pSAMP_Actor == NULL )
+		if ( g_Players->pRemotePlayer[i]->pPlayerData == NULL )
+			continue;
+		if ( g_Players->pRemotePlayer[i]->pPlayerData->pSAMP_Actor == NULL )
 			continue;
 
 		//if(vect3_near_zero(g_stStreamedOutInfo.fPlayerPos[i])) continue;
-		if ( g_Players->pRemotePlayer[i]->bytePlayerState != PLAYER_STATE_DRIVER
-		 &&	 g_Players->pRemotePlayer[i]->bytePlayerState != PLAYER_STATE_PASSENGER ) continue;
+		if ( g_Players->pRemotePlayer[i]->pPlayerData->bytePlayerState != PLAYER_STATE_DRIVER
+		 &&	 g_Players->pRemotePlayer[i]->pPlayerData->bytePlayerState != PLAYER_STATE_PASSENGER ) continue;
 
 		if ( g_Players->pRemotePlayer[i] != NULL )
-			color = samp_color_get( g_Players->pRemotePlayer[i]->sPlayerID );
+			color = samp_color_get( i );
 
 		snprintf( text, sizeof(text), "%s (ID: %d)", getPlayerName(i), i );
 		menu_item_add( menu, NULL, text, i, color, NULL );
@@ -465,7 +474,7 @@ static void menu_players_spectator_mode_populate ( struct menu *menu )
 	if ( g_Players == NULL )
 		return;
 
-	menu_item_add( menu, NULL, "Disable", SAMP_PLAYER_MAX + 1, MENU_COLOR_DEFAULT, NULL );
+	menu_item_add( menu, NULL, "Disable", ID_NONE, MENU_COLOR_DEFAULT, NULL );
 
 	char	text[64];
 	int		i;
@@ -475,11 +484,14 @@ static void menu_players_spectator_mode_populate ( struct menu *menu )
 
 		if ( g_Players->iIsListed[i] != 1 )
 			continue;
-		if ( g_Players->pRemotePlayer[i]->pSAMP_Actor == NULL )
+		if ( g_Players->pRemotePlayer[i] == NULL )
+			continue;
+		if ( g_Players->pRemotePlayer[i]->pPlayerData == NULL )
+			continue;
+		if ( g_Players->pRemotePlayer[i]->pPlayerData->pSAMP_Actor == NULL )
 			continue;
 
-		if ( g_Players->pRemotePlayer[i] != NULL )
-			color = samp_color_get( (int)g_Players->pRemotePlayer[i]->sPlayerID );
+		color = samp_color_get( (int)g_Players->pRemotePlayer[i]->pPlayerData->sPlayerID );
 
 		snprintf( text, sizeof(text), "Spectate %s (ID: %d)", getPlayerName(i), i );
 		menu_item_add( menu, NULL, text, i, color, (void *)(UINT_PTR) i );
@@ -490,20 +502,23 @@ static void menu_telepickup_populate ( struct menu *menu )
 {
 	menu_items_free( menu );
 
-	if ( g_SAMP->pPool_Pickup == NULL )
+	if ( g_SAMP->pPools == NULL )
+		return;
+
+	if ( g_SAMP->pPools->pPool_Pickup == NULL )
 		return;
 
 	char	text[64];
 	int		i;
 	for ( i = 0; i < SAMP_PICKUP_MAX; i++ )
 	{
-		if ( g_SAMP->pPool_Pickup->pickup[i].iModelID == 0 )
+		if ( g_SAMP->pPools->pPool_Pickup->pickup[i].iModelID == 0 )
 			continue;
-		if ( g_SAMP->pPool_Pickup->pickup[i].iType == 0 )
+		if ( g_SAMP->pPools->pPool_Pickup->pickup[i].iType == 0 )
 			continue;
 
 		D3DCOLOR	color = MENU_COLOR_DEFAULT;
-		snprintf( text, sizeof(text), "Pickup (%d, ModelID: %d)", i, g_SAMP->pPool_Pickup->pickup[i].iModelID );
+		snprintf( text, sizeof(text), "Pickup (%d, ModelID: %d)", i, g_SAMP->pPools->pPool_Pickup->pickup[i].iModelID );
 		menu_item_add( menu, NULL, text, i, color, NULL );
 	}
 }
@@ -514,18 +529,20 @@ static int menu_callback_telepickup ( int op, struct menu_item *item )
 	{
 		int id = item->id;
 
-		if ( g_SAMP->pPool_Pickup == NULL )
+		if ( g_SAMP->pPools == NULL )
 			return 0;
-		if ( g_SAMP->pPool_Pickup->pickup[id].iType == 0 )
+		if ( g_SAMP->pPools->pPool_Pickup == NULL )
 			return 0;
-		if ( g_SAMP->pPool_Pickup->pickup[id].iModelID == 0 )
+		if ( g_SAMP->pPools->pPool_Pickup->pickup[id].iType == 0 )
+			return 0;
+		if ( g_SAMP->pPools->pPool_Pickup->pickup[id].iModelID == 0 )
 			return 0;
 		if ( item->id == ID_NONE )
 			return 0;
 
 		float	pos[3];
 
-		vect3_copy( g_SAMP->pPool_Pickup->pickup[id].fPosition, pos );
+		vect3_copy( g_SAMP->pPools->pPool_Pickup->pickup[id].fPosition, pos );
 		pos[1] += 2.0f;
 		cheat_teleport( pos, 0 );
 
@@ -539,7 +556,9 @@ static void menu_teleobject_populate ( struct menu *menu )
 {
 	menu_items_free( menu );
 
-	if ( g_SAMP->pPool_Object == NULL )
+	if ( g_SAMP->pPools == NULL )
+		return;
+	if ( g_SAMP->pPools->pPool_Object == NULL )
 		return;
 
 	char	text[64];
@@ -548,15 +567,20 @@ static void menu_teleobject_populate ( struct menu *menu )
 	{
 		D3DCOLOR	color = MENU_COLOR_DEFAULT;
 
-		if ( g_SAMP->pPool_Object->iIsListed[i] != 1 )
+		if ( g_SAMP->pPools->pPool_Object->iIsListed[i] != 1 )
 			continue;
-		if ( g_SAMP->pPool_Object->object[i] == NULL )
+		if ( g_SAMP->pPools->pPool_Object->object[i] == NULL )
 			continue;
-		if ( g_SAMP->pPool_Object->object[i]->pGTAObject == NULL )
+		if ( g_SAMP->pPools->pPool_Object->object[i]->pGTAObject == NULL )
+			continue;
+
+		float	pos[3];
+		vect3_copy( &g_SAMP->pPools->pPool_Object->object[i]->pGTAObject->base.matrix[4 * 3], pos );
+		if ( vect3_near_zero(pos) )
 			continue;
 
 		snprintf( text, sizeof(text), "Object (%d, ModelID %d)", i,
-				  g_SAMP->pPool_Object->object[i]->pGTAObject->base.model_alt_id );
+				  g_SAMP->pPools->pPool_Object->object[i]->pGTAObject->base.model_alt_id );
 		menu_item_add( menu, NULL, text, i, color, NULL );
 	}
 }
@@ -565,7 +589,9 @@ static int menu_callback_teleobject ( int op, struct menu_item *item )
 {
 	if ( op == MENU_OP_SELECT )
 	{
-		if ( g_SAMP->pPool_Object == NULL )
+		if ( g_SAMP->pPools == NULL )
+			return 0;
+		if ( g_SAMP->pPools->pPool_Object == NULL )
 			return 0;
 		if ( item->id == ID_NONE )
 			return 0;
@@ -573,19 +599,19 @@ static int menu_callback_teleobject ( int op, struct menu_item *item )
 		int		id = item->id;
 		float	pos[3];
 
-		if ( g_SAMP->pPool_Object->iIsListed[id] != 1 )
+		if ( g_SAMP->pPools->pPool_Object->iIsListed[id] != 1 )
 		{
 			addMessageToChatWindow( "Object does not exist." );
 			return 0;
 		}
 
-		if ( g_SAMP->pPool_Object->object[id]->pGTAObject == NULL )
+		if ( g_SAMP->pPools->pPool_Object->object[id]->pGTAObject == NULL )
 		{
 			addMessageToChatWindow( "Invalid object info." );
 			return 0;
 		}
 
-		vect3_copy( &g_SAMP->pPool_Object->object[id]->pGTAObject->base.matrix[4 * 3], pos );
+		vect3_copy( &g_SAMP->pPools->pPool_Object->object[id]->pGTAObject->base.matrix[4 * 3], pos );
 		pos[2] += 2.0f;
 		cheat_teleport( pos, 0 );
 
@@ -1024,6 +1050,9 @@ static int menu_callback_cheats ( int op, struct menu_item *item )
 
 		case ID_CHEAT_NOCOLS:
 			return cheat_state->_generic.nocols_toggled;
+
+		case ID_CHEAT_WALLHACK:
+			return set.wallhack;
 		}
 		break;
 
@@ -1093,6 +1122,10 @@ static int menu_callback_cheats ( int op, struct menu_item *item )
 
 		case ID_CHEAT_NOCOLS:
 			cheat_state->_generic.nocols_toggled ^= 1;
+			break;
+
+		case ID_CHEAT_WALLHACK:
+			set.wallhack ^= 1;
 			break;
 
 		default:
@@ -1649,6 +1682,13 @@ static int menu_callback_vehicles_sub ( int op, struct menu_item *item )
 		struct vehicle_info *info = vehicle_info_get( item->id, VEHICLE_ALIVE | ((cheat_state->_generic.vehicles_freeze || !cheat_state->_generic.vehicles_warp_invert) ? 0 : VEHICLE_EMPTY) );
 		float				pos[3];
 
+		if ( vect3_near_zero( &info->base.matrix[4 * 3]) )
+		{
+			cheat_state_text( "Vehicle does not exist." );
+			return 1;
+		}
+
+
 		if ( info != NULL && self != NULL )
 		{
 			if ( cheat_state->_generic.vehicles_warp_invert )
@@ -1807,7 +1847,12 @@ static int menu_callback_sampmisc ( int op, struct menu_item *item )
 				return 0;
 
 			case ID_MENU_SAMPMISC_SAMP_CJ_ANIM:
-				return g_SAMP->bytePlayerPedAnims;
+				return g_SAMP->pSettings->byteCJWalk;
+
+			case ID_MENU_SAMPMISC_SAMP_DRUNK:
+				return ( g_Players != NULL && g_Players->pLocalPlayer != NULL && 
+					g_Players->pLocalPlayer->pSAMP_Actor != NULL && 
+					g_Players->pLocalPlayer->pSAMP_Actor->drunkLevel > 2300 ) ? 1 : 0;
 
 			case ID_MENU_SAMPMISC_RENDEROBJTXT:
 				return cheat_state->_generic.objecttexts;
@@ -1834,7 +1879,18 @@ static int menu_callback_sampmisc ( int op, struct menu_item *item )
 				break;
 
 			case ID_MENU_SAMPMISC_SAMP_CJ_ANIM:
-				g_SAMP->bytePlayerPedAnims ^= 1;
+				g_SAMP->pSettings->byteCJWalk ^= 1;
+				break;
+
+			case ID_MENU_SAMPMISC_SAMP_DRUNK:
+				if ( g_Players != NULL && g_Players->pLocalPlayer != NULL && 
+					g_Players->pLocalPlayer->pSAMP_Actor != NULL )
+				{
+					if ( g_Players->pLocalPlayer->pSAMP_Actor->drunkLevel > 0 )
+						g_Players->pLocalPlayer->pSAMP_Actor->drunkLevel = 0;
+					else
+						g_Players->pLocalPlayer->pSAMP_Actor->drunkLevel = 30000 + (rand()%2000);
+				}
 				break;
 
 			case ID_MENU_SAMPMISC_SPOOF_WEAPON:
@@ -1861,7 +1917,7 @@ static int menu_callback_sampmisc ( int op, struct menu_item *item )
 						errmsg = "The player is dead.";
 					if ( self == NULL )
 						errmsg = "You are dead.";
-					if ( g_Players->pLocalPlayer->isSpectating == 1 )
+					if ( g_Players->pLocalPlayer->iIsSpectating == 1 )
 						errmsg = "You are spectating";
 
 					if ( errmsg == NULL )
@@ -1944,7 +2000,8 @@ static int menu_callback_players_warp ( int op, struct menu_item *item )
 			return 0;
 		}
 
-		if ( g_Players->pRemotePlayer[id]->pSAMP_Actor == NULL )
+		if ( g_Players->pRemotePlayer[id]->pPlayerData == NULL
+		 ||	 g_Players->pRemotePlayer[id]->pPlayerData->pSAMP_Actor == NULL )
 		{
 			if ( vect3_near_zero(g_stStreamedOutInfo.fPlayerPos[id]) )
 			{
@@ -1963,8 +2020,9 @@ static int menu_callback_players_warp ( int op, struct menu_item *item )
 			return 0;
 		}
 
-		if ( g_Players->pRemotePlayer[id]->pSAMP_Actor != NULL )
-			actor = g_Players->pRemotePlayer[id]->pSAMP_Actor->pGTA_Ped;
+		if ( g_Players->pRemotePlayer[id]->pPlayerData != NULL
+		 &&	 g_Players->pRemotePlayer[id]->pPlayerData->pSAMP_Actor != NULL )
+			actor = g_Players->pRemotePlayer[id]->pPlayerData->pSAMP_Actor->pGTA_Ped;
 
 		if ( actor != NULL && ACTOR_IS_DEAD(actor) )
 		{
@@ -1994,8 +2052,9 @@ static int menu_callback_players_vehwarp ( int op, struct menu_item *item )
 		if ( id == ID_NONE )
 			return 0;
 
-		if ( g_Players->pRemotePlayer[id]->pSAMP_Actor != NULL )
-			actor = g_Players->pRemotePlayer[id]->pSAMP_Actor->pGTA_Ped;
+		if ( g_Players->pRemotePlayer[id]->pPlayerData != NULL
+		 &&	 g_Players->pRemotePlayer[id]->pPlayerData->pSAMP_Actor != NULL )
+			actor = g_Players->pRemotePlayer[id]->pPlayerData->pSAMP_Actor->pGTA_Ped;
 		if ( actor == NULL )
 			return 0;
 		if ( actor->vehicle == NULL )
@@ -2007,7 +2066,8 @@ static int menu_callback_players_vehwarp ( int op, struct menu_item *item )
 			return 0;
 		}
 
-		if ( g_Players->pRemotePlayer[id]->pSAMP_Actor == NULL )
+		if ( g_Players->pRemotePlayer[id]->pPlayerData == NULL
+		 ||	 g_Players->pRemotePlayer[id]->pPlayerData->pSAMP_Actor == NULL )
 		{
 			addMessageToChatWindow( "Player is not streamed in." );
 			return 0;
@@ -2026,15 +2086,16 @@ static int menu_callback_players_vehwarp ( int op, struct menu_item *item )
 		}
 
 		// if they are in a vehicle, let's GOOOO
-		if ( g_Players->pRemotePlayer[id]->bytePlayerState == PLAYER_STATE_DRIVER
-		 ||	 g_Players->pRemotePlayer[id]->bytePlayerState == PLAYER_STATE_PASSENGER )
+		if ( g_Players->pRemotePlayer[id]->pPlayerData->bytePlayerState == PLAYER_STATE_DRIVER
+		 ||	 g_Players->pRemotePlayer[id]->pPlayerData->bytePlayerState == PLAYER_STATE_PASSENGER )
 		{
 			//need car id in memory for vehicleJumper
 			if ( g_Players->pRemotePlayer[id] != NULL
-			 &&	 g_Players->pRemotePlayer[id]->pSAMP_Vehicle != NULL
-			 &&	 g_Players->pRemotePlayer[id]->pSAMP_Vehicle->pGTA_Vehicle != NULL )
+			 &&	 g_Players->pRemotePlayer[id]->pPlayerData != NULL
+			 &&	 g_Players->pRemotePlayer[id]->pPlayerData->pSAMP_Vehicle != NULL
+			 &&	 g_Players->pRemotePlayer[id]->pPlayerData->pSAMP_Vehicle->pGTA_Vehicle != NULL )
 			{
-				vehicleJumper( (int)(((DWORD) g_Players->pRemotePlayer[id]->pSAMP_Vehicle->pGTA_Vehicle) -
+				vehicleJumper( (int)(((DWORD) g_Players->pRemotePlayer[id]->pPlayerData->pSAMP_Vehicle->pGTA_Vehicle) -
 							   (DWORD) pool_vehicle->start) / 2584 );
 			}
 		}
@@ -2134,7 +2195,6 @@ static int menu_callback_interiors ( int op, struct menu_item *item )
 	return 0;
 }
 
-extern uint8_t	g_byteSpecialAction;
 static int menu_callback_specialaction ( int op, struct menu_item *item )
 {
 	if ( g_Players->pLocalPlayer == NULL )
@@ -2472,39 +2532,31 @@ static int menu_callback_spec ( int op, struct menu_item *item )
 	if ( op == MENU_OP_SELECT )
 	{
 		int id = item->id;
-		if ( id != SAMP_PLAYER_MAX + 1 )
+		if ( self == NULL )
 		{
-			if ( self == NULL )
-			{
-				addMessageToChatWindow( "You are dead." );
-				return 1;
-			}
-
-			if ( g_Players->pRemotePlayer[id] == NULL )
-			{
-				addMessageToChatWindow( "Player doesn't exist." );
-				return 1;
-			}
-
-			if ( g_Players->pRemotePlayer[id]->bytePlayerState == PLAYER_STATE_WASTED
-			 ||	 g_Players->pRemotePlayer[id]->bytePlayerState == PLAYER_STATE_NONE )
-			{
-				addMessageToChatWindow( "Could not spectate player" );
-				return 1;
-			}
-
-			spectatePlayer( id );
-		}
-		else
-		{
-			ScriptCommand( &toggle_player_controllable, 0, 1 );
-			ScriptCommand( &lock_actor, 1, 0 );
-			ScriptCommand( &restore_camera_with_jumpcut );
-			ScriptCommand( &set_camera_directly_behind );
-			ScriptCommand( &restore_camera_with_jumpcut );
-
+			addMessageToChatWindow( "You are dead." );
 			return 1;
 		}
+		if ( id == -1 )
+		{
+			spectatePlayer( id );
+			return 1;
+		}
+
+		if ( g_Players->pRemotePlayer[id] == NULL )
+		{
+			addMessageToChatWindow( "Player doesn't exist." );
+			return 1;
+		}
+
+		if ( g_Players->pRemotePlayer[id]->pPlayerData->bytePlayerState == PLAYER_STATE_WASTED
+			|| ( g_Players->pRemotePlayer[id]->pPlayerData->bytePlayerState == PLAYER_STATE_NONE && !set.send_spec_data ) )
+		{
+			addMessageToChatWindow( "Could not spectate player" );
+			return 1;
+		}
+
+		spectatePlayer( id );
 
 		return 1;
 	}
@@ -2586,7 +2638,7 @@ static int menu_callback_server_list ( int op, struct menu_item *item )
 		else
 		{
 			if ( !set.use_current_name )
-				strcpy( g_Players->szLocalPlayerName, server->nickname );
+				setLocalPlayerName( server->nickname );
 			strcpy( g_SAMP->szIP, server->ip );
 			g_SAMP->ulPort = server->port;
 			setPassword( server->password );
@@ -2640,6 +2692,33 @@ static int menu_callback_gamestate ( int op, struct menu_item *item )
 		}
 
 		return 1;
+	}
+
+	if ( op == MENU_OP_ENABLED )
+	{
+		switch ( item->id )
+		{
+		case GAMESTATE_NONE:
+			return g_SAMP->iGameState == GAMESTATE_NONE;
+
+		case GAMESTATE_CONNECTING:
+			return g_SAMP->iGameState == GAMESTATE_CONNECTING;
+
+		case GAMESTATE_CONNECTED:
+			return g_SAMP->iGameState == GAMESTATE_CONNECTED;
+
+		case GAMESTATE_AWAIT_JOIN:
+			return g_SAMP->iGameState == GAMESTATE_AWAIT_JOIN;
+
+		case GAMESTATE_DISCONNECTED:
+			return g_SAMP->iGameState == GAMESTATE_DISCONNECTED;
+
+		case GAMESTATE_RESTARTING:
+			return g_SAMP->iGameState == GAMESTATE_RESTARTING;
+
+		case GAMESTATE_WAIT_CONNECT:
+			return g_SAMP->iGameState == GAMESTATE_WAIT_CONNECT;
+		}
 	}
 
 	return 0;
@@ -2760,6 +2839,7 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_cheats, NULL, "Unlock vehicles", ID_CHEAT_UNLOCK, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_cheats, NULL, "Keep trailers attached", ID_CHEAT_KEEP_TRAILER, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_cheats, NULL, "Toggle vehicle collisions", ID_CHEAT_NOCOLS, MENU_COLOR_DEFAULT, NULL );
+	menu_item_add( menu_cheats, NULL, "Wallhack", ID_CHEAT_WALLHACK, MENU_COLOR_DEFAULT, NULL );
 
 	/* main menu -> cheats -> invulnerable */
 	menu_item_add( menu_cheats_inv, NULL, "Actor invulnerability", ID_CHEAT_INVULN_ACTOR, MENU_COLOR_DEFAULT, NULL );
@@ -3020,6 +3100,7 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_sampmisc, menu_gamestate, "Change game state", ID_NONE, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_sampmisc, menu_specialaction, "Special action", ID_NONE, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_sampmisc, NULL, "Use CJ running style", ID_MENU_SAMPMISC_SAMP_CJ_ANIM, MENU_COLOR_DEFAULT, NULL );
+	menu_item_add( menu_sampmisc, NULL, "Drunk", ID_MENU_SAMPMISC_SAMP_DRUNK, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_sampmisc, menu_teleobject, "Teleport to object", ID_MENU_SAMPMISC_TELEOBJECT,
 				   MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_sampmisc, NULL, "Render object texts", ID_MENU_SAMPMISC_RENDEROBJTXT, MENU_COLOR_DEFAULT, NULL );

@@ -29,9 +29,9 @@
 // main switch for development or release build
 //#define M0D_DEV
 
-#define M0D_NAME		"m0d_s0beit_sa"
-#define M0D_VERSION		"v4.1.0.0"
-#define SAMP_VERSION	"SA:MP 0.3a"
+#define M0D_NAME		" "
+#define M0D_VERSION		" "
+#define SAMP_VERSION	"SA:MP 0.3b R3"
 
 #ifdef M0D_DEV
 #define NAME	""M0D_NAME "-dev"" "M0D_VERSION " ("__DATE__ " """__TIME__ ")"
@@ -75,6 +75,9 @@
 #include <set>
 #include <string>
 #include <vector>
+
+#include <intrin.h>
+#pragma intrinsic(_ReturnAddress)
 
 // typedefs/classes for legacy
 #include "stddefs.h"
