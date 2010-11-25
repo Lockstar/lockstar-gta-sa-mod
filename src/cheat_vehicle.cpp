@@ -1047,15 +1047,15 @@ void cheat_handle_vehicle_blinking_carlights ( struct vehicle_info *vinfo, float
 	if ( !cheat_state->vehicle.blinking_carlights_state )
 		return;
 
-	// setup variables for next blinking lights modes
+	// return if we arn't driving the vehicle
 	struct actor_info	*actor_self = actor_info_get( ACTOR_SELF, ACTOR_ALIVE );
 	if ( vinfo->passengers[0] != actor_self )
 		return;
 
 	// enables car lights any time of day, not synced
-	// we need a better way to do this that can be disabled
-	//ScriptCommand( &set_car_lights, ScriptCarId(vinfo), 2 );
-	//
+	if ( set.enable_car_lights_at_day_time )
+		vinfo->OverrideLights = 2;
+
 	// switch is faster than multiple if/else statements
 	switch ( cheat_state->vehicle.blinking_carlights_state )
 	{

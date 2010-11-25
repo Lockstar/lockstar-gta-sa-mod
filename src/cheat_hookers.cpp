@@ -845,10 +845,12 @@ void _declspec ( naked ) PlayerCollision_CrashFix ()
 	{
 		mov eax, playercol_crashfix_temp_back
 		cmp eax, 0x539
-		mov eax, [edi + 0x04]
 		je getout
+		mov eax, [edi + 0x04]
 		push eax
 		call GetVehicleByGtaId
+		test eax, eax
+		jz ohnoyoudamagedit
 		mov ecx, [eax + 0x460]
 		pop eax
 		test ecx, ecx
@@ -866,6 +868,7 @@ void _declspec ( naked ) PlayerCollision_CrashFix ()
 		cmp eax, ecx
 		pop eax
 		jnz getout
+		ohnoyoudamagedit:
 		popad
 		mov ecx, playercol_crashfix_ecx_back
 		push 2

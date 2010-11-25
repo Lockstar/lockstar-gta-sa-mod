@@ -1331,23 +1331,29 @@ struct vehicle_info *actor_vehicle_get ( const struct actor_info *info )
 }
 
 // (MTA10/multiplayer_sa/CMultiplayerSA.cpp)
-void SetCloudsEnabled ( bool bDisabled )
+void SetCloudsEnabled ( bool bEnabled )
 {
 	//volumetric clouds
-	if ( bDisabled )
+	if ( bEnabled )
 		memcpy_safe( (void *)0x716380, "\xA1", 1 );
 	else
 		memcpy_safe( (void *)0x716380, "\xC3", 1 );
 
+	// foggy weather clouds (above ground)
+	if ( bEnabled )
+		memcpy_safe( (void *)0x716C90, "\xD9", 1 );
+	else
+		memcpy_safe( (void *)0x716C90, "\xC3", 1 );
+
 	// normal clouds
 	//0071395A     90             NOP
-	if ( bDisabled )
+	if ( bEnabled )
 		memcpy_safe( (void *)0x713950, "\x83", 1 );
 	else
 		memcpy_safe( (void *)0x713950, "\xC3", 1 );
 
 	// plane trails (not really clouds, but they're sort of vapour)
-	if ( bDisabled )
+	if ( bEnabled )
 		memcpy_safe( (void *)0x717180, "\x83\xEC\x08", 3 );
 	else
 		memcpy_safe( (void *)0x717180, "\xC2\x04\x00", 3 );
