@@ -111,19 +111,20 @@ void CPhysical_ApplyGravity ( DWORD dwThis )
 			{
 				// don't apply gravity
 			}
+			else if ( cheat_state->actor.NinjaMode_on )
+			{
+				// NinjaMode
+				CVector vecGravity = cheat_state->actor.gravityVector;
+				CVector vecMoveSpeed;
+				pPed->GetMoveSpeed( &vecMoveSpeed );
+				vecMoveSpeed += vecGravity * fTimeStep * fGravity;
+				pPed->SetMoveSpeed( &vecMoveSpeed );
+			}
 			else
 			{
 				// apply regular downward gravity
 				*(float *)( dwThis + 0x4C ) -= fTimeStep * fGravity;
 			}
-
-			/*
-			// old SpiderFeet not-very-working code
-			CVector vecGravity = cheat_state->actor.gravityVector;
-			CVector vecMoveSpeed = GTAfunc_GetMoveSpeed(&ainfo_self->base);
-			vecMoveSpeed += vecGravity * fTimeStep * fGravity;
-			GTAfunc_SetMoveSpeed(&ainfo_self->base, vecMoveSpeed);
-			*/
 		}
 		else
 		{
@@ -884,6 +885,124 @@ void _declspec ( naked ) PlayerCollision_CrashFix ()
 	}
 }
 
+// ---------------------------------------------------
+// Handle SpiderFeet standing
+#define CALL_CMatrix__rotateAroundZ 0x5E1BBA
+
+float CMatrix__rotateAroundZ_zAngle;
+float CMatrix__rotateAroundZ_zAngleLast;
+float CMatrix__rotateAroundZ_zAngleCosine;
+float CMatrix__rotateAroundZ_zAngleSine;
+const float fZero = 0.0f;
+const float fOne = 1.0f;
+CMatrix_Padded *CMatrix__rotateAroundZ_matrix;
+CMatrix CMatrix__rotateAroundZ_transformMatrix;
+CVector vecStraightUp( 0.0f, 0.0f, 1.0f );
+CVector CMatrix__rotateAroundZ_gravityNormal;
+float CMatrix__rotateAroundZ_theta;
+CVector CMatrix__rotateAroundZ_rotationAxis;
+
+void __cdecl CMatrix__rotateAroundZ_hook ()
+{
+	CMatrix__rotateAroundZ_matrix->ConvertToMatrix( CMatrix__rotateAroundZ_transformMatrix );
+	CMatrix__rotateAroundZ_gravityNormal = -cheat_state->actor.gravityVector;
+	//CMatrix__rotateAroundZ_transformMatrix.vUp.Normalize();
+	//CMatrix__rotateAroundZ_gravityNormal.Normalize();
+
+	//
+	// first we need to rotate the matrix fully up to set heading
+	//
+
+	// axis
+	CMatrix__rotateAroundZ_rotationAxis = CMatrix__rotateAroundZ_transformMatrix.vUp;
+	CMatrix__rotateAroundZ_rotationAxis.CrossProduct( &vecStraightUp );
+	// theta
+	CMatrix__rotateAroundZ_theta = CMatrix__rotateAroundZ_transformMatrix.vUp.DotProduct( &vecStraightUp );
+	// rotate
+	CMatrix__rotateAroundZ_transformMatrix = CMatrix__rotateAroundZ_transformMatrix.Rotate( &CMatrix__rotateAroundZ_rotationAxis, -cos(CMatrix__rotateAroundZ_theta) );
+
+	// set heading
+	CMatrix__rotateAroundZ_zAngleCosine = cos(CMatrix__rotateAroundZ_zAngle);
+	CMatrix__rotateAroundZ_zAngleSine = sin(CMatrix__rotateAroundZ_zAngle);
+	CMatrix__rotateAroundZ_transformMatrix.vRight.fX = CMatrix__rotateAroundZ_zAngleCosine;
+	CMatrix__rotateAroundZ_transformMatrix.vRight.fY = CMatrix__rotateAroundZ_zAngleSine;
+	CMatrix__rotateAroundZ_transformMatrix.vFront.fX = -CMatrix__rotateAroundZ_zAngleSine;
+	CMatrix__rotateAroundZ_transformMatrix.vFront.fY = CMatrix__rotateAroundZ_zAngleCosine;
+
+
+	//
+	// now we need to rotate it back to be at the correct angle for the gravity
+	//
+
+	// axis
+	CMatrix__rotateAroundZ_rotationAxis = CMatrix__rotateAroundZ_transformMatrix.vUp;
+	CMatrix__rotateAroundZ_rotationAxis.CrossProduct( &CMatrix__rotateAroundZ_gravityNormal );
+	// theta
+	CMatrix__rotateAroundZ_theta = CMatrix__rotateAroundZ_transformMatrix.vUp.DotProduct( &CMatrix__rotateAroundZ_gravityNormal );
+	// rotate
+	CMatrix__rotateAroundZ_transformMatrix = CMatrix__rotateAroundZ_transformMatrix.Rotate( &CMatrix__rotateAroundZ_rotationAxis, -cos(CMatrix__rotateAroundZ_theta) );
+
+
+
+	//CMatrix__rotateAroundZ_transformMatrix = CMatrix__rotateAroundZ_transformMatrix.Rotate( &CMatrix__rotateAroundZ_transformMatrix.vUp, -(CMatrix__rotateAroundZ_zAngle - CMatrix__rotateAroundZ_zAngleLast) );
+
+
+
+
+	CMatrix__rotateAroundZ_matrix->SetFromMatrix( CMatrix__rotateAroundZ_transformMatrix );
+	CMatrix__rotateAroundZ_zAngleLast = CMatrix__rotateAroundZ_zAngle;
+
+	//CMatrix__rotateAroundZ_matrix->vRight.fZ = cheat_state->actor.gravityVector.fX;
+	//CMatrix__rotateAroundZ_matrix->vFront.fZ = cheat_state->actor.gravityVector.fY;
+	//CMatrix__rotateAroundZ_matrix->vUp.fZ = -cheat_state->actor.gravityVector.fZ;
+}
+
+void _declspec ( naked ) HOOK_CMatrix__rotateAroundZ ()
+{
+	// input variables
+	__asm
+	{
+		mov eax, dword ptr [esp+4]
+		mov CMatrix__rotateAroundZ_zAngle, eax
+		mov CMatrix__rotateAroundZ_matrix, ecx
+		pushad
+	}
+
+	if ( cheat_state->actor.NinjaMode_on && pPedSelfSA
+		&& CMatrix__rotateAroundZ_matrix == pPedSelfSA->Placeable.matrix )
+	{
+		// it's our matrix, so call our handler
+		CMatrix__rotateAroundZ_hook();
+	}
+	else
+	{
+		// zero out matrix
+		CMatrix__rotateAroundZ_matrix->vRight.fZ = fZero;
+		CMatrix__rotateAroundZ_matrix->vFront.fZ = fZero;
+		CMatrix__rotateAroundZ_matrix->vUp.fX = fZero;
+		CMatrix__rotateAroundZ_matrix->vUp.fY = fZero;
+		CMatrix__rotateAroundZ_matrix->vUp.fZ = fOne;
+
+		//zAngle
+		CMatrix__rotateAroundZ_zAngleCosine = cos(CMatrix__rotateAroundZ_zAngle);
+		CMatrix__rotateAroundZ_zAngleSine = sin(CMatrix__rotateAroundZ_zAngle);
+		CMatrix__rotateAroundZ_matrix->vRight.fX = CMatrix__rotateAroundZ_zAngleCosine;
+		CMatrix__rotateAroundZ_matrix->vRight.fY = CMatrix__rotateAroundZ_zAngleSine;
+		CMatrix__rotateAroundZ_matrix->vFront.fX = -CMatrix__rotateAroundZ_zAngleSine;
+		CMatrix__rotateAroundZ_matrix->vFront.fY = CMatrix__rotateAroundZ_zAngleCosine;
+	}
+
+	__asm
+	{
+		popad
+		retn 4
+	}
+}
+
+
+
+
+// ---------------------------------------------------
 // hook installers
 void cheat_hookers_installhooks ( void )
 {
@@ -910,4 +1029,7 @@ void cheat_hookers_installhooks ( void )
 	HookInstallCall( CALL_VehicleCamUp, (DWORD) HOOK_VehicleCamUp );
 	HookInstallCall( CALL_VehicleLookBehindUp, (DWORD) HOOK_VehicleCamUp );
 	HookInstallCall( CALL_VehicleLookAsideUp, (DWORD) HOOK_VehicleCamUp );
+
+	// SpiderFeet
+	HookInstallCall( CALL_CMatrix__rotateAroundZ, (DWORD) HOOK_CMatrix__rotateAroundZ );
 }

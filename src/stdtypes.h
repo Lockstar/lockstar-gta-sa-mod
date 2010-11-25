@@ -28,3 +28,11 @@ typedef signed int			int32_t;
 typedef unsigned int		uint32_t;
 typedef signed long long	int64_t;
 typedef unsigned long long	uint64_t;
+
+struct t_WindowsInfo
+{
+	int osPlatform;
+	int osVer;
+	int winVer;
+	int winMajor;
+};

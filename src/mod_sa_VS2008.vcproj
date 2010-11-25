@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="m0d_s0beit_sa"
+	Name="mod_sa"
 	ProjectGUID="{02EB97D5-B1C5-411E-8274-83A95985DE6F}"
-	RootNamespace="m0d_s0beit_sa"
+	RootNamespace="mod_sa"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -51,7 +51,7 @@
 				FavorSizeOrSpeed="2"
 				OmitFramePointers="true"
 				AdditionalIncludeDirectories=".\;sparsehash\windows;sparsehash;game_sa"
-				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32;NDEBUG;_WINDOWS;_USRDLL;M0D_S0BEIT_SA_PROXY_EXPORTS"
+				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32;NDEBUG;_WINDOWS;_USRDLL;mod_sa_PROXY_EXPORTS"
 				StringPooling="true"
 				ExceptionHandling="0"
 				RuntimeLibrary="0"
@@ -79,13 +79,13 @@
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="dxsdk_apr2005/Lib/"
 				GenerateManifest="false"
-				ModuleDefinitionFile="m0d_s0beit_sa.def"
+				ModuleDefinitionFile="mod_sa.def"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(OutDir)/m0d_s0beit_sa_proxy.lib"
+				ImportLibrary="$(OutDir)/mod_sa_proxy.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -1793,7 +1793,7 @@
 			</Filter>
 		</Filter>
 		<File
-			RelativePath=".\m0d_s0beit_sa.def"
+			RelativePath=".\mod_sa.def"
 			>
 		</File>
 		<File
