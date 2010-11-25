@@ -68,7 +68,7 @@ static void cheat_main_actor ( double time_diff )
 	if ( info->pedFlags.bInVehicle )
 		cheat_handle_vehicle_fast_exit( NULL, time_diff );
 
-	//cheat_handle_spiderFeet(info, time_diff);
+	cheat_handle_SpiderFeet(info, time_diff);
 }
 
 static void cheat_main_vehicle ( double time_diff )
@@ -260,6 +260,7 @@ void cheat_hook ( HWND wnd )
 			// we have to add ourself to the pool first so that we are always the 1st ref
 			// NEW --> use the global external: pPedSelf
 			pPedSelf = pGameInterface->GetPools()->AddPed( (DWORD *)actor_info );
+			pPedSelfSA = reinterpret_cast < CPedSAInterface * >( pPedSelf->GetInterface() );
 
 			// install all startup hooks
 			cheat_hookers_installhooks();

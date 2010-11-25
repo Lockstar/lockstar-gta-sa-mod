@@ -438,8 +438,16 @@ static void ini_init ( void )
 	if ( (ent = ini_register_entry("vehicle_hop_speed", TYPE_FLOAT)) != NULL )
 		ini_register_data( ent, &set.vehicle_hop_speed, "0.2" );
 
+
 	if ( (ent = ini_register_entry("key_spiderwheels", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_spiderwheels, "np5" );
+	if ( (ent = ini_register_entry("key_spiderfeet", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_spiderfeet, "np5" );
+	if ( (ent = ini_register_entry("key_ninjaflipfront", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_ninjaflipfront, "r" );
+	if ( (ent = ini_register_entry("key_ninjaflipback", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_ninjaflipback, "f" );
+
 
 	if ( (ent = ini_register_entry("handling_multiplier", TYPE_FLOAT)) != NULL )
 		ini_register_data( ent, &set.handling_multiplier, "0.5" );
@@ -658,6 +666,8 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.hud_indicator_onfoot_stick, "true" );
 	if ( (ent = ini_register_entry("hud_indicator_onfoot_aim", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.hud_indicator_onfoot_aim, "true" );
+	if ( (ent = ini_register_entry("hud_indicator_onfoot_spider", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.hud_indicator_onfoot_spider, "true" );
 
 	if ( (ent = ini_register_entry("hud_indicator_pos", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.hud_indicator_pos, "false" );

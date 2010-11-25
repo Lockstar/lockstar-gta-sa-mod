@@ -460,38 +460,34 @@ void cheat_actor_setGravity ( actor_info *ainfo, CVector pvecGravity )
 
 	// set the d-dang gravity
 	cheat_state->actor.gravityVector = pvecGravity;
-
-	ainfo->base.m_CMatrix->vFront.fZ = pvecGravity.fX;
-	ainfo->base.m_CMatrix->vRight.fZ = pvecGravity.fY;
-
-	ainfo->base.m_CMatrix->vUp.fZ = -pvecGravity.fZ;
-
-	// surf on yourself, lawlz
-	//ainfo->vehicle_contact = (vehicle_info*)ainfo;
-	//ainfo->pedFlags.bResetWalkAnims = false;
-	//ainfo->pedFlags.bStillOnValidPoly = false;
-	//ainfo->pedFlags.bUpdateMatricesRequired = true;
-	//ainfo->pedFlags.bUpdateAnimHeading = true;
-	//ainfo->pedFlags.bWasStanding = false;
-	//ainfo->pedFlags.bDonePositionOutOfCollision = true;
-	//ainfo->pedFlags.bIsNearCar = true;
-	//ainfo->base.m_CMatrix->vUp = -pvecGravity;
-	//if (ainfo->base.m_CMatrixPre != NULL)
-	//	ainfo->base.m_CMatrixPre->vUp = pvecGravity;
 }
 
-void cheat_handle_spiderFeet ( struct actor_info *ainfo, float time_diff )
+void cheat_handle_SpiderFeet ( struct actor_info *ainfo, double time_diff )
 {
-	traceLastFunc( "cheat_handle_spiderFeet()" );
+	traceLastFunc( "cheat_handle_NinjaMode()" );
 
 	if ( KEY_PRESSED(set.key_spiderfeet) )
 	{
-		// toggle the d-dang spiderz
-		cheat_state->actor.spiderFeet_on ^= 1;
+		// toggle the d-dang Ninjas
+		cheat_state->actor.NinjaMode_on ^= 1;
 	}
 
-	if ( 1 == 1 )	//cheat_state->actor.spiderFeet_on)
+	if ( cheat_state->actor.NinjaMode_on )	//cheat_state->actor.NinjaMode_on)
 	{
+		// get a CPed
+		CPed *pPed = pPools->GetPed( (DWORD *)ainfo );
+		CPedSAInterface	*pPedSA = pPed->GetPedInterface();
+
+/*
+char buf[256];
+_snprintf_s(buf, sizeof(buf), "My Matrix: 0x%08x", &pPedSA->Placeable.matrix );
+pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 25,
+pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 40, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
+*/
+
+		// set NinjaMode enabler to on
+		//ainfo->base.nImmunities = 0x0B;
+
 		// get "down" facing vector
 		CVector				offsetVector = cheat_actor_getPositionUnder( ainfo );
 
@@ -511,6 +507,9 @@ void cheat_handle_spiderFeet ( struct actor_info *ainfo, float time_diff )
 		vecTarget = offsetVector * checkDistanceMeters;
 		vecTarget = vecTarget + vecOrigin;
 
+		// for time/fps purposes
+		float	fTimeStep = *(float *)0xB7CB5C;
+
 		// check for collision
 		bool	bCollision = GTAfunc_ProcessLineOfSight( &vecOrigin, &vecTarget, &pCollision, &pCollisionEntity, 1, 0,
 														 0, 1, 1, 0, 0, 0 );
@@ -525,23 +524,11 @@ void cheat_handle_spiderFeet ( struct actor_info *ainfo, float time_diff )
 			newRotVector = colGravTemp - vehGravTemp;
 			newRotVector *= 0.05f * fTimeStep;
 			offsetVector = vehGravTemp + newRotVector;
-#ifdef M0D_DEV
-			/**/
-			vecGravColOrigin = D3DXVECTOR3( vecOrigin.fX, vecOrigin.fY, vecOrigin.fZ );
-			vecGravColTarget.x = pCollision->GetInterface()->Position.fX;
-			vecGravColTarget.y = pCollision->GetInterface()->Position.fY;
-			vecGravColTarget.z = pCollision->GetInterface()->Position.fZ;
-			temp_vecGravTargetNorm = vecOrigin + offsetVector * checkDistanceMeters;
-			vecGravTargetNorm.x = temp_vecGravTargetNorm.fX;
-			vecGravTargetNorm.y = temp_vecGravTargetNorm.fY;
-			vecGravTargetNorm.z = temp_vecGravTargetNorm.fZ;
-#endif
 			pCollision->Destroy();
 		}
 		else
 		{
 			// set normal gravity vector
-			float	fTimeStep = *(float *)0xB7CB5C;
 			CVector colGravTemp;
 			colGravTemp.fX = 0.0f;
 			colGravTemp.fY = 0.0f;
@@ -552,25 +539,67 @@ void cheat_handle_spiderFeet ( struct actor_info *ainfo, float time_diff )
 			newRotVector = colGravTemp - vehGravTemp;
 			newRotVector *= 0.05f * fTimeStep;
 			offsetVector = vehGravTemp + newRotVector;
-#ifdef M0D_DEV
-			/**/
-			vecGravColOrigin = D3DXVECTOR3( vecOrigin.fX, vecOrigin.fY, vecOrigin.fZ );
-			vecGravColTarget = D3DXVECTOR3( vecTarget.fX, vecTarget.fY, vecTarget.fZ );
-			temp_vecGravTargetNorm = vecOrigin + offsetVector * checkDistanceMeters;
-			vecGravTargetNorm.x = temp_vecGravTargetNorm.fX;
-			vecGravTargetNorm.y = temp_vecGravTargetNorm.fY;
-			vecGravTargetNorm.z = temp_vecGravTargetNorm.fZ;
-#endif
 		}
 
 		// set the gravity/camera
 		cheat_actor_setGravity( ainfo, offsetVector );
+		//pPed->SetOrientation( offsetVector.fX, offsetVector.fY, offsetVector.fZ );
+
+		// set up vector, can make it very easy to scale walls n such
+		//pPed->SetWas( &-offsetVector );
+
+		// Ninjas know how to do awesome flips n shit
+		if ( KEY_DOWN(set.key_ninjaflipfront) )
+		{
+			/**/
+			// get matrix, backup original front vector for comparison
+			CMatrix matPed;
+			pPed->GetMatrix( &matPed );
+			CVector vecSpinOriginal;
+			vecSpinOriginal.fX = matPed.vFront.fZ;
+			vecSpinOriginal.fY = matPed.vRight.fZ;
+			vecSpinOriginal.fZ = matPed.vUp.fZ;
+
+			// rotate matrix on right axis
+			float rotation_theta = M_PI / 2.0f;
+			matPed = matPed.Rotate( &matPed.vRight, rotation_theta );
+
+			// compare
+			CVector vecSpinCompare;
+			vecSpinCompare.fX = matPed.vFront.fZ;
+			vecSpinCompare.fY = matPed.vRight.fZ;
+			vecSpinCompare.fZ = matPed.vUp.fZ;
+			vecSpinCompare = (vecSpinOriginal - vecSpinCompare) * 10;
+
+			// spin mother fucker, spin
+			//pPedSA->vecSpinCollision = &(CVector)( vecSpinCompare );
+			pPedSA->vecSpin = &(CVector)( vecSpinCompare );
+
+			//pPed->SetDirection( vecSpinCompare );
+			//pPed->SetWas( 
+			//CVehicle blah;
+			//blah.SetWas( vecSpinCompare );
+			
+
+
+		}
+		//key_ninjaflipfront
+		//key_ninjaflipback
+		//key_ninjajumpboost
+
+		// if we're standing, rotate the CPed to match
+		// TODO
+
 	}
-	else if ( cheat_state->actor.spiderFeet_Enabled )
+	else if ( cheat_state->actor.NinjaMode_Enabled )
 	{
+
+		// set NinjaMode enabler to off
+		//ainfo->base.nImmunities = 0x12;
+
 		CVector offsetVector;
 
-		// disable spider wheels with normal gravity vector
+		// disable NinjaMode with normal gravity vector
 		offsetVector.fX = 0.0f;
 		offsetVector.fY = 0.0f;
 		offsetVector.fZ = -1.0f;
@@ -578,7 +607,7 @@ void cheat_handle_spiderFeet ( struct actor_info *ainfo, float time_diff )
 		// set the gravity/camera
 		cheat_actor_setGravity( ainfo, offsetVector );
 
-		// set spider wheels disabled
-		cheat_state->actor.spiderFeet_Enabled = false;
+		// set NinjaMode disabled
+		cheat_state->actor.NinjaMode_Enabled = false;
 	}
 }

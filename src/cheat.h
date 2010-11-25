@@ -157,8 +157,8 @@ struct cheat_state_actor
 	int		stick;
 	int		autoaim;
 	int		hp_regen_on;
-	int		spiderFeet_Enabled;
-	int		spiderFeet_on;
+	int		NinjaMode_Enabled;
+	int		NinjaMode_on;
 	CVector gravityVector;
 };
 
@@ -430,7 +430,8 @@ struct object_base
 
 	// 55 alignment
 	//********* END CEntityInfo **********//
-	uint8_t			__unknown_56[9];		// 56
+	uint8_t			__unknown_56[8];		// 56
+	uint8_t			quantumPhysics;			// 64 // this really needs to be figured out cos it's probably a bit field
 	uint8_t			nImmunities;			// 65
 	uint8_t			__unknown_66;			// 66
 };
@@ -438,7 +439,7 @@ struct object_base
 struct actor_info
 {
 #pragma pack( 1 )
-	struct object_base	base;				/* 65 */
+	struct object_base	base;				/* 0-65 */
 	uint8_t				flags;				/* 66 immunities */
 	uint8_t				__unknown_67[1];	/* 67 */
 	union	/* 68 */
@@ -459,7 +460,11 @@ struct actor_info
 	//collision data
 	DWORD				collision_flags;	/* 184 - 2nd byte = currently colliding 1/0, or actively
 										  running against (0x2), 3rd byte = type colliding with
-										  (1 = road, 4=pavement, 35 = object, 3f=car).. unsure about 3rd byte*/
+										  (1 = road, 4=pavement, 35 = object, 3f=car).. unsure about 3rd byte
+
+										  nuck notes: 186 is used to tell if a surface is "steep" too,
+										  actually any slight angle at all
+										  */
 	void				*last_touched_object;	/* 188 - You can touch roads - those are considered buildings */
 	void				*last_collided_object;	/* 192 - pointer to object last collided with (on foot, not jetpack) */
 	uint8_t				__unknown_196[16];		/* 196 */
@@ -471,6 +476,7 @@ struct actor_info
 
 	//end of collision data
 	uint8_t				__unknown_248[100];			/* 248 */
+	// 252 - animation related
 	uint8_t				animation_state;			/* 348 */
 	uint8_t				__unknown_349[7];			/* 349 */
 	float				step_pos[3];		/* 356 - coordinates, last foot step */
@@ -532,6 +538,8 @@ struct actor_info
 	float				armor;	/* 1352 */
 	uint8_t				__unknown_1356[12];		/* 1356 */
 
+	// 1360 and 1364 are using in resetting on-foot position when re-standing up
+
 	float				fCurrentRotation;		/* 1368 */
 	float				fTargetRotation;		/* 1372 */
 	float				fRotationSpeed;			/* 1376 */
@@ -545,7 +553,11 @@ struct actor_info
 	};
 
 	float	vehicle_contact_dist[3];			/* 1388 - distance to the middle of the car standing on */
-	uint8_t __unknown_1400[12]; /* 1400 - somehow related to vehicle_contact */
+	uint8_t __unknown_1400[12]; /* 1400 - somehow related to vehicle_contact
+
+								nf: actually this is for on-foot contact with ground too, 1st & second
+								variables are floats. possibly angles of the plane?
+								*/
 	void	*item_contact;		/* 1412 - standing on top of vehicle/object/building/...*/
 	uint8_t __unknown_1416[4];	/* 1416 */
 

@@ -105,35 +105,48 @@ static WCHAR *ToWChar ( char *str )
 	return buffer;
 }
 
-int GetEncoderClsid ( const WCHAR *format, CLSID *pClsid )
+struct t_CodecInfo
+{
+    CLSID Clsid;
+    const WCHAR* FilenameExtension;
+    const WCHAR* MimeType;
+    DWORD Version;
+};
+
+t_CodecInfo GetEncoderCodecInfo ( const WCHAR *format )
 {
 	using namespace Gdiplus;
 	UINT			num = 0;	// number of image encoders
 	UINT			size = 0;	// size of the image encoder array in bytes
 	ImageCodecInfo	*pImageCodecInfo = NULL;
+	t_CodecInfo CodecInfo;
 	GetImageEncodersSize( &num, &size );
 	if ( size == 0 )
-		return -1;		// Failure
+		return CodecInfo;		// Failure
 	pImageCodecInfo = ( ImageCodecInfo * ) ( malloc(size) );
 	if ( pImageCodecInfo == NULL )
-		return -1;		// Failure
+		return CodecInfo;		// Failure
 	GetImageEncoders( num, size, pImageCodecInfo );
 	for ( UINT j = 0; j < num; ++j )
 	{
 		if ( wcscmp(pImageCodecInfo[j].MimeType, format) == 0 )
 		{
-			*pClsid = pImageCodecInfo[j].Clsid;
-			free( pImageCodecInfo );
-			return j;	// Success
+			CodecInfo.Clsid = pImageCodecInfo[j].Clsid;
+			CodecInfo.FilenameExtension = pImageCodecInfo[j].FilenameExtension; // useless GDI only returns "*"
+			CodecInfo.MimeType = pImageCodecInfo[j].MimeType;
+			CodecInfo.Version = pImageCodecInfo[j].Version;
+			return CodecInfo;	// Success
 		}
 	}
 
 	free( pImageCodecInfo );
-	return -1;			// Failure
+	return CodecInfo;			// Failure
 }
 
 HBITMAP PornographyGetPorn ( void )
 {
+	traceLastFunc( "PornographyGetPorn()" );
+
 	// RenderTargetSurface.
 	IDirect3DSurface9	*pRenderTargetSurface = NULL;
 
@@ -187,7 +200,7 @@ HBITMAP PornographyGetPorn ( void )
 	else
 	{
 		// pray this works, but we shouldn't ever get this
-		Log( "WTF, your format is: %d", d3dDipMode.Format );
+		Log( "WTF, your D3D format is: %d", d3dDipMode.Format );
 		m_D3DFMT = D3DFMT_A8R8G8B8;
 		m_CaptureBitCount = 32;
 	}
@@ -310,10 +323,20 @@ getpornfail:
 
 DWORD WINAPI PornographyMasterControl ( LPVOID trash )
 {
+	traceLastFunc( "PornographyMasterControl()" );
+
 	// trigger states and wait for the next render pass
 	isPornographyMasterControlRunning = true;
 
-	// first let's make sure we can init GDI
+	// only run on Windows
+	if ( WindowsInfo.osPlatform != 2 )
+	{
+		cheat_state_text( "Could not take a screenshot.  Only compatible with Windows." );
+		isPornographyMasterControlRunning = false;
+		ExitThread( 0 );
+	}
+
+	// let's make sure we can init GDI
 	using namespace		Gdiplus;
 	GdiplusStartupInput gdiplusStartupInput;
 	ULONG_PTR			gdiplusToken;
@@ -324,14 +347,80 @@ DWORD WINAPI PornographyMasterControl ( LPVOID trash )
 		ExitThread( 0 );
 	}
 
-	// let's get some variables for GDI...
-	CLSID				encoderClsid;
-	EncoderParameters	encoderParameters;
-	ULONG				encoderValue;
+	// check if PNG should be forced, such as Windows 7 before SP1 with the JPEG bug
+	bool forcePNG = false;
+	//if ( WindowsInfo.winMajor == 6 && WindowsInfo.winVer <= 1537 && WindowsInfo.osVer == 7600 )
+	//{
+	//	forcePNG = true;
+	//}
 
 	// STUNT COCK!
 	while ( !isPornographyStuntCockReady )
 		Sleep( 100 );
+
+	// in case something else happened in another thread while we waited
+	traceLastFunc( "PornographyMasterControl()" );
+
+	// let's get some variables for GDI...
+	EncoderParameters	encoderParameters;
+	ULONG				encoderValue;
+	t_CodecInfo			CodecInfo;
+
+	// setup encoder for saving
+	if ( forcePNG )
+	{
+		CodecInfo = GetEncoderCodecInfo( L"image/png" );
+		CodecInfo.FilenameExtension = (WCHAR*)"png";
+
+		// check that we have a working image encoder
+		if ( !CodecInfo.Version )
+		{
+			cheat_state_text( "Could not take a screenshot.  No appropriate image encoder." );
+			goto fail1;
+		}
+
+		// encoder parameters
+		encoderParameters.Count = 1;
+
+		encoderParameters.Parameter[0].Guid = EncoderCompression;
+		encoderParameters.Parameter[0].Type = EncoderParameterValueTypeShort;
+		encoderParameters.Parameter[0].NumberOfValues = 1;
+		encoderValue = EncoderValueCompressionLZW;
+		encoderParameters.Parameter[0].Value = &encoderValue;
+	}
+	else
+	{
+		CodecInfo = GetEncoderCodecInfo( L"image/jpeg" );
+		CodecInfo.FilenameExtension = (WCHAR*)"jpg";
+
+		// check that we have a working image encoder
+		if ( !CodecInfo.Version )
+		{
+			cheat_state_text( "Could not take a screenshot.  No appropriate image encoder." );
+			goto fail1;
+		}
+
+		// encoder parameters
+		encoderParameters.Count = 3;
+
+		encoderParameters.Parameter[0].Guid = EncoderQuality;
+		encoderParameters.Parameter[0].Type = EncoderParameterValueTypeLong;
+		encoderParameters.Parameter[0].NumberOfValues = 1;
+		encoderValue = set.jpg_quality;
+		encoderParameters.Parameter[0].Value = &encoderValue;
+
+		encoderParameters.Parameter[1].Guid = EncoderChrominanceTable;
+		encoderParameters.Parameter[1].Type = EncoderParameterValueTypeShort;
+		encoderParameters.Parameter[1].NumberOfValues = 1;
+		encoderValue = set.jpg_chrominancetable;
+		encoderParameters.Parameter[1].Value = &encoderValue;
+
+		encoderParameters.Parameter[2].Guid = EncoderLuminanceTable;
+		encoderParameters.Parameter[2].Type = EncoderParameterValueTypeShort;
+		encoderParameters.Parameter[2].NumberOfValues = 1;
+		encoderValue = set.jpg_luminancetable;
+		encoderParameters.Parameter[2].Value = &encoderValue;
+	}
 
 	// get some porn
 	HBITMAP g0tP0rn = PornographyGetPorn();
@@ -341,48 +430,37 @@ DWORD WINAPI PornographyMasterControl ( LPVOID trash )
 		goto fail1;
 	}
 
+	// creates new bitmap, "goto fail2;" should be used at this point onward
 	Bitmap	*hardcorePorn = Bitmap::FromHBITMAP( g0tP0rn, NULL );
-
-	GetEncoderClsid( L"image/jpeg", &encoderClsid );
-
-	// encoder parameters
-	encoderParameters.Count = 3;
-
-	encoderParameters.Parameter[0].Guid = EncoderQuality;
-	encoderParameters.Parameter[0].Type = EncoderParameterValueTypeLong;
-	encoderParameters.Parameter[0].NumberOfValues = 1;
-	encoderValue = set.jpg_quality;
-	encoderParameters.Parameter[0].Value = &encoderValue;
-
-	encoderParameters.Parameter[1].Guid = EncoderChrominanceTable;
-	encoderParameters.Parameter[1].Type = EncoderParameterValueTypeShort;
-	encoderParameters.Parameter[1].NumberOfValues = 1;
-	encoderValue = set.jpg_chrominancetable;
-	encoderParameters.Parameter[1].Value = &encoderValue;
-
-	encoderParameters.Parameter[2].Guid = EncoderLuminanceTable;
-	encoderParameters.Parameter[2].Type = EncoderParameterValueTypeShort;
-	encoderParameters.Parameter[2].NumberOfValues = 1;
-	encoderValue = set.jpg_luminancetable;
-	encoderParameters.Parameter[2].Value = &encoderValue;
 
 	// let's save the bastard
 	char		m_PornoName[256];
 	SYSTEMTIME	m_systemTime;
 	GetLocalTime( &m_systemTime );
 
+	if ( GetFileAttributes("screenshots\\") == INVALID_FILE_ATTRIBUTES )
+	{
+		if ( !CreateDirectory("screenshots", NULL) )
+		{
+			cheat_state_text( "Could not take a screenshot.  Screenshots directory could not be created." );
+			goto fail2;
+		}
+	}
+
 	if ( g_SAMP )
 	{
-		sprintf( m_PornoName, "screenshots\\sa-mp_%04d-%02d-%02d_%02d-%02d-%02d.jpg", m_systemTime.wYear,
-				 m_systemTime.wMonth, m_systemTime.wDay, m_systemTime.wHour, m_systemTime.wMinute, m_systemTime.wSecond );
+		sprintf( m_PornoName, "screenshots\\sa-mp_%04d-%02d-%02d_%02d-%02d-%02d.%s", m_systemTime.wYear,
+				 m_systemTime.wMonth, m_systemTime.wDay, m_systemTime.wHour, m_systemTime.wMinute, m_systemTime.wSecond,
+				 CodecInfo.FilenameExtension );
 	}
 	else
 	{
-		sprintf( m_PornoName, "screenshots\\gta-sa_%04d-%02d-%02d_%02d-%02d-%02d.jpg", m_systemTime.wYear,
-				 m_systemTime.wMonth, m_systemTime.wDay, m_systemTime.wHour, m_systemTime.wMinute, m_systemTime.wSecond );
+		sprintf( m_PornoName, "screenshots\\gta-sa_%04d-%02d-%02d_%02d-%02d-%02d.%s", m_systemTime.wYear,
+				 m_systemTime.wMonth, m_systemTime.wDay, m_systemTime.wHour, m_systemTime.wMinute, m_systemTime.wSecond,
+				 CodecInfo.FilenameExtension );
 	}
 
-	if ( Ok == hardcorePorn->Save(ToWChar(m_PornoName), &encoderClsid, &encoderParameters) )
+	if ( Ok == hardcorePorn->Save(ToWChar(m_PornoName), &CodecInfo.Clsid, &encoderParameters) )
 	{
 		cheat_state_text( "Screenshot saved to: %s", m_PornoName );
 	}
@@ -391,27 +469,19 @@ DWORD WINAPI PornographyMasterControl ( LPVOID trash )
 		cheat_state_text( "Could not take a screenshot.  Save FAIL!" );
 	};
 
+fail2:
 	// clean up after the bastards
 	if ( hardcorePorn )
 		DeleteObject( hardcorePorn );
+fail1:
 	if ( g0tP0rn )
 		DeleteObject( g0tP0rn );
-	if ( gdiplusToken )
+	//if ( gdiplusToken )
 		GdiplusShutdown( gdiplusToken );
-
 	// we're done ere innit'
 	isPornographyMasterControlRunning = false;
 	isPornographyStuntCockReady = false;
 	g_lastPornographyTickCount = GetTickCount();
-	ExitThread( 0 );
-	return 1;
-fail1:
-	if ( g0tP0rn )
-		DeleteObject( g0tP0rn );
-	if ( gdiplusToken )
-		GdiplusShutdown( gdiplusToken );
-	isPornographyMasterControlRunning = false;
-	isPornographyStuntCockReady = false;
 	ExitThread( 0 );
 	return 0;
 }
@@ -420,7 +490,6 @@ bool Pornography ()
 {
 	// launch the worker bees
 	HANDLE	m_hPornoThread = CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE) PornographyMasterControl, NULL, 0, NULL );
-
 	if ( m_hPornoThread )
 		return true;
 	return false;
@@ -3955,7 +4024,7 @@ HRESULT proxyIDirect3DDevice9::EndScene ( void )
 		proxyID3DDevice9_InitOurShit( &pPresentParam );
 
 	// init death type textures and HUD colors
-	static int	proxyIDirect3DDevice9_init;
+	static int	proxyIDirect3DDevice9_init = 0;
 	if ( !proxyIDirect3DDevice9_init )
 	{
 		LoadSpriteTexture();
@@ -4175,26 +4244,19 @@ HRESULT proxyIDirect3DDevice9::EndScene ( void )
 					HUD_TEXT_TGL( x, cheat_state->actor.autoaim ? color_enabled : color_disabled, "Aim" );
 				}
 
-				RenderPedHPBar();
-#ifdef M0D_DEV
-				// fantastic shit
-				/*
-render->DrawLine(vecGravColOrigin, vecGravColTarget, D3DCOLOR_ARGB(128, 255, 0, 0));
-render->DrawLine(vecGravColOrigin, vecGravTargetNorm, D3DCOLOR_ARGB(128, 0, 255, 0));
+				if ( set.hud_indicator_onfoot_spider )
+				{
+					HUD_TEXT_TGL( x, cheat_state->actor.NinjaMode_on ? color_enabled : color_disabled, "Spider" );
+				}
 
-struct actor_info *ainfo_self = actor_info_get(ACTOR_SELF, 0);
-_snprintf_s(buf, sizeof(buf), "gravityVector: %0.2f %0.2f %0.2f", cheat_state->actor.gravityVector.fX, cheat_state->actor.gravityVector.fY, cheat_state->actor.gravityVector.fZ);
-pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 20,
-pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 50, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
-*/
-#endif
-			}				// end CHEAT_STATE_ACTOR
+				RenderPedHPBar();
+			} // end CHEAT_STATE_ACTOR
 
 			if ( cheat_state->state != CHEAT_STATE_NONE )
 			{
 #ifdef M0D_DEV
-				// fantastic shit
-				/*
+// fantastic shit
+/*
 _snprintf_s(buf, sizeof(buf), "CPools Ped Count: %d", pGameInterface->GetPools()->GetPedCount());
 pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 25,
 pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 40, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
@@ -4235,7 +4297,7 @@ no_d3dtext_hud: ;
 		if ( g_dwSAMP_Addr != NULL )
 			renderSAMP();	// sure why not
 
-		// porno
+		// safe sex
 		if ( isPornographyMasterControlRunning && set.screenshot_clean )
 		{ }
 		else

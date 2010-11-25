@@ -29,8 +29,8 @@
 // main switch for development or release build
 //#define M0D_DEV
 
-#define M0D_NAME		" "
-#define M0D_VERSION		" "
+#define M0D_NAME		"mod_sa"
+#define M0D_VERSION		"4.2.0.0"
 #define SAMP_VERSION	"SA:MP 0.3b R3"
 
 #ifdef M0D_DEV
@@ -38,8 +38,8 @@
 #else
 #define NAME	""M0D_NAME """ "M0D_VERSION ""
 #endif
-#define INI_FILE				"m0d_s0beit_sa.ini"
-#define RAW_TEX_FILE			"m0d_s0beit_sa.raw"
+#define INI_FILE				"mod_sa.ini"
+#define RAW_TEX_FILE			"mod_sa.raw"
 
 #define RUNMODE_SINGLEPLAYER	0
 #define RUNMODE_SAMP			1
@@ -220,7 +220,11 @@ extern CCameraSA				g_CCamera;
 extern CGameSA					*pGameInterface;
 extern CPools					*pPools;
 extern CPed						*pPedSelf;
+extern CPedSAInterface			*pPedSelfSA;
 extern CDirect3DData			*pD3DData;
+
+// store info about Windows OS
+extern t_WindowsInfo			WindowsInfo;
 
 // externals
 #endif

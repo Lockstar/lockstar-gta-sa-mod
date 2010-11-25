@@ -40,6 +40,10 @@ RsGlobalType			*g_RsGlobal = (RsGlobalType *)0xC17040;
 CGameSA					*pGameInterface = NULL;
 CPools					*pPools = NULL;
 CPed					*pPedSelf = NULL;
+CPedSAInterface					*pPedSelfSA = NULL;
+
+// to store information about the Windows OS
+t_WindowsInfo			WindowsInfo;
 
 void traceLastFunc ( const char *szFunc )
 {
@@ -54,7 +58,7 @@ void Log ( const char *fmt, ... )
 	if ( g_flLog == NULL )
 	{
 		char	filename[512];
-		snprintf( filename, sizeof(filename), "%s\\%s", g_szWorkingDirectory, "m0d_s0beit_sa.log" );
+		snprintf( filename, sizeof(filename), "%s\\%s", g_szWorkingDirectory, "mod_sa.log" );
 
 		remove( filename );
 		g_flLog = fopen( filename, "a" );
@@ -73,7 +77,7 @@ void Log ( const char *fmt, ... )
 	if ( g_flLogAll == NULL )
 	{
 		char	filename_all[512];
-		snprintf( filename_all, sizeof(filename_all), "%s\\%s", g_szWorkingDirectory, "m0d_s0beit_sa_all.log" );
+		snprintf( filename_all, sizeof(filename_all), "%s\\%s", g_szWorkingDirectory, "mod_sa_all.log" );
 
 		g_flLogAll = fopen( filename_all, "a" );
 		if ( g_flLogAll == NULL )
@@ -98,7 +102,7 @@ void LogChatbox ( bool bLast, const char *fmt, ... )
 	if ( g_flLogChatbox == NULL )
 	{
 		char	filename[512];
-		snprintf( filename, sizeof(filename), "%s\\%s", g_szWorkingDirectory, "m0d_s0beit_chatbox.log" );
+		snprintf( filename, sizeof(filename), "%s\\%s", g_szWorkingDirectory, "mod_sa_chatbox.log" );
 
 		remove( filename );
 		g_flLogChatbox = fopen( filename, "a" );
@@ -119,7 +123,7 @@ void LogChatbox ( bool bLast, const char *fmt, ... )
 	if ( g_flLogChatboxAll == NULL )
 	{
 		char	filename_all[512];
-		snprintf( filename_all, sizeof(filename_all), "%s\\%s", g_szWorkingDirectory, "m0d_s0beit_chatbox_all.log" );
+		snprintf( filename_all, sizeof(filename_all), "%s\\%s", g_szWorkingDirectory, "mod_sa_chatbox_all.log" );
 
 		g_flLogChatboxAll = fopen( filename_all, "a" );
 		if ( g_flLogChatboxAll == NULL )
@@ -215,14 +219,14 @@ static int init ( void )
 		Log( "Initializing %s", NAME );
 
 		// log windows version for people that forget to report it
-		int osPlatform = (int) * (DWORD *)GTAvar_osPlatform;
-		int osVer = (int) * (DWORD *)GTAvar_osVer;
-		int winVer = (int) * (DWORD *)GTAvar_winVer;
-		int winMajor = (int) * (DWORD *)GTAvar_winMajor;
-		if ( osPlatform == 2 )
-			Log( "OS: Windows Version %d.%d.%d", winMajor, winVer, osVer );
+		WindowsInfo.osPlatform = (int) * (DWORD *)GTAvar_osPlatform;
+		WindowsInfo.osVer = (int) * (DWORD *)GTAvar_osVer;
+		WindowsInfo.winVer = (int) * (DWORD *)GTAvar_winVer;
+		WindowsInfo.winMajor = (int) * (DWORD *)GTAvar_winMajor;
+		if ( WindowsInfo.osPlatform == 2 )
+			Log( "OS: Windows Version %d.%d.%d", WindowsInfo.winMajor, WindowsInfo.winVer, WindowsInfo.osVer );
 		else
-			Log( "OS: Not Windows (%d.%d.%d)", winMajor, winVer, osVer );
+			Log( "OS: Not Windows (%d.%d.%d)", WindowsInfo.winMajor, WindowsInfo.winVer, WindowsInfo.osVer );
 
 		/*
 		int D3D9UseVersion = (int)*(DWORD*)GTAvar__D3D9UseVersion;
@@ -262,7 +266,8 @@ static int init ( void )
 		if ( !set.i_have_edited_the_ini_file )
 		{
 			MessageBox( 0, "Looks like you've not edited the .ini file like you were told to!\n""\n"
-						"Before you can use m0d_s0beit, you have to set \"i_have_edited_the_ini_file\" to true.\n",
+						"Before you can use m0d_s0beit, you have to set \"i_have_edited_the_ini_file\" to true.\n"
+						"We did this so you would read the INI file to see the configurability of mod_sa.\n",
 					"You're a retard.", 0 );
 			ShellExecute( 0, "open", "notepad", INI_FILE, g_szWorkingDirectory, SW_SHOW );
 			return 0;
