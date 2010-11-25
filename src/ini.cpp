@@ -387,9 +387,13 @@ static void ini_init ( void )
 	if ( (ent = ini_register_entry("warp_use_speed", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.warp_use_speed, "true" );
 
-	//blinking car lights, keep trailer
+	//blinking car lights
 	if ( (ent = ini_register_entry("key_blinking_car_lights", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_blinking_car_lights, "&0" );
+	if ( (ent = ini_register_entry("enable_car_lights_at_day_time", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.enable_car_lights_at_day_time, "false" );
+
+	//keep trailer, wall collision key
 	if ( (ent = ini_register_entry("key_keep_trailer", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_keep_trailer, "&0" );
 	if ( (ent = ini_register_entry("key_disable_Wall_Collisions", TYPE_KEY)) != NULL )
@@ -399,10 +403,11 @@ static void ini_init ( void )
 	if ( (ent = ini_register_entry("key_repair_car", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_repair_car, "&0" );
 
+	// real nitro
 	if ( (ent = ini_register_entry("key_nitro", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_nitro, "np0" );
 
-	/* nitro */
+	/* nitro mod */
 	if ( (ent = ini_register_entry("key_nitro_mod", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_nitro_mod, "lalt" );
 	if ( (ent = ini_register_entry("nitro_high", TYPE_FLOAT)) != NULL )

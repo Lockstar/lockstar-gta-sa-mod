@@ -114,6 +114,8 @@ struct settings
 	int						warp_use_speed;
 
 	int						key_blinking_car_lights;
+	int						enable_car_lights_at_day_time;
+
 	int						key_keep_trailer;
 	int						key_disable_Wall_Collisions;
 

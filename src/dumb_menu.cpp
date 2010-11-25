@@ -265,8 +265,8 @@ static void menu_cheats_mods_populate ( struct menu *menu )
 		return;
 
 	struct actor_info	*ainfo = actor_info_get( ACTOR_SELF, 0 );
-	//if ( vinfo->passengers[0] != ainfo )
-	//	return;
+	if ( vinfo->passengers[0] != ainfo )
+		return;
 
 	// some variables
 	int		iModelID = vinfo->base.model_alt_id;

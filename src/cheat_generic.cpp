@@ -33,6 +33,17 @@ static struct patch_set patch_actor_hp =
 						(uint8_t *)"\x89\x9e\x40\x05\x00\x00", NULL, NULL } }
 };
 
+static struct patch_set patch_vehicle_hp =
+{
+	"Additional vehicle HP invincibility",
+	0,
+	0,
+	{
+		// Invincible Boats (no matching invulnerable flags)
+		{ 6, (void *)0x006F1B5C, (uint8_t *)"\x0F\x85\x10\x01\x00\x00", (uint8_t *)"\xE9\x11\x01\x00\x00\x90", NULL } 
+	}
+};
+
 int cheat_panic ( void )
 {
 	traceLastFunc( "cheat_panic()" );
@@ -40,6 +51,7 @@ int cheat_panic ( void )
 	static int	pstate_map = 0, // m0d's map
 		pstate_d3dtext_hud = 0, // hud bar
 		pstate_actor_hp = 0, // "Extra actor invincibility" patch
+		pstate_vehicle_hp = 0, // vehicle hp patch
 		pstate_generic_menu = 0, // m0d's menu
 		pstate_infnos = 0, // infinite NOS
 		pstate_ini[INI_PATCHES_MAX],
@@ -83,6 +95,9 @@ int cheat_panic ( void )
 					pVehicleSelf->RemoveVehicleUpgrade( 1010 );
 					//pVehicleSelf->AddVehicleUpgrade( 1010 );
 				}
+				// reset overrideLights, pstate not needed, will be reactivated on demand
+				if ( set.enable_car_lights_at_day_time )
+					pVehicleSelf->SetOverrideLights( 0 );
 			}
 
 			// hud bar, this should probably become a cheat_state
@@ -100,6 +115,10 @@ int cheat_panic ( void )
 			// remove "Extra actor invincibility" patch
 			pstate_actor_hp = patch_actor_hp.installed;
 			patcher_remove( &patch_actor_hp );
+
+			// remove vehicle hp patch
+			pstate_vehicle_hp = patch_vehicle_hp.installed;
+			patcher_remove( &patch_vehicle_hp );
 
 			// just call with null vehicle info to disable
 			cheat_handle_vehicle_fly( NULL, 0.0f );
@@ -153,6 +172,10 @@ int cheat_panic ( void )
 			// restore "Extra actor invincibility" patch
 			if ( pstate_actor_hp )
 				patcher_install( &patch_actor_hp );
+
+			// restore vehicle hp patch
+			if ( pstate_vehicle_hp )
+				patcher_install( &patch_vehicle_hp );
 
 			// restore some cheat_states
 			set.d3dtext_hud = pstate_d3dtext_hud;
@@ -532,6 +555,11 @@ void cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *act
 		patcher_install( &patch_actor_hp );
 	else
 		patcher_remove( &patch_actor_hp );
+
+	if ( cheat_state->_generic.hp_cheat && cheat_state->vehicle.invulnerable )
+		patcher_install( &patch_vehicle_hp );
+	else
+		patcher_remove( &patch_vehicle_hp );
 
 	if ( vehicle_info != NULL )
 	{

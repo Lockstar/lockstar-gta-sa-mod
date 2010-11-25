@@ -503,7 +503,7 @@ HRESULT GenerateShader ( IDirect3DDevice9 *Device, IDirect3DPixelShader9 **pShad
 
 	char		szShader[256];
 	ID3DXBuffer *pShaderBuffer = NULL;
-	sprintf( szShader, "ps.1.1\ndef c0, %f, %f, %f, %f\nmov r0,c0", red, green, blue, alpha );
+	sprintf_s( szShader, sizeof(szShader), "ps.1.1\ndef c0, %f, %f, %f, %f\nmov r0,c0", red, green, blue, alpha );
 	if ( FAILED(D3DXAssembleShader(szShader, sizeof(szShader), NULL, NULL, 0, &pShaderBuffer, NULL)) )
 	{
 		// Log( "Shader fail." ); - yeah it does sometimes
@@ -4299,7 +4299,12 @@ no_d3dtext_hud: ;
 
 		// safe sex
 		if ( isPornographyMasterControlRunning && set.screenshot_clean )
-		{ }
+		{
+			CVehicle	*pVehicleSelf = pPedSelf->GetVehicle();
+			// set carlights to automode (turned off at day time)
+			if ( set.enable_car_lights_at_day_time && pVehicleSelf != NULL )
+				pVehicleSelf->SetOverrideLights( 0 );
+		}
 		else
 		{
 			if ( cheat_state->_generic.teletext )
