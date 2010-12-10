@@ -33,8 +33,8 @@ public:
 	DWORD			m_nAmmoInClip;
 	DWORD			m_nAmmoTotal;
 	DWORD			m_nTimer;
-	DWORD			m_Unknown;
-    DWORD           m_Unknown_2;
+	DWORD			m_GoggleMode;
+    DWORD           m_IsFiring;
 };
 
 class CWeaponSA : public CWeapon
