@@ -341,7 +341,10 @@ const struct vehicle_upgrade_info	cveh_upgrade_info[VEHICLE_UPGRADES_COUNT] =
 };
 
 // this blows the doors off Microsoft's version, mmmmkay
-int									isBadPtr_GTA_pVehicleInfo ( vehicle_info *p_VehicleInfo );
+int									isBadPtr_GTA_pVehicle ( vehicle_info *p_VehicleInfo );
+int									isBadPtr_GTA_pVehicle ( CVehicle *p_CVehicle );
+int									isBadPtr_GTA_pVehicle ( CVehicleSA *p_CVehicleSA );
+int									isBadPtr_GTA_pVehicle ( CVehicleSAInterface *p_CVehicleSAInterface );
 int									isBadPtr_GTA_pActorInfo ( actor_info *p_ActorInfo );
 int									isBadPtr_GTA_pBuildingInfo ( DWORD p_BuildingInfo );
 bool								isBadPtr_handlerAny ( void *pointer, ULONG size, DWORD dwFlags );

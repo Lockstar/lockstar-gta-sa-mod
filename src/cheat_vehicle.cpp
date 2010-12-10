@@ -33,7 +33,7 @@ void vehicleJumper ( int iVehicleID )
 	struct vehicle_info *pVehicle = vehicle_info_get( iVehicleID, 0 );
 
 	// check that the vehicle is legit
-	if ( isBadPtr_GTA_pVehicleInfo(pVehicle) )
+	if ( isBadPtr_GTA_pVehicle(pVehicle) )
 		return;
 
 	traceLastFunc( "vehicleJumper()" );
@@ -157,7 +157,7 @@ void cheat_vehicle_teleport ( struct vehicle_info *info, const float pos[3], int
 //Making the vehicle instant jumping and the trailer attaching easier
 void cheat_handle_vehicle_nocols ( struct vehicle_info *info )
 {
-	if ( isBadPtr_GTA_pVehicleInfo(info) )
+	if ( isBadPtr_GTA_pVehicle(info) )
 		return;
 
 	traceLastFunc( "cheat_handle_vehicle_nocols()" );

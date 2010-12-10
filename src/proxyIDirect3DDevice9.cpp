@@ -1771,6 +1771,10 @@ void renderVehicleTags ( void )
 	if ( gta_menu_active() )
 		return;
 
+	// no tags during panic attacks
+	if ( cheat_state->_generic.cheat_panic_enabled )
+		return;
+
 	// don't run if the pools don't exist
 	if ( !pGameInterface || !pGameInterface->GetPools() )
 		return;
@@ -1779,14 +1783,12 @@ void renderVehicleTags ( void )
 	if ( !pPedSelf )
 		return;
 
-	if ( g_SAMP != NULL && ((GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
-	 ||	 *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEEFA4)) + 0x1C) == 1) ) 
-		return;
-
-	if ( g_SAMP != NULL && (GetAsyncKeyState(VK_F10) < 0) )
-		return;
-
-	if ( cheat_state->_generic.cheat_panic_enabled )
+	// don't display tags during certain key press & game events
+	if ( g_SAMP &&
+			( (GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
+			|| *(char *)((*(DWORD *) (g_dwSAMP_Addr + 0xEEFA4)) + 0x1C) == 1
+			|| GetAsyncKeyState(VK_F10) < 0 )
+		)
 		return;
 
 	const vehicle_entry *vehicle;
@@ -1804,7 +1806,7 @@ void renderVehicleTags ( void )
 	CVector				ourPosition, iterPosition, ourPosMinusIter;
 
 	// get our position
-	if ( pPedSelf->GetVehicle() != NULL )
+	if ( !isBadPtr_GTA_pVehicle(pPedSelf->GetVehicle()) )
 	{
 		// RC Vehicle Fix (Not showing names of recently streamed in players
 		// while being in a RC Vehicle)
@@ -1830,26 +1832,17 @@ void renderVehicleTags ( void )
 		iter.pos++;
 
 		// move past null pointers just in case
-		if ( !iterVehicle )
+		if ( isBadPtr_GTA_pVehicle(iterVehicle) )
 			continue;
 
-		//if ( g_Vehicles->iIsListed[v] != 1 )
-		//	continue;
-		//
-		// ^ not needed?
-		//
 		// check if it's farther than set.vehicle_tags_dist
+		if ( isBadPtr_GTA_pVehicle(iterVehicle->GetVehicleInterface()) )
+			continue;
 		iterPosition = iterVehicle->GetInterface()->Placeable.matrix->vPos;
 		ourPosMinusIter = ourPosition - iterPosition;
 		if ( ourPosMinusIter.Length() > set.vehicle_tags_dist )
 			continue;
 
-		// check if it's not in our interior (m_areaCode)
-		// removed due to: sa-mp 0.3b doesnt stream in vehicles that should not exist for us
-		//
-		//if ( iterVehicle->m_pInterface->m_areaCode != pPedSelf->GetInterface()->m_areaCode )
-		//	continue;
-		//
 		// check if it's our vehicle
 		if ( iterVehicle == pPedSelf->GetVehicle() )
 			continue;
@@ -1926,7 +1919,7 @@ void renderVehicleTags ( void )
 										 screenPosition.fY - h + 10.0f + ESP_tag_vehicle_pixelOffsetY,
 										 D3DCOLOR_ARGB(90, 0, 255, 0), buf );
 
-		/*
+/*
 // trailer debugging visualizations
 		CVector vecTowBarPos, vecTowHitchPos;
 		iterVehicle->GetTowBarPos( &vecTowBarPos );
@@ -1962,6 +1955,7 @@ void renderVehicleTags ( void )
 						10.0f,
 						D3DCOLOR_ARGB(255, 255, 0, 0) );
 */
+		return;
 	}
 }
 

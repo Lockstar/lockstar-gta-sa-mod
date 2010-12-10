@@ -465,7 +465,7 @@ const struct interiors		interiors_list[] =
 };
 
 // new functions to check for bad pointers
-int isBadPtr_GTA_pVehicleInfo ( vehicle_info *p_VehicleInfo )
+int isBadPtr_GTA_pVehicle ( vehicle_info *p_VehicleInfo )
 {
 	if ( p_VehicleInfo == NULL )
 		return 1;
@@ -473,9 +473,54 @@ int isBadPtr_GTA_pVehicleInfo ( vehicle_info *p_VehicleInfo )
 			 (
 			 (DWORD) p_VehicleInfo >= (DWORD) pool_vehicle->start && (DWORD) p_VehicleInfo <=
 			 ((DWORD) pool_vehicle->start + (pool_vehicle->size * sizeof(vehicle_info)))
- ) )
+		) )
 		return 1;
 	return p_VehicleInfo->base.matrix == NULL;
+}
+
+int isBadPtr_GTA_pVehicle ( CVehicle *p_CVehicle )
+{
+	if ( p_CVehicle == NULL )
+		return 1;
+	CVehicleSAInterface *p_CVehicleSAInterface = p_CVehicle->GetVehicleInterface();
+	if ( p_CVehicleSAInterface == NULL )
+		return 1;
+	if ( !
+			 (
+			 (DWORD) p_CVehicleSAInterface >= (DWORD) pool_vehicle->start && (DWORD) p_CVehicleSAInterface <=
+			 ((DWORD) pool_vehicle->start + (pool_vehicle->size * sizeof(CVehicleSAInterface)))
+		) )
+		return 1;
+	return p_CVehicleSAInterface->Placeable.matrix == NULL;
+}
+
+int isBadPtr_GTA_pVehicle ( CVehicleSA *p_CVehicleSA )
+{
+	if ( p_CVehicleSA == NULL )
+		return 1;
+	CVehicleSAInterface *p_CVehicleSAInterface = p_CVehicleSA->GetVehicleInterface();
+	if ( p_CVehicleSAInterface == NULL )
+		return 1;
+	if ( !
+			 (
+			 (DWORD) p_CVehicleSAInterface >= (DWORD) pool_vehicle->start && (DWORD) p_CVehicleSAInterface <=
+			 ((DWORD) pool_vehicle->start + (pool_vehicle->size * sizeof(CVehicleSAInterface)))
+		) )
+		return 1;
+	return p_CVehicleSAInterface->Placeable.matrix == NULL;
+}
+
+int isBadPtr_GTA_pVehicle ( CVehicleSAInterface *p_CVehicleSAInterface )
+{
+	if ( p_CVehicleSAInterface == NULL )
+		return 1;
+	if ( !
+			 (
+			 (DWORD) p_CVehicleSAInterface >= (DWORD) pool_vehicle->start && (DWORD) p_CVehicleSAInterface <=
+			 ((DWORD) pool_vehicle->start + (pool_vehicle->size * sizeof(CVehicleSAInterface)))
+		) )
+		return 1;
+	return p_CVehicleSAInterface->Placeable.matrix == NULL;
 }
 
 int isBadPtr_GTA_pActorInfo ( actor_info *p_ActorInfo )
@@ -486,7 +531,7 @@ int isBadPtr_GTA_pActorInfo ( actor_info *p_ActorInfo )
 			 (
 			 (DWORD) p_ActorInfo >= (DWORD) pool_actor->start && (DWORD) p_ActorInfo <=
 			 ((DWORD) pool_actor->start + (pool_actor->size * sizeof(actor_info)))
- ) )
+		) )
 		return 1;
 	return p_ActorInfo->base.matrix == NULL;
 }
@@ -504,7 +549,7 @@ int isBadPtr_GTA_pBuildingInfo ( DWORD p_BuildingInfo )
 			 (
 			 (DWORD) p_BuildingInfo >= (DWORD) pool_building->start && (DWORD) p_BuildingInfo <=
 			 ((DWORD) pool_building->start + (pool_building->size * 56))
- ) )
+		) )
 		return 1;
 
 	return 0;
@@ -556,7 +601,7 @@ uint32_t GetFromPool ( DWORD value, DWORD Pool, DWORD function )
 	uint32_t	retval;
 	__asm
 	{
-		mov ecx, Pool	//[Pool] doesnt seem to work when using inline?
+		mov ecx, Pool // [Pool] doesnt seem to work when using inline?
 		mov ecx, [ecx]
 		push value
 		call function
@@ -1014,7 +1059,7 @@ struct vehicle_info *vehicle_info_get ( int id, int flags )
 	if ( id == VEHICLE_SELF )
 	{
 		info = (struct vehicle_info *)( UINT_PTR ) * (uint32_t *)VEHICLE_POINTER_SELF;
-		if ( isBadPtr_GTA_pVehicleInfo(info) )
+		if ( isBadPtr_GTA_pVehicle(info) )
 			return NULL;
 
 		// check to see if we're actually in the vehicle
@@ -1025,7 +1070,7 @@ struct vehicle_info *vehicle_info_get ( int id, int flags )
 	else
 	{
 		info = &( (struct vehicle_info *)pool_vehicle->start )[id];
-		if ( isBadPtr_GTA_pVehicleInfo(info) )
+		if ( isBadPtr_GTA_pVehicle(info) )
 			return NULL;
 	}
 
@@ -1324,7 +1369,7 @@ int actor_find_nearest ( int flags )
 
 struct vehicle_info *actor_vehicle_get ( const struct actor_info *info )
 {
-	if ( info->state == ACTOR_STATE_DRIVING && !isBadPtr_GTA_pVehicleInfo(info->vehicle) )
+	if ( info->state == ACTOR_STATE_DRIVING && !isBadPtr_GTA_pVehicle(info->vehicle) )
 		return info->vehicle;
 
 	return NULL;
@@ -2851,6 +2896,7 @@ int memcpy_safe ( void *_dest, const void *_src, uint32_t len )
 	uint8_t			buf[4096];
 	uint8_t			*dest = (uint8_t *)_dest;
 	const uint8_t	*src = (const uint8_t *)_src;
+	int				lenOriginal = len;
 	int				ret = 1;
 
 	while ( len > 0 )
@@ -2870,6 +2916,9 @@ int memcpy_safe ( void *_dest, const void *_src, uint32_t len )
 		src += this_len;
 		dest += this_len;
 	}
+	// set pointers back
+	src -= lenOriginal;
+	dest -= lenOriginal;
 
 	return ret;
 }

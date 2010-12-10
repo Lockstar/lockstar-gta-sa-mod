@@ -40,7 +40,7 @@ RsGlobalType			*g_RsGlobal = (RsGlobalType *)0xC17040;
 CGameSA					*pGameInterface = NULL;
 CPools					*pPools = NULL;
 CPed					*pPedSelf = NULL;
-CPedSAInterface					*pPedSelfSA = NULL;
+CPedSAInterface			*pPedSelfSA = NULL;
 
 // to store information about the Windows OS
 t_WindowsInfo			WindowsInfo;

@@ -75,7 +75,7 @@ void cheat_handle_actor_nocols ( struct actor_info *info )
 		struct vehicle_info *veh;
 		uint32_t			vehiclePointer = ( (uint32_t) info->animation->active_animation_task + 0xC );
 		veh = ( vehicle_info * ) ( *(uint32_t *) (vehiclePointer) );
-		if ( !isBadPtr_GTA_pVehicleInfo(veh) )
+		if ( !isBadPtr_GTA_pVehicle(veh) )
 		{
 			cheat_state->_generic.nocols_enabled = 0;
 			cheat_state->_generic.nocols_change_tick = GetTickCount();
@@ -462,29 +462,44 @@ void cheat_actor_setGravity ( actor_info *ainfo, CVector pvecGravity )
 	cheat_state->actor.gravityVector = pvecGravity;
 }
 
+
+
+static CMatrix_Padded * mat_SpiderFeetCollisionTransform = new CMatrix_Padded();
+static CMatrix_Padded * mat_SpiderFeetCollisionTransform_Original = (CMatrix_Padded*)0x968988;
+uint8_t mat_SpiderFeetCollisionTransform_Offset[4] = {
+	LOBYTE(LOWORD(&mat_SpiderFeetCollisionTransform)),
+	HIBYTE(LOWORD(&mat_SpiderFeetCollisionTransform)),
+	LOBYTE(HIWORD(&mat_SpiderFeetCollisionTransform)),
+	HIBYTE(HIWORD(&mat_SpiderFeetCollisionTransform))
+};
+static struct patch_set patch_actor_SpiderFeetCollisionTransform =
+{
+	"SpiderFeet Collision Transform",
+	0,
+	0,
+	{
+		{ 4, (void *)0x004196D0, (uint8_t *)"\x88\x89\x96\x00", (uint8_t *)mat_SpiderFeetCollisionTransform_Offset, (uint8_t *)"\x88\x89\x96\x00" },
+		{ 4, (void *)0x00419700, (uint8_t *)"\x88\x89\x96\x00", (uint8_t *)mat_SpiderFeetCollisionTransform_Offset, (uint8_t *)"\x88\x89\x96\x00" },
+		{ 4, (void *)0x00418FB8, (uint8_t *)"\x88\x89\x96\x00", (uint8_t *)mat_SpiderFeetCollisionTransform_Offset, (uint8_t *)"\x88\x89\x96\x00" }
+	}
+};
+//
 void cheat_handle_SpiderFeet ( struct actor_info *ainfo, double time_diff )
 {
-	traceLastFunc( "cheat_handle_NinjaMode()" );
+	traceLastFunc( "cheat_handle_SpiderFeet()" );
 
 	if ( KEY_PRESSED(set.key_spiderfeet) )
 	{
 		// toggle the d-dang Ninjas
+		if ( !cheat_state->actor.NinjaMode_on )
+		{
+			patcher_install( &patch_actor_SpiderFeetCollisionTransform );
+		}
 		cheat_state->actor.NinjaMode_on ^= 1;
 	}
 
 	if ( cheat_state->actor.NinjaMode_on )	//cheat_state->actor.NinjaMode_on)
 	{
-		// get a CPed
-		CPed *pPed = pPools->GetPed( (DWORD *)ainfo );
-		CPedSAInterface	*pPedSA = pPed->GetPedInterface();
-
-/*
-char buf[256];
-_snprintf_s(buf, sizeof(buf), "My Matrix: 0x%08x", &pPedSA->Placeable.matrix );
-pD3DFontFixed->PrintShadow(pPresentParam.BackBufferWidth - pD3DFontFixed->DrawLength(buf) - 25,
-pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 40, D3DCOLOR_ARGB(215, 0, 255, 0), buf);
-*/
-
 		// set NinjaMode enabler to on
 		//ainfo->base.nImmunities = 0x0B;
 
@@ -524,6 +539,19 @@ pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 40, D3DCOLOR_ARGB
 			newRotVector = colGravTemp - vehGravTemp;
 			newRotVector *= 0.05f * fTimeStep;
 			offsetVector = vehGravTemp + newRotVector;
+
+			// for collision on ground
+			CMatrix colTransformer;
+			//CVector colPosOriginal;
+			mat_SpiderFeetCollisionTransform_Original->ConvertToMatrix( colTransformer );
+			//colPosOriginal = colTransformer.vPos;
+			CVector rotationAxis = colTransformer.vUp;
+			rotationAxis.CrossProduct( &colGravTemp );
+			float theta = colTransformer.vUp.DotProduct( &colGravTemp );
+			colTransformer = colTransformer.Rotate( &rotationAxis, -cos(theta) );
+			//colTransformer.vPos = colPosOriginal;
+			mat_SpiderFeetCollisionTransform->SetFromMatrix( colTransformer );
+
 			pCollision->Destroy();
 		}
 		else
@@ -544,6 +572,7 @@ pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 40, D3DCOLOR_ARGB
 		// set the gravity/camera
 		cheat_actor_setGravity( ainfo, offsetVector );
 		//pPed->SetOrientation( offsetVector.fX, offsetVector.fY, offsetVector.fZ );
+		traceLastFunc( "cheat_handle_SpiderFeet()" );
 
 		// set up vector, can make it very easy to scale walls n such
 		//pPed->SetWas( &-offsetVector );
@@ -551,7 +580,48 @@ pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 40, D3DCOLOR_ARGB
 		// Ninjas know how to do awesome flips n shit
 		if ( KEY_DOWN(set.key_ninjaflipfront) )
 		{
-			/**/
+			//Log("1");
+			//CVector vecVelocity( pPedSelfSA->vecVelocity->fX, pPedSelfSA->vecVelocity->fY, pPedSelfSA->vecVelocity->fZ );
+			//Log("2");
+
+			//if ( vecVelocity.IsNearZero() )
+			//{
+			//	//ds
+			//}
+			//else
+			//{
+			//	// prepare directional vector
+
+			//}
+				//vecVelocity.Normalize();
+				//vecVelocity *= 100.0f;
+				//vecVelocity.ZeroNearZero();
+
+				if ( !isBadPtr_writeAny(pPedSelfSA, sizeof(CPedSAInterface)) )
+				{
+					Log("good pPedSelfSA");
+					if ( !isBadPtr_writeAny(pPedSelfSA->vecSpinCollision, sizeof(CVector)) )
+					{
+						Log("good pPedSelfSA->vecSpinCollision");
+						//if ( !isBadPtr_writeAny(&pPedSelfSA->vecSpinCollision->fX, sizeof(float)) )
+						//{
+							//ds
+						//}
+						//else
+						//	Log("bad pPedSelfSA->vecSpinCollision->fX");
+					}
+					else
+						Log("bad pPedSelfSA->vecSpinCollision");
+				}
+				else
+					Log("bad pPedSelfSA");
+
+				//pPedSelfSA->vecSpinCollision->fX = vecVelocity.fX;
+
+				//memcpy_safe( pPedSelfSA->vecSpinCollision, &vecVelocity, sizeof(float[3]) );
+
+
+			/*
 			// get matrix, backup original front vector for comparison
 			CMatrix matPed;
 			pPed->GetMatrix( &matPed );
@@ -579,7 +649,7 @@ pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 40, D3DCOLOR_ARGB
 			//pPed->SetWas( 
 			//CVehicle blah;
 			//blah.SetWas( vecSpinCompare );
-			
+			*/
 
 
 		}
@@ -593,6 +663,8 @@ pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 40, D3DCOLOR_ARGB
 	}
 	else if ( cheat_state->actor.NinjaMode_Enabled )
 	{
+
+		patcher_remove( &patch_actor_SpiderFeetCollisionTransform );
 
 		// set NinjaMode enabler to off
 		//ainfo->base.nImmunities = 0x12;

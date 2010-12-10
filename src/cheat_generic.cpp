@@ -715,7 +715,7 @@ void cheat_handle_stick ( struct vehicle_info *vehicle_info, struct actor_info *
 	if ( (vehicle_info != NULL && cheat_state->vehicle.stick) || (actor_info != NULL && cheat_state->actor.stick) )
 	{
 		// remove any bad vehicle or actor stuffs
-		if ( isBadPtr_GTA_pVehicleInfo(vehicle_info) )
+		if ( isBadPtr_GTA_pVehicle(vehicle_info) )
 			vehicle_info = NULL;
 		if ( isBadPtr_GTA_pActorInfo(actor_info) )
 			actor_info = NULL;
@@ -1068,7 +1068,7 @@ void cheat_handle_emo ( struct vehicle_info *vehicle_info, struct actor_info *ac
 		if ( KEY_PRESSED(set.key_self_destruct) )
 			actor_info->hitpoints = 0.0f;
 	}
-	else if ( !isBadPtr_GTA_pVehicleInfo(vehicle_info) )
+	else if ( !isBadPtr_GTA_pVehicle(vehicle_info) )
 	{
 		actor_info = actor_info_get(ACTOR_SELF, 0);
 		if ( actor_info->state == ACTOR_STATE_DRIVING && actor_info->vehicle->passengers[0] == actor_info )

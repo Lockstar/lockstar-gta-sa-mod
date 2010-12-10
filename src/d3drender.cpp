@@ -251,7 +251,7 @@ HRESULT CD3DFont::Initialize ( IDirect3DDevice9 *pD3Ddev )
 	if ( FAILED(m_pRender->Initialize(pD3Ddev)) )
 		return E_FAIL;
 
-	m_texWidth = m_texHeight = 256;
+	m_texWidth = m_texHeight = 512;
 
 	if ( FAILED(m_pD3Ddev->CreateTexture(m_texWidth, m_texHeight, 1, 0, D3DFMT_A4R4G4B4, D3DPOOL_MANAGED, &m_pD3Dtex,
 				 NULL)) )
@@ -338,8 +338,8 @@ HRESULT CD3DFont::Initialize ( IDirect3DDevice9 *pD3Ddev )
 			x = m_chrSpacing;
 			if ( y + size.cy * 2 + 2 < m_texHeight )
 				y += size.cy + 1;
-			//else
-				//Log( "BUG: Font does not fit in texture." );
+			else
+				Log( "BUG: Font does not fit in texture." );
 		}
 
 		RECT	rect = { x, y, x + size.cx, y + size.cy };
@@ -437,7 +437,7 @@ HRESULT CD3DFont::Print ( float x, float y, DWORD color, const char *szText )
 
 	x -= (float)m_chrSpacing;
 
-	if ( FAILED(CD3DBaseRender::BeginRender()) )
+	if ( FAILED(this->BeginRender()) )
 		return E_FAIL;
 
 	DWORD	fvf;
@@ -452,7 +452,11 @@ HRESULT CD3DFont::Print ( float x, float y, DWORD color, const char *szText )
 		d3dvertex_s *pVertex;
 
 		if ( FAILED(m_pD3Dbuf->Lock(0, 0, (void **) &pVertex, D3DLOCK_DISCARD)) )
+		{
+			m_pD3Ddev->SetFVF( fvf );
+			this->EndRender();
 			return E_FAIL;
+		}
 
 		for ( ; *szText; szText++ )
 		{
@@ -492,14 +496,13 @@ HRESULT CD3DFont::Print ( float x, float y, DWORD color, const char *szText )
 	}
 
 	m_pD3Ddev->SetFVF( fvf );
-	CD3DBaseRender::EndRender();
+	this->EndRender();
 
 	return S_OK;
 }
 
 HRESULT CD3DFont::PrintShadow ( float x, float y, DWORD color, const char *szText )
 {
-
 	if ( set.render_text_shadows )
 	{
 		DWORD shadow = D3DCOLOR_ARGB((BYTE)HIBYTE(HIWORD(color)), 0, 0, 0);

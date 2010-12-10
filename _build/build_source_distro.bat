@@ -39,7 +39,7 @@ IF EXIST "*.user" del /F /S /Q "*.user" > NUL
 IF EXIST "*.ncb" del /F /S /Q "*.ncb" > NUL
 IF EXIST "*.suo" del /F /S /Q /A:H "*.suo" > NUL
 IF EXIST "*.opensdf" del /F /S /Q /A:H "*.opensdf" > NUL
-IF EXIST "*.sdf" del /F /S /Q /A:H "*.sdf" > NUL
+IF EXIST "*.sdf" del /F /S /Q "*.sdf" > NUL
 cd "%m_Path%"
 
 :: copy bin
@@ -56,19 +56,19 @@ cd "%m_Path%%m_TempSubRelPath%\_build\"
 IF EXIST "temp\" rmdir /S /Q "temp\" > NUL
 cd "%m_Path%"
 
-:: remove .svn directories
-cd "%m_Path%%m_TempSubRelPath%"
-FOR /F "tokens=*" %%G IN ('DIR /B /AD /S *.svn*') DO RMDIR /S /Q "%%G"
-cd "%m_Path%"
+:: remove .svn directories, not needed anymore
+::cd "%m_Path%%m_TempSubRelPath%"
+::FOR /F "tokens=*" %%G IN ('DIR /B /AD /S *.svn*') DO RMDIR /S /Q "%%G"
+::cd "%m_Path%"
 
 
 echo.
 echo -----------------------------------------------------------
-:: save that shit niggaaaa
+:: save the sourcecode
 SET /p version_m0d=Please enter version (ie 4.3.2.1):  
 SET dir_m0d=mod_sa_v%version_m0d%_source
 move /Y "%m_TempSubRelPath%" "%m_TempRelPath%\%dir_m0d%" > NUL
-IF EXIST "%m_OutputRelPath%\%dir_m0d%.zip" del /F /Q "%m_OutputRelPath%\%dir_m0d%.7z"
+IF EXIST "%m_OutputRelPath%\%dir_m0d%.7z" del /F /Q "%m_OutputRelPath%\%dir_m0d%.7z"
 %m_UtilityRelPath%\7z a -t7z -m0=LZMA2 -aoa "%m_OutputRelPath%\%dir_m0d%.7z" "%m_Path%%m_TempRelPath%\%dir_m0d%\"
 
 :: cleanup

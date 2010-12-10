@@ -945,19 +945,9 @@ void __cdecl CMatrix__rotateAroundZ_hook ()
 	// rotate
 	CMatrix__rotateAroundZ_transformMatrix = CMatrix__rotateAroundZ_transformMatrix.Rotate( &CMatrix__rotateAroundZ_rotationAxis, -cos(CMatrix__rotateAroundZ_theta) );
 
-
-
-	//CMatrix__rotateAroundZ_transformMatrix = CMatrix__rotateAroundZ_transformMatrix.Rotate( &CMatrix__rotateAroundZ_transformMatrix.vUp, -(CMatrix__rotateAroundZ_zAngle - CMatrix__rotateAroundZ_zAngleLast) );
-
-
-
-
+	// apply matrix
 	CMatrix__rotateAroundZ_matrix->SetFromMatrix( CMatrix__rotateAroundZ_transformMatrix );
 	CMatrix__rotateAroundZ_zAngleLast = CMatrix__rotateAroundZ_zAngle;
-
-	//CMatrix__rotateAroundZ_matrix->vRight.fZ = cheat_state->actor.gravityVector.fX;
-	//CMatrix__rotateAroundZ_matrix->vFront.fZ = cheat_state->actor.gravityVector.fY;
-	//CMatrix__rotateAroundZ_matrix->vUp.fZ = -cheat_state->actor.gravityVector.fZ;
 }
 
 void _declspec ( naked ) HOOK_CMatrix__rotateAroundZ ()
