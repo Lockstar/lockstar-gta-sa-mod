@@ -6,7 +6,7 @@ FILETYPE 0x00000001
 	 {
 		 BLOCK "040904E4"
 		 {
-			 VALUE "FileDescription", "m0d_s0beit_SA"
+			 VALUE "FileDescription", "mod_sa"
 			 VALUE "CompanyName", "MTAVcSuX.NeT"
 		 }
 	 }

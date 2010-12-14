@@ -78,9 +78,7 @@
       <ImportLibrary>$(OutDir)mod_sa_proxy.lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
-    <Manifest>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-    </Manifest>
+    <Manifest />
     <PostBuildEvent>
       <Command>
       </Command>

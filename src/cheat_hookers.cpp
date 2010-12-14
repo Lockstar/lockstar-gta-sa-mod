@@ -1,23 +1,23 @@
 /*
 
-	PROJECT:		m0d_s0beit_sa
+	PROJECT:		mod_sa
 	LICENSE:		See LICENSE in the top level directory
 	COPYRIGHT:		Copyright 2007, 2008, 2009, 2010 we_sux
 
-	m0d_s0beit_sa is available from http://code.google.com/p/m0d-s0beit-sa/
+	mod_sa is available from http://code.google.com/p/m0d-s0beit-sa/
 
-	m0d_s0beit_sa is free software: you can redistribute it and/or modify
+	mod_sa is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
 
-	m0d_s0beit_sa is distributed in the hope that it will be useful,
+	mod_sa is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
 
 	You should have received a copy of the GNU General Public License
-	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
+	along with mod_sa.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 #include "main.h"
@@ -111,7 +111,7 @@ void CPhysical_ApplyGravity ( DWORD dwThis )
 			{
 				// don't apply gravity
 			}
-			else if ( cheat_state->actor.NinjaMode_on )
+			else if ( cheat_state->actor.SpiderFeet_on )
 			{
 				// NinjaMode
 				CVector vecGravity = cheat_state->actor.gravityVector;
@@ -961,7 +961,7 @@ void _declspec ( naked ) HOOK_CMatrix__rotateAroundZ ()
 		pushad
 	}
 
-	if ( cheat_state->actor.NinjaMode_on && pPedSelfSA
+	if ( cheat_state->actor.SpiderFeet_on && pPedSelfSA
 		&& CMatrix__rotateAroundZ_matrix == pPedSelfSA->Placeable.matrix )
 	{
 		// it's our matrix, so call our handler
@@ -1015,8 +1015,8 @@ void cheat_hookers_installhooks ( void )
 	HookInstall( HOOKPOS_CPed_destructor, (DWORD) HOOK_CPed_destructor, 6 );
 
 	HookInstall( HOOKPOS_PlayerCollision, (DWORD) HOOK_PlayerCollision, 6 );
-	HookInstall( HOOKPOS_PlayerCollision_CrashFix, (DWORD) PlayerCollision_CrashFix, 6 );
-	HookInstall( HOOKPOS_PlayerCollision_CrashFixX, (DWORD) PlayerCollision_CrashFixX, 6 );
+	//HookInstall( HOOKPOS_PlayerCollision_CrashFix, (DWORD) PlayerCollision_CrashFix, 6 );
+	//HookInstall( HOOKPOS_PlayerCollision_CrashFixX, (DWORD) PlayerCollision_CrashFixX, 6 );
 
 	// calls
 	HookInstallCall( CALL_VehicleCamUp, (DWORD) HOOK_VehicleCamUp );
