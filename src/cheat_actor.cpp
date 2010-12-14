@@ -1,23 +1,23 @@
 /*
 
-	PROJECT:		m0d_s0beit_sa
+	PROJECT:		mod_sa
 	LICENSE:		See LICENSE in the top level directory
 	COPYRIGHT:		Copyright 2007, 2008, 2009, 2010 we_sux
 
-	m0d_s0beit_sa is available from http://code.google.com/p/m0d-s0beit-sa/
+	mod_sa is available from http://code.google.com/p/m0d-s0beit-sa/
 
-	m0d_s0beit_sa is free software: you can redistribute it and/or modify
+	mod_sa is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
 
-	m0d_s0beit_sa is distributed in the hope that it will be useful,
+	mod_sa is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
 
 	You should have received a copy of the GNU General Public License
-	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
+	along with mod_sa.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 #include "main.h"
@@ -478,9 +478,17 @@ static struct patch_set patch_actor_SpiderFeetCollisionTransform =
 	0,
 	0,
 	{
+		// bottom
 		{ 4, (void *)0x004196D0, (uint8_t *)"\x88\x89\x96\x00", (uint8_t *)mat_SpiderFeetCollisionTransform_Offset, (uint8_t *)"\x88\x89\x96\x00" },
 		{ 4, (void *)0x00419700, (uint8_t *)"\x88\x89\x96\x00", (uint8_t *)mat_SpiderFeetCollisionTransform_Offset, (uint8_t *)"\x88\x89\x96\x00" },
-		{ 4, (void *)0x00418FB8, (uint8_t *)"\x88\x89\x96\x00", (uint8_t *)mat_SpiderFeetCollisionTransform_Offset, (uint8_t *)"\x88\x89\x96\x00" }
+		{ 4, (void *)0x00418FB8, (uint8_t *)"\x88\x89\x96\x00", (uint8_t *)mat_SpiderFeetCollisionTransform_Offset, (uint8_t *)"\x88\x89\x96\x00" },
+		// up 1
+		{ 4, (void *)0x0041874E, (uint8_t *)"\x88\x89\x96\x00", (uint8_t *)mat_SpiderFeetCollisionTransform_Offset, (uint8_t *)"\x88\x89\x96\x00" },
+		// up 2
+		{ 4, (void *)0x004186AB, (uint8_t *)"\x88\x89\x96\x00", (uint8_t *)mat_SpiderFeetCollisionTransform_Offset, (uint8_t *)"\x88\x89\x96\x00" }
+		//crash { 4, (void *)0x00418693 , (uint8_t *)"\x88\x89\x96\x00", (uint8_t *)mat_SpiderFeetCollisionTransform_Offset, (uint8_t *)"\x88\x89\x96\x00" },
+		//crash { 4, (void *)0x00418681, (uint8_t *)"\x88\x89\x96\x00", (uint8_t *)mat_SpiderFeetCollisionTransform_Offset, (uint8_t *)"\x88\x89\x96\x00" },
+		//crash { 4, (void *)0x00418672, (uint8_t *)"\x88\x89\x96\x00", (uint8_t *)mat_SpiderFeetCollisionTransform_Offset, (uint8_t *)"\x88\x89\x96\x00" }
 	}
 };
 //
@@ -491,15 +499,18 @@ void cheat_handle_SpiderFeet ( struct actor_info *ainfo, double time_diff )
 	if ( KEY_PRESSED(set.key_spiderfeet) )
 	{
 		// toggle the d-dang Ninjas
-		if ( !cheat_state->actor.NinjaMode_on )
+		if ( !cheat_state->actor.SpiderFeet_on )
 		{
 			patcher_install( &patch_actor_SpiderFeetCollisionTransform );
 		}
-		cheat_state->actor.NinjaMode_on ^= 1;
+		cheat_state->actor.SpiderFeet_on ^= 1;
 	}
 
-	if ( cheat_state->actor.NinjaMode_on )	//cheat_state->actor.NinjaMode_on)
+	if ( cheat_state->actor.SpiderFeet_on )	//cheat_state->actor.NinjaMode_on)
 	{
+		// set SpiderFeet status
+		cheat_state->actor.SpiderFeet_Enabled = true;
+
 		// set NinjaMode enabler to on
 		//ainfo->base.nImmunities = 0x0B;
 
@@ -546,8 +557,8 @@ void cheat_handle_SpiderFeet ( struct actor_info *ainfo, double time_diff )
 			mat_SpiderFeetCollisionTransform_Original->ConvertToMatrix( colTransformer );
 			//colPosOriginal = colTransformer.vPos;
 			CVector rotationAxis = colTransformer.vUp;
-			rotationAxis.CrossProduct( &colGravTemp );
-			float theta = colTransformer.vUp.DotProduct( &colGravTemp );
+			rotationAxis.CrossProduct( &-colGravTemp );
+			float theta = colTransformer.vUp.DotProduct( &-colGravTemp );
 			colTransformer = colTransformer.Rotate( &rotationAxis, -cos(theta) );
 			//colTransformer.vPos = colPosOriginal;
 			mat_SpiderFeetCollisionTransform->SetFromMatrix( colTransformer );
@@ -661,7 +672,7 @@ void cheat_handle_SpiderFeet ( struct actor_info *ainfo, double time_diff )
 		// TODO
 
 	}
-	else if ( cheat_state->actor.NinjaMode_Enabled )
+	else if ( cheat_state->actor.SpiderFeet_Enabled )
 	{
 
 		patcher_remove( &patch_actor_SpiderFeetCollisionTransform );
@@ -680,6 +691,6 @@ void cheat_handle_SpiderFeet ( struct actor_info *ainfo, double time_diff )
 		cheat_actor_setGravity( ainfo, offsetVector );
 
 		// set NinjaMode disabled
-		cheat_state->actor.NinjaMode_Enabled = false;
+		cheat_state->actor.SpiderFeet_Enabled = false;
 	}
 }

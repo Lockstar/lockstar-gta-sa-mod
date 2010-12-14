@@ -1,23 +1,23 @@
 /*
 
-	PROJECT:		m0d_s0beit_sa
+	PROJECT:		mod_sa
 	LICENSE:		See LICENSE in the top level directory
 	COPYRIGHT:		Copyright 2007, 2008, 2009, 2010 we_sux
 
-	m0d_s0beit_sa is available from http://code.google.com/p/m0d-s0beit-sa/
+	mod_sa is available from http://code.google.com/p/m0d-s0beit-sa/
 
-	m0d_s0beit_sa is free software: you can redistribute it and/or modify
+	mod_sa is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
 
-	m0d_s0beit_sa is distributed in the hope that it will be useful,
+	mod_sa is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
 
 	You should have received a copy of the GNU General Public License
-	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
+	along with mod_sa.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 #include "main.h"
@@ -1585,17 +1585,16 @@ void setSAMPCustomSendRates ( int iOnFoot, int iInCar, int iAim, int iHeadSync )
 
 #define SAMP_DISABLE_NAMETAGS		0x403B0
 #define SAMP_DISABLE_NAMETAGS_HP	0x3F440
+static struct patch_set sampPatchEnableNameTags_patch =
+{
+	"Remove player status",
+	0,
+	0,
+	{ { 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_DISABLE_NAMETAGS ), NULL, (uint8_t *)"\xC3", NULL },
+	{ 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_DISABLE_NAMETAGS_HP ), NULL, (uint8_t *)"\xC3", NULL } }
+};
 int sampPatchDisableNameTags ( int iEnabled )
 {
-	static struct patch_set sampPatchEnableNameTags_patch =
-	{
-		"Remove player status",
-		0,
-		0,
-		{ { 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_DISABLE_NAMETAGS ), NULL, (uint8_t *)"\xC3", NULL },
-		  { 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_DISABLE_NAMETAGS_HP ), NULL, (uint8_t *)"\xC3", NULL } }
-	};
-
 	if ( iEnabled && !sampPatchEnableNameTags_patch.installed )
 		return patcher_install( &sampPatchEnableNameTags_patch );
 	else if ( !iEnabled && sampPatchEnableNameTags_patch.installed )
@@ -1625,17 +1624,16 @@ int sampPatchDisableInteriorUpdate ( int iEnabled )
 }
 
 #define SAMP_NOPSCREENSHOT	0x4062D
+static struct patch_set sampPatchDisableScreeenshotKey_patch =
+{
+	"NOP screenshot key",
+	0,
+	0,
+	{ { 6, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_NOPSCREENSHOT ), NULL,
+	(uint8_t *)"\xE9\x46\x01\x00\x00\x90", NULL }, }
+};
 int sampPatchDisableScreeenshotKey ( int iEnabled )
 {
-	static struct patch_set sampPatchDisableScreeenshotKey_patch =
-	{
-		"NOP screenshot key",
-		0,
-		0,
-		{ { 6, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_NOPSCREENSHOT ), NULL,
-					(uint8_t *)"\xE9\x46\x01\x00\x00\x90", NULL }, }
-	};
-
 	if ( iEnabled && !sampPatchDisableScreeenshotKey_patch.installed )
 		return patcher_install( &sampPatchDisableScreeenshotKey_patch );
 	else if ( !iEnabled && sampPatchDisableScreeenshotKey_patch.installed )
@@ -1645,18 +1643,17 @@ int sampPatchDisableScreeenshotKey ( int iEnabled )
 
 #define SAMP_NOPSCOREBOARDTOGGLEONKEYLOCK	0x3E6C9
 #define SAMP_NOPSCOREBOARDTOGGLEON			0x3E6D2
+static struct patch_set sampPatchDisableScoreboard_patch =
+{
+	"NOP Scoreboard Functions",
+	0,
+	0,
+	{ { 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_NOPSCOREBOARDTOGGLEON ), NULL, (uint8_t *)"\x00", NULL }, { 1,
+	(void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_NOPSCOREBOARDTOGGLEONKEYLOCK ), NULL,
+	(uint8_t *)"\x00", NULL } }
+};
 int sampPatchDisableScoreboardToggleOn ( int iEnabled )
 {
-	static struct patch_set sampPatchDisableScoreboard_patch =
-	{
-		"NOP Scoreboard Functions",
-		0,
-		0,
-		{ { 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_NOPSCOREBOARDTOGGLEON ), NULL, (uint8_t *)"\x00", NULL }, { 1,
-					(void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_NOPSCOREBOARDTOGGLEONKEYLOCK ), NULL,
-						(uint8_t *)"\x00", NULL } }
-	};
-
 	if ( iEnabled && !sampPatchDisableScoreboard_patch.installed )
 		return patcher_install( &sampPatchDisableScoreboard_patch );
 	else if ( !iEnabled && sampPatchDisableScoreboard_patch.installed )

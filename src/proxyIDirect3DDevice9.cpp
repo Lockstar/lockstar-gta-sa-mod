@@ -1,23 +1,23 @@
 /*
 
-	PROJECT:		m0d_s0beit_sa
+	PROJECT:		mod_sa
 	LICENSE:		See LICENSE in the top level directory
 	COPYRIGHT:		Copyright 2007, 2008, 2009, 2010 we_sux
 
-	m0d_s0beit_sa is available from http://code.google.com/p/m0d-s0beit-sa/
+	mod_sa is available from http://code.google.com/p/m0d-s0beit-sa/
 
-	m0d_s0beit_sa is free software: you can redistribute it and/or modify
+	mod_sa is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
 
-	m0d_s0beit_sa is distributed in the hope that it will be useful,
+	mod_sa is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
 
 	You should have received a copy of the GNU General Public License
-	along with m0d_s0beit_sa.  If not, see <http://www.gnu.org/licenses/>.
+	along with mod_sa.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 #include "main.h"
@@ -426,7 +426,7 @@ DWORD WINAPI PornographyMasterControl ( LPVOID trash )
 	HBITMAP g0tP0rn = PornographyGetPorn();
 	if ( g0tP0rn == 0 )
 	{
-		cheat_state_text( "Could not take a screenshot.  D3D FAIL!  Check m0d_s0beit_sa.log" );
+		cheat_state_text( "Could not take a screenshot.  D3D FAIL!  Check mod_sa.log" );
 		goto fail1;
 	}
 
@@ -4240,7 +4240,7 @@ HRESULT proxyIDirect3DDevice9::EndScene ( void )
 
 				if ( set.hud_indicator_onfoot_spider )
 				{
-					HUD_TEXT_TGL( x, cheat_state->actor.NinjaMode_on ? color_enabled : color_disabled, "Spider" );
+					HUD_TEXT_TGL( x, cheat_state->actor.SpiderFeet_on ? color_enabled : color_disabled, "Spider" );
 				}
 
 				RenderPedHPBar();
