@@ -357,7 +357,6 @@
     <ClInclude Include="sparsehash\windows\port.h" />
     <ClInclude Include="sparsehash\windows\google\sparsehash\sparseconfig.h" />
     <ClInclude Include="main.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="stddefs.h" />
     <ClInclude Include="stdtypes.h" />
   </ItemGroup>

@@ -21,7 +21,6 @@
 
 */
 #include "main.h"
-#include "resource.h"
 
 // externals
 unsigned long	ulFullScreenRefreshRate;
@@ -42,10 +41,6 @@ bool					bD3DRenderInit;
 bool					bD3DWindowModeSet;
 bool					g_isRequestingWindowModeToggle;
 bool					g_isRequesting_RwD3D9ChangeVideoMode;
-
-IDirect3DTexture9		*tLoadingLogo;
-ID3DXSprite				*sLoadingLogo;
-D3DXVECTOR3				posLoadingLogo;
 
 IDirect3DPixelShader9	*wallhack_green;
 IDirect3DPixelShader9	*wallhack_blue;
@@ -223,8 +218,11 @@ HBITMAP PornographyGetPorn ( void )
 	}
 
 	// code to handle multisampled video modes like... i dunno... anti-aliasing :P
+
+
 	D3DSURFACE_DESC pRendTargetDesc;
 	pRenderTargetSurface->GetDesc( &pRendTargetDesc );
+	Log("pRendTargetDesc.MultiSampleQuality: %d", pRendTargetDesc.MultiSampleQuality);
 	if ( pRendTargetDesc.MultiSampleType != D3DMULTISAMPLE_NONE )
 	{
 		if ( FAILED(origIDirect3DDevice9->CreateRenderTarget((rc.right - rc.left), (rc.bottom - rc.top), m_D3DFMT,
@@ -3250,24 +3248,6 @@ void mapMenuTeleport ( void )
 	}
 }
 
-void loadingLogoInitResources ( IDirect3DDevice9 *pDevice, D3DPRESENT_PARAMETERS *pPresentationParameters )
-{
-	tLoadingLogo = NULL;
-	sLoadingLogo = NULL;
-
-	if ( !tLoadingLogo )
-	{
-		D3DXCreateTextureFromFileInMemoryEx( pDevice, &loadingLogo, sizeof(loadingLogo), 197, 48, 1, 0, D3DFMT_A8R8G8B8,
-											 D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &tLoadingLogo );
-	}
-
-	if ( !sLoadingLogo )
-		D3DXCreateSprite( pDevice, &sLoadingLogo );
-
-	posLoadingLogo.x = (float)( pPresentationParameters->BackBufferWidth * 0.13 ) - 2.0f;
-	posLoadingLogo.y = (float)( pPresentationParameters->BackBufferHeight * 0.9 ) - 40.0f;
-}
-
 void texturesInitResources ( IDirect3DDevice9 *pDevice, D3DPRESENT_PARAMETERS *pPresentationParameters )
 {
 	if ( set.speedometer_enable
@@ -3460,8 +3440,6 @@ void proxyID3DDevice9_UnInitOurShit ( void )
 	SAFE_RELEASE( wallhack_blue );
 	SAFE_RELEASE( wallhack_red );
 
-	SAFE_RELEASE( sLoadingLogo );
-	SAFE_RELEASE( tLoadingLogo );
 	if ( set.speedometer_enable )
 	{
 		SAFE_RELEASE( sSpeedoPNG );
@@ -3502,7 +3480,6 @@ void proxyID3DDevice9_InitOurShit ( D3DPRESENT_PARAMETERS *pPresentationParamete
 	GenerateShader( origIDirect3DDevice9, &wallhack_red, 0.8f, 1.0f, 0, 0 );
 
 	// load GUI textures/sprits
-	loadingLogoInitResources( origIDirect3DDevice9, pPresentationParameters );
 	texturesInitResources( origIDirect3DDevice9, pPresentationParameters );
 
 	// load death texture
