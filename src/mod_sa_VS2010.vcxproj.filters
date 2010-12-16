@@ -847,7 +847,6 @@
       <Filter>sparshash\windows\google\sparsehash</Filter>
     </ClInclude>
     <ClInclude Include="main.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="stddefs.h" />
     <ClInclude Include="stdtypes.h" />
   </ItemGroup>

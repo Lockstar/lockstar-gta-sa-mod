@@ -1585,16 +1585,17 @@ void setSAMPCustomSendRates ( int iOnFoot, int iInCar, int iAim, int iHeadSync )
 
 #define SAMP_DISABLE_NAMETAGS		0x403B0
 #define SAMP_DISABLE_NAMETAGS_HP	0x3F440
-static struct patch_set sampPatchEnableNameTags_patch =
-{
-	"Remove player status",
-	0,
-	0,
-	{ { 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_DISABLE_NAMETAGS ), NULL, (uint8_t *)"\xC3", NULL },
-	{ 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_DISABLE_NAMETAGS_HP ), NULL, (uint8_t *)"\xC3", NULL } }
-};
+
 int sampPatchDisableNameTags ( int iEnabled )
 {
+	static struct patch_set sampPatchEnableNameTags_patch =
+	{
+		"Remove player status",
+		0,
+		0,
+		{ { 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_DISABLE_NAMETAGS ), NULL, (uint8_t *)"\xC3", NULL },
+		{ 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_DISABLE_NAMETAGS_HP ), NULL, (uint8_t *)"\xC3", NULL } }
+	};
 	if ( iEnabled && !sampPatchEnableNameTags_patch.installed )
 		return patcher_install( &sampPatchEnableNameTags_patch );
 	else if ( !iEnabled && sampPatchEnableNameTags_patch.installed )
@@ -1624,16 +1625,17 @@ int sampPatchDisableInteriorUpdate ( int iEnabled )
 }
 
 #define SAMP_NOPSCREENSHOT	0x4062D
-static struct patch_set sampPatchDisableScreeenshotKey_patch =
-{
-	"NOP screenshot key",
-	0,
-	0,
-	{ { 6, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_NOPSCREENSHOT ), NULL,
-	(uint8_t *)"\xE9\x46\x01\x00\x00\x90", NULL }, }
-};
+
 int sampPatchDisableScreeenshotKey ( int iEnabled )
 {
+	static struct patch_set sampPatchDisableScreeenshotKey_patch =
+	{
+		"NOP screenshot key",
+		0,
+		0,
+		{ { 6, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_NOPSCREENSHOT ), NULL,
+		(uint8_t *)"\xE9\x46\x01\x00\x00\x90", NULL }, }
+	};
 	if ( iEnabled && !sampPatchDisableScreeenshotKey_patch.installed )
 		return patcher_install( &sampPatchDisableScreeenshotKey_patch );
 	else if ( !iEnabled && sampPatchDisableScreeenshotKey_patch.installed )
@@ -1643,17 +1645,18 @@ int sampPatchDisableScreeenshotKey ( int iEnabled )
 
 #define SAMP_NOPSCOREBOARDTOGGLEONKEYLOCK	0x3E6C9
 #define SAMP_NOPSCOREBOARDTOGGLEON			0x3E6D2
-static struct patch_set sampPatchDisableScoreboard_patch =
-{
-	"NOP Scoreboard Functions",
-	0,
-	0,
-	{ { 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_NOPSCOREBOARDTOGGLEON ), NULL, (uint8_t *)"\x00", NULL }, { 1,
-	(void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_NOPSCOREBOARDTOGGLEONKEYLOCK ), NULL,
-	(uint8_t *)"\x00", NULL } }
-};
+
 int sampPatchDisableScoreboardToggleOn ( int iEnabled )
 {
+	static struct patch_set sampPatchDisableScoreboard_patch =
+	{
+		"NOP Scoreboard Functions",
+		0,
+		0,
+		{ { 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_NOPSCOREBOARDTOGGLEON ), NULL, (uint8_t *)"\x00", NULL }, { 1,
+		(void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_NOPSCOREBOARDTOGGLEONKEYLOCK ), NULL,
+		(uint8_t *)"\x00", NULL } }
+	};
 	if ( iEnabled && !sampPatchDisableScoreboard_patch.installed )
 		return patcher_install( &sampPatchDisableScoreboard_patch );
 	else if ( !iEnabled && sampPatchDisableScoreboard_patch.installed )
