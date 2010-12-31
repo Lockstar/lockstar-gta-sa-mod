@@ -255,7 +255,7 @@ void cheat_hook ( HWND wnd )
 
 			//pGameInterface->Initialize(); // all this does so far is disable modshops and pay&sprays
 			// this seems to fix SAMP's load hang bug
-			pGameInterface->StartGame();
+			//pGameInterface->StartGame();
 
 			// we have to add ourself to the pool first so that we are always the 1st ref
 			// NEW --> use the global external: pPedSelf
