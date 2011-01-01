@@ -710,6 +710,9 @@ void sampMainCheat ()
 
 int getNthPlayerID ( int n )
 {
+	if ( g_Players == NULL )
+		return -1;
+
 	int thisplayer = 0;
 	for ( int i = 0; i <= SAMP_PLAYER_MAX; i++ )
 	{
@@ -1235,6 +1238,9 @@ void addMessageToChatWindowSS ( const char *text, ... )
 #define FUNC_ADDTOCHATWND	0x3A930
 void addToChatWindow ( char *text, D3DCOLOR textColor )
 {
+	if ( g_SAMP == NULL )
+		return;
+
 	if ( text == NULL )
 		return;
 
@@ -1256,6 +1262,9 @@ void addToChatWindow ( char *text, D3DCOLOR textColor )
 #define FUNC_RESTARTGAME	0x64E0
 void restartGame ()
 {
+	if ( g_SAMP == NULL )
+		return;
+
 	uint32_t	samp_info = g_dwSAMP_Addr + SAMP_INFO_OFFSET;
 	uint32_t	func = g_dwSAMP_Addr + FUNC_RESTARTGAME;
 	__asm mov eax, dword ptr[samp_info]
@@ -1267,6 +1276,9 @@ void restartGame ()
 
 void say ( char *text, ... )
 {
+	if ( g_SAMP == NULL )
+		return;
+
 	if ( text == NULL )
 		return;
 	if ( isBadPtr_readAny(text, 128) )
@@ -1288,6 +1300,9 @@ void say ( char *text, ... )
 #define FUNC_SENDCMD	0x3BB50
 void addSayToChatWindow ( char *msg )
 {
+	if ( g_SAMP == NULL )
+		return;
+
 	if ( msg == NULL )
 		return;
 	if ( isBadPtr_readAny(msg, 128) )
@@ -1314,6 +1329,9 @@ void addSayToChatWindow ( char *msg )
 #define FUNC_GAMETEXT	0x2B610
 void showGameText ( char *text, int time, int textsize )
 {
+	if ( g_SAMP == NULL )
+		return;
+
 	uint32_t	func = g_dwSAMP_Addr + FUNC_GAMETEXT;
 	__asm push textsize
 	__asm push time
@@ -1324,6 +1342,9 @@ void showGameText ( char *text, int time, int textsize )
 #define FUNC_SPAWN	0x2000
 void playerSpawn ( void )
 {
+	if ( g_SAMP == NULL )
+		return;
+
 	uint32_t	func = g_dwSAMP_Addr + FUNC_SPAWN;
 	void		*lpPtr = g_Players->pLocalPlayer;
 	__asm mov ecx, dword ptr[lpPtr]
@@ -1334,6 +1355,9 @@ void playerSpawn ( void )
 
 void disconnect ( int reason /*0=timeout, 500=quit*/ )
 {
+	if ( g_SAMP == NULL )
+		return;
+
 	void	*rakptr = g_SAMP->pRakNet;
 	__asm mov ecx, dword ptr[rakptr]
 	__asm mov eax, dword ptr[ecx]
@@ -1346,6 +1370,9 @@ void disconnect ( int reason /*0=timeout, 500=quit*/ )
 
 void setPassword ( char *password )
 {
+	if ( g_SAMP == NULL )
+		return;
+
 	void	*rakptr = g_SAMP->pRakNet;
 	__asm mov ecx, dword ptr[rakptr]
 	__asm mov eax, dword ptr[ecx]
@@ -1358,6 +1385,9 @@ void setPassword ( char *password )
 #define FUNC_SENDINTERIOR	0x3280
 void sendSetInterior ( uint8_t interiorID )
 {
+	if ( g_SAMP == NULL )
+		return;
+
 	uint32_t	func = g_dwSAMP_Addr + FUNC_SENDINTERIOR;
 	void		*lpPtr = g_Players->pLocalPlayer;
 	__asm mov ecx, dword ptr[interiorID]
@@ -1370,6 +1400,9 @@ void sendSetInterior ( uint8_t interiorID )
 #define FUNC_SETSPECIALACTION	0x1790
 void setSpecialAction ( uint8_t byteSpecialAction )
 {
+	if ( g_SAMP == NULL )
+		return;
+
 	if ( g_Players->pLocalPlayer == NULL )
 		return;
 
@@ -1386,6 +1419,9 @@ void setSpecialAction ( uint8_t byteSpecialAction )
 
 void sendSCMEvent ( int iEvent, int iVehicleID, int iParam1, int iParam2 )
 {
+	if ( g_SAMP == NULL )
+		return;
+
 	uint32_t	func = g_dwSAMP_Addr + 0x8B0;
 	__asm push iParam2
 	__asm push iParam1
@@ -1483,6 +1519,9 @@ uint8_t _declspec ( naked ) client_message_hook ( void )
 #define SAMP_HOOK_STATECHANGE		0xCE1A
 void installSAMPHooks ()
 {
+	if( g_SAMP == NULL )
+		return;
+
 	CDetour api;
 
 	if ( set.anti_spam )
