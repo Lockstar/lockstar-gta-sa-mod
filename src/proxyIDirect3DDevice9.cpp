@@ -973,7 +973,7 @@ void RenderMap ( void )
 
 	if ( pool_actor != NULL )
 	{
-		if ( g_dwSAMP_Addr != NULL )
+		if ( g_SAMP != NULL )
 		{
 			for ( i = 0; i < SAMP_PLAYER_MAX; i++ )
 			{
@@ -1000,7 +1000,7 @@ void RenderMap ( void )
 
 	if ( cheat_state->_generic.map_vehicles )
 	{
-		if ( g_dwSAMP_Addr != NULL )
+		if ( g_SAMP != NULL )
 		{
 			if ( g_Vehicles != NULL )
 			{
@@ -1272,6 +1272,9 @@ struct playerTagInfo
 void renderPlayerTags ( void )
 {
 	traceLastFunc( "renderPlayerTags()" );
+
+	if ( g_SAMP == NULL )
+		return;
 
 	// don't run in the menu
 	if ( gta_menu_active() )
@@ -4078,14 +4081,14 @@ HRESULT proxyIDirect3DDevice9::EndScene ( void )
 
 				if ( game_inited )
 				{
-					if ( g_dwSAMP_Addr != NULL )
+					if ( g_SAMP != NULL )
 					{
 						uint32_t	bar_color = D3DCOLOR_ARGB( hud_bar->alpha, hud_bar->red, hud_bar->green,
 															   hud_bar->blue );
 						render->D3DBoxi( (int)x - 1,
 										 (int)(pPresentParam.BackBufferHeight - 1) - (int)pD3DFont->DrawHeight() - 3,
 										 (int)(pPresentParam.BackBufferWidth + 14), 22, bar_color, NULL );
-						HUD_TEXT( x, D3DCOLOR_ARGB(127, 255, 255, 255), NAME " for "SAMP_VERSION );
+						HUD_TEXT( x, D3DCOLOR_ARGB(127, 255, 255, 255), NAME " for " SAMP_VERSION );
 					}
 					else
 					{
@@ -4265,7 +4268,7 @@ pPresentParam.BackBufferHeight - pD3DFontFixed->DrawHeight() - 30, D3DCOLOR_ARGB
 		}
 
 no_d3dtext_hud: ;
-		if ( g_dwSAMP_Addr != NULL )
+		if ( g_SAMP != NULL )
 			renderSAMP();	// sure why not
 
 		// safe sex

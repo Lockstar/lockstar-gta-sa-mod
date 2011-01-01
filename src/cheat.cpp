@@ -405,7 +405,7 @@ void cheat_hook ( HWND wnd )
 	}	// cheat_state->state != CHEAT_STATE_NONE
 
 	// hack some SA:MP, shall we?
-	if ( g_dwSAMP_Addr != NULL && g_renderSAMP_initSAMPstructs )
+	if ( g_SAMP && g_renderSAMP_initSAMPstructs )
 		sampMainCheat();
 
 out: ;
