@@ -401,7 +401,6 @@ void getSamp ()
 			if ( !memcmp_safe((uint8_t *)g_dwSAMP_Addr + 0xBABE, hex_to_bin(SAMP_CMP), 10) )
 			{
 				Log( "Unknown SA:MP version. %s is only supported in this version.", SAMP_VERSION );
-				g_dwSAMP_Addr = NULL;
 				return;
 			}
 
