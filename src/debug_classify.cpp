@@ -502,15 +502,18 @@ const char *debug_classify_pointer ( const void *ptr )
 			snprintf( str[idx], sizeof(str[0]), "pool(%s)[%d]+%d", pool_name, id, item_offset );
 
 			// actor (peds) pool
-			if ( pools[i].pool_ptr == (void *)ACTOR_POOL_POINTER )
+			if( g_SAMP != NULL )
 			{
-				int			samp_id = getSAMPPlayerIDFromGTAPed( actor_info_get(id, 0) );
-				const char	*samp_name = getPlayerName( samp_id );
-
-				if ( samp_name != NULL )
+				if ( pools[i].pool_ptr == (void *)ACTOR_POOL_POINTER )
 				{
-					snprintf( str[idx] + strlen(str[idx]), sizeof(str[0]) - strlen(str[idx]), " %d:\"%s\"", samp_id,
-							  samp_name );
+					int			samp_id = getSAMPPlayerIDFromGTAPed( actor_info_get(id, 0) );
+					const char	*samp_name = getPlayerName( samp_id );
+
+					if ( samp_name != NULL )
+					{
+						snprintf( str[idx] + strlen(str[idx]), sizeof(str[0]) - strlen(str[idx]), " %d:\"%s\"", samp_id,
+								  samp_name );
+					}
 				}
 			}
 

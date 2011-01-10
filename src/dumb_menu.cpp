@@ -42,18 +42,12 @@
 #define ID_MENU_PLAYERS_WARP	100
 #define ID_MENU_PLAYERS_VEHWARP 101
 #define ID_MENU_PLAYERS_SPEC	102
-#ifdef M0D_DEV
-#define ID_MENU_PLAYERS_DEBUG	112
-#endif
 #define ID_MENU_PLAYERS_INFO	113
 #define ID_MENU_SAMPPATCHES		20
 #define ID_MENU_SERVER_LIST		21
 #define ID_MENU_HUDINDICATORS	22
 #define ID_MENU_INTERIORS		23
 
-#ifdef M0D_DEV
-#define ID_MENU_TESTING 255
-#endif
 #define ID_CHEAT_INVULN						10
 #define ID_CHEAT_WEAPONS					20
 #define ID_CHEAT_MONEY						30
@@ -673,30 +667,6 @@ static void menu_handling_populate ( struct menu *menu )
 	//menu_item_add( menu, NULL, text, ID_CHEAT_HANDLING_COLDMGMULT, MENU_COLOR_DEFAULT, NULL );
 }
 
-#ifdef M0D_DEV
-static void menu_playerdebug_populate ( struct menu *menu )
-{
-	menu_items_free( menu );
-
-	if ( g_Players == NULL )
-		return;
-
-	menu_item_add( menu, NULL, "Disable", SAMP_PLAYER_MAX + 1, MENU_COLOR_DEFAULT, NULL );
-
-	char	text[64];
-	int		i;
-	for ( i = 0; i < SAMP_PLAYER_MAX; i++ )
-	{
-		if ( g_Players->iIsListed[i] != 1 )
-			continue;
-		if ( g_Players->pRemotePlayer[i] == NULL )
-			continue;
-
-		snprintf( text, sizeof(text), "Debug %s (ID: %d)", getPlayerName(i), i );
-		menu_item_add( menu, NULL, text, i, MENU_COLOR_DEFAULT, (void *)(UINT_PTR) i );
-	}
-}
-#endif
 static void menu_playerinfo_populate ( struct menu *menu )
 {
 	menu_items_free( menu );
@@ -768,12 +738,6 @@ static void menu_event_activate ( struct menu *menu )
 	case ID_MENU_CHEATS_HANDLING:
 		menu_handling_populate( menu );
 		break;
-#ifdef M0D_DEV
-
-	case ID_MENU_PLAYERS_DEBUG:
-		menu_playerdebug_populate( menu );
-		break;
-#endif
 
 	case ID_MENU_PLAYERS_INFO:
 		menu_playerinfo_populate( menu );
@@ -893,13 +857,6 @@ void menu_run ( void )
 
 static int menu_callback_main ( int op, struct menu_item *item )
 {
-#ifdef M0D_DEV
-	if ( op == MENU_OP_SELECT )
-	{
-		if ( item->id == ID_MENU_TESTING )
-		{ }
-	}
-#endif
 	return 0;
 }
 
@@ -1918,7 +1875,7 @@ static int menu_callback_sampmisc ( int op, struct menu_item *item )
 						errmsg = "The player is dead.";
 					if ( self == NULL )
 						errmsg = "You are dead.";
-					if ( g_Players->pLocalPlayer->iIsSpectating == 1 )
+					if ( iIsSpectating == 1 )
 						errmsg = "You are spectating";
 
 					if ( errmsg == NULL )
@@ -2573,54 +2530,6 @@ static int menu_callback_spec ( int op, struct menu_item *item )
 	return 0;
 }
 
-void	renderPlayerPoolStructure ( int iPlayerIDToDebug );
-int		iDebuggingPlayer = -1;
-static int menu_callback_playerdebug ( int op, struct menu_item *item )
-{
-	if ( g_Players == NULL )
-		return 0;
-
-	int id = item->id;
-	if ( op == MENU_OP_SELECT )
-	{
-		if ( id == SAMP_PLAYER_MAX + 1 )
-		{
-			iDebuggingPlayer = -1;
-			return 1;
-		}
-
-		iDebuggingPlayer = id;
-
-		return 1;
-	}
-
-	return 0;
-}
-
-void	renderPlayerPoolStructure ( int iPlayerID );
-int		iViewingInfoPlayer = -1;
-static int menu_callback_playerinfo ( int op, struct menu_item *item )
-{
-	if ( g_Players == NULL )
-		return 0;
-
-	int id = item->id;
-	if ( op == MENU_OP_SELECT )
-	{
-		if ( id == SAMP_PLAYER_MAX + 1 )
-		{
-			iViewingInfoPlayer = -1;
-			return 1;
-		}
-
-		iViewingInfoPlayer = id;
-
-		return 1;
-	}
-
-	return 0;
-}
-
 int joining_server = 0;
 static int menu_callback_server_list ( int op, struct menu_item *item )
 {
@@ -2671,10 +2580,6 @@ static int menu_callback_gamestate ( int op, struct menu_item *item )
 	{
 		switch ( item->id )
 		{
-		case GAMESTATE_NONE:
-			g_SAMP->iGameState = GAMESTATE_NONE;
-			break;
-
 		case GAMESTATE_CONNECTING:
 			g_SAMP->iGameState = GAMESTATE_CONNECTING;
 			break;
@@ -2685,10 +2590,6 @@ static int menu_callback_gamestate ( int op, struct menu_item *item )
 
 		case GAMESTATE_AWAIT_JOIN:
 			g_SAMP->iGameState = GAMESTATE_AWAIT_JOIN;
-			break;
-
-		case GAMESTATE_DISCONNECTED:
-			g_SAMP->iGameState = GAMESTATE_DISCONNECTED;
 			break;
 
 		case GAMESTATE_RESTARTING:
@@ -2707,9 +2608,6 @@ static int menu_callback_gamestate ( int op, struct menu_item *item )
 	{
 		switch ( item->id )
 		{
-		case GAMESTATE_NONE:
-			return g_SAMP->iGameState == GAMESTATE_NONE;
-
 		case GAMESTATE_CONNECTING:
 			return g_SAMP->iGameState == GAMESTATE_CONNECTING;
 
@@ -2718,9 +2616,6 @@ static int menu_callback_gamestate ( int op, struct menu_item *item )
 
 		case GAMESTATE_AWAIT_JOIN:
 			return g_SAMP->iGameState == GAMESTATE_AWAIT_JOIN;
-
-		case GAMESTATE_DISCONNECTED:
-			return g_SAMP->iGameState == GAMESTATE_DISCONNECTED;
 
 		case GAMESTATE_RESTARTING:
 			return g_SAMP->iGameState == GAMESTATE_RESTARTING;
@@ -2751,12 +2646,9 @@ void menu_maybe_init ( void )
 		menu_cheats_weather, *menu_cheats_time, *menu_weapons, *menu_vehicles, *menu_teleports, *menu_interiors, *
 			menu_misc, *menu_debug, *menu_hudindicators, *menu_patches, *menu_players, *menu_servers, *
 				menu_players_warp, *menu_players_vehwarp, *menu_players_spec,
-#ifdef M0D_DEV
-	* menu_players_debug,
-#endif
 
 	//*menu_cheats_handling,
-	*menu_player_info, *menu_sampmisc, *menu_spoof_weapon, *menu_fake_kill, *menu_vehicles_instant, *menu_gamestate, *menu_specialaction, *menu_teleobject, *menu_telepickup, *menu_samppatches;
+	*menu_sampmisc, *menu_spoof_weapon, *menu_fake_kill, *menu_vehicles_instant, *menu_gamestate, *menu_specialaction, *menu_teleobject, *menu_telepickup, *menu_samppatches;
 
 	char		name[128];
 	int			i, slot;
@@ -2786,10 +2678,6 @@ void menu_maybe_init ( void )
 	menu_players_warp = menu_new( menu_players, ID_MENU_PLAYERS_WARP, menu_callback_players_warp );
 	menu_players_vehwarp = menu_new( menu_players, ID_MENU_PLAYERS_VEHWARP, menu_callback_players_vehwarp );
 	menu_players_spec = menu_new( menu_players, ID_MENU_PLAYERS_SPEC, menu_callback_spec );
-#ifdef M0D_DEV
-	menu_players_debug = menu_new( menu_players, ID_MENU_PLAYERS_DEBUG, menu_callback_playerdebug );
-#endif
-	menu_player_info = menu_new( menu_players, ID_MENU_PLAYERS_INFO, menu_callback_playerinfo );
 
 	menu_servers = menu_new( menu_main, ID_MENU_SERVER_LIST, menu_callback_server_list );
 	menu_sampmisc = menu_new( menu_main, ID_MENU_SAMPMISC, menu_callback_sampmisc );
@@ -2812,7 +2700,7 @@ void menu_maybe_init ( void )
 	snprintf( name, sizeof(name), "GTA Patches (%d/%d)", iGTAPatchesCount, INI_PATCHES_MAX );
 	menu_item_add( menu_main, menu_patches, name, ID_NONE, MENU_COLOR_DEFAULT, NULL );
 
-	if ( g_SAMP != NULL )
+	if ( g_dwSAMP_Addr != NULL )
 	{
 		menu_item_add( menu_main, NULL, "\tSA-MP", ID_NONE, MENU_COLOR_SEPARATOR, NULL );
 		menu_item_add( menu_main, menu_players, "Players", ID_NONE, MENU_COLOR_DEFAULT, NULL );
@@ -2822,11 +2710,6 @@ void menu_maybe_init ( void )
 		snprintf( name, sizeof(name), "SA:MP Patches (%d/%d)", iSAMPPatchesCount, INI_SAMPPATCHES_MAX );
 		menu_item_add( menu_main, menu_samppatches, name, ID_NONE, MENU_COLOR_DEFAULT, NULL );
 	}
-
-	// testing stuff
-#ifdef M0D_DEV
-	menu_item_add( menu_main, NULL, "Test", ID_MENU_TESTING, MENU_COLOR_DEFAULT, NULL );
-#endif
 
 	/* main menu -> cheats */
 	menu_item_add( menu_cheats, menu_cheats_mods, "Vehicle upgrades", ID_CHEAT_MODS, MENU_COLOR_DEFAULT, NULL );
@@ -2995,11 +2878,7 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_players, menu_players_vehwarp, "Warp instantly to player's vehicle", ID_MENU_PLAYERS_VEHWARP,
 				   MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_players, menu_players_spec, "Spectate player", ID_MENU_PLAYERS_SPEC, MENU_COLOR_DEFAULT, NULL );
-#ifdef M0D_DEV
-	menu_item_add( menu_players, menu_players_debug, "Debug player", ID_MENU_PLAYERS_DEBUG, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_players, menu_player_info, "Show infos on player", ID_MENU_PLAYERS_DEBUG, MENU_COLOR_DEFAULT,
-				   NULL );
-#endif
+
 
 	/* main menu -> patches */
 	for ( i = 0; i < INI_PATCHES_MAX; i++ )
@@ -3065,7 +2944,7 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_debug, NULL, "Enable", ID_DEBUG_ENABLE, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_debug, NULL, "Self actor", ID_DEBUG_SELF_ACTOR, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_debug, NULL, "Self vehicle", ID_DEBUG_SELF_VEHICLE, MENU_COLOR_DEFAULT, NULL );
-	if ( g_SAMP != NULL )
+	if ( g_dwSAMP_Addr != NULL )
 	{
 		menu_item_add( menu_debug, NULL, "SA:MP DLL", ID_DEBUG_SAMP_DLL, MENU_COLOR_DEFAULT, NULL );
 		menu_item_add( menu_debug, NULL, "SA:MP Info", ID_DEBUG_SAMP_INFO, MENU_COLOR_DEFAULT, NULL );
@@ -3120,11 +2999,9 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_sampmisc, NULL, "Load M0D-Commands", ID_MENU_SAMPMISC_M0DCOMMANDS, MENU_COLOR_DEFAULT, NULL );
 
 	/* main menu -> sampmisc -> change game state */
-	menu_item_add( menu_gamestate, NULL, "None", GAMESTATE_NONE, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_gamestate, NULL, "Connecting", GAMESTATE_CONNECTING, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_gamestate, NULL, "Connected", GAMESTATE_CONNECTED, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_gamestate, NULL, "Await join", GAMESTATE_AWAIT_JOIN, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_gamestate, NULL, "Disconnected", GAMESTATE_DISCONNECTED, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_gamestate, NULL, "Game mode restarting", GAMESTATE_RESTARTING, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_gamestate, NULL, "Wait connect", GAMESTATE_WAIT_CONNECT, MENU_COLOR_DEFAULT, NULL );
 
