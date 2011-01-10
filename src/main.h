@@ -31,7 +31,7 @@
 
 #define M0D_NAME		"mod_sa"
 #define M0D_VERSION		"4.2.0.0"
-#define SAMP_VERSION	"SA:MP 0.3b R3"
+#define SAMP_VERSION	"SA:MP 0.3c"
 
 #ifdef M0D_DEV
 #define NAME	""M0D_NAME "-dev"" "M0D_VERSION " ("__DATE__ " """__TIME__ ")"

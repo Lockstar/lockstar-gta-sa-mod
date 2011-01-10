@@ -142,6 +142,13 @@ HBITMAP PornographyGetPorn ( void )
 {
 	traceLastFunc( "PornographyGetPorn()" );
 
+	// make sure we have the original device
+	if ( origIDirect3DDevice9 == NULL )
+	{
+		Log( "PornographyGetPorn() fail, origIDirect3DDevice9 == NULL" );
+		goto getpornfail;
+	}
+
 	// RenderTargetSurface.
 	IDirect3DSurface9	*pRenderTargetSurface = NULL;
 
@@ -156,13 +163,6 @@ HBITMAP PornographyGetPorn ( void )
 
 	// localize hWnd
 	HWND				m_hWnd = pPresentParam.hDeviceWindow;
-
-	// make sure we have the original device
-	if ( origIDirect3DDevice9 == NULL )
-	{
-		Log( "PornographyGetPorn() fail, origIDirect3DDevice9 == NULL" );
-		goto getpornfail;
-	}
 
 	// Get the client rectangle
 	RECT	rc;
@@ -222,13 +222,15 @@ HBITMAP PornographyGetPorn ( void )
 
 	D3DSURFACE_DESC pRendTargetDesc;
 	pRenderTargetSurface->GetDesc( &pRendTargetDesc );
-	Log("pRendTargetDesc.MultiSampleQuality: %d", pRendTargetDesc.MultiSampleQuality);
 	if ( pRendTargetDesc.MultiSampleType != D3DMULTISAMPLE_NONE )
 	{
-		if ( FAILED(origIDirect3DDevice9->CreateRenderTarget((rc.right - rc.left), (rc.bottom - rc.top), m_D3DFMT,
-					 D3DMULTISAMPLE_NONE, 0,		// DWORD MultisampleQuality
-					0,	// BOOL Lockable
-					&pTransferTargetSurface, NULL	// HANDLE* pSharedHandle
+		if ( FAILED(origIDirect3DDevice9->CreateRenderTarget((rc.right - rc.left), (rc.bottom - rc.top), // width & height
+					m_D3DFMT, // D3DFORMAT Format
+					D3DMULTISAMPLE_NONE, // D3DMULTISAMPLE_TYPE Multisample
+					0, // DWORD MultisampleQuality
+					0, // BOOL Lockable
+					&pTransferTargetSurface, // IDirect3DSurface9 **ppSurface
+					NULL // HANDLE* pSharedHandle
 					)) )
 		{
 			Log( "PornographyGetPorn() fail, CreateRenderTarget() fail." );
@@ -242,20 +244,28 @@ HBITMAP PornographyGetPorn ( void )
 			goto getpornfail;
 		}
 
-		// make the target surface our transfered surface
+		// image transfered, reset render target and release
+		origIDirect3DDevice9->SetRenderTarget(0, pRenderTargetSurface);
 		SAFE_RELEASE( pRenderTargetSurface );
-		pRenderTargetSurface = pTransferTargetSurface;
-	}
 
-	//copy RenderTargetSurface -> DestTarget, and release target surfaces
-	if ( FAILED(origIDirect3DDevice9->GetRenderTargetData(pRenderTargetSurface, pDestinationTargetSurface)) )
+		//copy RenderTargetSurface -> DestTarget, and release target surfaces
+		if ( FAILED(origIDirect3DDevice9->GetRenderTargetData(pTransferTargetSurface, pDestinationTargetSurface)) )
+		{
+			Log( "PornographyGetPorn() fail, GetRenderTargetData() fail." );
+			goto getpornfail;
+		}
+		SAFE_RELEASE( pTransferTargetSurface );
+	}
+	else
 	{
-		Log( "PornographyGetPorn() fail, GetRenderTargetData() fail." );
-		goto getpornfail;
+		//copy RenderTargetSurface -> DestTarget, and release target surfaces
+		if ( FAILED(origIDirect3DDevice9->GetRenderTargetData(pRenderTargetSurface, pDestinationTargetSurface)) )
+		{
+			Log( "PornographyGetPorn() fail, GetRenderTargetData() fail." );
+			goto getpornfail;
+		}
+		SAFE_RELEASE( pRenderTargetSurface );
 	}
-
-	SAFE_RELEASE( pTransferTargetSurface );
-	SAFE_RELEASE( pRenderTargetSurface );
 
 	// create HDC device
 	HDC			hCaptureDC = CreateCompatibleDC( NULL );
