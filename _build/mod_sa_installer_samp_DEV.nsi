@@ -7,7 +7,7 @@
 !define MUI_INSTFILESPAGE_PROGRESSBAR colored
 !define NAME 'mod_sa'
 !define MP 'SA-MP'
-!define MP_VERSION 'v0.3b'
+!define MP_VERSION 'v0.3c'
 !define /date COMPILE_DATE "%Y-%m-%d"
 !define /date COMPILE_TIME "%H-%M-%S"
 !define VERSION 'DEV'

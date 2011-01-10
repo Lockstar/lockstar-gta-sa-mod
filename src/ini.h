@@ -260,10 +260,6 @@ struct settings
 	float					line_of_sight_dist;
 	int						markers_show;
 
-	int						samp_custom_init_screen_enable;
-	float					samp_init_screen_cam_pos[3];
-	float					samp_init_screen_cam_look_at[3];
-
 	int						samp_custom_sendrates_enable;
 	int						onfoot_sendrate;
 	int						incar_sendrate;

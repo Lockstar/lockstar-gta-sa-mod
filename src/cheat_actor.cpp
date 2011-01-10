@@ -438,10 +438,6 @@ void cheat_handle_actor_air_brake ( struct actor_info *info, double time_diff )
 	}
 }
 
-#ifdef M0D_DEV
-D3DXVECTOR3 vecGravColOrigin, vecGravColTarget, vecGravTargetNorm;
-CVector		temp_vecGravTargetNorm;
-#endif
 CVector cheat_actor_getPositionUnder ( actor_info *ainfo )
 {
 	traceLastFunc( "cheat_vehicle_getPositionUnder()" );

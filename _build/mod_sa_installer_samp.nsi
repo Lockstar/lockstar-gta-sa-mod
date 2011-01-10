@@ -6,7 +6,7 @@
 !define MUI_INSTFILESPAGE_PROGRESSBAR colored
 !define NAME 'mod_sa'
 !define MP 'SA-MP'
-!define MP_VERSION 'v0.3b'
+!define MP_VERSION 'v0.3c'
 !define VERSION 'v4.2.0.0'
 
 ; create output directory if it doesn't exist
