@@ -494,68 +494,7 @@ void toggleSpectating(BOOL bToggle)
 	_asm push bToggle
 	_asm call dwFunc
 }
-/*
-void spectatePlayer ( int iID )
-{
-	if ( set.send_spec_data )
-	{
-		if ( iID == -1 && g_Players->pLocalPlayer->iSpectateID != iID )
-		{
-			g_Players->pLocalPlayer->iIsSpectating = 0;
-			g_Players->pLocalPlayer->byteSpectatingUnk = 0;
-			g_Players->pLocalPlayer->byteSpectatingWHAT = 0;
-			g_Players->pLocalPlayer->iInitiatedSpectating = 0;
-			g_Players->pLocalPlayer->iSpectateID = -1;
-			g_Spectate_playerID = -1;
-			playerSpawn();
-			return;
-		}
-		if ( g_Players->pRemotePlayer[iID] != NULL && g_Players->pRemotePlayer[iID]->pPlayerData != NULL )
-		{
-			g_Players->pLocalPlayer->iIsSpectating = 1;
-			g_Players->pLocalPlayer->byteSpectatingUnk = 4;
-			g_Players->pLocalPlayer->byteSpectatingWHAT = 1;
-			g_Players->pLocalPlayer->iInitiatedSpectating = 0;
-			g_Players->pLocalPlayer->iSpectateID = iID;
-			g_Spectate_playerID = iID;
-		}
-		return;
-	}
 
-	if ( iID == -1 )
-	{
-		ScriptCommand( &toggle_player_controllable, 0, 1 );
-		ScriptCommand( &lock_actor, 1, 0 );
-		ScriptCommand( &restore_camera_with_jumpcut );
-		ScriptCommand( &set_camera_directly_behind );
-		ScriptCommand( &restore_camera_with_jumpcut );
-		return;
-	}
-
-	if ( getPlayerState(iID) == PLAYER_STATE_ONFOOT )
-	{
-		if ( g_Players == NULL )
-			return;
-		ScriptCommand( &camera_on_actor, getPedGTAScriptingIDFromPlayerID(iID), 4, 1 );
-	}
-	else if ( getPlayerState(iID) == PLAYER_STATE_DRIVER )
-	{
-		if ( g_Players == NULL || g_Vehicles == NULL )
-			return;
-
-		int iPlayerVehicleID = g_Players->pRemotePlayer[iID]->pPlayerData->sVehicleID;
-		ScriptCommand( &camera_on_vehicle, getVehicleGTAScriptingIDFromVehicleID(iPlayerVehicleID), 3, 1 );
-	}
-	else if ( getPlayerState(iID) == PLAYER_STATE_PASSENGER )
-	{
-		if ( g_Players == NULL || g_Vehicles == NULL )
-			return;
-
-		int iPlayerVehicleID = g_Players->pRemotePlayer[iID]->pPlayerData->sVehicleID;
-		ScriptCommand( &camera_on_vehicle, getVehicleGTAScriptingIDFromVehicleID(iPlayerVehicleID), 3, 1 );
-	}
-}
-*/
 void spectatePlayer(int iPlayerID)
 {
 	if ( iPlayerID == -1 )
@@ -1620,7 +1559,7 @@ int sampPatchDisableInteriorUpdate ( int iEnabled )
 	return NULL;
 }
 
-#define SAMP_NOPSCREENSHOT	0x754E0
+#define SAMP_NOPSCREENSHOT	0x764E0
 int sampPatchDisableScreeenshotKey ( int iEnabled )
 {
 	static struct patch_set sampPatchDisableScreeenshotKey_patch =
