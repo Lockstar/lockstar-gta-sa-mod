@@ -1338,7 +1338,7 @@ uint8_t _declspec ( naked ) carjacked_hook ( void )
 	__asm jmp anticarjacked_jmp
 }
 
-#define HOOK_EXIT_SERVERMESSAGE_HOOK	0x6EAD7
+#define HOOK_EXIT_SERVERMESSAGE_HOOK	0x6EAE3
 uint8_t _declspec ( naked ) server_message_hook ( void )
 {
 	int		thismsg;
@@ -1363,19 +1363,29 @@ uint8_t _declspec ( naked ) server_message_hook ( void )
 	__asm jmp ebx
 }
 
-#define HOOK_CALL_CLIENTMESSAGE_HOOK	0xCC50
+#define HOOK_CALL_CLIENTMESSAGE_HOOK	0x104F0
 #define HOOK_EXIT_CLIENTMESSAGE_HOOK	0xCA1E
 uint8_t _declspec ( naked ) client_message_hook ( void )
 {
-	int			thismsg;
-	DWORD		player;
+	int							thismsg;
+	struct stRemotePlayerData	*player;
 	uint16_t	id;
 	static char last_clientmsg[SAMP_PLAYER_MAX][256];
 	__asm mov thismsg, edx
 	__asm mov player, eax
 
-	if ( player != NULL && ((struct stRemotePlayerData *)player) != NULL )
+	if ( player != NULL )
 	{
+		if( player->sPlayerID == g_Players->sLocalPlayerID )
+		{
+			DWORD	func = g_dwSAMP_Addr + HOOK_CALL_CLIENTMESSAGE_HOOK;
+			__asm mov edx, thismsg
+			__asm mov ecx, player
+			__asm push edx
+			__asm call func
+			goto us;
+		}
+
 		id = ( (struct stRemotePlayerData *)player )->sPlayerID;
 
 		static DWORD	allow_show_again = GetTickCount();
@@ -1395,6 +1405,7 @@ uint8_t _declspec ( naked ) client_message_hook ( void )
 		}
 	}
 
+us:;
 	__asm mov ebx, g_dwSAMP_Addr
 	__asm add ebx, HOOK_EXIT_CLIENTMESSAGE_HOOK
 	__asm jmp ebx
@@ -1441,7 +1452,7 @@ uint8_t _declspec ( naked ) StreamedOutInfo ( void )
 
 
 #define SAMP_HOOKPOS_ServerMessage	0x6EACC
-#define SAMP_HOOKPOS_ClientMessage	0xCA16
+#define SAMP_HOOKPOS_ClientMessage	0xCA19
 #define SAMP_HOOK_STATECHANGE		0xF78B
 #define SAMP_HOOK_StreamedOutInfo	0xDE4B
 void installSAMPHooks ()
@@ -1462,7 +1473,7 @@ void installSAMPHooks ()
 		else
 			Log( "Failed to hook ServerMessage (memcmp)" );
 
-		if ( memcmp_safe((uint8_t *)g_dwSAMP_Addr + SAMP_HOOKPOS_ClientMessage, hex_to_bin("528BC8E8"), 4) )
+		if ( memcmp_safe((uint8_t *)g_dwSAMP_Addr + SAMP_HOOKPOS_ClientMessage, hex_to_bin("E8D23A00"), 4) )
 		{
 			if ( api.Create((uint8_t *) ((uint32_t) g_dwSAMP_Addr) + SAMP_HOOKPOS_ClientMessage,
 							 (uint8_t *)client_message_hook, DETOUR_TYPE_JMP, 5) == 0 )
