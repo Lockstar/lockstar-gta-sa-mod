@@ -700,7 +700,6 @@ int getPlayerCount ( void )
 	return iCount + 1;
 }
 
-#define FUNC_SETLOCALPLAYERNAME		0x9830
 int setLocalPlayerName ( const char *name )
 {
 	if ( g_Players == NULL )
@@ -710,12 +709,9 @@ int setLocalPlayerName ( const char *name )
 	if ( strlen_name == 0 || strlen_name > MAX_PLAYER_NAME || g_Players->pLocalPlayer == NULL )
 		return 0;
 
-	DWORD	localpl = ( (DWORD) g_Players ) + 14;
-	DWORD	func = g_dwSAMP_Addr + FUNC_SETLOCALPLAYERNAME;
-	__asm push strlen_name
-	__asm push name
-	__asm mov ecx, localpl
-	__asm call func
+	strcpy(g_Players->szLocalPlayerName, name);
+	g_Players->iStrlen_LocalPlayerName = strlen_name;
+
 	return 1;
 }
 
