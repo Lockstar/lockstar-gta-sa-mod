@@ -21,44 +21,49 @@
 
 */
 
-#define SAMP_PLAYER_MAX				503
-#define SAMP_VEHICLE_MAX			2010
+#define SAMP_PLAYER_MAX				500
+#define SAMP_VEHICLE_MAX			2000
 #define SAMP_PICKUP_MAX				2048
 #define SAMP_OBJECTS_MAX			400
+#define SAMP_GANGZONE_MAX			1024
 #define MAX_3DTEXT					2048
 #define MAX_TEXTDRAW				2048
 #define MAX_GANGZONES				1024
 #define MAX_PLAYER_NAME				30
-#define ALLOWED_PLAYER_NAME_LENGTH	20
+#define ALLOWED_PLAYER_NAME_LENGTH	16
 #define MAX_CLIENTCMDS				144
 #define SAMP_MENUS_MAX				128
 
 // Variable offsets
-#define SAMP_CHAT_INFO_OFFSET		0xEEF68
-#define SAMP_CHAT_INPUT_INFO_OFFSET 0xEEF6C
-#define SAMP_KILL_INFO_OFFSET		0xEEF70
-#define SAMP_INFO_OFFSET			0xEEF78
+#define SAMP_CHAT_INFO_OFFSET		0x1F76A8
+#define SAMP_CHAT_INPUT_INFO_OFFSET 0x1F76AC
+#define SAMP_KILL_INFO_OFFSET		0x1F76B0
+#define SAMP_INFO_OFFSET			0x1F7698
 
-#define SAMP_COLOR_OFFSET			0xD5F10
+#define SAMP_COLOR_OFFSET			0x1D44B0
 
-#define SAMP_FONT_INFO_OFFSET			0xEEF7C
+#define SAMP_FONT_INFO_OFFSET			0x1F769C
 
-#define VALUE_DRAWING_DISTANCE			0x637FC
+#define VALUE_DRAWING_DISTANCE			0xBBAF0
 
-#define GAMESTATE_NONE					0
-#define GAMESTATE_AWAIT_JOIN			218
-#define GAMESTATE_RESTARTING			219
-#define GAMESTATE_WAIT_CONNECT			220
-#define GAMESTATE_CONNECTING			221
-#define GAMESTATE_CONNECTED				222
-#define GAMESTATE_DISCONNECTED			223
+// used in proxyIDirect3DDevice9.cpp
+#define SAMP_SCOREBOARD_INFO			0x1F76B8
+#define SAMP_GAMEPROCESSHOOK			0x52868
+#define SAMP_FUNCUPDATESCOREBOARDDATA	0x7580
+
+
+#define GAMESTATE_AWAIT_JOIN			29
+#define GAMESTATE_RESTARTING			27
+#define GAMESTATE_WAIT_CONNECT			28
+#define GAMESTATE_CONNECTING			31
+#define GAMESTATE_CONNECTED				30
 
 #define PLAYER_STATE_NONE				0
-#define PLAYER_STATE_ONFOOT				170
-#define PLAYER_STATE_DRIVER				218
-#define PLAYER_STATE_PASSENGER			202
-#define PLAYER_STATE_WASTED				42
-#define PLAYER_STATE_SPAWNED			154
+#define PLAYER_STATE_ONFOOT				160
+#define PLAYER_STATE_DRIVER				209
+#define PLAYER_STATE_PASSENGER			193
+#define PLAYER_STATE_WASTED				45
+#define PLAYER_STATE_SPAWNED			156
 
 #define PLAYER_MARKERS_MODE_OFF			0
 #define PLAYER_MARKERS_MODE_GLOBAL		1
@@ -88,19 +93,18 @@
 struct stSAMP
 {
 #pragma pack( 1 )
-	struct stSAMPPools		*pPools;
-	void					*unk[2];
+	void					*pRakClientInterface;
 	struct stSampSettings	*pSettings;
-	void					*pRakNet;
-	uint32_t				*ulConnectTick;
-	int						iGameState;
-	int						iLanMode;
 	uint32_t				ulPort;
 	char					szIP[256];
-	uint8_t					unknown[2];
+	uint8_t					pad1[2];
 	char					szHostname[256];
-	uint8_t					unknown_two[2];
+	uint8_t					pad2[2];
+	int						iGameState;
+	uint32_t				*ulConnectTick;
 	uint32_t				ulMapIcons[100];
+	int						iLanMode;
+	struct stSAMPPools		*pPools;
 };
 
 struct stSAMPPools
@@ -108,37 +112,40 @@ struct stSAMPPools
 #pragma pack( 1 )
 	struct stTextdrawPool	*pPool_Textdraw;
 	struct stObjectPool		*pPool_Object;
-	struct stPlayerPool		*pPool_Player;
-	struct stVehiclePool	*pPool_Vehicle;
-	void					*unk_2;
-	struct stTextLabelPool	*pPool_Text3D;
+	struct stGangzonePool	*pPool_Gangzone;
+	void					*pPool_PlayerLabels;
 	struct stPickupPool		*pPool_Pickup;
 	void					*pPool_Menu;
+	struct stPlayerPool		*pPool_Player;
+	struct stVehiclePool	*pPool_Vehicle;
+	uint32_t				*unk;
+	struct stTextLabelPool	*pPool_Text3D;
 };
 
 struct stSampSettings
 {
 #pragma pack( 1 )
-	uint8_t byteAllowFriendlyFire;
-	uint8_t unknown;
-	uint8_t byteSetTime;
 	uint8_t unknown_2;
-	uint8_t byteShowZoneNames;
-	uint8_t unknown_2_2;
-	uint8_t byteCJWalk;
-	uint8_t byteWeather;
-	uint8_t byteNoNametagsBehindWalls;
-	float	fGravity;
-	uint8_t unknown_3[4];
-	uint8_t byteNoInteriorEnterExits;
 	int		iSpawnsAvailable;
 	uint8_t bytePlayerMarkersMode;
-	uint8_t unknown_5[7];
-	float	fNameTagsDistance;
-	uint8_t byteShowNameTags;
+	int		iUnknown1;
+	int		iUnknown2;
 	uint8_t byteWorldTime_Hour;
 	uint8_t byteWorldTime_Minute;
 	float	fWorldBoundaries[4];
+	uint8_t byteShowZoneNames;
+	uint8_t byteAllowFriendlyFire;
+	uint8_t unknown;
+	uint8_t byteSetTime;
+	uint8_t unknown_2_2;
+	uint8_t byteCJWalk;
+	int iUnknown3;
+	float	fNameTagsDistance;
+	uint8_t byteWeather;
+	uint8_t byteNoNametagsBehindWalls;
+	uint8_t byteNoInteriorEnterExits;
+	uint8_t byteShowNameTags;
+	float	fGravity;
 };
 
 struct stTextdraw
@@ -168,25 +175,30 @@ struct stPickup
 struct stPickupPool
 {
 #pragma pack( 1 )
+	int iPickupID[SAMP_PICKUP_MAX];
+	int iTimePickup[SAMP_PICKUP_MAX];
 	struct stPickup pickup[SAMP_PICKUP_MAX];
 };
 
 struct stPlayerPool
 {
 #pragma pack( 1 )
-	struct stLocalPlayer	*pLocalPlayer;
-	int						iLocalPlayerScore;
-	int						iLocalPlayerPing;
-	short					sLocalPlayerID;
-	uint8_t					unknown_x[4];
+	void					*pVtbl;
 	union
 	{
-		char	szLocalPlayerName[20];
+		char	szLocalPlayerName[ALLOWED_PLAYER_NAME_LENGTH];
 		char	*pszLocalPlayerName;
 	};
 	int						iStrlen_LocalPlayerName;
+	int						iScoreboard_something;
+	struct stLocalPlayer	*pLocalPlayer;
 	int						iIsListed[SAMP_PLAYER_MAX];
+	uint8_t					pad1[0x2C];
 	struct stRemotePlayer	*pRemotePlayer[SAMP_PLAYER_MAX];
+	uint8_t					pad2[0x2C];
+	int						iLocalPlayerScore;
+	int						iLocalPlayerPing;
+	uint16_t				sLocalPlayerID;
 };
 
 struct stSAMPKeys
@@ -329,111 +341,56 @@ struct stHeadSync
 struct stLocalPlayer
 {
 #pragma pack( 1 )
+	uint16_t				sCurrentVehicleID;
+	uint16_t				sLastVehicleID;
+	int						iIsActive;
+	int						iIsWasted;
+	struct stSAMPPed		*pSAMP_Actor;
 	struct stOnFootData		onFootData;
 	struct stInCarData		inCarData;
 	struct stPassengerData	passengerData;
 	struct stAimData		aimData;
 	struct stTrailerData	trailerData;
-	struct stSAMPPed		*pSAMP_Actor;
-	uint16_t				sCurrentVehicleID;
-	uint16_t				sLastVehicleID;
-	int						iIsActive;
-	int						iIsWasted;
-	int						iCurrentAnimID;
-	uint8_t					unknown_2[133];
-	int						iSpawnSkin;
-	uint8_t					unknown_x;
-	float					fSpawnPos[3];
-	float					fSpawnRot;
-	int						iSpawnWeapon[3];
-	int						iSpawnAmmo[3];
-	int						iIsActorAlive;
-	int						iSpawnClassLoaded;
-	uint32_t				ulSpawnSelectionTick;
-	uint32_t				ulSpawnSelectionStart;
-	int						iIsSpectating;
-	uint8_t					byteTeamID;
-	uint8_t					unknown_5[2];
-	uint32_t				ulSendTick;
-	uint32_t				ulSpectateTick;
-	uint32_t				ulAimTick;
-	uint32_t				ulStatsUpdateTick;
-	uint32_t				ulWeapUpdateTick;
-	uint8_t					byteCurrentWeapon;
-	uint8_t					byteWeaponInventory[13];
-	int						iWeaponAmmo[13];
-	struct stHeadSync		headSyncData;
-	uint32_t				ulUnoccupiedTick;
-	uint32_t				ulUnknownTick;
-	int						iPassengerDriveBy;
-	uint8_t					byteCurrentInterior;
-	uint8_t					byteIsInRCVehicle;
-	uint8_t					unknown_7[3];
-	struct stSurfData		surfData;
-	uint8_t					byteSpectatingUnk;	//15[?],14[?],(3-Veh/4-Player [follow])
-	uint8_t					byteSpectatingWHAT; //2 = Veh, 1 = Player
-	int						iSpectateID;
-	int						iInitiatedSpectating;
-	int						iClassSelectionOnDeath;
-	int						iSpawnClassID;
-	int						iRequestToSpawn;
-	int						iIsInSpawnScreen;
-	uint32_t				ulZoneNameTick;
-	struct stDamageData		vehicleDamageData;
 };
 
 struct stRemotePlayerData
 {
 #pragma pack( 1 )
-	struct stOnFootData		onFootData;
-	struct stInCarData		inCarData;
-	struct stPassengerData	passengerData;
-	struct stAimData		aimData;
-	struct stTrailerData	trailerData;
-	uint8_t					unk[16];
-	float					fOnFootPos[3];
-	float					fOnFootMoveSpeed[3];
-	float					fVehiclePosition[3];
-	float					fVehicleMoveSpeed[3];
-	float					fVehicleRoll[4];
-	uint8_t					unk_2[12];
-	struct stSAMPPed		*pSAMP_Actor;
-	struct stSAMPVehicle	*pSAMP_Vehicle;
-	uint8_t					unk2[4];
-	uint16_t				sPlayerID;
-	uint8_t					unk3[5];
+	uint8_t					bUnk1;
+	uint32_t				dwTick;
+	uint8_t					byteTeamID;
 	uint8_t					bytePlayerState;
 	uint16_t				sVehicleID;
 	uint8_t					byteSeatID;
-	uint8_t					byteTeamID;
 	int						iPassengerDriveBy;
-	struct stHeadSync		headSyncData;
-	uint8_t					unk5[4];
+	int						iUnknown_1;
 	int						iShowNameTag;
 	int						iHasJetPack;
 	uint8_t					byteSpecialAction;
 	float					fActorHealth;
 	float					fActorArmor;
-	uint8_t					unk6[12];
-	int						iGlobalMarkerLoaded;
-	int						iGlobalMarkerLocation[3];
-	uint32_t				ulGlobalMarker_GTAID;
+	int						iUnknown_2;
+	struct stSAMPPed		*pSAMP_Actor;
+	struct stSAMPVehicle	*pSAMP_Vehicle;
+	int						iUnknown_3;
+	uint16_t				sPlayerID;
 };
 
 struct stRemotePlayer
 {
 #pragma pack( 1 )
-	int					iIsNPC;
 	int					iPing;
-	stRemotePlayerData	*pPlayerData;
 	int					iScore;
 	uint8_t				unknown[4];
 	union
 	{
-		char	szPlayerName[20];
+		char	szPlayerName[ALLOWED_PLAYER_NAME_LENGTH];
 		char	*pszPlayerName;
 	};
-	int iStrlenName;
+	int					iStrlenName;
+	int					iScoreboard_something;
+	stRemotePlayerData	*pPlayerData;
+	int					iIsNPC;
 };
 
 struct stSAMPPed
@@ -444,7 +401,7 @@ struct stSAMPPed
 	uint32_t			ulGTA_Ped_ID;
 	int					usingCellPhone;
 	struct actor_info	*pGTA_Ped;
-	uint8_t				byteUnknown[41];
+	uint8_t				pad[284];
 	int					DrinkingOrSmoking;
 	int					object_in_hand;
 	int					drunkLevel;	
@@ -459,10 +416,16 @@ struct stSAMPPed
 struct stVehiclePool
 {
 #pragma pack( 1 )
-	uint8_t					unknown[4400+2*SAMP_VEHICLE_MAX+24120];
+	uint32_t				pad[76];
+	int						pad1unk[SAMP_VEHICLE_MAX];
+	int						iIsListed[SAMP_VEHICLE_MAX];
+	int						pad2unk[SAMP_VEHICLE_MAX];
+	int						pad3unk[SAMP_VEHICLE_MAX];
 	struct vehicle_info		*pGTA_Vehicle[SAMP_VEHICLE_MAX];
 	struct stSAMPVehicle	*pSAMP_Vehicle[SAMP_VEHICLE_MAX];
-	int						iIsListed[SAMP_VEHICLE_MAX];
+	int						pad5unk[SAMP_VEHICLE_MAX];
+	float					fSpawnPos[SAMP_VEHICLE_MAX][3];
+	
 };
 
 struct stSAMPVehicle
@@ -482,15 +445,28 @@ struct stObject
 #pragma pack( 1 )
 	void				*pVTBL_Object;
 	struct object_info	*pGTAObject;
-	uint32_t			ulGTA_Ped_ID;
+	uint32_t			ulGTA_Object_ID;
 };
 
 struct stObjectPool
 {
 #pragma pack( 1 )
 	int				unknown;
-	int				iIsListed[SAMP_OBJECTS_MAX];
 	struct stObject *object[SAMP_OBJECTS_MAX];
+	int				iIsListed[SAMP_OBJECTS_MAX];
+};
+
+struct stGangzone
+{
+	float	fPosition[4];
+	DWORD	dwColor;
+	DWORD	dwAltColor;
+};
+
+struct stGangzonePool
+{
+	struct stGangzone	*pGangzone[SAMP_GANGZONE_MAX];
+	int					iIsListed[SAMP_GANGZONE_MAX];
 };
 
 struct stTextLabel
@@ -525,17 +501,15 @@ struct stChatEntry
 struct stChatInfo
 {
 #pragma pack( 1 )
-	uint8_t				unknown_0[24];
 	int					iChatWindowMode;			// 2 - normal, 1 - light, 0 - disabled
-	uint8_t				unk;
 	uint8_t				bTimestamps;
-	uint8_t				unknown[3];
-	char				logFilePathChatLog[261];
-	struct stChatEntry	chatEntry[101];
-	uint8_t				unknown_2[4];
+	uint8_t				unknown[4];
+	char				logFilePathChatLog[MAX_PATH+1];	
+	struct stChatEntry	chatEntry[100];
 	D3DCOLOR			clTextColor;
 	D3DCOLOR			clDebugColor;
 	D3DCOLOR			clInfoColor;
+	DWORD				dwUnk;
 	int					pagesize;
 };
 
@@ -595,7 +569,7 @@ struct stTranslateGTASAMP_vehiclePool
 struct stTranslateGTASAMP_pedPool
 {
 #pragma pack( 1 )
-	// the index is the position in the vehicle pool
+	// the index is the position in the ped pool
 	//
 	// translation data
 	int iSAMPID[SAMP_PLAYER_MAX];
@@ -606,11 +580,6 @@ struct stTranslateGTASAMP_pedPool
 //////////////////////////////////////////////////////////////////////////////////////
 void											update_translateGTASAMP_vehiclePool ( void );
 void											update_translateGTASAMP_pedPool ( void );
-
-#ifdef M0D_DEV
-extern int										iDebugVehicle;
-void											cmd_debug_vehicle ( char *param );
-#endif
 
 bool											findstrinstr ( char *text, char *find );
 
@@ -624,8 +593,7 @@ struct stSAMP									*stGetSampInfo ( void );
 struct stChatInfo								*stGetSampChatInfo ( void );
 struct stInputInfo								*stGetInputInfo ( void );
 struct stKillInfo								*stGetKillInfo ( void );
-D3DCOLOR										samp_color_get ( int id );
-D3DCOLOR										samp_color_get_trans ( int id, DWORD trans );
+D3DCOLOR										samp_color_get ( int id, DWORD trans = 0xFF000000 );
 
 void											sampMainCheat ();
 
@@ -639,7 +607,8 @@ const char										*getPlayerName ( int iPlayerID );
 int												getPlayerState ( int iPlayerID );
 int												getPlayerVehicleGTAScriptingID ( int iPlayerID );
 int												getPlayerSAMPVehicleID ( int iPlayerID );
-void											spectatePlayer ( int iPlayerID );
+void											toggleSpectating(BOOL bToggle);
+void											spectatePlayer(int iPlayerID);
 
 struct actor_info								*getGTAPedFromSAMPPlayerID ( int iPlayerID );
 struct vehicle_info								*getGTAVehicleFromSAMPVehicleID ( int iPlayerID );
@@ -668,9 +637,6 @@ void											setSpecialAction ( uint8_t byteSpecialAction );
 void											sendSCMEvent ( int iEvent, int iVehicleID, int iParam1, int iParam2 );
 
 void											installSAMPHooks ();
-void											setSAMPInitScreenMatrix ( float camposX, float camposY, float camposZ,
-																		  float camlookatX, float camlookatY,
-																		  float camlookatZ );
 void											setSAMPCustomSendRates ( int iOnFoot, int iInCar, int iAim, int iHeadSync );
 int												sampPatchDisableNameTags ( int iEnabled );
 int												sampPatchDisableInteriorUpdate ( int iEnabled );
@@ -678,6 +644,7 @@ int												sampPatchDisableScreeenshotKey ( int iEnabled );
 int												sampPatchDisableScoreboardToggleOn ( int iEnabled );
 
 // global pointer externals
+extern int										iIsSAMPSupported;
 extern int										g_renderSAMP_initSAMPstructs;
 extern struct stSAMP							*g_SAMP;
 extern struct stPlayerPool						*g_Players;
@@ -691,4 +658,4 @@ extern struct stStreamedOutPlayerInfo			g_stStreamedOutInfo;
 extern struct stTranslateGTASAMP_vehiclePool	translateGTASAMP_vehiclePool;
 extern struct stTranslateGTASAMP_pedPool		translateGTASAMP_pedPool;
 
-extern int										g_Spectate_playerID;
+extern int										iIsSpectating;

@@ -2889,7 +2889,7 @@ static int __page_read ( void *_dest, const void *_src, uint32_t len )
 	return ret;
 }
 
-int memcpy_safe ( void *_dest, const void *_src, uint32_t len )
+int memcpy_safe ( void *_dest, const void *_src, uint32_t len, int check, const void *checkdata )
 {
 	static int		page_size = __page_size_get();
 	static int		recurse_ok = 1;
@@ -2898,6 +2898,12 @@ int memcpy_safe ( void *_dest, const void *_src, uint32_t len )
 	const uint8_t	*src = (const uint8_t *)_src;
 	int				lenOriginal = len;
 	int				ret = 1;
+
+	if(check)
+	{
+		if(!memcmp_safe(checkdata, _dest, len))
+			return 0;
+	}
 
 	while ( len > 0 )
 	{

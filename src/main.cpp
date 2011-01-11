@@ -164,39 +164,6 @@ void setDebugPointer ( void *ptr )
 	debug->data_prev_clear = 1;
 }
 
-#ifdef M0D_DEV
-DWORD	gtalog_log_eax_restore;
-DWORD	gtaload_log_continue = 0x53DED6;
-DWORD	file_loading_str;
-char	file_loading[356];
-uint8_t _declspec ( naked ) gtaload_log ( void )
-{
-	__asm
-	{
-		mov gtalog_log_eax_restore, eax
-		lea eax, dword ptr[esp + 0x8]
-		mov eax, dword ptr[eax]
-		test eax, eax
-		je gtaload_log_out
-		mov file_loading_str, eax
-		pushad
-	}
-
-	memcpy_safe( file_loading, (const void *)file_loading_str, sizeof(file_loading) );
-
-	//Log("%s", file_loading);
-	cheat_state_text( "%s", file_loading );
-	__asm popad
-	gtaload_log_out : ;
-	__asm
-	{
-		mov eax, gtalog_log_eax_restore
-		mov eax, dword ptr[esp + 0x4]
-		test eax, eax
-		jmp gtaload_log_continue
-	}
-}
-#endif
 static int init ( void )
 {
 	traceLastFunc( "init()" );
@@ -296,13 +263,6 @@ static int init ( void )
 			FreeLibrary( g_hOrigDll );
 			return 0;
 		}
-
-#ifdef M0D_DEV
-		// startup information
-		CDetour api;
-		if ( api.Create((uint8_t *) (uint32_t) 0x53DED0, (uint8_t *)gtaload_log, DETOUR_TYPE_JMP, 5) == 0 )
-			Log( "Failed to hook gtaload_log" );
-#endif
 	}
 
 	return 1;

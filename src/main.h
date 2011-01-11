@@ -26,18 +26,14 @@
 #define WIN32_LEAN_AND_MEAN
 #define _CRT_SECURE_NO_WARNINGS 1
 
-// main switch for development or release build
-//#define M0D_DEV
 
 #define M0D_NAME		"mod_sa"
 #define M0D_VERSION		"4.2.0.0"
 #define SAMP_VERSION	"SA:MP 0.3c"
 
-#ifdef M0D_DEV
-#define NAME	""M0D_NAME "-dev"" "M0D_VERSION " ("__DATE__ " """__TIME__ ")"
-#else
+#define BP _asm int 3
 #define NAME	""M0D_NAME """ "M0D_VERSION ""
-#endif
+
 #define INI_FILE				"mod_sa.ini"
 #define RAW_TEX_FILE			"mod_sa.raw"
 
