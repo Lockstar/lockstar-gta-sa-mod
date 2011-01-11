@@ -734,13 +734,6 @@ static void ini_init ( void )
 	if ( (ent = ini_register_entry("markers_show", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.markers_show, "false" );
 
-	if ( (ent = ini_register_entry("samp_custom_init_screen_enable", TYPE_BOOL)) != NULL )
-		ini_register_data( ent, &set.samp_custom_init_screen_enable, "false" );
-	if ( (ent = ini_register_entry("samp_init_screen_cam_pos", TYPE_COORD)) != NULL )
-		ini_register_data( ent, set.samp_init_screen_cam_pos, "1497.803 -887.0979 62.56055 0" );
-	if ( (ent = ini_register_entry("samp_init_screen_cam_look_at", TYPE_COORD)) != NULL )
-		ini_register_data( ent, set.samp_init_screen_cam_look_at, "1406.65 -795.7716 82.2771 0" );
-
 	if ( (ent = ini_register_entry("samp_custom_sendrates_enable", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.samp_custom_sendrates_enable, "false" );
 	if ( (ent = ini_register_entry("onfoot_sendrate", TYPE_INT)) != NULL )

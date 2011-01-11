@@ -1597,13 +1597,6 @@ CVector cheat_vehicle_getPositionUnder ( CVehicle *cveh )
 	return offsetVector;
 }
 
-#ifdef M0D_DEV
-
-/*
-D3DXVECTOR3 vecGravColOrigin, vecGravColTarget, vecGravTargetNorm;
-CVector temp_vecGravTargetNorm;
-*/
-#endif
 void cheat_vehicle_setGravity ( CVehicle *cveh, CVector pvecGravity )
 {
 	traceLastFunc( "cheat_vehicle_setGravity()" );

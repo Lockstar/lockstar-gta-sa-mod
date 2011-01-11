@@ -257,13 +257,6 @@ void cheat_hook ( HWND wnd )
 			// this seems to fix SAMP's load hang bug
 			//pGameInterface->StartGame();
 
-			// (0.3c temp) disable matrix checks (anti airbreak, speedhack, etc...)
-			if(g_dwSAMP_Addr)
-			{
-				memcpy_safe((uint32_t *)(g_dwSAMP_Addr + 0x227264), "\xE9\xCF\x78\xFE\xFF", 5);
-				memcpy_safe((uint32_t *)(g_dwSAMP_Addr + 0x249ECD), "\xE9\x5A\xD3\xFD\xFF", 5);
-			}
-
 			// we have to add ourself to the pool first so that we are always the 1st ref
 			// NEW --> use the global external: pPedSelf
 			pPedSelf = pGameInterface->GetPools()->AddPed( (DWORD *)actor_info );
