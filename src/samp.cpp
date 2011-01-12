@@ -27,7 +27,7 @@
 
 //randomStuff
 extern int						iViewingInfoPlayer;
-int								iIsSpectating = 0;
+int								g_iSpectateEnabled = 0, g_iSpectateLock = 0, g_iSpectatePlayerID = -1;
 
 // global samp pointers
 int								iIsSAMPSupported = 0;
@@ -486,55 +486,65 @@ D3DCOLOR samp_color_get ( int id, DWORD trans )
 	return ( color_table[id] >> 8 ) | trans;
 }
 
-void toggleSpectating(BOOL bToggle)
-{
-	DWORD dwFunc = (g_dwSAMP_Addr + 0x3E10);
-	void *pLocalPlayer = g_SAMP->pPools->pPool_Player->pLocalPlayer;
-	_asm mov ecx, pLocalPlayer
-	_asm push bToggle
-	_asm call dwFunc
-}
-
 void spectatePlayer(int iPlayerID)
 {
 	if ( iPlayerID == -1 )
 	{
-		toggleSpectating(FALSE);
-		iIsSpectating = 0;
+	   ScriptCommand( &toggle_player_controllable, 0, 1 );
+	   ScriptCommand( &lock_actor, 1, 0 );
+	   ScriptCommand( &restore_camera_with_jumpcut );
+	   ScriptCommand( &set_camera_directly_behind );
+	   ScriptCommand( &restore_camera_with_jumpcut );
+
+		g_iSpectateEnabled = 0;
+		g_iSpectateLock = 0;
+		g_iSpectatePlayerID = -1;
 		return;
 	}
 
-	DWORD dwSpecVehicle = (g_dwSAMP_Addr + 0x3E70);
-	DWORD dwSpecActor = (g_dwSAMP_Addr + 0x3EC0);
-	void *pLocalPlayer = g_SAMP->pPools->pPool_Player->pLocalPlayer;
+	g_iSpectatePlayerID = iPlayerID;
+	g_iSpectateLock = 0;
+	g_iSpectateEnabled = 1;
+}
+void spectateHandle()
+{
+	if(g_iSpectateEnabled)
+	{
+		if(g_iSpectateLock) return;
 
-	if ( g_Players->pRemotePlayer[iPlayerID] != NULL
-		&& g_Players->pRemotePlayer[iPlayerID]->pPlayerData != NULL )
-	{
-		if ( g_Players->pRemotePlayer[iPlayerID]->pPlayerData->pSAMP_Vehicle != NULL )
+		if(g_iSpectatePlayerID != -1)
 		{
-			uint16_t vehicleid = g_Players->pRemotePlayer[iPlayerID]->pPlayerData->sVehicleID;
-			toggleSpectating(TRUE);
-			_asm mov ecx, pLocalPlayer
-			_asm push vehicleid
-			_asm call dwSpecVehicle
-			iIsSpectating = 1;
+			if(g_Players->iIsListed[g_iSpectatePlayerID] != 0)
+			{
+				if(g_Players->pRemotePlayer[g_iSpectatePlayerID] != NULL)
+				{
+					int iState = getPlayerState(g_iSpectatePlayerID);
+
+					if(iState == PLAYER_STATE_ONFOOT)
+					{
+						ScriptCommand(&camera_on_actor, getPedGTAScriptingIDFromPlayerID(g_iSpectatePlayerID), 4, 1);
+						g_iSpectateLock = 1;
+					}
+					else if(iState == PLAYER_STATE_DRIVER)
+					{
+						int iPlayerVehicleID = g_Players->pRemotePlayer[g_iSpectatePlayerID]->pPlayerData->sVehicleID;
+						ScriptCommand(&camera_on_vehicle, getVehicleGTAScriptingIDFromVehicleID(iPlayerVehicleID), 3, 1);
+						g_iSpectateLock = 1;
+					}
+					else if(iState == PLAYER_STATE_PASSENGER)
+					{
+						int iPlayerVehicleID = g_Players->pRemotePlayer[g_iSpectatePlayerID]->pPlayerData->sVehicleID;
+						ScriptCommand(&camera_on_vehicle, getVehicleGTAScriptingIDFromVehicleID(iPlayerVehicleID), 3, 1);
+						g_iSpectateLock = 1;
+					}
+				}
+				else
+				{
+					cheat_state_text("Player is not streamed in");
+					g_iSpectateEnabled = 0;
+				}
+			}
 		}
-		else if ( g_Players->pRemotePlayer[iPlayerID]->pPlayerData->pSAMP_Actor != NULL )
-		{
-			uint16_t playerid = g_Players->pRemotePlayer[iPlayerID]->pPlayerData->sPlayerID;
-			toggleSpectating(TRUE);
-			_asm mov ecx, pLocalPlayer
-			_asm push playerid
-			_asm call dwSpecActor
-			iIsSpectating = 1;
-		}
-	}
-	else
-	{
-		cheat_state_text( "Player Not Streamed In." );
-		toggleSpectating(FALSE);
-		playerSpawn();
 	}
 }
 
@@ -563,6 +573,8 @@ void sampMainCheat ()
 	// update GTA to SAMP translation structures
 	update_translateGTASAMP_vehiclePool();
 	update_translateGTASAMP_pedPool();
+
+	spectateHandle();
 
 	// start chatbox logging
 	if ( set.chatbox_logging )

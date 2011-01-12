@@ -1875,7 +1875,7 @@ static int menu_callback_sampmisc ( int op, struct menu_item *item )
 						errmsg = "The player is dead.";
 					if ( self == NULL )
 						errmsg = "You are dead.";
-					if ( iIsSpectating == 1 )
+					if ( g_iSpectateEnabled == 1 )
 						errmsg = "You are spectating";
 
 					if ( errmsg == NULL )
