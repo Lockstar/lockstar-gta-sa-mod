@@ -607,8 +607,8 @@ const char										*getPlayerName ( int iPlayerID );
 int												getPlayerState ( int iPlayerID );
 int												getPlayerVehicleGTAScriptingID ( int iPlayerID );
 int												getPlayerSAMPVehicleID ( int iPlayerID );
-void											toggleSpectating(BOOL bToggle);
 void											spectatePlayer(int iPlayerID);
+void											spectateHandle();
 
 struct actor_info								*getGTAPedFromSAMPPlayerID ( int iPlayerID );
 struct vehicle_info								*getGTAVehicleFromSAMPVehicleID ( int iPlayerID );
@@ -658,4 +658,4 @@ extern struct stStreamedOutPlayerInfo			g_stStreamedOutInfo;
 extern struct stTranslateGTASAMP_vehiclePool	translateGTASAMP_vehiclePool;
 extern struct stTranslateGTASAMP_pedPool		translateGTASAMP_pedPool;
 
-extern int										iIsSpectating;
+extern int										g_iSpectateEnabled;
