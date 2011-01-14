@@ -1310,7 +1310,7 @@ void setSpecialAction ( uint8_t byteSpecialAction )
 	__asm pop ecx
 }
 
-#define FUNC_SENDSCMEVENT	0x1EE0
+#define FUNC_SENDSCMEVENT	0x1DF0
 void sendSCMEvent ( int iEvent, int iVehicleID, int iParam1, int iParam2 )
 {
 	if ( g_SAMP == NULL )
@@ -1461,7 +1461,6 @@ uint8_t _declspec ( naked ) StreamedOutInfo ( void )
 		jmp dwStreamedOutInfoOrigFunc
 	}
 }
-
 
 #define SAMP_HOOKPOS_ServerMessage	0x6EACC
 #define SAMP_HOOKPOS_ClientMessage	0xCA19

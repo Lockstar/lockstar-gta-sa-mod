@@ -2688,8 +2688,7 @@ void vehicle_addUpgrade ( vehicle_info *vinfo, int iModelID )
 		// tell everyone else we got a mod broh
 		if ( g_SAMP != NULL )
 		{
-			sendSCMEvent( 2, getVehicleGTAScriptingIDFromVehicleID(g_Players->pLocalPlayer->sCurrentVehicleID),
-						  iModelID, 0 );
+			sendSCMEvent( 2, g_Players->pLocalPlayer->sCurrentVehicleID, iModelID, 0 );
 		}
 	}
 }
@@ -2722,8 +2721,7 @@ void vehicle_setPaintJob ( vehicle_info *vinfo, unsigned char new_paintjob )
 		GTAfunc_vehicle_setRemap( vinfo, static_cast<unsigned int>(new_paintjob) );
 		if ( g_SAMP != NULL )
 		{
-			sendSCMEvent( 1, getVehicleGTAScriptingIDFromVehicleID(g_Players->pLocalPlayer->sCurrentVehicleID),
-						  new_paintjob, 0 );
+			sendSCMEvent( 1, g_Players->pLocalPlayer->sCurrentVehicleID, new_paintjob, 0 );
 		}
 	}
 }
@@ -2748,12 +2746,10 @@ void vehicle_setColor0 ( vehicle_info *vinfo, int new_color )
 	if ( vinfo == NULL )
 		return;
 
-	int secondary_color = vinfo->color[1];
 	vinfo->color[0] = new_color;
 	if ( g_SAMP != NULL )
 	{
-		sendSCMEvent( 3, getVehicleGTAScriptingIDFromVehicleID(g_Players->pLocalPlayer->sCurrentVehicleID), new_color,
-					  secondary_color );
+		sendSCMEvent( 3, g_Players->pLocalPlayer->sCurrentVehicleID, new_color, vinfo->color[1] );
 	}
 }
 
@@ -2763,12 +2759,10 @@ void vehicle_setColor1 ( vehicle_info *vinfo, int new_color )
 	if ( vinfo == NULL )
 		return;
 
-	int secondary_color = vinfo->color[0];
 	vinfo->color[1] = new_color;
 	if ( g_SAMP != NULL )
 	{
-		sendSCMEvent( 3, getVehicleGTAScriptingIDFromVehicleID(g_Players->pLocalPlayer->sCurrentVehicleID),
-					  secondary_color, new_color );
+		sendSCMEvent( 3, g_Players->pLocalPlayer->sCurrentVehicleID, vinfo->color[0], new_color );
 	}
 }
 

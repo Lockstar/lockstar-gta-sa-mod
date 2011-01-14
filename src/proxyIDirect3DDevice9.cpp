@@ -2603,6 +2603,9 @@ void renderSAMP ( void )
 		if ( set.mod_commands_activated )
 			init_samp_chat_cmds();
 
+		// patch
+		memcpy_safe((void *)(g_dwSAMP_Addr + SAMP_PATCH_NOCARCOLORRESETTING), "\xC3", 1);
+
 		g_renderSAMP_initSAMPstructs = 1;
 	}
 
