@@ -30,7 +30,7 @@ CVector *GravityNormal = new CVector( 0.0, 0.0, -1.0 );
 #define HOOKPOS_CPhysical_ApplyGravity	0x543081
 DWORD	RETURN_CPhysical_ApplyGravity = 0x543093;
 
-void CPhysical_ApplyGravity ( DWORD dwThis )
+void _cdecl CPhysical_ApplyGravity ( DWORD dwThis )
 {
 	traceLastFunc( "CPhysical_ApplyGravity(): start" );
 
@@ -138,6 +138,7 @@ void CPhysical_ApplyGravity ( DWORD dwThis )
 		*(float *)( dwThis + 0x4C ) -= fTimeStep * fGravity;
 	}
 	traceLastFunc( "CPhysical_ApplyGravity(): end, returning" );
+	return;
 }
 
 uint8_t _declspec ( naked ) HOOK_CPhysical_ApplyGravity ( void )
@@ -905,7 +906,7 @@ CVector CMatrix__rotateAroundZ_gravityNormal;
 float CMatrix__rotateAroundZ_theta;
 CVector CMatrix__rotateAroundZ_rotationAxis;
 
-void __cdecl CMatrix__rotateAroundZ_hook ()
+void _cdecl CMatrix__rotateAroundZ_hook ()
 {
 	CMatrix__rotateAroundZ_matrix->ConvertToMatrix( CMatrix__rotateAroundZ_transformMatrix );
 	CMatrix__rotateAroundZ_gravityNormal = -cheat_state->actor.gravityVector;
