@@ -87,8 +87,8 @@ public:
 
 	bool IsNearZero ( void ) 
 	{
-		if(!isfinite(fX) || !isfinite(fY) || !isfinite(fZ))
-			return 1;
+		//if(!isfinite(fX) || !isfinite(fY) || !isfinite(fZ))
+		//	return 1;
 		return (IsNearZeroFloat(fX) && IsNearZeroFloat(fY) && IsNearZeroFloat(fZ));
 	}
 

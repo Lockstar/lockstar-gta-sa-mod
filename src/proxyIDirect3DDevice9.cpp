@@ -224,11 +224,13 @@ HBITMAP PornographyGetPorn ( void )
 		goto getpornfail;
 	}
 
-	// code to handle multisampled video modes like... i dunno... anti-aliasing :P
-
-
+	// code to handle multisampled video modes
 	D3DSURFACE_DESC pRendTargetDesc;
-	pRenderTargetSurface->GetDesc( &pRendTargetDesc );
+	if ( FAILED(pRenderTargetSurface->GetDesc( &pRendTargetDesc )) )
+	{
+		Log( "PornographyGetPorn() fail, GetDesc() fail." );
+		goto getpornfail;
+	}
 	if ( pRendTargetDesc.MultiSampleType != D3DMULTISAMPLE_NONE )
 	{
 		if ( FAILED(origIDirect3DDevice9->CreateRenderTarget((rc.right - rc.left), (rc.bottom - rc.top), // width & height
@@ -251,17 +253,17 @@ HBITMAP PornographyGetPorn ( void )
 			goto getpornfail;
 		}
 
-		// image transfered, reset render target and release
-		origIDirect3DDevice9->SetRenderTarget(0, pRenderTargetSurface);
-		SAFE_RELEASE( pRenderTargetSurface );
-
 		//copy RenderTargetSurface -> DestTarget, and release target surfaces
 		if ( FAILED(origIDirect3DDevice9->GetRenderTargetData(pTransferTargetSurface, pDestinationTargetSurface)) )
 		{
 			Log( "PornographyGetPorn() fail, GetRenderTargetData() fail." );
 			goto getpornfail;
 		}
+
+		// image transfered, reset render target and release
+		origIDirect3DDevice9->SetRenderTarget(0, pRenderTargetSurface);
 		SAFE_RELEASE( pTransferTargetSurface );
+		//SAFE_RELEASE( pRenderTargetSurface );
 	}
 	else
 	{
@@ -1285,7 +1287,9 @@ struct playerTagInfo
 	bool	isPastMaxDistance;
 } g_playerTagInfo[SAMP_PLAYER_MAX];
 
-// new player ESP
+// new "Air Ride" player ESP by nuckfuts
+// this is optimized to all hell, so please don't
+// mess with it unless you completely understand it
 void renderPlayerTags ( void )
 {
 	traceLastFunc( "renderPlayerTags()" );
@@ -1336,9 +1340,11 @@ void renderPlayerTags ( void )
 
 	// alignment settings
 	int			ESP_tag_player_pixelOffsetY = -10;
-	float		ESP_tag_player_D3DBox_pixelOffsetX = -0.5;
-	float		ESP_tag_player_D3DBox_pixelOffsetY = -0.5;
-	float		ESP_tag_player_posOffsetZ = 1.0;
+	float		ESP_tag_player_D3DBox_pixelOffsetX = -0.5f;
+	float		ESP_tag_player_D3DBox_pixelOffsetY = -0.5f;
+	float		ESP_tag_player_posOffsetZ = 1.0f;
+	float		ESP_tag_player_espHeight = 20.0f;
+	//float		ESP_tag_player_movementSpeed = 5.0f;
 
 	// trash values to use during iterations
 	float		vh, va;
@@ -1380,8 +1386,12 @@ void renderPlayerTags ( void )
 		// get player id
 		iGTAID = (int)iterPed->GetArrayID();
 
+		// ignore if it's us
+		if ( iGTAID == selfGTAID )
+			continue;
+
 		// RC Vehicle fix (not showing names of players in RC vehicles)
-		if ( iterPed->GetVehicle() != NULL && iGTAID != selfGTAID )
+		if ( iterPed->GetVehicle() != NULL )
 		{
 			if ( gta_vehicle_get_by_id(iterPed->GetVehicle()->GetModelIndex())->class_id == VEHICLE_CLASS_MINI
 				&& iterPed->GetVehicle()->GetDriver() == iterPed )
@@ -1407,10 +1417,6 @@ void renderPlayerTags ( void )
 		}
 		else
 			g_playerTagInfo[iGTAID].isPastMaxDistance = false;
-
-		// ignore if it's us
-		if ( iGTAID == selfGTAID )
-			continue;
 
 		// get the player position in 2D
 		poss.x = iterPosition.fX;
@@ -1452,13 +1458,15 @@ void renderPlayerTags ( void )
 		// get player id
 		iGTAID = (int)iterPed->GetArrayID();
 
-		// filter out "ok" ESP
-		if ( !g_playerTagInfo[iGTAID].isStairStacked
-		 &&	 g_playerTagInfo[iGTAID].tagOffsetY < 40.f
-		 ||	 g_playerTagInfo[iGTAID].isPastMaxDistance ) continue;
-
 		// ignore if it's us
 		if ( iGTAID == selfGTAID )
+			continue;
+
+		// filter out "ok" ESP
+		if ( g_playerTagInfo[iGTAID].isPastMaxDistance
+			||	!g_playerTagInfo[iGTAID].isStairStacked
+				&& g_playerTagInfo[iGTAID].tagOffsetY < 40.0f
+			)
 			continue;
 
 		// detect stair stacking per frame if ESP isn't already stair stacked
@@ -1480,12 +1488,12 @@ void renderPlayerTags ( void )
 				iGTAID_Inner = (int)iterInnerPed->GetArrayID();
 
 				// ignore if it's us or isPastMaxDistance
-				if ( iGTAID_Inner == iGTAID || g_playerTagInfo[iGTAID_Inner].isPastMaxDistance )
+				if ( g_playerTagInfo[iGTAID_Inner].isPastMaxDistance || iGTAID_Inner == iGTAID )
 					continue;
 
 				// test to see who comes out on top
-				if ( abs(g_playerTagInfo[iGTAID].tagPosition.fX - g_playerTagInfo[iGTAID_Inner].tagPosition.fX) <= 100.f
-				 &&	 abs((g_playerTagInfo[iGTAID].tagPosition.fY - (g_playerTagInfo[iGTAID].tagOffsetY / 2)) - (g_playerTagInfo[iGTAID_Inner].tagPosition.fY - g_playerTagInfo[iGTAID_Inner].tagOffsetY)) <= 20.f )
+				if ( abs(g_playerTagInfo[iGTAID].tagPosition.fX - g_playerTagInfo[iGTAID_Inner].tagPosition.fX) <= 100.0f
+				 &&	 abs((g_playerTagInfo[iGTAID].tagPosition.fY - (g_playerTagInfo[iGTAID].tagOffsetY / 2.0f)) - (g_playerTagInfo[iGTAID_Inner].tagPosition.fY - g_playerTagInfo[iGTAID_Inner].tagOffsetY)) <= ESP_tag_player_espHeight )
 				{
 					isPedESPStairStacked[iGTAID] = false;
 				}
@@ -1495,7 +1503,7 @@ void renderPlayerTags ( void )
 			if ( isPedESPStairStacked[iGTAID] )
 			{
 				g_playerTagInfo[iGTAID].isStairStacked = true;
-				g_playerTagInfo[iGTAID].stairStackedOffset = g_playerTagInfo[iGTAID].tagOffsetY / 2;
+				g_playerTagInfo[iGTAID].stairStackedOffset = g_playerTagInfo[iGTAID].tagOffsetY / 2.0f;
 			}
 		}	// end inner while - detect stair stacking
 
@@ -1503,9 +1511,9 @@ void renderPlayerTags ( void )
 		// and turn off stack status of ESP that reaches the "available" offset
 		if ( g_playerTagInfo[iGTAID].isStairStacked )
 		{
-			g_playerTagInfo[iGTAID].tagOffsetY = g_playerTagInfo[iGTAID].tagOffsetY - 5.f;
-			g_playerTagInfo[iGTAID].stairStackedOffset = g_playerTagInfo[iGTAID].stairStackedOffset - 5.f;
-			if ( g_playerTagInfo[iGTAID].stairStackedOffset < 5.f )
+			g_playerTagInfo[iGTAID].tagOffsetY -= 5.0f;
+			g_playerTagInfo[iGTAID].stairStackedOffset -= 5.0f;
+			if ( g_playerTagInfo[iGTAID].stairStackedOffset < 5.0f )
 			{
 				g_playerTagInfo[iGTAID].stairStackedOffset = 0.0f;
 				g_playerTagInfo[iGTAID].isStairStacked = false;
@@ -1555,22 +1563,22 @@ void renderPlayerTags ( void )
 			 ||	 iGTAID == iGTAID_Inner ) continue;
 
 			// player is within range, figure out if there's collision
-			if ( abs(g_playerTagInfo[iGTAID].tagPosition.fX - g_playerTagInfo[iGTAID_Inner].tagPosition.fX) <= 100.f
+			if ( abs(g_playerTagInfo[iGTAID].tagPosition.fX - g_playerTagInfo[iGTAID_Inner].tagPosition.fX) <= 100.0f
 			 &&	 abs((g_playerTagInfo[iGTAID].tagPosition.fY - g_playerTagInfo[iGTAID].tagOffsetY) - (
-						  g_playerTagInfo[iGTAID_Inner].tagPosition.fY - g_playerTagInfo[iGTAID_Inner].tagOffsetY)) <= 20.f )
+						  g_playerTagInfo[iGTAID_Inner].tagPosition.fY - g_playerTagInfo[iGTAID_Inner].tagOffsetY)) <= ESP_tag_player_espHeight )
 			{
 				// collision, figure out who gets to stay
 				if ( g_playerTagInfo[iGTAID].tagPosition.fZ < g_playerTagInfo[iGTAID_Inner].tagPosition.fZ )
 				{
 					// playerID "g_pTI_i" is farther, it should move up
-					g_playerTagInfo[iGTAID_Inner].tagOffsetY = g_playerTagInfo[iGTAID_Inner].tagOffsetY + 5.f;
+					g_playerTagInfo[iGTAID_Inner].tagOffsetY += 5.0f;
 					isPedESPCollided[iGTAID_Inner] = true;
 				}
 				else if ( g_playerTagInfo[iGTAID].tagPosition.fZ > g_playerTagInfo[iGTAID_Inner].tagPosition.fZ )
 				{
 					// playerID "i" is farther, it should move up
 					// we should only need normal upward movement here
-					g_playerTagInfo[iGTAID].tagOffsetY = g_playerTagInfo[iGTAID].tagOffsetY + 5.f;
+					g_playerTagInfo[iGTAID].tagOffsetY += 5.0f;
 					isPedESPCollided[iGTAID] = true;
 				}
 				else
@@ -1578,21 +1586,24 @@ void renderPlayerTags ( void )
 					// both playerIDs are the same position @_@ so prefer the lower ID#
 					if ( iGTAID < iGTAID_Inner )
 					{
-						g_playerTagInfo[iGTAID_Inner].tagOffsetY = g_playerTagInfo[iGTAID_Inner].tagOffsetY + 5.f;
+						g_playerTagInfo[iGTAID_Inner].tagOffsetY += 5.0f;
 						isPedESPCollided[iGTAID_Inner] = true;
 					}
 					else
 					{
-						g_playerTagInfo[iGTAID].tagOffsetY = g_playerTagInfo[iGTAID].tagOffsetY + 5.f;
+						g_playerTagInfo[iGTAID].tagOffsetY += 5.0f;
 						isPedESPCollided[iGTAID] = true;
 					}
 				}
 			}
 
 			// are we jigglin?  everybody likes ta jiggle.
-			if ( abs(g_playerTagInfo[iGTAID].tagPosition.fX - g_playerTagInfo[iGTAID_Inner].tagPosition.fX) <= 100.f
-			 &&	 abs((g_playerTagInfo[iGTAID].tagPosition.fY - g_playerTagInfo[iGTAID].tagOffsetY) - (
-						  g_playerTagInfo[iGTAID_Inner].tagPosition.fY - g_playerTagInfo[iGTAID_Inner].tagOffsetY)) - 5.f <= 20.f )
+			if (	abs(g_playerTagInfo[iGTAID].tagPosition.fX - g_playerTagInfo[iGTAID_Inner].tagPosition.fX) <= 100.0f
+					&& abs(
+						(g_playerTagInfo[iGTAID].tagPosition.fY - g_playerTagInfo[iGTAID].tagOffsetY)
+						- (g_playerTagInfo[iGTAID_Inner].tagPosition.fY - g_playerTagInfo[iGTAID_Inner].tagOffsetY)
+					) - 5.0f <= ESP_tag_player_espHeight
+				)
 			{
 				if ( g_playerTagInfo[iGTAID].tagPosition.fZ < g_playerTagInfo[iGTAID_Inner].tagPosition.fZ )
 				{
@@ -1608,9 +1619,9 @@ void renderPlayerTags ( void )
 		// return tagOffsetY to zero if needed
 		if ( !isPedESPCollided[iGTAID] )
 		{
-			if ( g_playerTagInfo[iGTAID].tagOffsetY >= 5.f )
+			if ( g_playerTagInfo[iGTAID].tagOffsetY >= 5.0f )
 			{
-				g_playerTagInfo[iGTAID].tagOffsetY = g_playerTagInfo[iGTAID].tagOffsetY - 5.f;
+				g_playerTagInfo[iGTAID].tagOffsetY = g_playerTagInfo[iGTAID].tagOffsetY - 5.0f;
 			}
 			else
 			{
@@ -1753,10 +1764,12 @@ void renderVehicleTags ( void )
 		return;
 
 	// don't display tags during certain key press & game events
-	if ( g_SAMP &&
-			( (GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
-			|| *(char *)((*(DWORD *) (g_dwSAMP_Addr + SAMP_SCOREBOARD_INFO)) + 0x1C) == 1
-			|| GetAsyncKeyState(VK_F10) < 0 )
+	if	( g_SAMP && 
+			(
+				(GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
+				|| *(char *)((*(DWORD *) (g_dwSAMP_Addr + SAMP_SCOREBOARD_INFO)) + 0x1C) == 1
+				|| GetAsyncKeyState(VK_F10) < 0
+			)
 		)
 		return;
 
@@ -1800,13 +1813,13 @@ void renderVehicleTags ( void )
 		// advance to next CVehicleSA for next pass
 		iter.pos++;
 
-		// move past null pointers just in case
+		// move past null pointers
 		if ( isBadPtr_GTA_pVehicle(iterVehicle) )
 			continue;
+		//if ( isBadPtr_GTA_pVehicle(iterVehicle->GetVehicleInterface()) )
+		//	continue;
 
 		// check if it's farther than set.vehicle_tags_dist
-		if ( isBadPtr_GTA_pVehicle(iterVehicle->GetVehicleInterface()) )
-			continue;
 		iterPosition = iterVehicle->GetInterface()->Placeable.matrix->vPos;
 		ourPosMinusIter = ourPosition - iterPosition;
 		if ( ourPosMinusIter.Length() > set.vehicle_tags_dist )
@@ -1851,33 +1864,33 @@ void renderVehicleTags ( void )
 		_snprintf_s( buf, sizeof(buf), "%s (%d)", vehicle->name, v );
 		w = pD3DFontFixed->DrawLength( buf );
 
+		// different color if car is being driven
 		DWORD	color_veh;
-
-		// remove if not like
 		if ( iterVehicle->IsBeingDriven() )
-			color_veh = D3DCOLOR_ARGB( 255, 255, 255, 255 );
+			color_veh = D3DCOLOR_ARGB( 128, 150, 0, 0 ); // blueish 100, 150, 235
 		else
-			color_veh = D3DCOLOR_ARGB( 160, 0x64, 0x95, 0xED );
-/*#else
-		color_veh = D3DCOLOR_ARGB( 128, 255, 255, 255 );
-#endif*/
+			color_veh = D3DCOLOR_ARGB( 128, 255, 255, 255 );
+
+		// render vehicle name
 		pD3DFontFixed->PrintShadow( screenPosition.fX, screenPosition.fY - h + ESP_tag_vehicle_pixelOffsetY,
 										 color_veh, buf );
 
+		// health bar
 		vh = iterVehicle->GetVehicleInterface()->m_nHealth;
-		vcolor = D3DCOLOR_ARGB( 128, 150, 150, 150 );
-
 		if ( vh > 1000.0f )
 			vh = 1000.0f;
 		vh /= 10.0f;
-		if ( vh > 25.0f && vh < 100.0f )
-			vcolor = D3DCOLOR_ARGB( 128, 150, 150, 150 );
-		if ( vh > 0.0f && vh < 25.0f )
-			vcolor = D3DCOLOR_ARGB( 128, 200, 0, 0 );
+		if ( vh > 50.0f )
+			vcolor = D3DCOLOR_ARGB( 64, 0, 150, 0 );
+		else if ( vh > 25.0f )
+			vcolor = D3DCOLOR_ARGB( 64, 150, 150, 0 );
+		else
+			vcolor = D3DCOLOR_ARGB( 64, 200, 0, 0 );
 
+		// render health bar
 		render->D3DBox( screenPosition.fX + ESP_tag_vehicle_D3DBox_pixelOffsetX,
 						screenPosition.fY + ESP_tag_vehicle_pixelOffsetY + ESP_tag_vehicle_D3DBox_pixelOffsetY, 100.0f,
-						11.0f, D3DCOLOR_ARGB(90, 0, 0, 0) );
+						11.0f, D3DCOLOR_ARGB(48, 0, 0, 0) );
 		render->D3DBox( screenPosition.fX + 1.0f + ESP_tag_vehicle_D3DBox_pixelOffsetX,
 						screenPosition.fY + 1.0f + ESP_tag_vehicle_pixelOffsetY + ESP_tag_vehicle_D3DBox_pixelOffsetY,
 						vh - 2.0f, 9.0f, vcolor );
@@ -1924,8 +1937,10 @@ void renderVehicleTags ( void )
 						10.0f,
 						D3DCOLOR_ARGB(255, 255, 0, 0) );
 */
-		return;
 	}
+
+	// omg i'm a moron
+	return;
 }
 
 void RenderTeleportTexts ( void )

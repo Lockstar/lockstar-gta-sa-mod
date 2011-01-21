@@ -470,12 +470,13 @@ int isBadPtr_GTA_pVehicle ( vehicle_info *p_VehicleInfo )
 	if ( p_VehicleInfo == NULL )
 		return 1;
 	if ( !
-			 (
-			 (DWORD) p_VehicleInfo >= (DWORD) pool_vehicle->start && (DWORD) p_VehicleInfo <=
-			 ((DWORD) pool_vehicle->start + (pool_vehicle->size * sizeof(vehicle_info)))
-		) )
+			(
+				(DWORD) p_VehicleInfo >= (DWORD) pool_vehicle->start
+				&& (DWORD) p_VehicleInfo <= ((DWORD) pool_vehicle->start + (pool_vehicle->size * sizeof(vehicle_info)))
+			)
+		)
 		return 1;
-	return p_VehicleInfo->base.matrix == NULL;
+	return ( p_VehicleInfo->base.matrix == NULL );
 }
 
 int isBadPtr_GTA_pVehicle ( CVehicle *p_CVehicle )
@@ -486,12 +487,13 @@ int isBadPtr_GTA_pVehicle ( CVehicle *p_CVehicle )
 	if ( p_CVehicleSAInterface == NULL )
 		return 1;
 	if ( !
-			 (
-			 (DWORD) p_CVehicleSAInterface >= (DWORD) pool_vehicle->start && (DWORD) p_CVehicleSAInterface <=
-			 ((DWORD) pool_vehicle->start + (pool_vehicle->size * sizeof(CVehicleSAInterface)))
-		) )
+			(
+				(DWORD) p_CVehicleSAInterface >= (DWORD) pool_vehicle->start
+				&& (DWORD) p_CVehicleSAInterface <= ((DWORD) pool_vehicle->start + (pool_vehicle->size * sizeof(CVehicleSAInterface)))
+			)
+		)
 		return 1;
-	return p_CVehicleSAInterface->Placeable.matrix == NULL;
+	return ( p_CVehicleSAInterface->Placeable.matrix == NULL );
 }
 
 int isBadPtr_GTA_pVehicle ( CVehicleSA *p_CVehicleSA )
@@ -501,13 +503,14 @@ int isBadPtr_GTA_pVehicle ( CVehicleSA *p_CVehicleSA )
 	CVehicleSAInterface *p_CVehicleSAInterface = p_CVehicleSA->GetVehicleInterface();
 	if ( p_CVehicleSAInterface == NULL )
 		return 1;
-	if ( !
-			 (
-			 (DWORD) p_CVehicleSAInterface >= (DWORD) pool_vehicle->start && (DWORD) p_CVehicleSAInterface <=
-			 ((DWORD) pool_vehicle->start + (pool_vehicle->size * sizeof(CVehicleSAInterface)))
-		) )
+	if	( !
+			(
+				(DWORD) p_CVehicleSAInterface >= (DWORD) pool_vehicle->start
+				&& (DWORD) p_CVehicleSAInterface <= ((DWORD) pool_vehicle->start + (pool_vehicle->size * sizeof(CVehicleSAInterface)))
+			)
+		)
 		return 1;
-	return p_CVehicleSAInterface->Placeable.matrix == NULL;
+	return ( p_CVehicleSAInterface->Placeable.matrix == NULL );
 }
 
 int isBadPtr_GTA_pVehicle ( CVehicleSAInterface *p_CVehicleSAInterface )
@@ -515,12 +518,13 @@ int isBadPtr_GTA_pVehicle ( CVehicleSAInterface *p_CVehicleSAInterface )
 	if ( p_CVehicleSAInterface == NULL )
 		return 1;
 	if ( !
-			 (
-			 (DWORD) p_CVehicleSAInterface >= (DWORD) pool_vehicle->start && (DWORD) p_CVehicleSAInterface <=
-			 ((DWORD) pool_vehicle->start + (pool_vehicle->size * sizeof(CVehicleSAInterface)))
-		) )
+			(
+				 (DWORD) p_CVehicleSAInterface >= (DWORD) pool_vehicle->start
+				 && (DWORD) p_CVehicleSAInterface <= ((DWORD) pool_vehicle->start + (pool_vehicle->size * sizeof(CVehicleSAInterface)))
+			)
+		)
 		return 1;
-	return p_CVehicleSAInterface->Placeable.matrix == NULL;
+	return ( p_CVehicleSAInterface->Placeable.matrix == NULL );
 }
 
 int isBadPtr_GTA_pActorInfo ( actor_info *p_ActorInfo )
@@ -533,7 +537,7 @@ int isBadPtr_GTA_pActorInfo ( actor_info *p_ActorInfo )
 			 ((DWORD) pool_actor->start + (pool_actor->size * sizeof(actor_info)))
 		) )
 		return 1;
-	return p_ActorInfo->base.matrix == NULL;
+	return ( p_ActorInfo->base.matrix == NULL );
 }
 
 int isBadPtr_GTA_pBuildingInfo ( DWORD p_BuildingInfo )
