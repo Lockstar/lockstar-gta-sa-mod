@@ -2389,6 +2389,13 @@ void renderScoreList ()
 		if ( rendered_players >= max_amount_players )
 			return;
 	}
+
+	// Hide the cursor
+	memcpy_safe((void *)0xB73424, "\x00\x00\x00\x00", 4);
+	memcpy_safe((void *)0xB73428, "\x00\x00\x00\x00", 4);
+	memcpy_safe((void *)0x53F41F, "\x85\xC0\x0F\x8C", 4);
+	memcpy_safe((void *)0x6194A0, "\xE9", 1);
+	SetCursor(NULL);
 }
 
 void renderKillList ( void )

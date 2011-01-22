@@ -178,6 +178,7 @@ struct stPickupPool
 #pragma pack( 1 )
 	int iPickupID[SAMP_PICKUP_MAX];
 	int iTimePickup[SAMP_PICKUP_MAX];
+	int unk[1536];
 	struct stPickup pickup[SAMP_PICKUP_MAX];
 };
 
