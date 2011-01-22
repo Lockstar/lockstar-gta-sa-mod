@@ -56,33 +56,6 @@ static LRESULT CALLBACK wnd_proc ( HWND wnd, UINT umsg, WPARAM wparam, LPARAM lp
 {
 	switch ( umsg )
 	{
-	/*case WM_ACTIVATE:
-      {
-         static int first = 1;
-
-         if(first && LOWORD(wparam) == WA_ACTIVE)
-            first = 0;
-         else if(LOWORD(wparam) != WA_INACTIVE)
-            break;
-         PostMessage(wnd, umsg, MAKEWORD(WA_ACTIVE, 0), 0);
-      }
-      break;
-
-   case WM_KILLFOCUS:
-      PostMessage(wnd, WM_SETFOCUS, 0, 0);
-      break;
-
-   case WM_ACTIVATEAPP:
-      {
-         static int first = 1;
-
-         if(first && wparam)
-            first = 0;
-         else if(wparam == FALSE)
-            break;
-         PostMessage(wnd, umsg, TRUE, GetCurrentThreadId());
-      }
-      break;*/
 	case WM_LBUTTONDOWN:
 	case WM_LBUTTONUP:
 		process_key( (umsg == WM_LBUTTONDOWN), VK_LBUTTON, 0, 0, 0, wnd );

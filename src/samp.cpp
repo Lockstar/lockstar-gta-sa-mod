@@ -1370,6 +1370,9 @@ uint8_t _declspec ( naked ) server_message_hook ( void )
 		allow_show_again = GetTickCount() + 5000;
 	}
 
+	if(set.chatbox_logging)
+		LogChatbox(false, "%s", thismsg);
+
 	__asm mov ebx, g_dwSAMP_Addr
 	__asm add ebx, HOOK_EXIT_SERVERMESSAGE_HOOK
 	__asm jmp ebx
@@ -1395,6 +1398,9 @@ uint8_t _declspec ( naked ) client_message_hook ( void )
 			__asm mov ecx, player
 			__asm push edx
 			__asm call func
+
+			if(set.chatbox_logging)
+				LogChatbox(false, "%s: %s", g_Players->sLocalPlayerID, g_Players->szLocalPlayerName);
 			goto us;
 		}
 
