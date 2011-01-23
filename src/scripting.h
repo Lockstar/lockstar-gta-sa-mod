@@ -62,6 +62,7 @@ const SCRIPT_COMMAND	camera_on_actor = { 0x0159, "iii" };
 const SCRIPT_COMMAND	camera_on_vehicle = { 0x0158, "iii" };
 
 const SCRIPT_COMMAND	load_animation = { 0x04ED, "s" };
+const SCRIPT_COMMAND	animation_loaded = { 0x04EE, "s" };
 const SCRIPT_COMMAND	release_animation = { 0x04EF, "s" };
 const SCRIPT_COMMAND	perform_animation = { 0x0812, "issfiiiii" };
 const SCRIPT_COMMAND	disembark_instantly_actor = { 0x0792, "i" };
