@@ -3278,7 +3278,7 @@ void renderHandler()
 
 				if ( set.hud_indicator_onfoot_airswim )
 				{
-					HUD_TEXT_TGL( x, cheat_state->actor.SpiderFeet_on ? color_enabled : color_disabled, "AirSwim" );
+					HUD_TEXT_TGL( x, cheat_state->actor.AirSwim_on ? color_enabled : color_disabled, "AirSwim" );
 				}
 
 				RenderPedHPBar();
