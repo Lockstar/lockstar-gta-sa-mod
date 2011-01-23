@@ -698,31 +698,12 @@ void cheat_handle_AirSwim ( struct actor_info *ainfo, double time_diff )
 	// toggle
 	if ( KEY_PRESSED(set.key_airswim) )
 	{
-		// init stuff
 		if ( !cheat_state->actor.AirSwim_on )
 		{
-			
+			// init stuff
 		}
 		cheat_state->actor.AirSwim_on ^= 1;
 	}
-
-/*
-int lineSpace = 0;
-char buf[256];
-sprintf( buf, "bIsInTheAir: %d", ainfo->pedFlags.bIsInTheAir );
-pD3DFontFixed->PrintShadow(50, 450 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
-lineSpace += 12;
-sprintf( buf, "bIsLanding: %d", ainfo->pedFlags.bIsLanding );
-pD3DFontFixed->PrintShadow(50, 450 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
-lineSpace += 12;
-sprintf( buf, "bIsStanding: %d", ainfo->pedFlags.bIsStanding );
-pD3DFontFixed->PrintShadow(50, 450 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
-lineSpace += 12;
-sprintf( buf, "bWasStanding: %d", ainfo->pedFlags.bWasStanding );
-pD3DFontFixed->PrintShadow(50, 450 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
-lineSpace += 12;
-*/
-
 
 	if ( cheat_state->actor.AirSwim_on )
 	{
@@ -748,10 +729,8 @@ lineSpace += 12;
 			{
 				// start swim animation
 				cheat_state->actor.AirSwim_Active = true;
-				// issfiiiii
-				ScriptCommand( &load_animation, "SWIM" );
-				ScriptCommand( &perform_animation, ScriptActorId(ainfo), "Swim_Breast", "SWIM", 4.0, 1, 1, 1, 1, -2 );
-				ScriptCommand( &release_animation, "SWIM" );
+				Animation_Loader("SWIM");
+				Animation_Perform("SWIM", "Swim_Breast", 1.0f, 1, 1, -2);
 			}
 
 			ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
@@ -808,6 +787,7 @@ lineSpace += 12;
 		// set AirSwim disabled
 		cheat_state->actor.AirSwim_Enabled = false;
 		cheat_state->actor.AirSwim_Active = false;
+		Animation_Releaser("SWIM");
 		ScriptCommand( &disembark_instantly_actor, ScriptActorId(ainfo) );
 	}
 }
