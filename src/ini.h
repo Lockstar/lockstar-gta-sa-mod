@@ -225,7 +225,7 @@ struct settings
 	int						hud_indicator_onfoot_airbrk;
 	int						hud_indicator_onfoot_stick;
 	int						hud_indicator_onfoot_aim;
-	int						hud_indicator_onfoot_spider;
+	int						hud_indicator_onfoot_airswim;
 
 	int						hud_indicator_pos;
 	int						hud_fps_draw;
@@ -295,6 +295,8 @@ struct settings
 	int						key_spiderfeet;
 	int						key_ninjaflipfront;
 	int						key_ninjaflipback;
+
+	int						key_airswim;
 
 	float					handling_multiplier;
 

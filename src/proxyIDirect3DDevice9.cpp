@@ -3276,9 +3276,9 @@ void renderHandler()
 					HUD_TEXT_TGL( x, cheat_state->actor.autoaim ? color_enabled : color_disabled, "Aim" );
 				}
 
-				if ( set.hud_indicator_onfoot_spider )
+				if ( set.hud_indicator_onfoot_airswim )
 				{
-					HUD_TEXT_TGL( x, cheat_state->actor.SpiderFeet_on ? color_enabled : color_disabled, "Spider" );
+					HUD_TEXT_TGL( x, cheat_state->actor.SpiderFeet_on ? color_enabled : color_disabled, "AirSwim" );
 				}
 
 				RenderPedHPBar();

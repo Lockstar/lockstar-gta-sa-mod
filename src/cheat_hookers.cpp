@@ -49,7 +49,12 @@ void _cdecl CPhysical_ApplyGravity ( DWORD dwThis )
 	float	fTimeStep = *(float *)0xB7CB5C;
 	float	fGravity = *(float *)0x863984;
 
-	if ( dwType == 2 )
+	if ( cheat_state->_generic.cheat_panic_enabled )
+	{
+		// apply regular downward gravity
+		*(float *)( dwThis + 0x4C ) -= fTimeStep * fGravity;
+	}
+	else if ( dwType == 2 )
 	{
 		// It's a vehicle
 		CVehicle	*pVehicle = pPools->GetVehicle( (DWORD *)dwThis );
@@ -107,7 +112,8 @@ void _cdecl CPhysical_ApplyGravity ( DWORD dwThis )
 
 		if ( pPed == pPedSelf )
 		{
-			if ( cheat_state->actor.air_brake )
+			if ( cheat_state->actor.air_brake
+				|| cheat_state->actor.AirSwim_Active )
 			{
 				// don't apply gravity
 			}

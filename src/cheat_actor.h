@@ -25,5 +25,8 @@ void				cheat_handle_actor_autoaim ( struct actor_info *info, double time_diff )
 void				cheat_handle_actor_air_brake ( struct actor_info *info, double time_diff );
 void				cheat_handle_actor_nocols ( struct actor_info *info );
 void				cheat_handle_SpiderFeet ( struct actor_info *ainfo, double time_diff );
+void				cheat_handle_actor_nitro ( struct actor_info *ainfo, double time_diff );
+void				cheat_handle_AirSwim ( struct actor_info *ainfo, double time_diff );
+
 
 CEntitySAInterface	*cheat_actor_GetCEntitySAInterface ( actor_info *ainfo );
