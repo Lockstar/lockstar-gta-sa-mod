@@ -95,7 +95,18 @@ int ScriptCommand ( const SCRIPT_COMMAND *pScriptCommand, ... )
 				var_pos++;		// Increment the variable position.
 				break;
 			}
-
+		case 's':	// If string...
+			{
+				char* sz = va_arg(ap, char*);
+				unsigned char aLen = strlen(sz);
+				ScriptBuf[buf_pos] = 0x0E;
+				buf_pos++;
+				ScriptBuf[buf_pos] = aLen;
+				buf_pos++;
+				memcpy(&ScriptBuf[buf_pos],sz,aLen);				
+				buf_pos += aLen;
+				break;
+			}
 		default:
 			{
 				return 0;

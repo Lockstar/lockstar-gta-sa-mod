@@ -157,8 +157,11 @@ struct cheat_state_actor
 	int		stick;
 	int		autoaim;
 	int		hp_regen_on;
-	int		SpiderFeet_Enabled;
 	int		SpiderFeet_on;
+	int		SpiderFeet_Enabled;
+	bool	AirSwim_on;
+	bool	AirSwim_Enabled;
+	bool	AirSwim_Active;
 	CVector gravityVector;
 };
 

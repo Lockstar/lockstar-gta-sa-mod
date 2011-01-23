@@ -155,7 +155,7 @@
 #define ID_HUDIND_LB_BARS					14
 #define ID_HUDIND_INVEH_SPIDER				15
 #define ID_HUDIND_INVEH_FLY					16
-#define ID_HUDIND_ONFOOT_SPIDER				17
+#define ID_HUDIND_ONFOOT_AIRSWIM			17
 
 #define ID_MENU_SAMPMISC					0
 #define ID_MENU_SAMPMISC_VEHICLES_INSTANT	108
@@ -2365,8 +2365,8 @@ static int menu_callback_hudindicators ( int op, struct menu_item *item )
 			return set.hud_indicator_inveh_spider;
 			break;
 
-		case ID_HUDIND_ONFOOT_SPIDER:
-			return set.hud_indicator_onfoot_spider;
+		case ID_HUDIND_ONFOOT_AIRSWIM:
+			return set.hud_indicator_onfoot_airswim;
 			break;
 
 		case ID_HUDIND_INVEH_FLY:
@@ -2445,8 +2445,8 @@ static int menu_callback_hudindicators ( int op, struct menu_item *item )
 			set.hud_indicator_inveh_spider ^= 1;
 			break;
 
-		case ID_HUDIND_ONFOOT_SPIDER:
-			set.hud_indicator_onfoot_spider ^= 1;
+		case ID_HUDIND_ONFOOT_AIRSWIM:
+			set.hud_indicator_onfoot_airswim ^= 1;
 			break;
 
 		case ID_HUDIND_INVEH_FLY:
@@ -2972,7 +2972,7 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_hudindicators, NULL, "On foot AirBrk", ID_HUDIND_ONFOOT_AIRBRK, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_hudindicators, NULL, "On foot Stick", ID_HUDIND_ONFOOT_STICK, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_hudindicators, NULL, "Aim", ID_HUDIND_ONFOOT_AIM, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_hudindicators, NULL, "On foot SpiderFeet", ID_HUDIND_ONFOOT_SPIDER, MENU_COLOR_DEFAULT, NULL );
+	menu_item_add( menu_hudindicators, NULL, "AirSwim", ID_HUDIND_ONFOOT_AIRSWIM, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_hudindicators, NULL, "Position", ID_HUDIND_POS, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_hudindicators, NULL, "FPS", ID_HUDIND_FPS, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_hudindicators, NULL, "Toggle left bottom bars", ID_HUDIND_LB_BARS, MENU_COLOR_DEFAULT, NULL );

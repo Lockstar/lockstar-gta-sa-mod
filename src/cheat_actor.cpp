@@ -497,7 +497,7 @@ void cheat_handle_SpiderFeet ( struct actor_info *ainfo, double time_diff )
 		// toggle the d-dang Ninjas
 		if ( !cheat_state->actor.SpiderFeet_on )
 		{
-			patcher_install( &patch_actor_SpiderFeetCollisionTransform );
+			//patcher_install( &patch_actor_SpiderFeetCollisionTransform );
 		}
 		cheat_state->actor.SpiderFeet_on ^= 1;
 	}
@@ -671,7 +671,7 @@ void cheat_handle_SpiderFeet ( struct actor_info *ainfo, double time_diff )
 	else if ( cheat_state->actor.SpiderFeet_Enabled )
 	{
 
-		patcher_remove( &patch_actor_SpiderFeetCollisionTransform );
+		//patcher_remove( &patch_actor_SpiderFeetCollisionTransform );
 
 		// set NinjaMode enabler to off
 		//ainfo->base.nImmunities = 0x12;
@@ -688,5 +688,207 @@ void cheat_handle_SpiderFeet ( struct actor_info *ainfo, double time_diff )
 
 		// set NinjaMode disabled
 		cheat_state->actor.SpiderFeet_Enabled = false;
+	}
+}
+
+void cheat_handle_AirSwim ( struct actor_info *ainfo, double time_diff )
+{
+	traceLastFunc( "cheat_handle_AirSwim()" );
+
+	// toggle
+	if ( KEY_PRESSED(set.key_airswim) )
+	{
+		// init stuff
+		if ( !cheat_state->actor.AirSwim_on )
+		{
+			
+		}
+		cheat_state->actor.AirSwim_on ^= 1;
+	}
+
+/*
+int lineSpace = 0;
+char buf[256];
+sprintf( buf, "bIsInTheAir: %d", ainfo->pedFlags.bIsInTheAir );
+pD3DFontFixed->PrintShadow(50, 450 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
+lineSpace += 12;
+sprintf( buf, "bIsLanding: %d", ainfo->pedFlags.bIsLanding );
+pD3DFontFixed->PrintShadow(50, 450 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
+lineSpace += 12;
+sprintf( buf, "bIsStanding: %d", ainfo->pedFlags.bIsStanding );
+pD3DFontFixed->PrintShadow(50, 450 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
+lineSpace += 12;
+sprintf( buf, "bWasStanding: %d", ainfo->pedFlags.bWasStanding );
+pD3DFontFixed->PrintShadow(50, 450 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
+lineSpace += 12;
+*/
+
+
+	if ( cheat_state->actor.AirSwim_on )
+	{
+		// set AirSwim status
+		cheat_state->actor.AirSwim_Enabled = true;
+
+		// standing detection
+		if ( ainfo->pedFlags.bIsStanding
+			&& cheat_state->actor.AirSwim_Active )
+		{
+			// stop swim animation
+			cheat_state->actor.AirSwim_Active = false;
+			ScriptCommand( &disembark_instantly_actor, ScriptActorId(ainfo) );
+		}
+		else if ( ainfo->pedFlags.bIsStanding )
+		{
+			// do nothing
+		}
+		// I believe I can fly...
+		else
+		{
+			if ( !cheat_state->actor.AirSwim_Active )
+			{
+				// start swim animation
+				cheat_state->actor.AirSwim_Active = true;
+				// issfiiiii
+				ScriptCommand( &load_animation, "SWIM" );
+				ScriptCommand( &perform_animation, ScriptActorId(ainfo), "Swim_Breast", "SWIM", 4.0, 1, 1, 1, 1, -2 );
+				ScriptCommand( &release_animation, "SWIM" );
+			}
+
+			ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
+
+			CMatrix mat_Camera;
+			pGame->GetCamera()->GetMatrix(&mat_Camera);
+			CMatrix mat_Ped;
+			pPedSelf->GetMatrix(&mat_Ped);
+			mat_Ped.vFront = mat_Camera.vFront;
+			mat_Ped.vRight = -mat_Camera.vRight;
+			mat_Ped.vUp = mat_Camera.vUp;
+			pPedSelf->SetMatrix(&mat_Ped);
+
+			float AirSwim_Speed = 0.1f;
+			float AirSwim_Acceleration = 0.3f * time_diff;
+
+			// positive
+			if ( mat_Ped.vFront.fX >= 0.0f
+				&& ainfo->m_SpeedVec.fX < mat_Ped.vFront.fX * AirSwim_Speed )
+			{
+				ainfo->m_SpeedVec.fX += AirSwim_Acceleration;
+			}
+			if ( mat_Ped.vFront.fY >= 0.0f
+				&& ainfo->m_SpeedVec.fY < mat_Ped.vFront.fY * AirSwim_Speed )
+			{
+				ainfo->m_SpeedVec.fY += AirSwim_Acceleration;
+			}
+			if ( mat_Ped.vFront.fZ >= 0.0f
+				&& ainfo->m_SpeedVec.fZ < mat_Ped.vFront.fZ * AirSwim_Speed )
+			{
+				ainfo->m_SpeedVec.fZ += AirSwim_Acceleration;
+			}
+			// negative
+			if ( mat_Ped.vFront.fX < 0.0f
+				&& ainfo->m_SpeedVec.fX > mat_Ped.vFront.fX * AirSwim_Speed )
+			{
+				ainfo->m_SpeedVec.fX -= AirSwim_Acceleration;
+			}
+			if ( mat_Ped.vFront.fY < 0.0f
+				&& ainfo->m_SpeedVec.fY > mat_Ped.vFront.fY * AirSwim_Speed )
+			{
+				ainfo->m_SpeedVec.fY -= AirSwim_Acceleration;
+			}
+			if ( mat_Ped.vFront.fZ < 0.0f
+				&& ainfo->m_SpeedVec.fZ > mat_Ped.vFront.fZ * AirSwim_Speed )
+			{
+				ainfo->m_SpeedVec.fZ -= AirSwim_Acceleration;
+			}
+
+		}
+	}
+	else if ( cheat_state->actor.AirSwim_Enabled )
+	{
+		// set AirSwim disabled
+		cheat_state->actor.AirSwim_Enabled = false;
+		cheat_state->actor.AirSwim_Active = false;
+		ScriptCommand( &disembark_instantly_actor, ScriptActorId(ainfo) );
+	}
+}
+
+void cheat_handle_actor_nitro ( struct actor_info *info, double time_diff )
+{
+	traceLastFunc( "cheat_handle_actor_nitro()" );
+
+	static uint32_t		timer;
+	static int			decelerating;
+	static float		speed_off;
+	float				pre_speed[3];
+
+	if ( KEY_PRESSED(set.key_nitro_mod) )
+	{
+		speed_off = vect3_length( info->speed );
+		decelerating = 0;
+		timer = time_get();
+	}
+
+	/* "nitro" acceleration mod */
+	if ( KEY_DOWN(set.key_nitro_mod) && !vect3_near_zero(info->speed) )
+	{
+		float	etime = TIME_TO_FLOAT( time_get() - timer ) / set.nitro_accel_time;
+		float	speed = set.nitro_high;
+
+		if ( !near_zero(set.nitro_accel_time) )
+			etime += 1.0f - ( set.nitro_high - speed_off ) / set.nitro_high;
+
+		if ( etime < 1.0f && !near_zero(set.nitro_accel_time) )
+			speed = set.nitro_high * etime;
+
+		if ( !vect3_near_zero(info->speed) )
+		{
+			vect3_normalize( info->speed, info->speed );
+			vect3_mult( info->speed, speed, info->speed );
+			if ( vect3_near_zero(info->speed) )
+				vect3_zero( info->speed );
+		}
+
+		// heh
+		/*
+		int		gonadsMult = 1000;
+		float	strifeMult = 0.0000001f;
+		int		gonads = rand() % gonadsMult;
+		float	strife = (double)gonads * strifeMult;
+		if ( strife < strifeMult * gonadsMult / 2 )
+			strife -= strifeMult * gonadsMult;
+		info->m_SpeedVec.fX += strife;
+		gonads = rand() % gonadsMult;
+		strife = (double)gonads * strifeMult;
+		if ( strife < strifeMult * gonadsMult / 2 )
+			strife -= strifeMult * gonadsMult;
+		info->m_SpeedVec.fY += strife;
+		*/
+	}
+
+	if ( KEY_RELEASED(set.key_nitro_mod) )
+	{
+		if ( vect3_length(info->speed) > set.nitro_low )
+		{
+			speed_off = vect3_length( info->speed );
+			decelerating = 1;
+			timer = time_get();
+		}
+	}
+
+	if ( decelerating )
+	{
+		float	speed = set.nitro_low;
+		float	etime = TIME_TO_FLOAT( time_get() - timer );
+
+		if ( etime < set.nitro_decel_time )
+			speed = speed_off - ( speed_off - speed ) * ( etime / set.nitro_decel_time );
+		else
+			decelerating = 0;
+
+		if ( vect3_length(info->speed) > speed )
+		{
+			vect3_normalize( info->speed, info->speed );
+			vect3_mult( info->speed, speed, info->speed );
+		}
 	}
 }

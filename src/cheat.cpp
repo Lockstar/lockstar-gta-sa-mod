@@ -69,6 +69,8 @@ static void cheat_main_actor ( double time_diff )
 		cheat_handle_vehicle_fast_exit( NULL, time_diff );
 
 	cheat_handle_SpiderFeet(info, time_diff);
+	cheat_handle_actor_nitro(info, time_diff);
+	cheat_handle_AirSwim(info, time_diff);
 }
 
 static void cheat_main_vehicle ( double time_diff )

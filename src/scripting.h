@@ -60,3 +60,8 @@ const SCRIPT_COMMAND	enter_car_as_driver = { 0x05CB, "iii" };
 const SCRIPT_COMMAND	set_car_lights = { 0x067F, "ii" };
 const SCRIPT_COMMAND	camera_on_actor = { 0x0159, "iii" };
 const SCRIPT_COMMAND	camera_on_vehicle = { 0x0158, "iii" };
+
+const SCRIPT_COMMAND	load_animation = { 0x04ED, "s" };
+const SCRIPT_COMMAND	release_animation = { 0x04EF, "s" };
+const SCRIPT_COMMAND	perform_animation = { 0x0812, "issfiiiii" };
+const SCRIPT_COMMAND	disembark_instantly_actor = { 0x0792, "i" };
