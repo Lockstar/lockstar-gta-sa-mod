@@ -419,7 +419,18 @@ struct stRemotePlayerData
 	int						iUnknown_3;
 	uint16_t				sPlayerID;
 	struct stHeadSync		headSyncData;
-	uint8_t					why_should_i_care_73[340];
+	uint8_t					byteUnknown_73[16];
+	struct stPassengerData	passengerData;
+	struct stAimData		aimData;		//not used
+	struct stTrailerData	trailerData;	//not used
+	struct stOnFootData		onFootData;
+	struct stInCarData		inCarData;
+	float					fOnFootPos[3]; //lag comp copies of original onfoot/incar vars
+	float					fOnFootMoveSpeed[3];
+	float					fVehiclePosition[3];
+	float					fVehicleMoveSpeed[3];
+	float					fVehicleRoll[4];
+	uint8_t					byteUnknown_389[24];
 	int						iGlobalMarkerLoaded;
 	int						iGlobalMarkerLocation[3];
 	uint32_t				ulGlobalMarker_GTAID;
