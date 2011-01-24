@@ -1621,7 +1621,7 @@ void renderPlayerTags ( void )
 		{
 			if ( g_playerTagInfo[iGTAID].tagOffsetY >= 5.0f )
 			{
-				g_playerTagInfo[iGTAID].tagOffsetY = g_playerTagInfo[iGTAID].tagOffsetY - 5.0f;
+				g_playerTagInfo[iGTAID].tagOffsetY -= 5.0f;
 			}
 			else
 			{
@@ -2587,6 +2587,456 @@ void renderChat ( void )
 	}
 }
 
+
+void renderPlayerInfo ( int iPlayerID )
+{
+	traceLastFunc( "renderPlayerInfo()" );
+
+	if ( (KEY_DOWN(VK_TAB) && set.d3dtext_score)
+	 ||	 (*(char *)((*(DWORD *) (g_dwSAMP_Addr + SAMP_SCOREBOARD_INFO)) + 0x1C) == 1 && !set.d3dtext_score) ) return;
+
+	if ( GetAsyncKeyState(VK_F1) < 0 )
+		return;
+	if ( GetAsyncKeyState(VK_F5) < 0 )
+		return;
+	if ( GetAsyncKeyState(VK_F10) < 0 )
+		return;
+
+	if ( cheat_state->_generic.cheat_panic_enabled )
+		return;
+
+	D3DCOLOR	color = D3DCOLOR_ARGB( 0xFF, 0xFF, 0x00, 0x00 );
+	float		y = 0.0f;
+	( y ) += 300.0f;
+
+	char	buf[512];
+
+	//Localplayer
+	if ( iPlayerID == -2 )
+	{
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, "Local Player Info" );
+
+		color = D3DCOLOR_ARGB( 0xFF, 0x99, 0x99, 0x99 );
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		sprintf( buf, "Name: %s", getPlayerName(g_Players->sLocalPlayerID) );
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+
+		sprintf( buf, "Team ID: %u", g_Players->pLocalPlayer->byteTeamID );
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		sprintf( buf, "byteCurrentInterior: %u", g_Players->pLocalPlayer->byteCurrentInterior );
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+
+#ifdef M0D_DEV_ADVANCEDINFO
+		sprintf( buf, "iIsWasted: %i", g_Players->pLocalPlayer->iIsWasted );
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		sprintf( buf, "iIsSpectating: %i", g_Players->pLocalPlayer->iIsSpectating );
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		sprintf( buf, "iSpectateID: %i", g_Players->pLocalPlayer->iSpectateID );
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		sprintf( buf, "byteSpectatingUNK: %u", g_Players->pLocalPlayer->byteSpectatingUnk );
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		sprintf( buf, "byteSpectatingWHAT: %u", g_Players->pLocalPlayer->byteSpectatingWHAT );
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		sprintf( buf, "iInitiatedSpectating: %i", g_Players->pLocalPlayer->iInitiatedSpectating );
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		sprintf( buf, "iClassSelectionOnDeath: %i", g_Players->pLocalPlayer->iClassSelectionOnDeath );
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+#endif
+		actor_info	*self = actor_info_get( ACTOR_SELF, NULL );
+		if ( self == NULL )
+			return;
+
+		vehicle_info	*vinfo = vehicle_info_get( VEHICLE_SELF, 0 );
+		if ( vinfo != NULL )
+		{
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, "Vehicle" );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			if ( vinfo->passengers[0] == actor_info_get(ACTOR_SELF, ACTOR_ALIVE) )
+			{
+				sprintf( buf, " Vehicle ID: %u", g_Players->pLocalPlayer->sCurrentVehicleID );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			}
+		}
+
+#ifdef M0D_DEV_ADVANCEDINFO
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		sprintf( buf, "_______ADVANCED_INFO________" );
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+
+		// couldnt find own vehicle & is in a vehicle = passenger drive by
+		// or is in vehicle and not driver = passenger
+		if ( vinfo == NULL && self->pedFlags.bInVehicle || (vinfo != NULL && vinfo->passengers[0] != self) )
+		{
+			sprintf( buf, "    pLocalPlayer->iPassengerDriveBy: %i", g_Players->pLocalPlayer->iPassengerDriveBy );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			sprintf( buf, "    pLocalPlayer->passengerData.sVehicleID: %u",
+					 g_Players->pLocalPlayer->passengerData.sVehicleID );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			sprintf( buf, "    pLocalPlayer->passengerData.fPosition: %0.2f %0.2f %0.2f",
+					 g_Players->pLocalPlayer->passengerData.fPosition[0],
+					 g_Players->pLocalPlayer->passengerData.fPosition[1],
+					 g_Players->pLocalPlayer->passengerData.fPosition[2] );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			sprintf( buf, "    pLocalPlayer->passengerData.byteArmor: %u",
+					 g_Players->pLocalPlayer->passengerData.byteArmor );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			sprintf( buf, "    pLocalPlayer->passengerData.byteHealth: %u",
+					 g_Players->pLocalPlayer->passengerData.byteHealth );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			sprintf( buf, "    pLocalPlayer->passengerData.byteSeatID: %u",
+					 g_Players->pLocalPlayer->passengerData.byteSeatID );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			sprintf( buf, "    pLocalPlayer->passengerData.byteCurrentWeapon: %u",
+					 g_Players->pLocalPlayer->passengerData.byteCurrentWeapon );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			sprintf( buf, "    pLocalPlayer->passengerData.sKeys: %u", g_Players->pLocalPlayer->passengerData.sKeys );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		}
+		else if ( vinfo != NULL )
+		{
+			if ( vinfo->passengers[0] == self )
+			{
+				sprintf( buf, "    pLocalPlayer->iIsInRCVehicle: %u", g_Players->pLocalPlayer->iIsInRCVehicle );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, "    pLocalPlayer->inCarData.sKeys: %i", g_Players->pLocalPlayer->inCarData.sKeys );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, "    pLocalPlayer->inCarData.byteArmor: %u", g_Players->pLocalPlayer->inCarData.byteArmor );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, "    pLocalPlayer->inCarData.bytePlayerHealth: %u",
+						 g_Players->pLocalPlayer->inCarData.bytePlayerHealth );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, "    pLocalPlayer->inCarData.fVehicleHealth: %0.2f",
+						 g_Players->pLocalPlayer->inCarData.fVehicleHealth );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, "    pLocalPlayer->inCarData.byteCurrentWeapon: %u",
+						 g_Players->pLocalPlayer->inCarData.byteCurrentWeapon );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, "    pLocalPlayer->inCarData.byteLandingGearState: %u",
+						 g_Players->pLocalPlayer->inCarData.byteLandingGearState );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, "    pLocalPlayer->inCarData.byteSiren: %u", g_Players->pLocalPlayer->inCarData.byteSiren );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, "    pLocalPlayer->inCarData.sVehileID: %i", g_Players->pLocalPlayer->inCarData.sVehicleID );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, "    pLocalPlayer->inCarData.sTrailerID: %i",
+						 g_Players->pLocalPlayer->inCarData.sTrailerID );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, "    pLocalPlayer->inCarData.fQuaternion: %0.2f %0.2f %0.2f %0.2f",
+						 g_Players->pLocalPlayer->inCarData.fQuaternion[0], g_Players->pLocalPlayer->inCarData.fQuaternion[1],
+						 g_Players->pLocalPlayer->inCarData.fQuaternion[2], g_Players->pLocalPlayer->inCarData.fQuaternion[3] );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, "    pLocalPlayer->inCarData.fMoveSpeed: %0.2f %0.2f %0.2f",
+						 g_Players->pLocalPlayer->inCarData.fMoveSpeed[0],
+						 g_Players->pLocalPlayer->inCarData.fMoveSpeed[1],
+						 g_Players->pLocalPlayer->inCarData.fMoveSpeed[2] );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, "    pLocalPlayer->inCarData.fPosition: %0.2f %0.2f %0.2f",
+						 g_Players->pLocalPlayer->inCarData.fPosition[0],
+						 g_Players->pLocalPlayer->inCarData.fPosition[1],
+						 g_Players->pLocalPlayer->inCarData.fPosition[2] );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				if ( g_Players->pLocalPlayer->inCarData.sTrailerID != 0 )
+				{
+					sprintf( buf, "    pLocalPlayer->trailerData.sTrailerID: %u",
+							 g_Players->pLocalPlayer->trailerData.sTrailerID );
+					pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+					( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+					sprintf( buf, "    pLocalPlayer->trailerData.fPosition: %0.2f %0.2f %0.2f",
+							 g_Players->pLocalPlayer->trailerData.fPosition[0],
+							 g_Players->pLocalPlayer->trailerData.fPosition[1],
+							 g_Players->pLocalPlayer->trailerData.fPosition[2] );
+					pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+					( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+					sprintf( buf, "    pLocalPlayer->trailerData.fDirection: %0.2f %0.2f %0.2f",
+							 g_Players->pLocalPlayer->trailerData.fDirection[0],
+							 g_Players->pLocalPlayer->trailerData.fDirection[1],
+							 g_Players->pLocalPlayer->trailerData.fDirection[2] );
+					pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+					( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+					sprintf( buf, "    pLocalPlayer->trailerData.fRoll: %0.2f %0.2f %0.2f",
+							 g_Players->pLocalPlayer->trailerData.fRoll[0],
+							 g_Players->pLocalPlayer->trailerData.fRoll[1],
+							 g_Players->pLocalPlayer->trailerData.fRoll[2] );
+					pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+					( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+					sprintf( buf, "    pLocalPlayer->trailerData.fSpeed: %0.2f %0.2f %0.2f",
+							 g_Players->pLocalPlayer->trailerData.fSpeed[0],
+							 g_Players->pLocalPlayer->trailerData.fSpeed[1],
+							 g_Players->pLocalPlayer->trailerData.fSpeed[2] );
+					pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+					( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				}
+
+				sprintf( buf, "    pLocalPlayer->vehicleDamageData.sVehicleID_lastDmg: %u",
+						 g_Players->pLocalPlayer->vehicleDamageData.sVehicleID_lastDamageProcessed );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, "    pLocalPlayer->vehicleDamageData.iDoorDamage: %i",
+						 g_Players->pLocalPlayer->vehicleDamageData.iDoorDamage );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, "    pLocalPlayer->vehicleDamageData.iBumperDamage: %i",
+						 g_Players->pLocalPlayer->vehicleDamageData.iBumperDamage );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, "    pLocalPlayer->vehicleDamageData.byteWheelDamage: %u",
+						 g_Players->pLocalPlayer->vehicleDamageData.byteWheelDamage );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, "    pLocalPlayer->vehicleDamageData.byteLightDamage: %i",
+						 g_Players->pLocalPlayer->vehicleDamageData.byteLightDamage );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			}
+		}
+		else
+		{
+			sprintf( buf, "    pLocalPlayer->onFootData.byteArmor: %u", g_Players->pLocalPlayer->onFootData.byteArmor );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			sprintf( buf, "    pLocalPlayer->onFootData.byteHealth: %u", g_Players->pLocalPlayer->onFootData.byteHealth );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			sprintf( buf, "    pLocalPlayer->onFootData.byteCurrentWeapon: %u",
+					 g_Players->pLocalPlayer->onFootData.byteCurrentWeapon );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			sprintf( buf, "    pLocalPlayer->onFootData.byteSpecialAction: %u",
+					 g_Players->pLocalPlayer->onFootData.byteSpecialAction );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			sprintf( buf, "    pLocalPlayer->onFootData.sSurfingVehicleID: %i",
+					 g_Players->pLocalPlayer->onFootData.sSurfingVehicleID );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+
+			if ( g_Players->pLocalPlayer->onFootData.sSurfingVehicleID != 0 )
+			{
+				sprintf( buf, "    pLocalPlayer->surfData.iSurfMode: %i", g_Players->pLocalPlayer->surfData.iSurfMode );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, "    pLocalPlayer->surfData.fSurfPosition: %0.2f %0.2f %0.2f",
+					g_Players->pLocalPlayer->surfData.fSurfPosition[0],
+					g_Players->pLocalPlayer->surfData.fSurfPosition[1],
+					g_Players->pLocalPlayer->surfData.fSurfPosition[2] );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, "    pLocalPlayer->onFootData.fSurfingOffsets: %0.2f %0.2f %0.2f",
+					g_Players->pLocalPlayer->onFootData.fSurfingOffsets[0],
+					g_Players->pLocalPlayer->onFootData.fSurfingOffsets[1],
+					g_Players->pLocalPlayer->onFootData.fSurfingOffsets[2] );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			}
+
+			sprintf( buf, "    pLocalPlayer->onFootData.fPosition: %0.2f %0.2f %0.2f",
+					 g_Players->pLocalPlayer->onFootData.fPosition[0], g_Players->pLocalPlayer->onFootData.fPosition[1],
+					 g_Players->pLocalPlayer->onFootData.fPosition[2] );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			sprintf( buf, "    pLocalPlayer->onFootData.fMoveSpeed: %0.2f %0.2f %0.2f",
+					 g_Players->pLocalPlayer->onFootData.fMoveSpeed[0],
+					 g_Players->pLocalPlayer->onFootData.fMoveSpeed[1],
+					 g_Players->pLocalPlayer->onFootData.fMoveSpeed[2] );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			sprintf( buf, "    pLocalPlayer->onFootData.iCurrentAnimationID: %x",
+					 g_Players->pLocalPlayer->onFootData.iCurrentAnimationID );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		}
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+
+		if ( vinfo == NULL )
+			return;
+
+		/*for ( int iRow = 0; iRow < 4; iRow++ )
+		{
+			for ( int iCol = 0; iCol < 3; iCol++ )
+			{
+				sprintf( buf, " MATRIX[4*%d+%d]: %0.3f", iRow, iCol, vinfo->base.matrix[4 * iRow + iCol] );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			}
+		}*/
+#endif
+		return;
+	}
+
+	//Remote Player
+	sprintf( buf, "Infos on player %s(%d)", getPlayerName(iPlayerID), iPlayerID );
+	pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+	( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+
+	if ( g_Players->pRemotePlayer[iPlayerID] != NULL )
+	{
+		float	position[3];
+		color = samp_color_get( iPlayerID );
+
+		sprintf( buf, "Team ID: %u", g_Players->pRemotePlayer[iPlayerID]->pPlayerData->byteTeamID );
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+
+		if ( g_Players->pRemotePlayer[iPlayerID]->pPlayerData == NULL
+		 ||	 g_Players->pRemotePlayer[iPlayerID]->pPlayerData->pSAMP_Actor == NULL )
+		{
+			pD3DFontFixed->PrintShadow( 20.0f, y, D3DCOLOR_XRGB(200, 0, 0), "Player is streamed out or invalid." );
+			return;
+		}
+		else
+		{
+			vect3_copy( &g_Players->pRemotePlayer[iPlayerID]->pPlayerData->onFootData.fPosition[0], position );
+
+			sprintf( buf, "Player state: %u", g_Players->pRemotePlayer[iPlayerID]->pPlayerData->bytePlayerState );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+
+			sprintf( buf, "Actor health: %0.2f", g_Players->pRemotePlayer[iPlayerID]->pPlayerData->fActorHealth );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			sprintf( buf, "Actor armor: %0.2f", g_Players->pRemotePlayer[iPlayerID]->pPlayerData->fActorArmor );
+			pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+			( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+
+			if ( g_Players->pRemotePlayer[iPlayerID]->pPlayerData->pSAMP_Vehicle != NULL )
+			{
+				vect3_copy( &g_Players->pRemotePlayer[iPlayerID]->pPlayerData->pSAMP_Vehicle->pGTA_Vehicle->base.
+								matrix[4 * 3], position );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, "The player is in a vehicle" );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, " Vehicle ID: %u", g_Players->pRemotePlayer[iPlayerID]->pPlayerData->sVehicleID );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				
+				if ( g_Players->pRemotePlayer[iPlayerID]->pPlayerData->pSAMP_Vehicle->pGTA_Vehicle == NULL )
+				{
+#ifdef M0D_DEV
+					sprintf( buf, " Something is wrong with samp vehicle struct." );
+					pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+					( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+#endif
+					return;
+				}
+
+				char	*veh_name = (char *)gta_vehicle_get_by_id( g_Players->pRemotePlayer[iPlayerID]->pPlayerData->pSAMP_Vehicle->pGTA_Vehicle->base.model_alt_id )->name;
+				if ( veh_name != NULL )
+				{
+					sprintf( buf, " Vehicle Type: %s", veh_name );
+				}
+
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, " Seat ID: %u", g_Players->pRemotePlayer[iPlayerID]->pPlayerData->byteSeatID );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, " Vehicle Position: %0.2f %0.2f %0.2f",			
+						 g_Players->pRemotePlayer[iPlayerID]->pPlayerData->pSAMP_Vehicle->pGTA_Vehicle->base.matrix[4 * 3],
+						 g_Players->pRemotePlayer[iPlayerID]->pPlayerData->pSAMP_Vehicle->pGTA_Vehicle->base.matrix[4 * 3 + 1],
+						 g_Players->pRemotePlayer[iPlayerID]->pPlayerData->pSAMP_Vehicle->pGTA_Vehicle->base.matrix[4 * 3 + 2] );			
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, " Vehicle health: %d", (int)(
+							 g_Players->pRemotePlayer[iPlayerID]->pPlayerData->pSAMP_Vehicle->pGTA_Vehicle->hitpoints /
+						 10) );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				if ( g_Players->pRemotePlayer[iPlayerID]->pPlayerData->byteSeatID == 0 )
+				{
+					sprintf( buf, " Vehicle Speed: %0.2f km/h", (float)(
+								 vect3_length(g_Players->pRemotePlayer[iPlayerID]->pPlayerData->inCarData.fMoveSpeed) *
+							 170) );
+					pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+					( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				}
+				else
+				{
+					sprintf( buf, " passengerDriveBy: %i",
+							 g_Players->pRemotePlayer[iPlayerID]->pPlayerData->iPassengerDriveBy );
+					pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+					( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+
+					struct actor_info	*driver = g_Players->pRemotePlayer[iPlayerID]->pPlayerData->pSAMP_Vehicle->
+						pGTA_Vehicle->passengers[0];
+					if ( driver != NULL )
+					{
+						int sampid_driver = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)driver )];
+						if ( g_Players->pRemotePlayer[sampid_driver] != NULL )
+						{
+							sprintf( buf, " Vehicle Speed: %0.2f km/h", (float)(vect3_length(g_Players->pRemotePlayer[sampid_driver]->pPlayerData->inCarData.fMoveSpeed) * 170) );
+							pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+							( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+							sprintf( buf, " Vehicle Driver: %s (%d)", getPlayerName(sampid_driver), sampid_driver );
+							pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+							( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+						}
+					}
+				}
+			}
+			else
+			{
+				sprintf( buf, "Actor position: %0.2f, %0.2f, %0.2f",
+						 g_Players->pRemotePlayer[iPlayerID]->pPlayerData->onFootData.fPosition[0],
+						 g_Players->pRemotePlayer[iPlayerID]->pPlayerData->onFootData.fPosition[1],
+						 g_Players->pRemotePlayer[iPlayerID]->pPlayerData->onFootData.fPosition[2] );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+				sprintf( buf, "Actor Speed: %0.2f km/h", (float)(vect3_length(g_Players->pRemotePlayer[iPlayerID]->pPlayerData->onFootData.fMoveSpeed) * 170) );
+				pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+				( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+			}
+		}
+
+		CPed	*pPedSelf = pPools->GetPedFromRef( CPOOLS_PED_SELF_REF );
+		CVector *pos_self;
+		pos_self = pPedSelf->GetPosition();
+
+		float	self_pos[3] = { pos_self->fX, pos_self->fY, pos_self->fZ };
+		sprintf( buf, "Distance: %0.2f", vect3_dist(position, self_pos) );
+		pD3DFontFixed->PrintShadow( 20.0f, y, color, buf );
+		( y ) += 1.0f + pD3DFontFixed->DrawHeight();
+	}
+
+	return;
+}
+
+extern int	iDebuggingPlayer, iViewingInfoPlayer;
+
 void renderSAMP ( void )
 {
 	traceLastFunc( "renderSAMP()" );
@@ -2674,6 +3124,16 @@ void renderSAMP ( void )
 			renderKillList();
 			renderChat();
 			renderScoreList();
+
+			if ( iViewingInfoPlayer == -1 )
+			{ }
+			else
+			{
+				if ( iViewingInfoPlayer != -2 && g_Players->pRemotePlayer[iViewingInfoPlayer] == NULL )
+					iViewingInfoPlayer = -1;
+				else
+					renderPlayerInfo( iViewingInfoPlayer );
+			}
 		}
 
 		static int	a;
@@ -3137,7 +3597,7 @@ void renderHandler()
 				if ( set.flickering_problem )
 					goto no_render;
 
-				if(!set.flickering_problem)
+				if( !set.flickering_problem )
 				{
 					if ( iIsSAMPSupported )
 					{
@@ -3743,8 +4203,6 @@ HRESULT proxyIDirect3DDevice9::BeginScene ( void )
 	return ret;
 }
 
-extern D3DXVECTOR3	vecGravColOrigin, vecGravColTarget, vecGravTargetNorm;
-
 HRESULT proxyIDirect3DDevice9::EndScene ( void )
 {
 	return origIDirect3DDevice9->EndScene();
@@ -3992,49 +4450,23 @@ HRESULT proxyIDirect3DDevice9::DrawIndexedPrimitive ( D3DPRIMITIVETYPE Primitive
 
 		// some environment parts are also found..
 		// weapons
-		/*if ( dwRet_addr == 0x75731b )
+		/*if ( dwRet_addr == 0x75731B )
 		{
-			if ( NumVertices == 76
-			 ||	 NumVertices == 203
-			 ||	 NumVertices == 81
-			 ||	 NumVertices == 252
-			 ||	 NumVertices == 782
-			 ||	 NumVertices == 223
-			 ||	 NumVertices == 568
-			 ||	 NumVertices == 548
-			 ||	 NumVertices == 458
-			 ||	 NumVertices == 202
-			 ||	 NumVertices == 536
-			 ||	 NumVertices == 47
-			 ||	 NumVertices == 200
-			 ||	 NumVertices == 146
-			 ||	 NumVertices == 73
-			 ||	 NumVertices == 456
-			 ||	 NumVertices == 366
-			 ||	 NumVertices == 644
-			 ||	 NumVertices == 666
-			 ||	 NumVertices == 136
-			 ||	 NumVertices == 242
-			 ||	 NumVertices == 18
-			 ||	 NumVertices == 98
-			 ||	 NumVertices == 66
-			 ||	 NumVertices == 91
-			 ||	 NumVertices == 135
-			 ||	 NumVertices == 554
-			 ||	 NumVertices == 544
-			 ||	 NumVertices == 222
-			 ||	 NumVertices == 232
-			 ||	 NumVertices == 57
-			 ||	 NumVertices == 89
-			 ||	 NumVertices == 812
-			 ||	 NumVertices == 444
-			 ||	 NumVertices == 342
-			 ||	 NumVertices == 152
-			 ||	 NumVertices == 118
-			 ||	 NumVertices == 68
-			 ||	 NumVertices == 50
-			 ||	 NumVertices == 294
-			 ||	 NumVertices == 95 )
+			LPDIRECT3DVERTEXBUFFER9 Stream_Data;
+			D3DVERTEXBUFFER_DESC desc;
+			unsigned int desc_size = 0;
+			UINT Stride = 0;
+			if ( origIDirect3DDevice9->GetStreamSource(0, &Stream_Data, &NumVertices,&Stride) == D3D_OK )
+			{
+				if ( Stream_Data != NULL )
+				{
+					Stream_Data->GetDesc( &desc );
+					Stream_Data->Release();
+					desc_size = desc.Size;
+				}
+			}
+
+			if ( desc_size == 0x20000 )
 			{
 				origIDirect3DDevice9->SetRenderState( D3DRS_ZENABLE, false );
 				origIDirect3DDevice9->SetRenderState( D3DRS_FILLMODE, D3DFILL_WIREFRAME );

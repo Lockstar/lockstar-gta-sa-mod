@@ -2530,6 +2530,30 @@ static int menu_callback_spec ( int op, struct menu_item *item )
 	return 0;
 }
 
+void	renderPlayerPoolStructure ( int iPlayerID );
+int		iViewingInfoPlayer = -1;
+static int menu_callback_playerinfo ( int op, struct menu_item *item )
+{
+	if ( g_Players == NULL )
+		return 0;
+
+	int id = item->id;
+	if ( op == MENU_OP_SELECT )
+	{
+		if ( id == SAMP_PLAYER_MAX + 1 )
+		{
+			iViewingInfoPlayer = -1;
+			return 1;
+		}
+
+		iViewingInfoPlayer = id;
+
+		return 1;
+	}
+
+	return 0;
+}
+
 int joining_server = 0;
 static int menu_callback_server_list ( int op, struct menu_item *item )
 {
@@ -2648,7 +2672,7 @@ void menu_maybe_init ( void )
 				menu_players_warp, *menu_players_vehwarp, *menu_players_spec,
 
 	//*menu_cheats_handling,
-	*menu_sampmisc, *menu_spoof_weapon, *menu_fake_kill, *menu_vehicles_instant, *menu_gamestate, *menu_specialaction, *menu_teleobject, *menu_telepickup, *menu_samppatches;
+	*menu_player_info, *menu_sampmisc, *menu_spoof_weapon, *menu_fake_kill, *menu_vehicles_instant, *menu_gamestate, *menu_specialaction, *menu_teleobject, *menu_telepickup, *menu_samppatches;
 
 	char		name[128];
 	int			i, slot;
@@ -2681,6 +2705,7 @@ void menu_maybe_init ( void )
 
 	menu_servers = menu_new( menu_main, ID_MENU_SERVER_LIST, menu_callback_server_list );
 	menu_sampmisc = menu_new( menu_main, ID_MENU_SAMPMISC, menu_callback_sampmisc );
+	menu_player_info = menu_new( menu_players, ID_MENU_PLAYERS_INFO, menu_callback_playerinfo );
 	menu_spoof_weapon = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_SPOOF_WEAPON, menu_callback_sampmisc );
 	menu_fake_kill = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_FAKE_KILL, menu_callback_sampmisc );
 	menu_vehicles_instant = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_VEHICLES_INSTANT, menu_callback_vehicles_instant );
@@ -2878,7 +2903,8 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_players, menu_players_vehwarp, "Warp instantly to player's vehicle", ID_MENU_PLAYERS_VEHWARP,
 				   MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_players, menu_players_spec, "Spectate player", ID_MENU_PLAYERS_SPEC, MENU_COLOR_DEFAULT, NULL );
-
+	menu_item_add( menu_players, menu_player_info, "Show infos on player", ID_MENU_PLAYERS_DEBUG, MENU_COLOR_DEFAULT,
+				   NULL );
 
 	/* main menu -> patches */
 	for ( i = 0; i < INI_PATCHES_MAX; i++ )
