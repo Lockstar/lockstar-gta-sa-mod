@@ -799,7 +799,6 @@ void cheat_handle_actor_nitro ( struct actor_info *info, double time_diff )
 	static uint32_t		timer;
 	static int			decelerating;
 	static float		speed_off;
-	float				pre_speed[3];
 
 	if ( KEY_PRESSED(set.key_nitro_mod) )
 	{

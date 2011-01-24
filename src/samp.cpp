@@ -1370,8 +1370,8 @@ uint8_t _declspec ( naked ) server_message_hook ( void )
 		allow_show_again = GetTickCount() + 5000;
 	}
 
-	if(set.chatbox_logging)
-		LogChatbox(false, "%s", thismsg);
+	if( set.chatbox_logging )
+		LogChatbox( false, "%s", thismsg );
 
 	__asm mov ebx, g_dwSAMP_Addr
 	__asm add ebx, HOOK_EXIT_SERVERMESSAGE_HOOK
@@ -1399,8 +1399,9 @@ uint8_t _declspec ( naked ) client_message_hook ( void )
 			__asm push edx
 			__asm call func
 
-			if(set.chatbox_logging)
-				LogChatbox(false, "%s: %s", g_Players->sLocalPlayerID, g_Players->szLocalPlayerName);
+			// does not work in here, hooked function doesn't seem to be used for local player
+			if( set.chatbox_logging )
+				LogChatbox( false, "%s: %s", g_Players->sLocalPlayerID, g_Players->szLocalPlayerName );
 			goto us;
 		}
 
@@ -1413,6 +1414,9 @@ uint8_t _declspec ( naked ) client_message_hook ( void )
 		{
 			// nothing to copy anymore, after chatbox_logging, so copy this before
 			strcpy_s( last_clientmsg[id], sizeof(last_clientmsg[id]), (char *)thismsg );
+			
+			if( set.chatbox_logging )
+				LogChatbox( false, "%s: %s", getPlayerName(id), thismsg );
 
 			DWORD	func = g_dwSAMP_Addr + HOOK_CALL_CLIENTMESSAGE_HOOK;
 			__asm mov edx, thismsg

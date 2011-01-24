@@ -327,9 +327,11 @@ struct stSurfData
 #pragma pack( 1 )
 	int			iIsSurfing;
 	float		fSurfPosition[3];
+	int			iUnknown;
 	uint16_t	sSurfingVehicleID;
 	uint32_t	ulSurfTick;
-	int			iSurfMode;	// 0 = not surfing, 1 = moving (unstable surf), 2 = fixed on vehicle
+	int			iunknown_[2];
+	int			iSurfMode;	//0 = not surfing, 1 = moving (unstable surf), 2 = fixed on vehicle
 };
 
 struct stHeadSync
@@ -353,6 +355,46 @@ struct stLocalPlayer
 	struct stPassengerData	passengerData;
 	struct stAimData		aimData;
 	struct stTrailerData	trailerData;
+	int						iCurrentAnimID;
+	uint8_t					byteUnknown_256[261];
+	int						iSpawnSkin;
+	uint8_t					unknown_521;
+	float					fSpawnPos[3];
+	float					fSpawnRot;
+	int						iSpawnWeapon[3];
+	int						iSpawnAmmo[3];
+	int						iIsActorAlive;
+	int						iSpawnClassLoaded;
+	uint32_t				ulSpawnSelectionTick;
+	uint32_t				ulSpawnSelectionStart;
+	int						iIsSpectating;
+	uint8_t					byteTeamID;
+	uint8_t					byteUnknown_583[2];
+	uint32_t				ulSendTick;	//(inCar, Passenger, OnFoot)
+	uint32_t				ulSpectateTick;
+	uint32_t				ulAimTick;
+	uint32_t				ulStatsUpdateTick;
+	uint32_t				ulWeapUpdateTick;
+	uint8_t					byteCurrentWeapon;
+	uint8_t					byteWeaponInventory[13];
+	int						iWeaponAmmo[13];
+	struct stHeadSync		headSyncData;
+	uint32_t				ulUnoccupiedTick;
+	uint32_t				ulUnknownTick;	//last Aim/OnFoot/InCar/..??
+	int						iPassengerDriveBy;
+	uint8_t					byteCurrentInterior;
+	int						iIsInRCVehicle;
+	struct stSurfData		surfData;
+	uint8_t					byteSpectatingUnk;	//15[?],14[?],(3-Veh/4-Player [follow])
+	uint8_t					byteSpectatingWHAT;	//2 = Veh, 1 = Player
+	int						iSpectateID;
+	int						iInitiatedSpectating;
+	int						iClassSelectionOnDeath;
+	int						iSpawnClassID;
+	int						iRequestToSpawn;
+	int						iIsInSpawnScreen;
+	uint32_t				ulUnknownTick_772;
+	struct stDamageData		vehicleDamageData;
 };
 
 struct stRemotePlayerData
@@ -376,6 +418,11 @@ struct stRemotePlayerData
 	struct stSAMPVehicle	*pSAMP_Vehicle;
 	int						iUnknown_3;
 	uint16_t				sPlayerID;
+	struct stHeadSync		headSyncData;
+	uint8_t					why_should_i_care_73[340];
+	int						iGlobalMarkerLoaded;
+	int						iGlobalMarkerLocation[3];
+	uint32_t				ulGlobalMarker_GTAID;
 };
 
 struct stRemotePlayer
@@ -418,16 +465,17 @@ struct stSAMPPed
 struct stVehiclePool
 {
 #pragma pack( 1 )
-	uint32_t				pad[76];
-	int						pad1unk[SAMP_VEHICLE_MAX];
-	int						iIsListed[SAMP_VEHICLE_MAX];
+	uint8_t					pad0unk[300];
+	uint16_t				pad1unk[SAMP_VEHICLE_MAX];
+	uint16_t				sPlayerIDUnoccupiedSync[SAMP_VEHICLE_MAX];
 	int						pad2unk[SAMP_VEHICLE_MAX];
 	int						pad3unk[SAMP_VEHICLE_MAX];
+	int						pad4unk[SAMP_VEHICLE_MAX];
 	struct vehicle_info		*pGTA_Vehicle[SAMP_VEHICLE_MAX];
 	struct stSAMPVehicle	*pSAMP_Vehicle[SAMP_VEHICLE_MAX];
-	int						pad5unk[SAMP_VEHICLE_MAX];
+	int						iIsListed[SAMP_VEHICLE_MAX];
 	float					fSpawnPos[SAMP_VEHICLE_MAX][3];
-	
+	int						iInitiated;
 };
 
 struct stSAMPVehicle
