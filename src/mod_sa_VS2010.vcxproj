@@ -340,7 +340,6 @@
     <ClInclude Include="math_stuff.h" />
     <ClInclude Include="patcher.h" />
     <ClInclude Include="samp.h" />
-    <ClInclude Include="scripting.h" />
     <ClInclude Include="CDirect3DData.h" />
     <ClInclude Include="d3drender.h" />
     <ClInclude Include="proxyIDirect3D9.h" />
@@ -494,7 +493,6 @@
     <ClCompile Include="math_stuff.cpp" />
     <ClCompile Include="patcher.cpp" />
     <ClCompile Include="samp.cpp" />
-    <ClCompile Include="scripting.cpp" />
     <ClCompile Include="CDirect3DData.cpp" />
     <ClCompile Include="d3drender.cpp" />
     <ClCompile Include="proxyIDirect3D9.cpp" />
