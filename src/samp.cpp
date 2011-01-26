@@ -1331,7 +1331,7 @@ DWORD		anticarjacked_jmp;
 uint8_t _declspec ( naked ) carjacked_hook ( void )
 {
 	__asm mov anticarjacked_ebx_backup, ebx
-	__asm mov ebx, [ebx + 0x15C]
+	__asm mov ebx, [ebx + 7]
 	__asm mov anticarjacked_vehid, bx
 	__asm pushad
 	cheat_state->_generic.anti_carjackTick = GetTickCount();
