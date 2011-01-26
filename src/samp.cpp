@@ -1483,7 +1483,7 @@ void installSAMPHooks ()
 
 	CDetour api;
 
-	if ( set.anti_spam )
+	if ( set.anti_spam || set.chatbox_logging )
 	{
 		if ( memcmp_safe((uint8_t *)g_dwSAMP_Addr + SAMP_HOOKPOS_ServerMessage, hex_to_bin("6A00C1E8"), 4) )
 		{
