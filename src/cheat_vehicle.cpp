@@ -1184,6 +1184,28 @@ void cheat_handle_vehicle_blinking_carlights ( struct vehicle_info *vinfo, float
 void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_diff )
 {
 	traceLastFunc( "cheat_handle_vehicle_fly()" );
+	static bool orig_cheat = false;
+	static bool checked_for_orig_cheat = false;
+
+	// Disable this function, if "Vehicles can fly"-patch is listed in GTA Patches.
+	// Not disabling this function may result in a conflict with the original built in cheat.
+	if ( (!checked_for_orig_cheat && GTAPatchIDFinder( 0x00969160 ) != -1) || orig_cheat )
+	{
+		if ( !checked_for_orig_cheat )
+		{
+			// user wants to use the original GTA cheat
+			// lets not screw this up for them by changing stuff (no-fly patch)
+			checked_for_orig_cheat = true;
+			orig_cheat = true;
+			set.hud_indicator_inveh_fly = false;
+			//Log( "Found gta patch \"Vehicles can fly\". Deactivating \"key_fly_vehicle\" and relating mod_sa functions." );
+		}		
+		return;
+	}
+	else
+	{
+		checked_for_orig_cheat = true;
+	}
 
 	static bool					needRestorePphys = false;
 	static float				plane_orig_data[3];			// pitch, roll, circle
@@ -1203,7 +1225,7 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 		if ( veh_self == NULL )
 			return;
 
-		if ( gta_vehicle_get_by_id(veh_self->base.model_alt_id)->class_id == VEHICLE_CLASS_AIRPLANE )
+		if ( needRestorePphys && last_plane == veh_self )
 		{
 			veh_self->pFlyData->pitch = plane_orig_data[0];
 			veh_self->pFlyData->roll_lr = plane_orig_data[1];
@@ -1306,8 +1328,11 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 				}
 			}
 
-			if ( vect3_length( temp->speed ) < 0.0f )
+			// check speed and fTimeStep for valid values
+			if ( vect3_length( temp->speed ) < 0.0f || *(float *)0xB7CB5C <= 0.0f )
 			{
+				if ( !set.trailer_support )
+					return;
 				continue;
 			}
 
