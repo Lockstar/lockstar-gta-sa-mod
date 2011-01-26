@@ -2,7 +2,7 @@
 
 	PROJECT:		mod_sa
 	LICENSE:		See LICENSE in the top level directory
-	COPYRIGHT:		Copyright 2007, 2008, 2009, 2010 we_sux
+	COPYRIGHT:		Copyright we_sux
 
 	mod_sa is available from http://code.google.com/p/m0d-s0beit-sa/
 
@@ -1202,8 +1202,8 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 	if ( pGameInterface == NULL )
 		return;
 
-	if ( KEY_PRESSED(set.key_flyMode_change) )
-		set.fly_heliMode = !set.fly_heliMode;
+	if ( KEY_PRESSED(set.key_fly_vehicle_modeChange) )
+		set.fly_vehicle_heliMode = !set.fly_vehicle_heliMode;
 
 	if ( KEY_PRESSED(set.key_fly_vehicle) )
 		cheat_state->vehicle.fly ^= 1;
@@ -1254,7 +1254,7 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 			class_id = gta_vehicle_get_by_id( temp->base.model_alt_id )->class_id;
 
 			// fly physics heli Mode / Bike
-			if ( set.fly_heliMode || class_id == VEHICLE_CLASS_BIKE )
+			if ( set.fly_vehicle_heliMode || class_id == VEHICLE_CLASS_BIKE )
 			{
 				temp->pFlyData->pitch = 0.0035f;
 
@@ -1350,7 +1350,7 @@ void cheat_handle_vehicle_fly ( struct vehicle_info *vehicle_info, float time_di
 			//   steering end    //
 
 			// 1 fast plane, 2 heli, 6 heli, 8 airbreak alike
-			if ( set.fly_heliMode )
+			if ( set.fly_vehicle_heliMode )
 			{
 				__asm push 6
 			}

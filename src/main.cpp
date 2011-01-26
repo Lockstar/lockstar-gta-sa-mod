@@ -2,7 +2,7 @@
 
 	PROJECT:		mod_sa
 	LICENSE:		See LICENSE in the top level directory
-	COPYRIGHT:		Copyright 2007, 2008, 2009, 2010 we_sux
+	COPYRIGHT:		Copyright we_sux
 
 	mod_sa is available from http://code.google.com/p/m0d-s0beit-sa/
 
@@ -184,6 +184,7 @@ static int init ( void )
 
 		// Hello World
 		Log( "Initializing %s", NAME );
+		Log( "Compiled: %s CL:%d", COMPILE_DT, COMPILE_VERSION );
 
 		// log windows version for people that forget to report it
 		WindowsInfo.osPlatform = (int) * (DWORD *)GTAvar_osPlatform;

@@ -2,7 +2,7 @@
 
 	PROJECT:		mod_sa
 	LICENSE:		See LICENSE in the top level directory
-	COPYRIGHT:		Copyright 2007, 2008, 2009, 2010 we_sux
+	COPYRIGHT:		Copyright we_sux
 
 	mod_sa is available from http://code.google.com/p/m0d-s0beit-sa/
 
@@ -69,8 +69,7 @@ static void cheat_main_actor ( double time_diff )
 		cheat_handle_vehicle_fast_exit( NULL, time_diff );
 
 	cheat_handle_SpiderFeet(info, time_diff);
-	cheat_handle_actor_nitro(info, time_diff);
-	cheat_handle_AirSwim(info, time_diff);
+	cheat_handle_actor_fly(info, time_diff);
 }
 
 static void cheat_main_vehicle ( double time_diff )

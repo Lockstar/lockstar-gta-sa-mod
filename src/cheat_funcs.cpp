@@ -2,7 +2,7 @@
 
 	PROJECT:		mod_sa
 	LICENSE:		See LICENSE in the top level directory
-	COPYRIGHT:		Copyright 2007, 2008, 2009, 2010 we_sux
+	COPYRIGHT:		Copyright we_sux
 
 	mod_sa is available from http://code.google.com/p/m0d-s0beit-sa/
 
@@ -3196,9 +3196,12 @@ D3DXVECTOR3 CVecToD3DXVEC ( CVector vec )
 // Animation Wrappers
 int Animation_Loader ( const char *IFP )
 {
-	ScriptCommand( &load_animation, IFP );
-	int animationLoadCounter;
 	int isLoaded = ScriptCommand(&animation_loaded, IFP);
+	if ( !isLoaded )
+		ScriptCommand( &load_animation, IFP );
+	else
+		return 1;
+	int animationLoadCounter = 0;
 	while ( !isLoaded
 		&& animationLoadCounter < 20 )
 	{
