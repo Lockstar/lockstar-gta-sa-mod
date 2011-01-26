@@ -36,7 +36,10 @@ static void process_key ( int down, int vkey, int repeat, int scancode, int exte
 	if ( !down && KEY_UP(vkey) )
 		return; /* ignore bad states */
 
-	if ( 0x90 == *(uint8_t *)0x541DF5 /*g_Input != NULL && g_Input->iInputEnabled*/ || GetForegroundWindow() != wnd )
+	if ( g_Input != NULL && g_Input->iInputEnabled
+		|| GetForegroundWindow() != wnd
+		//|| 0x90 == *(uint8_t *)0x541DF5
+		)
 	{
 		if ( set.screenshot_enable )
 		{
