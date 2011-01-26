@@ -2,7 +2,7 @@
 
 	PROJECT:		mod_sa
 	LICENSE:		See LICENSE in the top level directory
-	COPYRIGHT:		Copyright 2007, 2008, 2009, 2010 we_sux
+	COPYRIGHT:		Copyright we_sux
 
 	mod_sa is available from http://code.google.com/p/m0d-s0beit-sa/
 
@@ -32,7 +32,10 @@
 #define SAMP_VERSION	"SA:MP 0.3c"
 
 #define BP _asm int 3
-#define NAME	""M0D_NAME """ "M0D_VERSION ""
+#define NAME ""M0D_NAME """ "M0D_VERSION ""
+
+#define COMPILE_DT ""__DATE__" "__TIME__""
+#define COMPILE_VERSION _MSC_VER
 
 #define INI_FILE				"mod_sa.ini"
 #define RAW_TEX_FILE			"mod_sa.raw"

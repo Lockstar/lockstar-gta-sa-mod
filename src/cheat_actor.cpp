@@ -2,7 +2,7 @@
 
 	PROJECT:		mod_sa
 	LICENSE:		See LICENSE in the top level directory
-	COPYRIGHT:		Copyright 2007, 2008, 2009, 2010 we_sux
+	COPYRIGHT:		Copyright we_sux
 
 	mod_sa is available from http://code.google.com/p/m0d-s0beit-sa/
 
@@ -21,6 +21,10 @@
 
 */
 #include "main.h"
+
+
+// non-global vector pointer
+CVector UpNormal ( 0.0, 0.0, 1.0 );
 
 // new function to help converting from actor_info->base to CEntitySAInterface
 CEntitySAInterface *cheat_actor_GetCEntitySAInterface ( actor_info *ainfo )
@@ -691,31 +695,45 @@ void cheat_handle_SpiderFeet ( struct actor_info *ainfo, double time_diff )
 	}
 }
 
-void cheat_handle_AirSwim ( struct actor_info *ainfo, double time_diff )
+// used for cheat_handle_actor_fly()
+enum playerFly_keyStates
 {
-	traceLastFunc( "cheat_handle_AirSwim()" );
+	none,
+	accelerate,
+	decelerate
+};
+playerFly_keyStates playerFly_lastKeyState = none;
+float playerFly_rotateTiltGoo = 0.0f;
+
+void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
+{
+	traceLastFunc( "cheat_handle_actor_fly()" );
 
 	// toggle
-	if ( KEY_PRESSED(set.key_airswim) )
+	if ( KEY_PRESSED(set.key_fly_player) )
 	{
-		if ( !cheat_state->actor.AirSwim_on )
+		if ( !cheat_state->actor.fly_on )
 		{
 			// init stuff
 		}
-		cheat_state->actor.AirSwim_on ^= 1;
+		cheat_state->actor.fly_on ^= 1;
 	}
 
-	if ( cheat_state->actor.AirSwim_on )
+	if ( cheat_state->actor.fly_on )
 	{
-		// set AirSwim status
-		cheat_state->actor.AirSwim_Enabled = true;
+		// set fly status
+		cheat_state->actor.fly_enabled = true;
 
 		// standing detection
 		if ( ainfo->pedFlags.bIsStanding
-			&& cheat_state->actor.AirSwim_Active )
+			&& cheat_state->actor.fly_active )
 		{
-			// stop swim animation
-			cheat_state->actor.AirSwim_Active = false;
+			cheat_state->actor.fly_active = false;
+			// copy camera rotation to player
+			//ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
+			// stop fly animation
+			playerFly_lastKeyState = none;
+			Animation_Releaser("SWIM");
 			ScriptCommand( &disembark_instantly_actor, ScriptActorId(ainfo) );
 		}
 		else if ( ainfo->pedFlags.bIsStanding )
@@ -725,75 +743,263 @@ void cheat_handle_AirSwim ( struct actor_info *ainfo, double time_diff )
 		// I believe I can fly...
 		else
 		{
-			if ( !cheat_state->actor.AirSwim_Active )
+			// keys/buttons input
+			playerFly_keyStates keyState;
+			if ( KEY_DOWN(set.key_fly_player_accelerate) )
 			{
-				// start swim animation
-				cheat_state->actor.AirSwim_Active = true;
-				Animation_Loader("SWIM");
-				Animation_Perform("SWIM", "Swim_Breast", 1.0f, 1, 1, -2);
+				keyState = accelerate;
+			}
+			else if ( KEY_DOWN(set.key_fly_player_decelerate) )
+			{
+				keyState = decelerate;
+			}
+			else
+			{
+				keyState = none;
 			}
 
+			// activate fly mode
+			if ( !cheat_state->actor.fly_active )
+			{
+				cheat_state->actor.fly_active = true;
+				if ( keyState == none )
+				{
+					// start fly animation
+					Animation_Loader("SWIM");
+					Animation_Perform("SWIM", "Swim_Breast", 1.0f, 1, 1, -2);
+				}
+			}
+			
+			// change animation
+			if ( playerFly_lastKeyState != keyState )
+			{
+				playerFly_lastKeyState = keyState;
+				switch ( keyState )
+				{
+				case none:
+					{
+						//Animation_Loader("SWIM");
+						Animation_Perform("SWIM", "Swim_Breast", 1.0f, 1, 1, -2);
+					}
+				case accelerate:
+					{
+						//Animation_Loader("SWIM");
+						Animation_Perform("SWIM", "SWIM_crawl", 1.0f, 1, 1, -2);
+					}
+				case decelerate:
+					{
+						//Animation_Loader("SWIM");
+						Animation_Perform("SWIM", "Swim_Tread", 1.0f, 1, 1, -2);
+					}
+				}
+			}
+
+
+
+
+			// get player speed
+			CVector vecSpeed;
+			pPedSelf->GetMoveSpeed(&vecSpeed);
+
+			// I got my googoo all over it.
+			// this is to tilt the player based on rotation only
+			float rotateDiff = ainfo->fCurrentRotation - -pGame->GetCamera()->GetCameraRotation();
+			// more than half turn in one frame won't happen unless
+			// it's passing through 360 degrees, so let's correct for it
+			if ( rotateDiff > 180.0f )
+			{
+				rotateDiff -= 360.0f;
+			}
+			else if ( rotateDiff < -180.0f )
+			{
+				rotateDiff += 360.0f;
+			}
+			playerFly_rotateTiltGoo += rotateDiff / 10.0f;
+			// remove some of the googoo.
+			if ( playerFly_rotateTiltGoo > 2.0f )
+			{
+				playerFly_rotateTiltGoo -= 2.0f * time_diff;
+			}
+			else if ( playerFly_rotateTiltGoo < 2.0f )
+			{
+				playerFly_rotateTiltGoo += 2.0f * time_diff;
+			}
+			else
+			{
+				playerFly_rotateTiltGoo = 0.0f;
+			}
+
+			// copy camera rotation to player
 			ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
 
-			CMatrix mat_Camera;
-			pGame->GetCamera()->GetMatrix(&mat_Camera);
-			CMatrix mat_Ped;
-			pPedSelf->GetMatrix(&mat_Ped);
-			mat_Ped.vFront = mat_Camera.vFront;
-			mat_Ped.vRight = -mat_Camera.vRight;
-			mat_Ped.vUp = mat_Camera.vUp;
-			pPedSelf->SetMatrix(&mat_Ped);
+			// get camera matrix
+			CMatrix matCamera;
+			pGame->GetCamera()->GetMatrix(&matCamera);
+			matCamera.vRight = -matCamera.vRight; // for some reason this is upside down
+			// normalize camera
+			matCamera.vFront.Normalize();
+			matCamera.vRight.Normalize();
+			matCamera.vUp.Normalize();
 
-			float AirSwim_Speed = 0.1f;
-			float AirSwim_Acceleration = 0.3f * time_diff;
+			// get player matrix
+			CMatrix matPed;
+			pPedSelf->GetMatrix(&matPed);
+			// copy camera matrix to player
+			matPed.vFront = matCamera.vFront;
+			matPed.vRight = matCamera.vRight;
+			matPed.vUp = matCamera.vUp;
 
-			// positive
-			if ( mat_Ped.vFront.fX >= 0.0f
-				&& ainfo->m_SpeedVec.fX < mat_Ped.vFront.fX * AirSwim_Speed )
+			// tilt player based on side speed & rotation goo
+			CVector rotationAxis = UpNormal;
+			rotationAxis.CrossProduct( &vecSpeed );
+			float theta = ( matPed.vFront.DotProduct( &vecSpeed ) / vecSpeed.Length() );// + playerFly_rotateTiltGoo;
+			if ( !near_zero(theta) )
 			{
-				ainfo->m_SpeedVec.fX += AirSwim_Acceleration;
+				matPed = matPed.Rotate( &rotationAxis, cos(-theta) );
 			}
-			if ( mat_Ped.vFront.fY >= 0.0f
-				&& ainfo->m_SpeedVec.fY < mat_Ped.vFront.fY * AirSwim_Speed )
+			matPed.vFront = matCamera.vFront;
+			// normalize everything
+			matPed.vFront.Normalize();
+			matPed.vRight.Normalize();
+			matPed.vUp.Normalize();
+			// set player matrix
+			pPedSelf->SetMatrix(&matPed);
+
+
+
+
+
+			// rotate the speed vector slowly to face the player direction
+			CMatrix matSpeedVecRotate = CMatrix();
+			matSpeedVecRotate.vFront = vecSpeed;
+			matSpeedVecRotate.vFront.Normalize();
+			// get rotation divisor
+			float rotationDivisor = 1.0f + vecSpeed.Length() * time_diff * 5000.0f;
+			// rotate it
+			rotationAxis = matPed.vFront;
+			rotationAxis.CrossProduct( &vecSpeed );
+			theta = matPed.vFront.DotProduct( &vecSpeed ) / rotationDivisor;
+			if ( !near_zero(theta) )
 			{
-				ainfo->m_SpeedVec.fY += AirSwim_Acceleration;
+				matSpeedVecRotate = matSpeedVecRotate.Rotate( &rotationAxis, sin(theta) );
 			}
-			if ( mat_Ped.vFront.fZ >= 0.0f
-				&& ainfo->m_SpeedVec.fZ < mat_Ped.vFront.fZ * AirSwim_Speed )
+			// set new speed vector
+			matSpeedVecRotate.vFront.Normalize();
+			ainfo->m_SpeedVec = matSpeedVecRotate.vFront * vecSpeed.Length();
+
+
+
+
+
+			// speed operations
+			CVector vecPedSpeed = ainfo->m_SpeedVec;
+
+			// acceleration
+			if ( keyState == none
+				|| keyState == accelerate )
 			{
-				ainfo->m_SpeedVec.fZ += AirSwim_Acceleration;
+				float fly_speed = 0.1f;
+				float fly_acceleration = 0.3f * time_diff;
+
+				if ( keyState == accelerate )
+				{
+					fly_speed = 2.0f;
+					fly_acceleration = 1.0f * time_diff;
+				}
+
+				// positive
+				if ( matPed.vFront.fX >= 0.0f
+					&& vecPedSpeed.fX < matPed.vFront.fX * fly_speed )
+				{
+					vecPedSpeed.fX += fly_acceleration;
+				}
+				if ( matPed.vFront.fY >= 0.0f
+					&& vecPedSpeed.fY < matPed.vFront.fY * fly_speed )
+				{
+					vecPedSpeed.fY += fly_acceleration;
+				}
+				if ( matPed.vFront.fZ >= 0.0f
+					&& vecPedSpeed.fZ < matPed.vFront.fZ * fly_speed * 2 )
+				{
+					// more upward acceleration boost & speed
+					vecPedSpeed.fZ += fly_acceleration * 2;
+				}
+				// negative
+				if ( matPed.vFront.fX < 0.0f
+					&& vecPedSpeed.fX > matPed.vFront.fX * fly_speed )
+				{
+					vecPedSpeed.fX -= fly_acceleration;
+				}
+				if ( matPed.vFront.fY < 0.0f
+					&& vecPedSpeed.fY > matPed.vFront.fY * fly_speed )
+				{
+					vecPedSpeed.fY -= fly_acceleration;
+				}
+				if ( matPed.vFront.fZ < 0.0f
+					&& vecPedSpeed.fZ > matPed.vFront.fZ * fly_speed )
+				{
+					vecPedSpeed.fZ -= fly_acceleration;
+				}
+				// don't have NearZero speeds
+				if ( !vecPedSpeed.IsNearZero() )
+				{
+					// set speed vector
+					ainfo->m_SpeedVec = vecPedSpeed;
+				}
 			}
-			// negative
-			if ( mat_Ped.vFront.fX < 0.0f
-				&& ainfo->m_SpeedVec.fX > mat_Ped.vFront.fX * AirSwim_Speed )
+			else if ( keyState == decelerate )
 			{
-				ainfo->m_SpeedVec.fX -= AirSwim_Acceleration;
+				float speed = vect3_length( ainfo->speed );
+				vect3_normalize( ainfo->speed, ainfo->speed );
+				speed -= time_diff * 1.3f;
+
+				if ( speed < 0.0f )
+					speed = 0.0f;
+
+				if ( vect3_near_zero(ainfo->speed) )
+				{
+					vect3_zero( ainfo->speed );
+				}
+				else
+				{
+					vect3_mult( ainfo->speed, speed, ainfo->speed );
+				}
 			}
-			if ( mat_Ped.vFront.fY < 0.0f
-				&& ainfo->m_SpeedVec.fY > mat_Ped.vFront.fY * AirSwim_Speed )
-			{
-				ainfo->m_SpeedVec.fY -= AirSwim_Acceleration;
-			}
-			if ( mat_Ped.vFront.fZ < 0.0f
-				&& ainfo->m_SpeedVec.fZ > mat_Ped.vFront.fZ * AirSwim_Speed )
-			{
-				ainfo->m_SpeedVec.fZ -= AirSwim_Acceleration;
-			}
+
+
+
+
+/*
+
+int lineSpace = 0;
+char buf[256];
+sprintf( buf, "keyState: %d", keyState );
+pD3DFontFixed->PrintShadow(50, 650 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
+lineSpace += 12;
+*/
+
+
 
 		}
 	}
-	else if ( cheat_state->actor.AirSwim_Enabled )
+	else if ( cheat_state->actor.fly_enabled )
 	{
-		// set AirSwim disabled
-		cheat_state->actor.AirSwim_Enabled = false;
-		cheat_state->actor.AirSwim_Active = false;
+		// set fly disabled
+		cheat_state->actor.fly_enabled = false;
+		cheat_state->actor.fly_active = false;
+		// stop animation
+		playerFly_lastKeyState = none;
 		Animation_Releaser("SWIM");
 		ScriptCommand( &disembark_instantly_actor, ScriptActorId(ainfo) );
+		// copy camera rotation to player
+		ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
 	}
 }
 
 void cheat_handle_actor_nitro ( struct actor_info *info, double time_diff )
 {
+	return;
+
 	traceLastFunc( "cheat_handle_actor_nitro()" );
 
 	static uint32_t		timer;
@@ -821,8 +1027,14 @@ void cheat_handle_actor_nitro ( struct actor_info *info, double time_diff )
 
 		if ( !vect3_near_zero(info->speed) )
 		{
+			// set speed into the direction we are facing
+			float	dir[4] = { 0.0f, 1.0f, 0.0f, 0.0f };
+			float	vect[4];
+			matrix_vect4_mult( info->base.matrix, dir, vect );
+			if ( vect3_near_zero(vect) )
+				return;
 			vect3_normalize( info->speed, info->speed );
-			vect3_mult( info->speed, speed, info->speed );
+			vect3_mult( vect, speed, info->speed );
 			if ( vect3_near_zero(info->speed) )
 				vect3_zero( info->speed );
 		}

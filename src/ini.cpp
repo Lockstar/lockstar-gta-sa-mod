@@ -2,7 +2,7 @@
 
 	PROJECT:		mod_sa
 	LICENSE:		See LICENSE in the top level directory
-	COPYRIGHT:		Copyright 2007, 2008, 2009, 2010 we_sux
+	COPYRIGHT:		Copyright we_sux
 
 	mod_sa is available from http://code.google.com/p/m0d-s0beit-sa/
 
@@ -453,9 +453,13 @@ static void ini_init ( void )
 	if ( (ent = ini_register_entry("key_ninjaflipback", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_ninjaflipback, "f" );
 
-	/* AirSwim */
-	if ( (ent = ini_register_entry("key_airswim", TYPE_KEY)) != NULL )
-		ini_register_data( ent, &set.key_airswim, "oem_period" );
+	/* OnFoot Fly */
+	if ( (ent = ini_register_entry("key_fly_player", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_fly_player, "oem_period" );
+	if ( (ent = ini_register_entry("key_fly_player_accelerate", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_fly_player_accelerate, "w" );
+	if ( (ent = ini_register_entry("key_fly_player_decelerate", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_fly_player_decelerate, "s" );
 
 
 	if ( (ent = ini_register_entry("handling_multiplier", TYPE_FLOAT)) != NULL )
@@ -675,8 +679,8 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.hud_indicator_onfoot_stick, "true" );
 	if ( (ent = ini_register_entry("hud_indicator_onfoot_aim", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.hud_indicator_onfoot_aim, "true" );
-	if ( (ent = ini_register_entry("hud_indicator_onfoot_spider", TYPE_BOOL)) != NULL )
-		ini_register_data( ent, &set.hud_indicator_onfoot_airswim, "true" );
+	if ( (ent = ini_register_entry("hud_indicator_onfoot_airswim", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.hud_indicator_onfoot_fly, "true" );
 
 	if ( (ent = ini_register_entry("hud_indicator_pos", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.hud_indicator_pos, "false" );
@@ -780,10 +784,10 @@ static void ini_init ( void )
 
 	if ( (ent = ini_register_entry("key_fly_vehicle", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_fly_vehicle, "oem_period" );
-	if ( (ent = ini_register_entry("key_flyMode_change", TYPE_KEY)) != NULL )
-		ini_register_data( ent, &set.key_flyMode_change, "oem_comma" );
-	if ( (ent = ini_register_entry("fly_heliMode", TYPE_BOOL)) != NULL )
-		ini_register_data( ent, &set.fly_heliMode, "false" );
+	if ( (ent = ini_register_entry("key_fly_vehicle_modeChange", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_fly_vehicle_modeChange, "oem_comma" );
+	if ( (ent = ini_register_entry("fly_vehicle_heliMode", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.fly_vehicle_heliMode, "false" );
 
 	if ( (ent = ini_register_entry("key_rejoin", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_rejoin, "b" );

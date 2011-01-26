@@ -2,7 +2,7 @@
 
 	PROJECT:		mod_sa
 	LICENSE:		See LICENSE in the top level directory
-	COPYRIGHT:		Copyright 2007, 2008, 2009, 2010 we_sux
+	COPYRIGHT:		Copyright we_sux
 
 	mod_sa is available from http://code.google.com/p/m0d-s0beit-sa/
 
@@ -3736,9 +3736,9 @@ void renderHandler()
 					HUD_TEXT_TGL( x, cheat_state->actor.autoaim ? color_enabled : color_disabled, "Aim" );
 				}
 
-				if ( set.hud_indicator_onfoot_airswim )
+				if ( set.hud_indicator_onfoot_fly )
 				{
-					HUD_TEXT_TGL( x, cheat_state->actor.AirSwim_on ? color_enabled : color_disabled, "AirSwim" );
+					HUD_TEXT_TGL( x, cheat_state->actor.fly_on ? color_enabled : color_disabled, "Fly" );
 				}
 
 				RenderPedHPBar();

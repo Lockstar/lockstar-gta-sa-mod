@@ -2,7 +2,7 @@
 
 	PROJECT:		mod_sa
 	LICENSE:		See LICENSE in the top level directory
-	COPYRIGHT:		Copyright 2007, 2008, 2009, 2010 we_sux
+	COPYRIGHT:		Copyright we_sux
 
 	mod_sa is available from http://code.google.com/p/m0d-s0beit-sa/
 
@@ -2366,7 +2366,7 @@ static int menu_callback_hudindicators ( int op, struct menu_item *item )
 			break;
 
 		case ID_HUDIND_ONFOOT_AIRSWIM:
-			return set.hud_indicator_onfoot_airswim;
+			return set.hud_indicator_onfoot_fly;
 			break;
 
 		case ID_HUDIND_INVEH_FLY:
@@ -2446,7 +2446,7 @@ static int menu_callback_hudindicators ( int op, struct menu_item *item )
 			break;
 
 		case ID_HUDIND_ONFOOT_AIRSWIM:
-			set.hud_indicator_onfoot_airswim ^= 1;
+			set.hud_indicator_onfoot_fly ^= 1;
 			break;
 
 		case ID_HUDIND_INVEH_FLY:
@@ -2903,7 +2903,7 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_players, menu_players_vehwarp, "Warp instantly to player's vehicle", ID_MENU_PLAYERS_VEHWARP,
 				   MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_players, menu_players_spec, "Spectate player", ID_MENU_PLAYERS_SPEC, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_players, menu_player_info, "Show infos on player", ID_MENU_PLAYERS_DEBUG, MENU_COLOR_DEFAULT,
+	menu_item_add( menu_players, menu_player_info, "Show infos on player", ID_MENU_PLAYERS_INFO, MENU_COLOR_DEFAULT,
 				   NULL );
 
 	/* main menu -> patches */

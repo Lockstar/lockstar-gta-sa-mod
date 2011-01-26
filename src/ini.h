@@ -2,7 +2,7 @@
 
 	PROJECT:		mod_sa
 	LICENSE:		See LICENSE in the top level directory
-	COPYRIGHT:		Copyright 2007, 2008, 2009, 2010 we_sux
+	COPYRIGHT:		Copyright we_sux
 
 	mod_sa is available from http://code.google.com/p/m0d-s0beit-sa/
 
@@ -225,7 +225,7 @@ struct settings
 	int						hud_indicator_onfoot_airbrk;
 	int						hud_indicator_onfoot_stick;
 	int						hud_indicator_onfoot_aim;
-	int						hud_indicator_onfoot_airswim;
+	int						hud_indicator_onfoot_fly;
 
 	int						hud_indicator_pos;
 	int						hud_fps_draw;
@@ -296,7 +296,9 @@ struct settings
 	int						key_ninjaflipfront;
 	int						key_ninjaflipback;
 
-	int						key_airswim;
+	int						key_fly_player;
+	int						key_fly_player_accelerate;
+	int						key_fly_player_decelerate;
 
 	float					handling_multiplier;
 
@@ -321,8 +323,8 @@ struct settings
 	float					brkdance_velocity;
 
 	int						key_fly_vehicle;
-	int						key_flyMode_change;
-	int						fly_heliMode;
+	int						key_fly_vehicle_modeChange;
+	int						fly_vehicle_heliMode;
 
 	int						key_rejoin;
 	int						rejoin_delay;

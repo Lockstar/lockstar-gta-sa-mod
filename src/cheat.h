@@ -2,7 +2,7 @@
 
 	PROJECT:		mod_sa
 	LICENSE:		See LICENSE in the top level directory
-	COPYRIGHT:		Copyright 2007, 2008, 2009, 2010 we_sux
+	COPYRIGHT:		Copyright we_sux
 
 	mod_sa is available from http://code.google.com/p/m0d-s0beit-sa/
 
@@ -159,9 +159,9 @@ struct cheat_state_actor
 	int		hp_regen_on;
 	int		SpiderFeet_on;
 	int		SpiderFeet_Enabled;
-	bool	AirSwim_on;
-	bool	AirSwim_Enabled;
-	bool	AirSwim_Active;
+	bool	fly_on;
+	bool	fly_enabled;
+	bool	fly_active;
 	CVector gravityVector;
 };
 
