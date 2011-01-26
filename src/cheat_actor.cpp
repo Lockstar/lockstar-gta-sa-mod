@@ -69,7 +69,7 @@ void cheat_handle_actor_nocols ( struct actor_info *info )
 		 &&	 near_veh->hitpoints > 250.0f
 		 &&	 vect3_dist(&info->base.matrix[4 * 3], &near_veh->base.matrix[4 * 3]) <= 20.0f )
 		{
-			ScriptCommand( &enter_car_as_driver, ScriptActorId(info), ScriptCarId(near_veh), 1999 );	//actor,car,maximum time (ms)
+			GTAfunc_EnterCarAsDriver(near_veh);
 		}
 	}
 
@@ -733,8 +733,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			//ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
 			// stop fly animation
 			playerFly_lastKeyState = none;
-			Animation_Releaser("SWIM");
-			ScriptCommand( &disembark_instantly_actor, ScriptActorId(ainfo) );
+			GTAfunc_DisembarkInstantly();
 		}
 		else if ( ainfo->pedFlags.bIsStanding )
 		{
@@ -765,8 +764,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				if ( keyState == none )
 				{
 					// start fly animation
-					Animation_Loader("SWIM");
-					Animation_Perform("SWIM", "Swim_Breast", 1.0f, 1, 1, -2);
+					GTAfunc_PerformAnimation("SWIM", "Swim_Breast", -1, 1, 1, 0, 0, 0, 1, 1);
 				}
 			}
 			
@@ -778,18 +776,15 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				{
 				case none:
 					{
-						//Animation_Loader("SWIM");
-						Animation_Perform("SWIM", "Swim_Breast", 1.0f, 1, 1, -2);
+						GTAfunc_PerformAnimation("SWIM", "Swim_Breast", -1, 1, 1, 0, 0, 0, 1, 1);
 					}
 				case accelerate:
 					{
-						//Animation_Loader("SWIM");
-						Animation_Perform("SWIM", "SWIM_crawl", 1.0f, 1, 1, -2);
+						GTAfunc_PerformAnimation("SWIM", "SWIM_crawl", -1, 1, 1, 0, 0, 0, 1, 1);
 					}
 				case decelerate:
 					{
-						//Animation_Loader("SWIM");
-						Animation_Perform("SWIM", "Swim_Tread", 1.0f, 1, 1, -2);
+						GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 1);
 					}
 				}
 			}
@@ -989,8 +984,7 @@ lineSpace += 12;
 		cheat_state->actor.fly_active = false;
 		// stop animation
 		playerFly_lastKeyState = none;
-		Animation_Releaser("SWIM");
-		ScriptCommand( &disembark_instantly_actor, ScriptActorId(ainfo) );
+		GTAfunc_DisembarkInstantly();
 		// copy camera rotation to player
 		ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
 	}

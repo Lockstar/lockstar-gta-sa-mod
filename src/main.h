@@ -191,7 +191,6 @@
 #include "dumb_menu.h"
 #include "samp.h"
 #include "debug_classify.h"
-#include "scripting.h"
 #include "d3drender.h"
 #include "GTAfuncs.h"
 #include "proxyIDirect3D9.h"

@@ -1094,6 +1094,8 @@ void cheat_vehicle_tires_set ( struct vehicle_info *info, uint8_t tire_status )
 
 	for ( temp = info; temp != NULL; temp = temp->trailer )
 	{
+		if(temp == NULL) return;
+
 		uint8_t type = temp->vehicle_type;
 
 		if ( type == VEHICLE_TYPE_CAR )
@@ -1112,6 +1114,8 @@ int vehicle_contains_trailer ( struct vehicle_info *info, const struct vehicle_i
 
 	for ( temp = info; temp != NULL; temp = temp->trailer )
 	{
+		if(temp == NULL) return 0;
+
 		if ( temp == trailer )
 			return 1;
 	}
@@ -3191,32 +3195,4 @@ int getPedGTAIDFromInterface ( DWORD *ped )
 D3DXVECTOR3 CVecToD3DXVEC ( CVector vec )
 {
 	return D3DXVECTOR3( vec.fX, vec.fY, vec.fZ );
-}
-
-// Animation Wrappers
-int Animation_Loader ( const char *IFP )
-{
-	int isLoaded = ScriptCommand(&animation_loaded, IFP);
-	if ( !isLoaded )
-		ScriptCommand( &load_animation, IFP );
-	else
-		return 1;
-	int animationLoadCounter = 0;
-	while ( !isLoaded
-		&& animationLoadCounter < 20 )
-	{
-		Sleep(5 + ( animationLoadCounter * 3) );
-		isLoaded = ScriptCommand(&animation_loaded, IFP);
-		animationLoadCounter++;
-	}
-	return isLoaded;
-}
-int Animation_Perform ( const char *IFP, const char *Animation, float speed, bool loop, bool lockPosition, int time )
-{
-	speed *= 4.0f;
-	return ScriptCommand( &perform_animation, ScriptActorId( reinterpret_cast < actor_info* > (pPedSelfSA) ), Animation, IFP, speed, loop, lockPosition, lockPosition, lockPosition, -2 );;
-}
-int Animation_Releaser ( const char *IFP )
-{
-	return ScriptCommand( &release_animation, IFP );
 }

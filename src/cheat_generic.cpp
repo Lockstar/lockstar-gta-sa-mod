@@ -579,6 +579,8 @@ void cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *act
 
 						for ( temp = info; temp != NULL; temp = temp->trailer )
 						{
+							if(temp == NULL) return;
+
 							// XXX - this is probably wrong :S
 							temp->hitpoints = cheat_state->vehicle.hitpoints_last - diff * ( 1.0f - set.hp_damage_reduce / 100.0f );
 
@@ -594,6 +596,8 @@ void cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *act
 
 			for ( temp = info; temp != NULL; temp = temp->trailer )
 			{
+				if(temp == NULL) return;
+
 				/* minimum hp */
 				if ( cheat_state->vehicle.hp_minimum_on && temp->hitpoints < set.hp_minimum )
 					temp->hitpoints = set.hp_minimum;
@@ -646,6 +650,8 @@ void cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *act
 		{
 			for ( temp = info; temp != NULL; temp = temp->trailer )
 			{
+				if(temp == NULL) return;
+
 				/* HP cheat disabled - keep HP value sane */
 				if ( set.freeze_hp_values )
 				{
@@ -1049,11 +1055,9 @@ void cheat_handle_unfreeze ( struct vehicle_info *vehicle_info, struct actor_inf
 
 	if ( KEY_PRESSED(set.key_anti_freeze) )
 	{
-		ScriptCommand( &toggle_player_controllable, 0, 1 );
-		ScriptCommand( &lock_actor, 1, 0 );
-		ScriptCommand( &restore_camera_with_jumpcut );
-		ScriptCommand( &set_camera_directly_behind );
-		ScriptCommand( &restore_camera_with_jumpcut );
+		GTAfunc_TogglePlayerControllable(0);
+		GTAfunc_LockActor(0);
+		pGameInterface->GetCamera()->RestoreWithJumpCut();
 	}
 }
 
@@ -1077,6 +1081,8 @@ void cheat_handle_emo ( struct vehicle_info *vehicle_info, struct actor_info *ac
 			{
 				for ( vtemp = vehicle_info; vtemp != NULL; vtemp = vtemp->trailer )
 				{
+					if(vtemp == NULL) return;
+
 					vtemp->hitpoints = 1.0f;
 					cheat_vehicle_tires_set( vtemp, 1 );
 					if ( !set.trailer_support )
@@ -1114,7 +1120,7 @@ void cheat_handle_antiHijack ( actor_info *ainfo, vehicle_info *veh, float time_
 			cheat_state->_generic.anti_carjackTick = 0;
 			cheat_state->_generic.car_jacked = false;
 			cheat_state->_generic.unrelatedToAnything = 1337;
-			ScriptCommand( &put_actor_in_car, 1, cheat_state->_generic.car_jacked_last_vehicle_id );
+			GTAfunc_PutActorInCar(GetVehicleByGtaId(cheat_state->_generic.car_jacked_last_vehicle_id));
 			cheat_state->_generic.unrelatedToAnything = 0x1337;
 
 			struct vehicle_info *veh = GetVehicleByGtaId( cheat_state->_generic.car_jacked_last_vehicle_id );

@@ -161,3 +161,16 @@ bool		GTAfunc_ProcessLineOfSight ( CVector *vecStart, CVector *vecEnd, CColPoint
 										 CEntitySAInterface **CollisionEntity, bool bCheckBuildings, bool bCheckVehicles,
 										 bool bCheckPeds, bool bCheckObjects, bool bCheckDummies, bool bSeeThroughStuff,
 										 bool bIgnoreSomeObjectsForCamera, bool bShootThroughStuff );
+void GTAfunc_TogglePlayerControllable(bool boolSafe);
+void GTAfunc_LockActor(bool boolLock);
+void GTAfunc_PutActorInCar(vehicle_info *vehicle);
+void GTAfunc_PutActorInCarAsPassenger(vehicle_info *vehicle, int iSeat);
+void GTAfunc_RemoveActorFromCarAndPutAt(float fPos[3]);
+void GTAfunc_EnterCarAsDriver(vehicle_info *vehicle);
+void GTAfunc_RepairVehicle(vehicle_info *vehicle);
+void GTAfunc_CameraOnActor(actor_info *actor);
+void GTAfunc_CameraOnVehicle(vehicle_info *vehicle);
+void GTAfunc_PerformAnimation(const char *szBlockName, const char *szAnimName, int iTime, bool bLoop,
+							  bool bUpdatePosition, bool bInterruptable, bool bFreezeLastFrame, bool bRunInSequence, bool bOffsetPed, bool bHoldLastFrame);
+void GTAfunc_DisembarkInstantly();
+void GTAfunc_ApplyRotoryPulseAboutAnAxis(float fX, float fY, float fZ);

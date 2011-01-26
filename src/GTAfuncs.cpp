@@ -517,3 +517,256 @@ bool GTAfunc_ProcessLineOfSight ( CVector *vecStart, CVector *vecEnd, CColPoint 
 
 	return bReturn;
 }
+
+void GTAfunc_TogglePlayerControllable(bool bToggle)
+{
+	DWORD func = FUNC_MakePlayerSafe;
+	float fTen = 10.0f;
+	_asm
+	{
+		mov ecx,	ACTOR_POINTER_SELF
+		push		fTen
+		push		bToggle
+		call		func
+	}
+}
+
+void GTAfunc_LockActor(bool boolLock)
+{
+	DWORD *actor = (DWORD *)pPedSelfSA;
+
+	if(actor)
+	{
+		if(boolLock)
+		{
+			_asm
+			{
+				mov ebx, dword ptr [actor]
+				add ebx, 64
+				or dword ptr [ebx], 0x2000
+			}
+		}
+		else
+		{
+			_asm
+			{
+				mov ebx, dword ptr [actor]
+				add ebx, 64
+				and dword ptr [ebx], 0xFFFFDFFF
+			}
+		}
+	}
+}
+
+void GTAfunc_PutActorInCar(vehicle_info *vehicle)
+{
+	CVehicle *pCurrentVehicle = pGameInterface->GetPools()->GetVehicle((DWORD *)vehicle_info_get(VEHICLE_SELF, 0));
+	if(pCurrentVehicle)
+	{
+		CTaskSimpleCarSetPedOut* pOutTask = pGameInterface->GetTasks()->CreateTaskSimpleCarSetPedOut(pCurrentVehicle, 1, false);
+		if(pOutTask)
+		{
+			// May seem illogical, but it'll crash without this
+			pOutTask->SetKnockedOffBike(); 
+
+			pOutTask->ProcessPed(pPedSelf);
+			pOutTask->SetIsWarpingPedOutOfCar ();
+			pOutTask->Destroy();
+		}
+	}
+
+	CVehicle *pVehicle = pGameInterface->GetPools()->GetVehicle((DWORD *)vehicle);
+	if(pVehicle)
+	{
+		CTaskSimpleCarSetPedInAsDriver* pInTask = pGameInterface->GetTasks()->CreateTaskSimpleCarSetPedInAsDriver(pVehicle);
+		if(pInTask)
+		{
+			pInTask->SetIsWarpingPedIntoCar();
+			pInTask->ProcessPed(pPedSelf);
+			pInTask->Destroy();
+		}
+	}
+}
+
+void GTAfunc_PutActorInCarAsPassenger(vehicle_info *vehicle, int iSeat)
+{
+	CVehicle *pVehicle = pGameInterface->GetPools()->GetVehicle((DWORD *)vehicle);
+	if(pVehicle)
+	{
+		CTaskSimpleCarSetPedInAsPassenger* pInTask = pGameInterface->GetTasks()->CreateTaskSimpleCarSetPedInAsPassenger(pVehicle, iSeat);
+		if(pInTask)
+		{
+			pInTask->SetIsWarpingPedIntoCar();
+			pInTask->ProcessPed(pPedSelf);
+			pInTask->Destroy();
+		}
+	}
+}
+
+void GTAfunc_RemoveActorFromCarAndPutAt(float fPos[3])
+{
+	CVehicle *pCurrentVehicle = pGameInterface->GetPools()->GetVehicle((DWORD *)vehicle_info_get(VEHICLE_SELF, 0));
+	if(pCurrentVehicle)
+	{
+		CTaskSimpleCarSetPedOut* pOutTask = pGameInterface->GetTasks()->CreateTaskSimpleCarSetPedOut(pCurrentVehicle, 1, false);
+		if(pOutTask)
+		{
+			// May seem illogical, but it'll crash without this
+			pOutTask->SetKnockedOffBike(); 
+
+			pOutTask->ProcessPed(pPedSelf);
+			pOutTask->SetIsWarpingPedOutOfCar ();
+			pOutTask->Destroy();
+
+			cheat_teleport(fPos, 0);
+		}
+	}
+}
+
+void GTAfunc_EnterCarAsDriver(vehicle_info *vehicle)
+{
+	CVehicle *pVehicle = pGameInterface->GetPools()->GetVehicle((DWORD *)vehicle);
+	if(pVehicle)
+	{
+		CTaskComplexEnterCarAsDriver* pInTask = pGameInterface->GetTasks()->CreateTaskComplexEnterCarAsDriver(pVehicle);
+		if(pInTask)
+			pInTask->SetAsPedTask(pPedSelf, TASK_PRIORITY_PRIMARY, true);
+	}
+}
+
+void GTAfunc_RepairVehicle(vehicle_info *vehicle)
+{
+	CVehicle *pVehicle = pGameInterface->GetPools()->GetVehicle((DWORD *)vehicle);
+	if(pVehicle)
+	{
+		pVehicle->Fix();
+		pVehicle->SetHealth(1000.00f);
+	}
+}
+
+void GTAfunc_CameraOnActor(actor_info *actor)
+{
+	if(actor == NULL) return;
+
+	CEntity *pEntity = pGameInterface->GetPools()->GetEntity((DWORD *)actor);
+	CCamera *pCamera = pGameInterface->GetCamera();
+	if(pCamera && pEntity)
+		pCamera->TakeControl(pEntity, MODE_FOLLOWPED, 1);
+}
+
+void GTAfunc_CameraOnVehicle(vehicle_info *vehicle)
+{
+	if(vehicle == NULL) return;
+
+	CEntity *pEntity = pGameInterface->GetPools()->GetEntity((DWORD *)vehicle);
+	CCamera *pCamera = pGameInterface->GetCamera();
+	if(pCamera && pEntity)
+		pCamera->TakeControl(pEntity, MODE_BEHINDCAR, 1);
+}
+
+void GTAfunc_PerformAnimation(const char *szBlockName, const char *szAnimName, int iTime, bool bLoop,
+							  bool bUpdatePosition, bool bInterruptable, bool bFreezeLastFrame, bool bRunInSequence, bool bOffsetPed, bool bHoldLastFrame)
+{
+	CAnimBlock *pBlock = pGameInterface->GetAnimManager()->GetAnimationBlock(szBlockName);
+	if(pBlock)
+	{
+		bool bLoaded = true;
+
+		if(!pBlock->IsLoaded())
+		{
+			int iTimeToWait = 50;
+
+			pGameInterface->GetStreaming()->RequestAnimations(pBlock->GetIndex(), 4);
+			pGameInterface->GetStreaming()->LoadAllRequestedModels();
+
+			while(!pBlock->IsLoaded() && iTimeToWait != 0)
+			{
+				iTimeToWait--;
+				Sleep(10);
+			}
+
+			if(iTimeToWait == 0)
+				bLoaded = false;
+		}
+
+		if(bLoaded)
+		{
+			int flags = 0x10; // // Stops jaw fucking up, some speaking flag maybe   
+			if(bLoop) flags |= 0x2; // flag that triggers the loop (Maccer)
+			if(bUpdatePosition) 
+			{
+				// 0x40 enables position updating on Y-coord, 0x80 on X. (Maccer)
+				flags |= 0x40; 
+				flags |= 0x80;
+			}
+
+			if(!bFreezeLastFrame) flags |= 0x08; // flag determines whether to freeze player when anim ends. Really annoying (Maccer)
+			CTask *pTask = pGameInterface->GetTasks()->CreateTaskSimpleRunNamedAnim(
+				szAnimName, pBlock->GetName(), flags, 4.0f, iTime, !bInterruptable, bRunInSequence, bOffsetPed, bHoldLastFrame);
+
+			if(pTask)
+			{
+				pTask->SetAsPedTask(pPedSelf, TASK_PRIORITY_PRIMARY);
+			}                
+		}
+		else
+		{
+			// TODO: unload unreferenced blocks later on
+			pGameInterface->GetStreaming()->RequestAnimations(pBlock->GetIndex(), 8);
+		}
+	}
+}
+
+void GTAfunc_DisembarkInstantly()
+{
+	DWORD *actor = (DWORD *)pPedSelfSA;
+
+	if(actor)
+	{
+		DWORD dwFunc = 0x601640;
+		_asm
+		{
+			mov ecx, dword ptr [actor]
+			add ecx, 1148
+			mov ecx, dword ptr [ecx]
+			call dwFunc
+		}
+	}
+}
+
+void GTAfunc_ApplyRotoryPulseAboutAnAxis(float fX, float fY, float fZ)
+{
+	struct vehicle_info *vinfo = vehicle_info_get(VEHICLE_SELF, 0);
+	if(vinfo)
+	{
+		DWORD dwFunc = 0x59C790;
+
+		float fRotPtr[3];
+		float *fpVehMatrix = vinfo->base.matrix;
+		float *fpVehSpin = &vinfo->spin[0];
+		float fFuncRet[3];
+
+		fX *= 0.02000000f;
+		fY *= 0.02000000f;
+		fZ *= 0.02000000f;
+		fRotPtr[0] = fX;
+		fRotPtr[1] = fY;
+		fRotPtr[2] = fZ;
+
+		_asm
+		{
+			lea ecx, fRotPtr
+			push ecx
+			push fpVehMatrix
+			lea edx, fFuncRet
+			push edx
+			call dwFunc
+		}
+
+		fpVehSpin[0] += fFuncRet[0];
+		fpVehSpin[1] += fFuncRet[1];
+		fpVehSpin[2] += fFuncRet[2];
+
+		vect3_copy(fpVehSpin, fFuncRet);
+	}
+}

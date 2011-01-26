@@ -274,10 +274,6 @@ void cheat_hook ( HWND wnd )
 			// load all the weapon models
 			loadAllWeaponModels();
 
-			// preload any animation files we need
-			ScriptCommand( &load_animation, "SWIM" );
-			//Animation_Loader("SWIM");
-
 			// get funky
 			//pGameInterface->GetAudio()->PlayBeatTrack(2);
 

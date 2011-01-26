@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="mod_sa"
 	ProjectGUID="{02EB97D5-B1C5-411E-8274-83A95985DE6F}"
 	RootNamespace="mod_sa"
@@ -1678,14 +1678,6 @@
 				RelativePath=".\samp.h"
 				>
 			</File>
-			<File
-				RelativePath=".\scripting.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\scripting.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="D3D9"
@@ -1792,10 +1784,6 @@
 			</Filter>
 		</Filter>
 		<File
-			RelativePath=".\mod_sa.def"
-			>
-		</File>
-		<File
 			RelativePath=".\main.cpp"
 			>
 			<FileConfiguration
@@ -1809,6 +1797,10 @@
 		</File>
 		<File
 			RelativePath=".\main.h"
+			>
+		</File>
+		<File
+			RelativePath=".\mod_sa.def"
 			>
 		</File>
 		<File

@@ -490,11 +490,9 @@ void spectatePlayer(int iPlayerID)
 {
 	if ( iPlayerID == -1 )
 	{
-	   ScriptCommand( &toggle_player_controllable, 0, 1 );
-	   ScriptCommand( &lock_actor, 1, 0 );
-	   ScriptCommand( &restore_camera_with_jumpcut );
-	   ScriptCommand( &set_camera_directly_behind );
-	   ScriptCommand( &restore_camera_with_jumpcut );
+		GTAfunc_TogglePlayerControllable(0);
+		GTAfunc_LockActor(0);
+		pGameInterface->GetCamera()->RestoreWithJumpCut();
 
 		g_iSpectateEnabled = 0;
 		g_iSpectateLock = 0;
@@ -522,19 +520,19 @@ void spectateHandle()
 
 					if(iState == PLAYER_STATE_ONFOOT)
 					{
-						ScriptCommand(&camera_on_actor, getPedGTAScriptingIDFromPlayerID(g_iSpectatePlayerID), 4, 1);
+						GTAfunc_CameraOnActor(getGTAPedFromSAMPPlayerID(g_iSpectatePlayerID));
 						g_iSpectateLock = 1;
 					}
 					else if(iState == PLAYER_STATE_DRIVER)
 					{
-						int iPlayerVehicleID = g_Players->pRemotePlayer[g_iSpectatePlayerID]->pPlayerData->sVehicleID;
-						ScriptCommand(&camera_on_vehicle, getVehicleGTAScriptingIDFromVehicleID(iPlayerVehicleID), 3, 1);
+						struct vehicle_info *pPlayerVehicleID = g_Players->pRemotePlayer[g_iSpectatePlayerID]->pPlayerData->pSAMP_Vehicle->pGTA_Vehicle;
+						GTAfunc_CameraOnVehicle(pPlayerVehicleID);
 						g_iSpectateLock = 1;
 					}
 					else if(iState == PLAYER_STATE_PASSENGER)
 					{
-						int iPlayerVehicleID = g_Players->pRemotePlayer[g_iSpectatePlayerID]->pPlayerData->sVehicleID;
-						ScriptCommand(&camera_on_vehicle, getVehicleGTAScriptingIDFromVehicleID(iPlayerVehicleID), 3, 1);
+						struct vehicle_info *pPlayerVehicleID = g_Players->pRemotePlayer[g_iSpectatePlayerID]->pPlayerData->pSAMP_Vehicle->pGTA_Vehicle;
+						GTAfunc_CameraOnVehicle(pPlayerVehicleID);
 						g_iSpectateLock = 1;
 					}
 				}

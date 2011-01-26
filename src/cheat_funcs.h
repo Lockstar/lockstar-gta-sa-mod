@@ -458,8 +458,3 @@ CVehicle							*getSelfCVehicle ( void );
 int									getVehicleGTAIDFromInterface ( DWORD *vehicle );
 int									getPedGTAIDFromInterface ( DWORD *ped );
 D3DXVECTOR3							CVecToD3DXVEC ( CVector vec );
-
-// Animation Wrappers
-int Animation_Loader ( const char *IFP );
-int Animation_Perform ( const char *IFP, const char *Animation, float speed, bool loop, bool lockPosition, int time );
-int Animation_Releaser ( const char *IFP );

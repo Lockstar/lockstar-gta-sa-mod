@@ -244,9 +244,6 @@ static int init ( void )
 		// get SAMP and set g_dwSAMP_Addr
 		getSamp();
 
-		// setup SCM thread
-		InitScripting();
-
 		// get actual d3d9.dll and proxy original D3D9Device
 		char	filename[MAX_PATH];
 		GetSystemDirectory( filename, (UINT) (MAX_PATH - strlen("\\d3d9.dll") - 1) );
