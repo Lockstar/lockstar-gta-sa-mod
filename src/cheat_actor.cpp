@@ -724,9 +724,16 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 		// set fly status
 		cheat_state->actor.fly_enabled = true;
 
+		// get ground Z height
+		float groundZHeight = pGame->GetWorld()->FindGroundZFor3DPosition(pPedSelf->GetPosition());
+		float playerZHeight = pPedSelf->GetPosition()->fZ;
+
 		// standing detection
-		if ( ainfo->pedFlags.bIsStanding
-			&& cheat_state->actor.fly_active )
+		if ( cheat_state->actor.fly_active
+				&& ainfo->pedFlags.bIsStanding
+			|| cheat_state->actor.fly_active
+				&& groundZHeight + 1.5f > playerZHeight
+				&& groundZHeight - 1.5f < playerZHeight)
 		{
 			cheat_state->actor.fly_active = false;
 			// copy camera rotation to player
@@ -735,7 +742,9 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			playerFly_lastKeyState = none;
 			GTAfunc_DisembarkInstantly();
 		}
-		else if ( ainfo->pedFlags.bIsStanding )
+		else if ( ainfo->pedFlags.bIsStanding
+			|| groundZHeight + 1.5f > playerZHeight
+				&& groundZHeight - 1.5f < playerZHeight )
 		{
 			// do nothing
 		}
@@ -764,7 +773,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				if ( keyState == none )
 				{
 					// start fly animation
-					GTAfunc_PerformAnimation("SWIM", "Swim_Breast", -1, 1, 1, 0, 0, 0, 1, 1);
+					GTAfunc_PerformAnimation("SWIM", "Swim_Breast", -1, 1, 1, 0, 0, 0, 1, 0);
 				}
 			}
 			
@@ -776,31 +785,33 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				{
 				case none:
 					{
-						GTAfunc_PerformAnimation("SWIM", "Swim_Breast", -1, 1, 1, 0, 0, 0, 1, 1);
+						GTAfunc_PerformAnimation("SWIM", "Swim_Breast", -1, 1, 1, 0, 0, 0, 1, 0);
+						break;
 					}
 				case accelerate:
 					{
-						GTAfunc_PerformAnimation("SWIM", "SWIM_crawl", -1, 1, 1, 0, 0, 0, 1, 1);
+						GTAfunc_PerformAnimation("SWIM", "SWIM_crawl", -1, 1, 1, 0, 0, 0, 1, 0);
+						break;
 					}
 				case decelerate:
 					{
-						GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 1);
+						GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 0);
+						break;
 					}
 				}
 			}
-
-
-
 
 			// get player speed
 			CVector vecSpeed;
 			pPedSelf->GetMoveSpeed(&vecSpeed);
 
+			/*
 			// I got my googoo all over it.
 			// this is to tilt the player based on rotation only
 			float rotateDiff = ainfo->fCurrentRotation - -pGame->GetCamera()->GetCameraRotation();
 			// more than half turn in one frame won't happen unless
 			// it's passing through 360 degrees, so let's correct for it
+			// * this code is totally whack right now
 			if ( rotateDiff > 180.0f )
 			{
 				rotateDiff -= 360.0f;
@@ -823,6 +834,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			{
 				playerFly_rotateTiltGoo = 0.0f;
 			}
+			*/
 
 			// copy camera rotation to player
 			ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
@@ -860,9 +872,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			// set player matrix
 			pPedSelf->SetMatrix(&matPed);
 
-
-
-
+//
 
 			// rotate the speed vector slowly to face the player direction
 			CMatrix matSpeedVecRotate = CMatrix();
@@ -882,9 +892,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			matSpeedVecRotate.vFront.Normalize();
 			ainfo->m_SpeedVec = matSpeedVecRotate.vFront * vecSpeed.Length();
 
-
-
-
+//
 
 			// speed operations
 			CVector vecPedSpeed = ainfo->m_SpeedVec;
@@ -899,7 +907,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				if ( keyState == accelerate )
 				{
 					fly_speed = 2.0f;
-					fly_acceleration = 1.0f * time_diff;
+					fly_acceleration = 0.9f * time_diff;
 				}
 
 				// positive
@@ -913,11 +921,12 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				{
 					vecPedSpeed.fY += fly_acceleration;
 				}
+				// more upward acceleration boost & speed
 				if ( matPed.vFront.fZ >= 0.0f
-					&& vecPedSpeed.fZ < matPed.vFront.fZ * fly_speed * 2 )
+					&& vecPedSpeed.fZ < matPed.vFront.fZ * fly_speed * 2.0f )
 				{
-					// more upward acceleration boost & speed
-					vecPedSpeed.fZ += fly_acceleration * 2;
+					// unfortunately GTA's wind/falling physics limits the upward speed? very odd.
+					vecPedSpeed.fZ += fly_acceleration * 2.0f;
 				}
 				// negative
 				if ( matPed.vFront.fX < 0.0f
@@ -946,7 +955,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			{
 				float speed = vect3_length( ainfo->speed );
 				vect3_normalize( ainfo->speed, ainfo->speed );
-				speed -= time_diff * 1.3f;
+				speed -= time_diff * 0.8f;
 
 				if ( speed < 0.0f )
 					speed = 0.0f;
@@ -961,9 +970,6 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				}
 			}
 
-
-
-
 /*
 
 int lineSpace = 0;
@@ -972,8 +978,6 @@ sprintf( buf, "keyState: %d", keyState );
 pD3DFontFixed->PrintShadow(50, 650 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
 lineSpace += 12;
 */
-
-
 
 		}
 	}
@@ -986,7 +990,7 @@ lineSpace += 12;
 		playerFly_lastKeyState = none;
 		GTAfunc_DisembarkInstantly();
 		// copy camera rotation to player
-		ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
+		//ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
 	}
 }
 
