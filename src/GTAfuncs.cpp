@@ -590,6 +590,21 @@ void GTAfunc_PutActorInCar(vehicle_info *vehicle)
 
 void GTAfunc_PutActorInCarAsPassenger(vehicle_info *vehicle, int iSeat)
 {
+	CVehicle *pCurrentVehicle = pGameInterface->GetPools()->GetVehicle((DWORD *)vehicle_info_get(VEHICLE_SELF, 0));
+	if(pCurrentVehicle)
+	{
+		CTaskSimpleCarSetPedOut* pOutTask = pGameInterface->GetTasks()->CreateTaskSimpleCarSetPedOut(pCurrentVehicle, 1, false);
+		if(pOutTask)
+		{
+			// May seem illogical, but it'll crash without this
+			pOutTask->SetKnockedOffBike(); 
+
+			pOutTask->ProcessPed(pPedSelf);
+			pOutTask->SetIsWarpingPedOutOfCar ();
+			pOutTask->Destroy();
+		}
+	}
+
 	CVehicle *pVehicle = pGameInterface->GetPools()->GetVehicle((DWORD *)vehicle);
 	if(pVehicle)
 	{
