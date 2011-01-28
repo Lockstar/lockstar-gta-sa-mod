@@ -37,6 +37,7 @@ void cheat_actor_teleport ( struct actor_info *info, const float pos[3], int int
 {
 	if ( info == NULL )
 		return;
+	vect3_zero( info->speed );
 	vect3_copy( pos, &info->base.matrix[4 * 3] );
 	gta_interior_id_set( interior_id );
 }
@@ -463,7 +464,7 @@ void cheat_actor_setGravity ( actor_info *ainfo, CVector pvecGravity )
 }
 
 
-
+/*
 static CMatrix_Padded * mat_SpiderFeetCollisionTransform = new CMatrix_Padded();
 static CMatrix_Padded * mat_SpiderFeetCollisionTransform_Original = (CMatrix_Padded*)0x968988;
 uint8_t mat_SpiderFeetCollisionTransform_Offset[4] = {
@@ -559,6 +560,7 @@ void cheat_handle_SpiderFeet ( struct actor_info *ainfo, double time_diff )
 			CVector rotationAxis = colTransformer.vUp;
 			rotationAxis.CrossProduct( &-colGravTemp );
 			float theta = colTransformer.vUp.DotProduct( &-colGravTemp );
+// add check here for theta nearzero
 			colTransformer = colTransformer.Rotate( &rotationAxis, -cos(theta) );
 			//colTransformer.vPos = colPosOriginal;
 			mat_SpiderFeetCollisionTransform->SetFromMatrix( colTransformer );
@@ -630,7 +632,7 @@ void cheat_handle_SpiderFeet ( struct actor_info *ainfo, double time_diff )
 				//pPedSelfSA->vecSpinCollision->fX = vecVelocity.fX;
 
 				//memcpy_safe( pPedSelfSA->vecSpinCollision, &vecVelocity, sizeof(float[3]) );
-
+*/
 
 			/*
 			// get matrix, backup original front vector for comparison
@@ -643,6 +645,7 @@ void cheat_handle_SpiderFeet ( struct actor_info *ainfo, double time_diff )
 
 			// rotate matrix on right axis
 			float rotation_theta = M_PI / 2.0f;
+// add check for theta nearzero
 			matPed = matPed.Rotate( &matPed.vRight, rotation_theta );
 
 			// compare
@@ -661,7 +664,7 @@ void cheat_handle_SpiderFeet ( struct actor_info *ainfo, double time_diff )
 			//CVehicle blah;
 			//blah.SetWas( vecSpinCompare );
 			*/
-
+/*
 
 		}
 		//key_ninjaflipfront
@@ -694,6 +697,7 @@ void cheat_handle_SpiderFeet ( struct actor_info *ainfo, double time_diff )
 		cheat_state->actor.SpiderFeet_Enabled = false;
 	}
 }
+*/
 
 // used for cheat_handle_actor_fly()
 enum playerFly_keyStates
@@ -703,7 +707,7 @@ enum playerFly_keyStates
 	decelerate
 };
 playerFly_keyStates playerFly_lastKeyState = none;
-float playerFly_rotateTiltGoo = 0.0f;
+//float playerFly_rotateTiltGoo = 0.0f;
 
 void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 {
@@ -727,29 +731,56 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 		// get ground Z height
 		float groundZHeight = pGame->GetWorld()->FindGroundZFor3DPosition(pPedSelf->GetPosition());
 		float playerZHeight = pPedSelf->GetPosition()->fZ;
+		float playerFrontZOffset = abs(pPedSelfSA->Placeable.matrix->vFront.fZ);
+		float playerRightZOffset = abs(pPedSelfSA->Placeable.matrix->vRight.fZ);
 
 		// standing detection
 		if ( cheat_state->actor.fly_active
 				&& ainfo->pedFlags.bIsStanding
 			|| cheat_state->actor.fly_active
-				&& groundZHeight + 1.5f > playerZHeight
-				&& groundZHeight - 1.5f < playerZHeight)
+				&& groundZHeight + 1.4f > playerZHeight
+				&& groundZHeight - 1.4f < playerZHeight)
 		{
 			cheat_state->actor.fly_active = false;
-			// copy camera rotation to player
-			//ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
-			// stop fly animation
 			playerFly_lastKeyState = none;
-			GTAfunc_DisembarkInstantly();
+
+			// copy camera rotation to player
+			ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
+			ainfo->fTargetRotation = ainfo->fCurrentRotation;
+			// play landing animation
+			GTAfunc_PerformAnimation("SHOP", "SHP_Jump_Land ", -1, 0, 1, 0, 0, 0, 0, 0);
+
+			// correct for angle after landing if needed
+			if (playerFrontZOffset > 0.4f
+				|| playerRightZOffset > 0.3f)
+			{
+				// get player matrix
+				CMatrix matPed;
+				pPedSelf->GetMatrix(&matPed);
+
+				// tilt player upright
+				CVector rotationAxis = UpNormal;
+				rotationAxis.CrossProduct( &matPed.vUp );
+				float theta = ( matPed.vUp.DotProduct( &UpNormal ) );
+				if ( !near_zero(theta) )
+				{
+					matPed = matPed.Rotate( &rotationAxis, cos(theta) );
+				}
+				// normalize everything
+				matPed.vFront.Normalize();
+				matPed.vRight.Normalize();
+				matPed.vUp.Normalize();
+				// set player matrix
+				pPedSelf->SetMatrix(&matPed);
+			}
 		}
 		else if ( ainfo->pedFlags.bIsStanding
-			|| groundZHeight + 1.5f > playerZHeight
-				&& groundZHeight - 1.5f < playerZHeight )
+			|| groundZHeight + 1.6f > playerZHeight
+				&& groundZHeight - 1.6f < playerZHeight )
 		{
 			// do nothing
 		}
-		// I believe I can fly...
-		else
+		else // I believe I can fly...
 		{
 			// keys/buttons input
 			playerFly_keyStates keyState;
@@ -895,7 +926,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 //
 
 			// speed operations
-			CVector vecPedSpeed = ainfo->m_SpeedVec;
+			CVector vecPedNewSpeed = vecSpeed;
 
 			// acceleration
 			if ( keyState == none
@@ -912,50 +943,62 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 
 				// positive
 				if ( matPed.vFront.fX >= 0.0f
-					&& vecPedSpeed.fX < matPed.vFront.fX * fly_speed )
+					&& vecPedNewSpeed.fX < matPed.vFront.fX * fly_speed )
 				{
-					vecPedSpeed.fX += fly_acceleration;
+					vecPedNewSpeed.fX += fly_acceleration;
 				}
 				if ( matPed.vFront.fY >= 0.0f
-					&& vecPedSpeed.fY < matPed.vFront.fY * fly_speed )
+					&& vecPedNewSpeed.fY < matPed.vFront.fY * fly_speed )
 				{
-					vecPedSpeed.fY += fly_acceleration;
+					vecPedNewSpeed.fY += fly_acceleration;
 				}
 				// more upward acceleration boost & speed
 				if ( matPed.vFront.fZ >= 0.0f
-					&& vecPedSpeed.fZ < matPed.vFront.fZ * fly_speed * 2.0f )
+					&& vecPedNewSpeed.fZ < matPed.vFront.fZ * fly_speed * 2.0f )
 				{
 					// unfortunately GTA's wind/falling physics limits the upward speed? very odd.
-					vecPedSpeed.fZ += fly_acceleration * 2.0f;
+					vecPedNewSpeed.fZ += fly_acceleration * 2.0f;
 				}
 				// negative
 				if ( matPed.vFront.fX < 0.0f
-					&& vecPedSpeed.fX > matPed.vFront.fX * fly_speed )
+					&& vecPedNewSpeed.fX > matPed.vFront.fX * fly_speed )
 				{
-					vecPedSpeed.fX -= fly_acceleration;
+					vecPedNewSpeed.fX -= fly_acceleration;
 				}
 				if ( matPed.vFront.fY < 0.0f
-					&& vecPedSpeed.fY > matPed.vFront.fY * fly_speed )
+					&& vecPedNewSpeed.fY > matPed.vFront.fY * fly_speed )
 				{
-					vecPedSpeed.fY -= fly_acceleration;
+					vecPedNewSpeed.fY -= fly_acceleration;
 				}
 				if ( matPed.vFront.fZ < 0.0f
-					&& vecPedSpeed.fZ > matPed.vFront.fZ * fly_speed )
+					&& vecPedNewSpeed.fZ > matPed.vFront.fZ * fly_speed )
 				{
-					vecPedSpeed.fZ -= fly_acceleration;
+					vecPedNewSpeed.fZ -= fly_acceleration;
 				}
 				// don't have NearZero speeds
-				if ( !vecPedSpeed.IsNearZero() )
+				if ( !vecPedNewSpeed.IsNearZero() )
 				{
 					// set speed vector
-					ainfo->m_SpeedVec = vecPedSpeed;
+					ainfo->m_SpeedVec = vecPedNewSpeed;
 				}
 			}
 			else if ( keyState == decelerate )
 			{
+				// this bit should be converted to mta-style code
 				float speed = vect3_length( ainfo->speed );
 				vect3_normalize( ainfo->speed, ainfo->speed );
-				speed -= time_diff * 0.8f;
+				if (speed > 1.0f)
+				{
+					speed -= time_diff * 0.8f / speed;
+				}
+				else if (speed > 0.5f)
+				{
+					speed -= time_diff * 0.6f / (speed / 2);
+				}
+				else
+				{
+					speed -= time_diff * 0.3f;
+				}
 
 				if ( speed < 0.0f )
 					speed = 0.0f;
@@ -969,29 +1012,42 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 					vect3_mult( ainfo->speed, speed, ainfo->speed );
 				}
 			}
-
-/*
-
-int lineSpace = 0;
-char buf[256];
-sprintf( buf, "keyState: %d", keyState );
-pD3DFontFixed->PrintShadow(50, 650 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
-lineSpace += 12;
-*/
-
-		}
+		} // I believe I can touch the sky...
 	}
 	else if ( cheat_state->actor.fly_enabled )
 	{
 		// set fly disabled
 		cheat_state->actor.fly_enabled = false;
-		cheat_state->actor.fly_active = false;
-		// stop animation
+		if (cheat_state->actor.fly_active)
+		{
+			cheat_state->actor.fly_active = false;
+			// copy camera rotation to player
+			ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
+			ainfo->fTargetRotation = ainfo->fCurrentRotation;
+			// stop animation
+			GTAfunc_DisembarkInstantly();
+		}
 		playerFly_lastKeyState = none;
-		GTAfunc_DisembarkInstantly();
-		// copy camera rotation to player
-		//ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
 	}
+
+/*
+
+int lineSpace = 0;
+char buf[256];
+sprintf( buf, "speed: %0.1f", ainfo->m_SpeedVec.Length() );
+pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
+lineSpace += 12;
+if (pPedSelf->GetPedIntelligence()->GetTaskManager()->GetActiveTask())
+{
+	sprintf( buf, "GetTaskName(): %s", pPedSelf->GetPedIntelligence()->GetTaskManager()->GetActiveTask()->GetTaskName() );
+	pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
+	lineSpace += 12;
+	sprintf( buf, "GetTaskType(): %d", pPedSelf->GetPedIntelligence()->GetTaskManager()->GetActiveTask()->GetTaskType() );
+	pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
+	lineSpace += 12;
+}
+*/
+
 }
 
 void cheat_handle_actor_nitro ( struct actor_info *info, double time_diff )

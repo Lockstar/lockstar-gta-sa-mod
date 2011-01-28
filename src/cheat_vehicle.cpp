@@ -210,7 +210,7 @@ void cheat_handle_vehicle_unflip ( struct vehicle_info *info, float time_diff )
 
 		// axis and rotation for gravity
 		float	theta = acos( rotationAxis.DotProduct(&cvehGrav) );
-		if ( theta > FLOAT_EPSILON )
+		if ( !near_zero(theta) )
 		{
 			rotationAxis.CrossProduct( &cvehGrav );
 			rotationAxis.Normalize();
@@ -1488,7 +1488,7 @@ void cheat_handle_vehicle_keepTrailer ( struct vehicle_info *vinfo, float time_d
 
 					// axis and rotation for gravity
 					theta = acos( rotationAxis.DotProduct(&cvehGrav) );
-					if ( theta > FLOAT_EPSILON )
+					if ( !near_zero(theta) )
 					{
 						rotationAxis.CrossProduct( &cvehGrav );
 						rotationAxis.Normalize();
@@ -1506,7 +1506,7 @@ void cheat_handle_vehicle_keepTrailer ( struct vehicle_info *vinfo, float time_d
 					rotationAxis = cheat_vehicle_getPositionUnder( cvehtrailer );
 					cvehtrailer->GetMatrix( &cvehMatrix );
 					theta = acos( rotationAxis.DotProduct(&cvehGrav) );
-					if ( theta > FLOAT_EPSILON )
+					if ( !near_zero(theta) )
 					{
 						rotationAxis.CrossProduct( &cvehGrav );
 						rotationAxis.Normalize();

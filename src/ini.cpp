@@ -679,7 +679,7 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.hud_indicator_onfoot_stick, "true" );
 	if ( (ent = ini_register_entry("hud_indicator_onfoot_aim", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.hud_indicator_onfoot_aim, "true" );
-	if ( (ent = ini_register_entry("hud_indicator_onfoot_airswim", TYPE_BOOL)) != NULL )
+	if ( (ent = ini_register_entry("hud_indicator_onfoot_fly", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.hud_indicator_onfoot_fly, "true" );
 
 	if ( (ent = ini_register_entry("hud_indicator_pos", TYPE_BOOL)) != NULL )
@@ -714,8 +714,10 @@ static void ini_init ( void )
 	if ( (ent = ini_register_entry("logo_enable", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.logo_enable, "true" );
 
-	if ( (ent = ini_register_entry("wallhack", TYPE_BOOL)) != NULL )
-		ini_register_data( ent, &set.wallhack, "false" );
+	if ( (ent = ini_register_entry("chams_on", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.chams_on, "false" );
+	if ( (ent = ini_register_entry("chams_wireframe", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.chams_wireframe, "true" );
 
 	/* samp stuff */
 	if ( (ent = ini_register_entry("d3dtext_chat", TYPE_BOOL)) != NULL )

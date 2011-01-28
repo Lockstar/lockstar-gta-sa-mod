@@ -67,7 +67,7 @@
 #define ID_CHEAT_HANDLING					170
 #define ID_CHEAT_KEEP_TRAILER				180
 #define ID_CHEAT_NOCOLS						190
-#define ID_CHEAT_WALLHACK					200
+#define ID_CHEAT_CHAMS					200
 
 #define ID_CHEAT_INVULN_ACTOR				0
 #define ID_CHEAT_INVULN_VEHICLE				1
@@ -122,7 +122,8 @@
 #define ID_MISC_BAD_WEAPONS					3
 #define ID_MISC_TRAILERS					4
 #define ID_MISC_FPSLIMIT					5
-#define ID_MISC_TOGGLEWINDOWED				6
+// InitWindowMode needs fixing, see notes above it
+//#define ID_MISC_TOGGLEWINDOWED				6
 #define ID_MISC_CLEANSCREENSHOT				7
 
 #define ID_DEBUG_ENABLE						0
@@ -1009,8 +1010,8 @@ static int menu_callback_cheats ( int op, struct menu_item *item )
 		case ID_CHEAT_NOCOLS:
 			return cheat_state->_generic.nocols_toggled;
 
-		case ID_CHEAT_WALLHACK:
-			return set.wallhack;
+		case ID_CHEAT_CHAMS:
+			return set.chams_on;
 		}
 		break;
 
@@ -1082,8 +1083,8 @@ static int menu_callback_cheats ( int op, struct menu_item *item )
 			cheat_state->_generic.nocols_toggled ^= 1;
 			break;
 
-		case ID_CHEAT_WALLHACK:
-			set.wallhack ^= 1;
+		case ID_CHEAT_CHAMS:
+			set.chams_on ^= 1;
 			break;
 
 		default:
@@ -1710,10 +1711,11 @@ static int menu_callback_misc ( int op, struct menu_item *item )
 
 		case ID_MISC_FPSLIMIT:
 			return 0;
-
+// InitWindowMode needs fixing, see notes above it
+/*
 		case ID_MISC_TOGGLEWINDOWED:
 			return set.window_mode;
-
+*/
 		case ID_MISC_CLEANSCREENSHOT:
 			return set.screenshot_clean;
 		}
@@ -1749,9 +1751,12 @@ static int menu_callback_misc ( int op, struct menu_item *item )
 			set.trailer_support ^= 1;
 			break;
 
+// InitWindowMode needs fixing, see notes above it
+/*
 		case ID_MISC_TOGGLEWINDOWED:
 			toggleWindowedMode();
 			break;
+*/
 
 		case ID_MISC_CLEANSCREENSHOT:
 			set.screenshot_clean ^= 1;
@@ -2756,7 +2761,7 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_cheats, NULL, "Unlock vehicles", ID_CHEAT_UNLOCK, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_cheats, NULL, "Keep trailers attached", ID_CHEAT_KEEP_TRAILER, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_cheats, NULL, "Toggle vehicle collisions", ID_CHEAT_NOCOLS, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_cheats, NULL, "Wallhack", ID_CHEAT_WALLHACK, MENU_COLOR_DEFAULT, NULL );
+	menu_item_add( menu_cheats, NULL, "Chams", ID_CHEAT_CHAMS, MENU_COLOR_DEFAULT, NULL );
 
 	/* main menu -> cheats -> invulnerable */
 	menu_item_add( menu_cheats_inv, NULL, "Actor invulnerability", ID_CHEAT_INVULN_ACTOR, MENU_COLOR_DEFAULT, NULL );
@@ -2963,7 +2968,8 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_misc, menu_hudindicators, "Toggle HUD indicators", ID_NONE, MENU_COLOR_DEFAULT, NULL );
 	snprintf( name, sizeof(name), "FPS limit: %d", set.fps_limit );
 	menu_item_add( menu_misc, NULL, name, ID_MISC_FPSLIMIT, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_misc, NULL, "Toggle windowed mode", ID_MISC_TOGGLEWINDOWED, MENU_COLOR_DEFAULT, NULL );
+// InitWindowMode needs fixing, see notes above it
+//	menu_item_add( menu_misc, NULL, "Toggle windowed mode", ID_MISC_TOGGLEWINDOWED, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_misc, NULL, "Toggle clean screenshot", ID_MISC_CLEANSCREENSHOT, MENU_COLOR_DEFAULT, NULL );
 
 	/* misc -> debug */

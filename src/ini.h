@@ -244,7 +244,8 @@ struct settings
 
 	int						logo_enable;
 
-	int						wallhack;
+	int						chams_on;
+	int						chams_wireframe;
 
 	int						d3dtext_chat;
 	int						d3dtext_chat_lines;
@@ -271,6 +272,7 @@ struct settings
 
 	int						anti_carjacking;
 
+	// ignored because of the function being removed
 	int						window_mode;
 	int						window_mode_titlebar;
 

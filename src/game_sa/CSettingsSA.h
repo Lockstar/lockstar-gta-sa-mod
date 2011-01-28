@@ -61,7 +61,12 @@ struct CSettingsSAInterface // see code around 0x57CE9A for where these are
 	bool		bInvertPadY2;			// 0xB4
 	bool		bSwapPadAxis1;			// 0xB5
 	bool		bSwapPadAxis2;			// 0xB6
-	uint8_t		__unknown_hB7[0x19];	// 0xB7
+	uint8_t		__unknown_hB7[0x15];	// 0xB7
+
+	// added by nuckfuts
+	uint8_t		antiAliasingMode;		// 0xCC
+
+	uint8_t		__unknown_hCD[0x3];		// 0xCD
 	bool		bUseKeyboardAndMouse;	// 0xD0
 	uint8_t		__unknown_hD1[3];		// 0xD1
 	int			dwVideoMode;			// 0xD4
