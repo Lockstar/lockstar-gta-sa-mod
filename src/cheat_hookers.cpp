@@ -755,6 +755,7 @@ forceout:
 	__asm jmp RETURN_PlayerCollision_jmp
 }
 
+/*
 #define HOOKPOS_PlayerCollision_CrashFixX	0x0469FD4
 DWORD	playercol_crashFixX_ecx_back;
 DWORD	playercol_crashFixX_edx_back;
@@ -894,9 +895,12 @@ void _declspec ( naked ) PlayerCollision_CrashFix ()
 		jmp eax
 	}
 }
+*/
+
 
 // ---------------------------------------------------
 // Handle SpiderFeet standing
+/*
 #define CALL_CMatrix__rotateAroundZ 0x5E1BBA
 
 float CMatrix__rotateAroundZ_zAngle;
@@ -928,8 +932,11 @@ void _cdecl CMatrix__rotateAroundZ_hook ()
 	CMatrix__rotateAroundZ_rotationAxis.CrossProduct( &vecStraightUp );
 	// theta
 	CMatrix__rotateAroundZ_theta = CMatrix__rotateAroundZ_transformMatrix.vUp.DotProduct( &vecStraightUp );
-	// rotate
-	CMatrix__rotateAroundZ_transformMatrix = CMatrix__rotateAroundZ_transformMatrix.Rotate( &CMatrix__rotateAroundZ_rotationAxis, -cos(CMatrix__rotateAroundZ_theta) );
+	if ( !near_zero(CMatrix__rotateAroundZ_theta) )
+	{
+		// rotate
+		CMatrix__rotateAroundZ_transformMatrix = CMatrix__rotateAroundZ_transformMatrix.Rotate( &CMatrix__rotateAroundZ_rotationAxis, -cos(CMatrix__rotateAroundZ_theta) );
+	}
 
 	// set heading
 	CMatrix__rotateAroundZ_zAngleCosine = cos(CMatrix__rotateAroundZ_zAngle);
@@ -949,8 +956,11 @@ void _cdecl CMatrix__rotateAroundZ_hook ()
 	CMatrix__rotateAroundZ_rotationAxis.CrossProduct( &CMatrix__rotateAroundZ_gravityNormal );
 	// theta
 	CMatrix__rotateAroundZ_theta = CMatrix__rotateAroundZ_transformMatrix.vUp.DotProduct( &CMatrix__rotateAroundZ_gravityNormal );
-	// rotate
-	CMatrix__rotateAroundZ_transformMatrix = CMatrix__rotateAroundZ_transformMatrix.Rotate( &CMatrix__rotateAroundZ_rotationAxis, -cos(CMatrix__rotateAroundZ_theta) );
+	if ( !near_zero(CMatrix__rotateAroundZ_theta) )
+	{
+		// rotate
+		CMatrix__rotateAroundZ_transformMatrix = CMatrix__rotateAroundZ_transformMatrix.Rotate( &CMatrix__rotateAroundZ_rotationAxis, -cos(CMatrix__rotateAroundZ_theta) );
+	}
 
 	// apply matrix
 	CMatrix__rotateAroundZ_matrix->SetFromMatrix( CMatrix__rotateAroundZ_transformMatrix );
@@ -998,7 +1008,7 @@ void _declspec ( naked ) HOOK_CMatrix__rotateAroundZ ()
 		retn 4
 	}
 }
-
+*/
 
 
 
@@ -1031,5 +1041,5 @@ void cheat_hookers_installhooks ( void )
 	HookInstallCall( CALL_VehicleLookAsideUp, (DWORD) HOOK_VehicleCamUp );
 
 	// SpiderFeet
-	HookInstallCall( CALL_CMatrix__rotateAroundZ, (DWORD) HOOK_CMatrix__rotateAroundZ );
+	//HookInstallCall( CALL_CMatrix__rotateAroundZ, (DWORD) HOOK_CMatrix__rotateAroundZ );
 }

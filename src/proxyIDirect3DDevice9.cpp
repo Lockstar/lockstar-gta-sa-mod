@@ -42,9 +42,9 @@ bool					bD3DWindowModeSet;
 bool					g_isRequestingWindowModeToggle;
 bool					g_isRequesting_RwD3D9ChangeVideoMode;
 
-IDirect3DPixelShader9	*wallhack_green;
-IDirect3DPixelShader9	*wallhack_blue;
-IDirect3DPixelShader9	*wallhack_red;
+IDirect3DPixelShader9	*chams_green;
+IDirect3DPixelShader9	*chams_blue;
+IDirect3DPixelShader9	*chams_red;
 
 D3DXVECTOR3				speedoPos;
 D3DXVECTOR2				needlePos;
@@ -231,7 +231,8 @@ HBITMAP PornographyGetPorn ( void )
 		Log( "PornographyGetPorn() fail, GetDesc() fail." );
 		goto getpornfail;
 	}
-	if ( pRendTargetDesc.MultiSampleType != D3DMULTISAMPLE_NONE )
+	if ( pRendTargetDesc.MultiSampleType != D3DMULTISAMPLE_NONE
+		|| g_pCSettingsSAInterface->antiAliasingMode )
 	{
 		if ( FAILED(origIDirect3DDevice9->CreateRenderTarget((rc.right - rc.left), (rc.bottom - rc.top), // width & height
 					m_D3DFMT, // D3DFORMAT Format
@@ -261,9 +262,9 @@ HBITMAP PornographyGetPorn ( void )
 		}
 
 		// image transfered, reset render target and release
-		origIDirect3DDevice9->SetRenderTarget(0, pRenderTargetSurface);
+		//origIDirect3DDevice9->SetRenderTarget(0, pRenderTargetSurface);
 		SAFE_RELEASE( pTransferTargetSurface );
-		//SAFE_RELEASE( pRenderTargetSurface );
+		SAFE_RELEASE( pRenderTargetSurface );
 	}
 	else
 	{
@@ -3253,9 +3254,9 @@ void proxyID3DDevice9_UnInitOurShit ( void )
 	pD3DFont_sampStuff->Invalidate();
 	pD3DFontDebugWnd->Invalidate();
 
-	SAFE_RELEASE( wallhack_green );
-	SAFE_RELEASE( wallhack_blue );
-	SAFE_RELEASE( wallhack_red );
+	SAFE_RELEASE( chams_green );
+	SAFE_RELEASE( chams_blue );
+	SAFE_RELEASE( chams_red );
 
 	if ( set.speedometer_enable )
 	{
@@ -3293,9 +3294,9 @@ void proxyID3DDevice9_InitOurShit ( D3DPRESENT_PARAMETERS *pPresentationParamete
 	pD3DFontDebugWnd->Initialize( origIDirect3DDevice9 );
 
 	// load shaders
-	GenerateShader( origIDirect3DDevice9, &wallhack_green, 0.8f, 0, 1.0f, 0 );
-	GenerateShader( origIDirect3DDevice9, &wallhack_blue, 0.8f, 0, 0, 1.0f );
-	GenerateShader( origIDirect3DDevice9, &wallhack_red, 0.8f, 1.0f, 0, 0 );
+	GenerateShader( origIDirect3DDevice9, &chams_green, 0.8f, 0, 1.0f, 0 );
+	GenerateShader( origIDirect3DDevice9, &chams_blue, 0.8f, 0, 0, 1.0f );
+	GenerateShader( origIDirect3DDevice9, &chams_red, 0.8f, 1.0f, 0, 0 );
 
 	// load GUI textures/sprits
 	texturesInitResources( origIDirect3DDevice9, pPresentationParameters );
@@ -3308,6 +3309,8 @@ void proxyID3DDevice9_InitOurShit ( D3DPRESENT_PARAMETERS *pPresentationParamete
 	bD3DRenderInit = true;
 }
 
+// this needs to be fixed so antialiasing modes don't crash the screenshot function
+/*
 bool	g_InitWindowMode_ForceUpdate_Active = false;
 void proxyID3DDevice9_InitWindowMode ( D3DPRESENT_PARAMETERS *pPresentationParameters )
 {
@@ -3530,6 +3533,7 @@ proxyID3DDevice9_InitWindowMode_end: ;
 	// always make sure our window_mode is synced with the game's
 	set.window_mode = ( g_RsGlobal->ps->fullscreen == 0 );
 }
+*/
 
 void renderHandler()
 {
@@ -3976,7 +3980,7 @@ HRESULT proxyIDirect3DDevice9::Reset ( D3DPRESENT_PARAMETERS *pPresentationParam
 		while
 		(
 			isBadPtr_writeAny(pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS))
-		&&	!badPointerBreak_pPresentationParameters
+			&& !badPointerBreak_pPresentationParameters
 		)
 		{
 			badPointerCount_pPresentationParameters++;
@@ -4000,7 +4004,7 @@ HRESULT proxyIDirect3DDevice9::Reset ( D3DPRESENT_PARAMETERS *pPresentationParam
 		}
 
 		// init our window mode
-		proxyID3DDevice9_InitWindowMode( pPresentationParameters );
+		//proxyID3DDevice9_InitWindowMode( pPresentationParameters );
 
 		// update the global Present Param struct AFTER original reset, only if it's ok
 		pPresentParam = *pPresentationParameters;
@@ -4414,8 +4418,8 @@ HRESULT proxyIDirect3DDevice9::DrawIndexedPrimitive ( D3DPRIMITIVETYPE Primitive
 													  UINT MinVertexIndex, UINT NumVertices, UINT startIndex,
 													  UINT primCount )
 {
-	// wallhack probably works better with texture instead of shaders
-	if ( set.wallhack
+	// chams probably works better with texture instead of shaders
+	if ( set.chams_on
 	 &&	 !cheat_state->_generic.cheat_panic_enabled
 	 &&	 (!isPornographyMasterControlRunning || !set.screenshot_clean) )
 	{
@@ -4430,17 +4434,25 @@ HRESULT proxyIDirect3DDevice9::DrawIndexedPrimitive ( D3DPRIMITIVETYPE Primitive
 			//origIDirect3DDevice9->SetRenderState( D3DRS_SHADEMODE, D3DSHADE_GOURAUD );
 			//origIDirect3DDevice9->SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, true );
 			//origIDirect3DDevice9->SetRenderState( D3DRS_ANTIALIASEDLINEENABLE, true );
-			origIDirect3DDevice9->SetRenderState( D3DRS_FILLMODE, D3DFILL_SOLID );
+
+			if (set.chams_wireframe)
+			{
+				origIDirect3DDevice9->SetRenderState( D3DRS_FILLMODE, D3DFILL_WIREFRAME );
+			}
+			else
+			{
+				origIDirect3DDevice9->SetRenderState( D3DRS_FILLMODE, D3DFILL_SOLID );
+			}
 			origIDirect3DDevice9->SetRenderState( D3DRS_PATCHEDGESTYLE, D3DPATCHEDGE_CONTINUOUS );
 
 
 			// actor behind wall
-			origIDirect3DDevice9->SetPixelShader( wallhack_blue );
+			origIDirect3DDevice9->SetPixelShader( chams_blue );
 			origIDirect3DDevice9->DrawIndexedPrimitive( PrimitiveType, BaseVertexIndex, MinVertexIndex, NumVertices,
 														startIndex, primCount );
 
 			// actor infront wall
-			origIDirect3DDevice9->SetPixelShader( wallhack_green );
+			origIDirect3DDevice9->SetPixelShader( chams_green );
 			origIDirect3DDevice9->SetRenderState( D3DRS_ZENABLE, true );
 			origIDirect3DDevice9->DrawIndexedPrimitive( PrimitiveType, BaseVertexIndex, MinVertexIndex, NumVertices,
 														startIndex, primCount );
@@ -4686,6 +4698,8 @@ HRESULT proxyIDirect3DDevice9::CreateQuery ( D3DQUERYTYPE Type, IDirect3DQuery9 
 	return origIDirect3DDevice9->CreateQuery( Type, ppQuery );
 }
 
+// InitWindowMode needs fixing, see notes above it
+/*
 void toggleWindowedMode ( void )
 {
 	traceLastFunc( "toggleWindowedMode()" );
@@ -4694,3 +4708,4 @@ void toggleWindowedMode ( void )
 	g_isRequesting_RwD3D9ChangeVideoMode = true;
 	proxyID3DDevice9_InitWindowMode( &pPresentParam );
 }
+*/

@@ -189,4 +189,6 @@ extern D3DPRESENT_PARAMETERS	pPresentParam;	// updated after a successful Reset(
 
 // externals
 // functions
-void							toggleWindowedMode ( void );
+
+// InitWindowMode needs fixing, see notes above it
+//void							toggleWindowedMode ( void );

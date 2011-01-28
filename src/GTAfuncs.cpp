@@ -691,6 +691,7 @@ void GTAfunc_PerformAnimation(const char *szBlockName, const char *szAnimName, i
 		{
 			int iTimeToWait = 50;
 
+			// load animations
 			pGameInterface->GetStreaming()->RequestAnimations(pBlock->GetIndex(), 4);
 			pGameInterface->GetStreaming()->LoadAllRequestedModels();
 
@@ -706,6 +707,23 @@ void GTAfunc_PerformAnimation(const char *szBlockName, const char *szAnimName, i
 
 		if(bLoaded)
 		{
+			// removes temporary tasks caused by events like falling
+			pPedSelf->GetPedIntelligence()->GetTaskManager()->RemoveTask(TASK_PRIORITY_EVENT_RESPONSE_TEMP);
+
+			// remove jumping task
+			CTask *jumpTask = pPedSelf->GetPedIntelligence()->GetTaskManager()->FindActiveTaskByType(211);
+			if (jumpTask)
+			{
+				pPedSelf->GetPedIntelligence()->GetTaskManager()->RemoveTask(TASK_PRIORITY_PRIMARY);
+			}
+
+			// more removals if needed ever
+			//pPedSelf->GetPedIntelligence()->GetTaskManager()->RemoveTask(TASK_PRIORITY_EVENT_RESPONSE_NONTEMP);
+			//pPedSelf->GetPedIntelligence()->GetTaskManager()->RemoveTask(TASK_PRIORITY_PHYSICAL_RESPONSE);
+			//pPedSelf->GetPedIntelligence()->GetTaskManager()->RemoveTask(TASK_PRIORITY_MAX);
+			//pPedSelf->GetPedIntelligence()->GetTaskManager()->RemoveTask(TASK_PRIORITY_PRIMARY);
+
+			// set flags
 			int flags = 0x10; // // Stops jaw fucking up, some speaking flag maybe   
 			if(bLoop) flags |= 0x2; // flag that triggers the loop (Maccer)
 			if(bUpdatePosition) 
@@ -714,8 +732,9 @@ void GTAfunc_PerformAnimation(const char *szBlockName, const char *szAnimName, i
 				flags |= 0x40; 
 				flags |= 0x80;
 			}
-
 			if(!bFreezeLastFrame) flags |= 0x08; // flag determines whether to freeze player when anim ends. Really annoying (Maccer)
+
+			// create a new task
 			CTask *pTask = pGameInterface->GetTasks()->CreateTaskSimpleRunNamedAnim(
 				szAnimName, pBlock->GetName(), flags, 4.0f, iTime, !bInterruptable, bRunInSequence, bOffsetPed, bHoldLastFrame);
 

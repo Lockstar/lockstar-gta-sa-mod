@@ -28,7 +28,7 @@
 
 
 #define M0D_NAME		"mod_sa"
-#define M0D_VERSION		"4.2.1.0"
+#define M0D_VERSION		"4.2.1.1"
 #define SAMP_VERSION	"SA:MP 0.3c"
 
 #define BP _asm int 3

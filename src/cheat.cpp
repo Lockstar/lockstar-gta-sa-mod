@@ -68,7 +68,7 @@ static void cheat_main_actor ( double time_diff )
 	if ( info->pedFlags.bInVehicle )
 		cheat_handle_vehicle_fast_exit( NULL, time_diff );
 
-	cheat_handle_SpiderFeet(info, time_diff);
+	//cheat_handle_SpiderFeet(info, time_diff);
 	cheat_handle_actor_fly(info, time_diff);
 }
 
