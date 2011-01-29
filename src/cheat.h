@@ -524,7 +524,9 @@ struct actor_info
 	void				*pMouth;			/* 1232 */
 	// end of body-part-positions
 
-	uint8_t				__unknown_1236[8];	/* 1236 */
+	uint8_t				runningStyle;		/* 1236 - 0x36 = cj, 0x8A = rollerskate,
+									0x7F = woozie, 0x75 = crash.. etc. */
+	uint8_t				__unknown_1237[7];	/* 1237 */
 	float				runspeed;			/* 1244 */
 	uint8_t				__unknown_1248[36]; /* 1248 */
 	uint16_t			muzzle_flash;		/* 1284 */
@@ -800,7 +802,12 @@ struct vehicle_info
 	float				suspension[4];			/* 2016 - FL, RL, FR, RR suspension height */
 	uint8_t				__unknown_2032[244];	/* 2032 */
 	float				burn_timer; /* 2276 - burn timer counting up from 0.0f */
-	uint8_t				__unknown_2280[280];	/* 2280 */
+	uint8_t				__unknown_2280[156];	/* 2280 */
+	float				fHeliDistanceToGround;	/* 2436 - (between 0.9 and 1 = touching ground) */
+	uint8_t				__unknown_2440[24];		/* 2440 */
+	float				fHeliMainRotorDistance;	/* 2464 - distance/rotation */
+	float				fHeliSecRotorDistance;	/* 2468 - distance/rotation secondary rotor */
+	uint8_t				__unknown_2472[88];		/* 2472 */
 	uint8_t				SmokeTrailEnabled;		/* 2560 */
 	uint8_t				__unknown_2561[23];		/* 2561 */
 	/* 2584 */

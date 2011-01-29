@@ -68,6 +68,7 @@
 #define ID_CHEAT_KEEP_TRAILER				180
 #define ID_CHEAT_NOCOLS						190
 #define ID_CHEAT_CHAMS					200
+#define ID_CHEAT_CJ_RUNSTYLE				210
 
 #define ID_CHEAT_INVULN_ACTOR				0
 #define ID_CHEAT_INVULN_VEHICLE				1
@@ -167,8 +168,7 @@
 #define ID_MENU_SAMPMISC_CHAT_TEXTLINES		7
 #define ID_MENU_SAMPMISC_GAMESTATE			9
 #define ID_MENU_SAMPMISC_SPECIALACTION		12
-#define ID_MENU_SAMPMISC_SAMP_CJ_ANIM		13
-#define ID_MENU_SAMPMISC_SAMP_DRUNK			14
+#define ID_MENU_SAMPMISC_SAMP_DRUNK			13
 #define ID_MENU_SAMPMISC_TELEOBJECT			109
 #define ID_MENU_SAMPMISC_TELEPICKUP			110
 #define ID_MENU_SAMPMISC_RENDEROBJTXT		15
@@ -1012,6 +1012,9 @@ static int menu_callback_cheats ( int op, struct menu_item *item )
 
 		case ID_CHEAT_CHAMS:
 			return set.chams_on;
+
+		case ID_CHEAT_CJ_RUNSTYLE:
+			return set.runanimation_cj;
 		}
 		break;
 
@@ -1085,6 +1088,10 @@ static int menu_callback_cheats ( int op, struct menu_item *item )
 
 		case ID_CHEAT_CHAMS:
 			set.chams_on ^= 1;
+			break;
+
+		case ID_CHEAT_CJ_RUNSTYLE:
+			set.runanimation_cj ^= 1;
 			break;
 
 		default:
@@ -1809,9 +1816,6 @@ static int menu_callback_sampmisc ( int op, struct menu_item *item )
 			case ID_MENU_SAMPMISC_CHAT_TEXTLINES:
 				return 0;
 
-			case ID_MENU_SAMPMISC_SAMP_CJ_ANIM:
-				return g_SAMP->pSettings->byteCJWalk;
-
 			case ID_MENU_SAMPMISC_SAMP_DRUNK:
 				return ( g_Players != NULL && g_Players->pLocalPlayer != NULL && 
 					g_Players->pLocalPlayer->pSAMP_Actor != NULL && 
@@ -1839,10 +1843,6 @@ static int menu_callback_sampmisc ( int op, struct menu_item *item )
 			case ID_MENU_SAMPMISC_CHAT_TEXT:
 				if ( g_Chat != NULL )
 					g_Chat->iChatWindowMode ^= 1;
-				break;
-
-			case ID_MENU_SAMPMISC_SAMP_CJ_ANIM:
-				g_SAMP->pSettings->byteCJWalk ^= 1;
 				break;
 
 			case ID_MENU_SAMPMISC_SAMP_DRUNK:
@@ -2684,33 +2684,43 @@ void menu_maybe_init ( void )
 
 	menu_init = 1;
 
+	/* main menu */
 	menu_main = menu_new( NULL, ID_MENU_MAIN, menu_callback_main );
 	menu_cheats = menu_new( menu_main, ID_MENU_CHEATS, menu_callback_cheats );
+	menu_patches = menu_new( menu_main, ID_MENU_PATCHES, menu_callback_patches );
+	menu_weapons = menu_new( menu_main, ID_MENU_WEAPONS, menu_callback_weapons );
+	menu_vehicles = menu_new( menu_main, ID_MENU_VEHICLES, menu_callback_vehicles );
+	menu_teleports = menu_new( menu_main, ID_MENU_TELEPORTS, menu_callback_teleports );
+	menu_misc = menu_new( menu_main, ID_MENU_MISC, menu_callback_misc );
+
+	/* main menu -> cheats */
 	menu_cheats_inv = menu_new( menu_cheats, ID_MENU_CHEATS_INVULN, menu_callback_cheats_invuln );
 	menu_cheats_money = menu_new( menu_cheats, ID_MENU_CHEATS_MONEY, menu_callback_cheats_money );
 	menu_cheats_mods = menu_new( menu_cheats, ID_MENU_CHEATS_MODS, menu_callback_cheats_mods );
 	menu_cheats_weather = menu_new( menu_cheats, ID_MENU_CHEATS_WEATHER, menu_callback_cheats );
-	menu_cheats_time = menu_new( menu_cheats, ID_MENU_CHEATS_TIME, menu_callback_cheats );
-
 	// disabled for now until we/mta rework CHandlingEntrySA
 	//menu_cheats_handling = menu_new( menu_cheats, ID_MENU_CHEATS_HANDLING, menu_callback_handling );
-	menu_weapons = menu_new( menu_main, ID_MENU_WEAPONS, menu_callback_weapons );
-	menu_vehicles = menu_new( menu_main, ID_MENU_VEHICLES, menu_callback_vehicles );
-	menu_teleports = menu_new( menu_main, ID_MENU_TELEPORTS, menu_callback_teleports );
+	menu_cheats_time = menu_new( menu_cheats, ID_MENU_CHEATS_TIME, menu_callback_cheats );
+	
+	/* main menu -> teleports */
 	menu_interiors = menu_new( menu_teleports, ID_MENU_INTERIORS, menu_callback_interiors );
-	menu_misc = menu_new( menu_main, ID_MENU_MISC, menu_callback_misc );
+	
+	/* main menu -> misc */
 	menu_debug = menu_new( menu_misc, ID_MENU_DEBUG, menu_callback_debug );
 	menu_hudindicators = menu_new( menu_misc, ID_MENU_HUDINDICATORS, menu_callback_hudindicators );
-	menu_patches = menu_new( menu_main, ID_MENU_PATCHES, menu_callback_patches );
 
+	/* samp specific */
+	// main menu
 	menu_players = menu_new( menu_main, ID_MENU_PLAYERS, menu_callback_players );
+	menu_servers = menu_new( menu_main, ID_MENU_SERVER_LIST, menu_callback_server_list );
+	menu_sampmisc = menu_new( menu_main, ID_MENU_SAMPMISC, menu_callback_sampmisc );
+	menu_samppatches = menu_new( menu_main, ID_MENU_SAMPPATCHES, menu_callback_samppatches );
+	// main menu -> players
 	menu_players_warp = menu_new( menu_players, ID_MENU_PLAYERS_WARP, menu_callback_players_warp );
 	menu_players_vehwarp = menu_new( menu_players, ID_MENU_PLAYERS_VEHWARP, menu_callback_players_vehwarp );
 	menu_players_spec = menu_new( menu_players, ID_MENU_PLAYERS_SPEC, menu_callback_spec );
-
-	menu_servers = menu_new( menu_main, ID_MENU_SERVER_LIST, menu_callback_server_list );
-	menu_sampmisc = menu_new( menu_main, ID_MENU_SAMPMISC, menu_callback_sampmisc );
 	menu_player_info = menu_new( menu_players, ID_MENU_PLAYERS_INFO, menu_callback_playerinfo );
+	// main menu -> sampmisc
 	menu_spoof_weapon = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_SPOOF_WEAPON, menu_callback_sampmisc );
 	menu_fake_kill = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_FAKE_KILL, menu_callback_sampmisc );
 	menu_vehicles_instant = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_VEHICLES_INSTANT, menu_callback_vehicles_instant );
@@ -2718,8 +2728,8 @@ void menu_maybe_init ( void )
 	menu_specialaction = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_SPECIALACTION, menu_callback_specialaction );
 	menu_teleobject = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_TELEOBJECT, menu_callback_teleobject );
 	menu_telepickup = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_TELEPICKUP, menu_callback_telepickup );
-	menu_samppatches = menu_new( menu_main, ID_MENU_SAMPPATCHES, menu_callback_samppatches );
 
+	/** Menu Items **/
 	/* main menu */
 	menu_item_add( menu_main, NULL, "\tGTA", ID_NONE, MENU_COLOR_SEPARATOR, NULL );
 	menu_item_add( menu_main, menu_cheats, "Cheats", ID_NONE, MENU_COLOR_DEFAULT, NULL );
@@ -2730,6 +2740,7 @@ void menu_maybe_init ( void )
 	snprintf( name, sizeof(name), "GTA Patches (%d/%d)", iGTAPatchesCount, INI_PATCHES_MAX );
 	menu_item_add( menu_main, menu_patches, name, ID_NONE, MENU_COLOR_DEFAULT, NULL );
 
+	/* main menu (samp specific) */
 	if ( g_dwSAMP_Addr != NULL )
 	{
 		menu_item_add( menu_main, NULL, "\tSA-MP", ID_NONE, MENU_COLOR_SEPARATOR, NULL );
@@ -2741,7 +2752,7 @@ void menu_maybe_init ( void )
 		menu_item_add( menu_main, menu_samppatches, name, ID_NONE, MENU_COLOR_DEFAULT, NULL );
 	}
 
-	/* main menu -> cheats */
+	/* main menu -> cheats - menu items */
 	menu_item_add( menu_cheats, menu_cheats_mods, "Vehicle upgrades", ID_CHEAT_MODS, MENU_COLOR_DEFAULT, NULL );
 
 	//menu_item_add( menu_cheats, menu_cheats_handling, "Change vehicle handling", ID_CHEAT_HANDLING, MENU_COLOR_DEFAULT, NULL );
@@ -2762,6 +2773,7 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_cheats, NULL, "Keep trailers attached", ID_CHEAT_KEEP_TRAILER, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_cheats, NULL, "Toggle vehicle collisions", ID_CHEAT_NOCOLS, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_cheats, NULL, "Chams", ID_CHEAT_CHAMS, MENU_COLOR_DEFAULT, NULL );
+	menu_item_add( menu_cheats, NULL, "Use CJ running style", ID_CHEAT_CJ_RUNSTYLE, MENU_COLOR_DEFAULT, NULL );
 
 	/* main menu -> cheats -> invulnerable */
 	menu_item_add( menu_cheats_inv, NULL, "Actor invulnerability", ID_CHEAT_INVULN_ACTOR, MENU_COLOR_DEFAULT, NULL );
@@ -3020,7 +3032,6 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_sampmisc, NULL, name, ID_MENU_SAMPMISC_CHAT_TEXTLINES, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_sampmisc, menu_gamestate, "Change game state", ID_NONE, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_sampmisc, menu_specialaction, "Special action", ID_NONE, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_sampmisc, NULL, "Use CJ running style", ID_MENU_SAMPMISC_SAMP_CJ_ANIM, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_sampmisc, NULL, "Drunk", ID_MENU_SAMPMISC_SAMP_DRUNK, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_sampmisc, menu_teleobject, "Teleport to object", ID_MENU_SAMPMISC_TELEOBJECT,
 				   MENU_COLOR_DEFAULT, NULL );

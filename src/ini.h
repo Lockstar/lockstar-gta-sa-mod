@@ -315,6 +315,8 @@ struct settings
 
 	int						key_panic;
 
+	int						runanimation_cj;
+
 	int						key_brkd_toggle;
 	int						key_brkd_forward;
 	int						key_brkd_left;
@@ -332,8 +334,6 @@ struct settings
 	int						rejoin_delay;
 
 	int						send_spec_data;
-
-	int						samp_runanimation_cj;
 
 	// new ESP ish
 	int						esp_vehicles_defaulton;

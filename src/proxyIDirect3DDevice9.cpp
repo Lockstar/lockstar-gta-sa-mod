@@ -3092,8 +3092,6 @@ void renderSAMP ( void )
 			g_SAMP->pSettings->byteNoNametagsBehindWalls = 0;
 		if ( !g_SAMP->pSettings->bytePlayerMarkersMode && set.markers_show )
 			g_SAMP->pSettings->bytePlayerMarkersMode = PLAYER_MARKERS_MODE_GLOBAL;
-		if ( set.samp_runanimation_cj )
-			g_SAMP->pSettings->byteCJWalk = 1;
 
 		if ( isPornographyMasterControlRunning && set.screenshot_clean )
 		{
