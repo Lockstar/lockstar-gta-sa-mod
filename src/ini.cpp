@@ -860,8 +860,8 @@ static void ini_init ( void )
 	if ( (ent = ini_register_entry("key_panic", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_panic, "f12" );
 
-	if ( (ent = ini_register_entry("samp_runanimation_cj", TYPE_BOOL)) != NULL )
-		ini_register_data( ent, &set.samp_runanimation_cj, "true" );
+	if ( (ent = ini_register_entry("runanimation_cj", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.runanimation_cj, "true" );
 
 	// new ESP ish
 	if ( (ent = ini_register_entry("esp_vehicles_defaulton", TYPE_BOOL)) != NULL )

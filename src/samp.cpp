@@ -710,18 +710,27 @@ int getPlayerCount ( void )
 	return iCount + 1;
 }
 
+#define SAMP_FUNC_NAMECHANGE	0x9830
 int setLocalPlayerName ( const char *name )
 {
-	if ( g_Players == NULL )
+	if ( g_Players == NULL || g_Players->pLocalPlayer == NULL )
 		return 0;
 
 	int strlen_name = strlen( name );
-	if ( strlen_name == 0 || strlen_name > MAX_PLAYER_NAME || g_Players->pLocalPlayer == NULL )
+	if ( strlen_name == 0 || strlen_name > ALLOWED_PLAYER_NAME_LENGTH )
 		return 0;
 
-	strcpy(g_Players->szLocalPlayerName, name);
-	g_Players->iStrlen_LocalPlayerName = strlen_name;
+	traceLastFunc( "setLocalPlayerName()" );
 
+	//strcpy(g_Players->szLocalPlayerName, name);
+	//g_Players->iStrlen_LocalPlayerName = strlen_name;
+
+	DWORD	vtbl_nameHandler = ((DWORD)&g_Players->pVTBL_txtHandler);
+	DWORD	func = g_dwSAMP_Addr + SAMP_FUNC_NAMECHANGE;
+	__asm push strlen_name
+	__asm push name
+	__asm mov ecx, vtbl_nameHandler
+	__asm call func
 	return 1;
 }
 
@@ -1127,16 +1136,41 @@ void addMessageToChatWindowSS ( const char *text, ... )
 }
 
 #define FUNC_ADDTOCHATWND	0x6E6A0
-void addToChatWindow ( char *text, D3DCOLOR textColor )
+void addToChatWindow ( char *text, D3DCOLOR textColor, int playerID )
 {
-	if ( g_SAMP == NULL )
+	if ( g_SAMP == NULL || g_Chat == NULL )
 		return;
 
 	if ( text == NULL )
 		return;
 
+	if ( playerID < -1 )
+		playerID = -1;
+
 	uint32_t	chatinfo = g_dwSAMP_Addr + SAMP_CHAT_INFO_OFFSET;
 	uint32_t	func = g_dwSAMP_Addr + FUNC_ADDTOCHATWND;
+
+	if ( playerID != -1 )
+	{
+		// getPlayerName does the needed validity checks, no need for doubles
+		char *playerName = (char*)getPlayerName(playerID);
+		if ( playerName == NULL )
+			return;
+
+		D3DCOLOR playerColor = samp_color_get(playerID);
+
+		__asm mov eax, dword ptr[chatinfo]
+		__asm mov ecx, dword ptr[eax]
+		__asm push playerColor
+		__asm push textColor
+		__asm push playerName
+		__asm push text
+		__asm push 10
+		__asm call func
+		__asm pop eax
+		__asm pop ecx
+		return;
+	}
 
 	__asm mov eax, dword ptr[chatinfo]
 	__asm mov ecx, dword ptr[eax]
@@ -1376,51 +1410,39 @@ uint8_t _declspec ( naked ) server_message_hook ( void )
 	__asm jmp ebx
 }
 
-#define HOOK_CALL_CLIENTMESSAGE_HOOK	0x104F0
 #define HOOK_EXIT_CLIENTMESSAGE_HOOK	0xCA1E
 uint8_t _declspec ( naked ) client_message_hook ( void )
 {
-	int							thismsg;
-	struct stRemotePlayerData	*player;
-	uint16_t	id;
 	static char last_clientmsg[SAMP_PLAYER_MAX][256];
+	int			thismsg;
+	uint16_t	id;
+	__asm mov id, dx
+	__asm lea edx, [esp+0x128]
 	__asm mov thismsg, edx
-	__asm mov player, eax
 
-	if ( player != NULL )
+	if ( id >= 0 && id <= SAMP_PLAYER_MAX )
 	{
-		if( player->sPlayerID == g_Players->sLocalPlayerID )
+		if( id == g_Players->sLocalPlayerID )
 		{
-			DWORD	func = g_dwSAMP_Addr + HOOK_CALL_CLIENTMESSAGE_HOOK;
-			__asm mov edx, thismsg
-			__asm mov ecx, player
-			__asm push edx
-			__asm call func
+			addToChatWindow( (char*)thismsg, g_Chat->clTextColor, id );
 
-			// does not work in here, hooked function doesn't seem to be used for local player
 			if( set.chatbox_logging )
-				LogChatbox( false, "%s: %s", g_Players->sLocalPlayerID, g_Players->szLocalPlayerName );
+				LogChatbox( false, "%s: %s", getPlayerName(id), thismsg );
 			goto us;
 		}
 
-		id = ( (struct stRemotePlayerData *)player )->sPlayerID;
-
 		static DWORD	allow_show_again = GetTickCount();
-		if ( (strcmp(last_clientmsg[id], (char *)thismsg) != NULL || GetTickCount() > allow_show_again)
-		 ||	 cheat_state->_generic.cheat_panic_enabled
-		 ||	 !set.anti_spam )
+		if ( !set.anti_spam
+		 ||  (strcmp(last_clientmsg[id], (char *)thismsg) != NULL || GetTickCount() > allow_show_again)
+		 ||	 cheat_state->_generic.cheat_panic_enabled )
 		{
 			// nothing to copy anymore, after chatbox_logging, so copy this before
 			strcpy_s( last_clientmsg[id], sizeof(last_clientmsg[id]), (char *)thismsg );
-			
+
 			if( set.chatbox_logging )
 				LogChatbox( false, "%s: %s", getPlayerName(id), thismsg );
 
-			DWORD	func = g_dwSAMP_Addr + HOOK_CALL_CLIENTMESSAGE_HOOK;
-			__asm mov edx, thismsg
-			__asm mov ecx, player
-			__asm push edx
-			__asm call func
+			addToChatWindow( (char*)thismsg, g_Chat->clTextColor, id );
 			allow_show_again = GetTickCount() + 5000;
 		}
 	}
@@ -1471,7 +1493,7 @@ uint8_t _declspec ( naked ) StreamedOutInfo ( void )
 }
 
 #define SAMP_HOOKPOS_ServerMessage	0x6EACC
-#define SAMP_HOOKPOS_ClientMessage	0xCA19
+#define SAMP_HOOKPOS_ClientMessage	0xC9C1
 #define SAMP_HOOK_STATECHANGE		0xF78B
 #define SAMP_HOOK_StreamedOutInfo	0xDE4B
 void installSAMPHooks ()
@@ -1492,7 +1514,7 @@ void installSAMPHooks ()
 		else
 			Log( "Failed to hook ServerMessage (memcmp)" );
 
-		if ( memcmp_safe((uint8_t *)g_dwSAMP_Addr + SAMP_HOOKPOS_ClientMessage, hex_to_bin("E8D23A00"), 4) )
+		if ( memcmp_safe((uint8_t *)g_dwSAMP_Addr + SAMP_HOOKPOS_ClientMessage, hex_to_bin("663BD175"), 4) )
 		{
 			if ( api.Create((uint8_t *) ((uint32_t) g_dwSAMP_Addr) + SAMP_HOOKPOS_ClientMessage,
 							 (uint8_t *)client_message_hook, DETOUR_TYPE_JMP, 5) == 0 )

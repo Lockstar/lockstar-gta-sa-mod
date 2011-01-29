@@ -21,7 +21,7 @@
 
 */
 
-#define SAMP_PLAYER_MAX				500
+#define SAMP_PLAYER_MAX				511
 #define SAMP_VEHICLE_MAX			2000
 #define SAMP_PICKUP_MAX				2048
 #define SAMP_OBJECTS_MAX			400
@@ -29,8 +29,8 @@
 #define MAX_3DTEXT					2048
 #define MAX_TEXTDRAW				2048
 #define MAX_GANGZONES				1024
-#define MAX_PLAYER_NAME				30
-#define ALLOWED_PLAYER_NAME_LENGTH	16
+#define MAX_PLAYER_NAME				24
+#define ALLOWED_PLAYER_NAME_LENGTH	20
 #define MAX_CLIENTCMDS				144
 #define SAMP_MENUS_MAX				128
 
@@ -130,7 +130,8 @@ struct stSampSettings
 	int		iSpawnsAvailable;
 	uint8_t bytePlayerMarkersMode;
 	int		iUnknown1;
-	int		iUnknown2;
+	uint8_t	bUnknown_10[3];
+	uint8_t byteShowNameTags;
 	uint8_t byteWorldTime_Hour;
 	uint8_t byteWorldTime_Minute;
 	float	fWorldBoundaries[4];
@@ -143,9 +144,9 @@ struct stSampSettings
 	int iUnknown3;
 	float	fNameTagsDistance;
 	uint8_t byteWeather;
-	uint8_t byteNoNametagsBehindWalls;
+	uint8_t byteUnknown_47;
 	uint8_t byteNoInteriorEnterExits;
-	uint8_t byteShowNameTags;
+	uint8_t	byteNoNametagsBehindWalls;
 	float	fGravity;
 };
 
@@ -185,19 +186,17 @@ struct stPickupPool
 struct stPlayerPool
 {
 #pragma pack( 1 )
-	void					*pVtbl;
+	void					*pVTBL_txtHandler;
 	union
 	{
-		char	szLocalPlayerName[ALLOWED_PLAYER_NAME_LENGTH];
+		char	szLocalPlayerName[16];
 		char	*pszLocalPlayerName;
 	};
 	int						iStrlen_LocalPlayerName;
 	int						iScoreboard_something;
 	struct stLocalPlayer	*pLocalPlayer;
 	int						iIsListed[SAMP_PLAYER_MAX];
-	uint8_t					pad1[0x2C];
 	struct stRemotePlayer	*pRemotePlayer[SAMP_PLAYER_MAX];
-	uint8_t					pad2[0x2C];
 	int						iLocalPlayerScore;
 	int						iLocalPlayerPing;
 	uint16_t				sLocalPlayerID;
@@ -441,10 +440,10 @@ struct stRemotePlayer
 #pragma pack( 1 )
 	int					iPing;
 	int					iScore;
-	uint8_t				unknown[4];
+	void				*pVTBL_txtHandler;
 	union
 	{
-		char	szPlayerName[ALLOWED_PLAYER_NAME_LENGTH];
+		char	szPlayerName[16];
 		char	*pszPlayerName;
 	};
 	int					iStrlenName;
@@ -461,7 +460,7 @@ struct stSAMPPed
 	uint32_t			ulGTA_Ped_ID;
 	int					usingCellPhone;
 	struct actor_info	*pGTA_Ped;
-	uint8_t				pad[284];
+	uint8_t				pad[285];
 	int					DrinkingOrSmoking;
 	int					object_in_hand;
 	int					drunkLevel;	
@@ -683,7 +682,7 @@ int												samp_vehicle_find_nearest ( int flags );
 bool											get_isModCommandsActive ();
 void											init_samp_chat_cmds ();
 void											addClientCommand ( char *text, int function );
-void											addToChatWindow ( char *text, D3DCOLOR textColor );
+void											addToChatWindow ( char *text, D3DCOLOR textColor, int playerID = -1 );
 void											addMessageToChatWindow ( const char *text, ... );
 void											addMessageToChatWindowSS ( const char *text, ... );
 void											restartGame ();
