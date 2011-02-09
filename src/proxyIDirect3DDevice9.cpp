@@ -2241,6 +2241,101 @@ void renderPlayerInfoList ( void )
 	}
 }
 
+void renderTextLabels ()
+{
+	traceLastFunc( "renderTextLabels()" );
+
+	// orig-Textlabels
+	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_DRAWTEXTLABELS), "\x74", 1 );
+
+	if ( gta_menu_active() || !set.d3dtext_labels )
+		return;
+
+	if ( cheat_state->_generic.cheat_panic_enabled )
+		return;
+
+	if ( g_SAMP->pPools == NULL )
+		return;
+
+	if ( g_SAMP->pPools->pPool_Text3D == NULL || g_Vehicles == NULL || g_Players == NULL )
+		return;
+
+	struct actor_info	*self = actor_info_get( ACTOR_SELF, 0 );
+	if ( self == NULL )
+		return;
+
+	// Deactivate orig-Textlabels
+	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_DRAWTEXTLABELS), "\xEB", 1 );
+
+	if ( (GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
+		|| *(char *)((*(DWORD *) (g_dwSAMP_Addr + SAMP_SCOREBOARD_INFO)) + 0x1C) == 1 ) 
+		return;
+
+	if ( GetAsyncKeyState(VK_F10) < 0 )
+		return;
+
+	char	buf[2048];
+	for ( int i = 0; i < MAX_3DTEXT; i++ )
+	{
+		if ( !g_SAMP->pPools->pPool_Text3D->iIsListed[i] )
+			continue;
+		if ( g_SAMP->pPools->pPool_Text3D->textLabel[i].pText != NULL )
+		{
+			float		pos[3], screenpos[3];
+			D3DXVECTOR3 poss, screenposs;
+
+			if ( g_SAMP->pPools->pPool_Text3D->textLabel[i].sAttachedToPlayerID == ((uint16_t) - 1)
+			 &&	 g_SAMP->pPools->pPool_Text3D->textLabel[i].sAttachedToVehicleID == ((uint16_t) - 1) )
+			{
+				vect3_copy( g_SAMP->pPools->pPool_Text3D->textLabel[i].fPosition, pos );
+			}
+			else if ( g_SAMP->pPools->pPool_Text3D->textLabel[i].sAttachedToPlayerID != ((uint16_t) - 1) )
+			{
+				int id = g_SAMP->pPools->pPool_Text3D->textLabel[i].sAttachedToPlayerID;
+				// check if player is valid
+				if ( g_Players->pRemotePlayer[id] == NULL || g_Players->pRemotePlayer[id]->pPlayerData == NULL 
+					|| g_Players->pRemotePlayer[id]->pPlayerData->pSAMP_Actor == NULL
+					|| g_Players->pRemotePlayer[id]->pPlayerData->pSAMP_Actor->pGTA_Ped == NULL )
+					continue;
+				vect3_copy( &g_Players->pRemotePlayer[id]->pPlayerData->pSAMP_Actor->pGTA_Ped->base.matrix[4 * 3],
+					pos );
+				if ( !near_zero(pos[2]) )
+					pos[2] += 0.5f;
+			}
+			else if ( g_SAMP->pPools->pPool_Text3D->textLabel[i].sAttachedToVehicleID != ((uint16_t) - 1) )
+			{
+				int id = g_SAMP->pPools->pPool_Text3D->textLabel[i].sAttachedToVehicleID;
+				// check if vehicle is valid
+				if ( g_Vehicles->pGTA_Vehicle[id] == NULL )
+					continue;
+				else
+					vect3_copy( &g_Vehicles->pGTA_Vehicle[id]->base.matrix[4 * 3], pos );
+			}
+
+			if ( vect3_near_zero(pos) )
+				continue;
+			if ( vect3_dist(pos, &self->base.matrix[4 * 3]) > set.player_tags_dist )
+				//set.Label_Dist_Maximum
+				continue;
+
+			poss.x = pos[0];
+			poss.y = pos[1];
+			poss.z = pos[2];
+			CalcScreenCoors( &poss, &screenposs );
+			screenpos[0] = screenposs.x;
+			screenpos[1] = screenposs.y;
+			screenpos[2] = screenposs.z;
+
+			if ( screenpos[2] < 1.f )
+				continue;
+
+			snprintf( buf, sizeof(buf), "%s", g_SAMP->pPools->pPool_Text3D->textLabel[i].pText );
+			pD3DFontFixed->PrintShadow( screenpos[0], screenpos[1], g_SAMP->pPools->pPool_Text3D->textLabel[i].color,
+										buf );
+		}
+	}
+}
+
 void renderScoreList ()
 {
 	traceLastFunc( "renderScoreList()" );
@@ -3123,6 +3218,7 @@ void renderSAMP ( void )
 			renderKillList();
 			renderChat();
 			renderScoreList();
+			renderTextLabels();
 
 			if ( iViewingInfoPlayer == -1 )
 			{ }

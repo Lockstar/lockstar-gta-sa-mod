@@ -188,6 +188,8 @@ struct cheat_state_vehicle
 	DWORD	blinking_carlights_lastblink;
 	int		fly;
 	float	hitpoints_last;
+	//float	tele_coords[3];
+	//int		tele_on;
 };
 
 struct cheat_state_teleport
@@ -234,9 +236,8 @@ struct cheat_state_generic
 
 	int		interior_patch_enabled;
 
-	int		nocols_enabled;
-	int		nocols_toggled;
-	DWORD	nocols_change_tick;
+	int		nocols_enabled;			/* vehicle collision */
+	int		nocols_walls_enabled;	/* wall/object collision */
 
 	int		cheat_panic_enabled;
 
@@ -548,8 +549,7 @@ struct actor_info
 	float				fCurrentRotation;		/* 1368 */
 	float				fTargetRotation;		/* 1372 */
 	float				fRotationSpeed;			/* 1376 */
-
-	uint8_t				__unknown_1376[4];		/* 1376 */
+	float				fRotationCalculation;	/* 1380 - is 0.1 when target rotation reached */
 
 	union
 	{
@@ -898,6 +898,17 @@ static struct patch_set patch_NotAPlane =
 	0,
 	{ 17, (void *)0x006CC46F,
 			(uint8_t *)"\x51\x8B\x4C\x24\x20\x52\x50\x51\x6A\x03\x8B\xCE\xE8\x70\xC1\x00\x00", NULL, NULL }
+};
+
+static struct patch_set patch_NoColsWalls =
+{
+	"No collision walls",
+	0,
+	0,
+	{
+		// Disable the wall-jump (jumping into air infront of walls)
+		{ 1, (void *)( (uint8_t *)0x679D3A ), (uint8_t *)"\x74", (uint8_t *)"\xEB", (uint8_t *)"\x74" }
+	}
 };
 
 /* __time_current is set in cheat_hook(). the time is "cached".

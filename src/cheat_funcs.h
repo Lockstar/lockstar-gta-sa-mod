@@ -347,6 +347,7 @@ int									isBadPtr_GTA_pVehicle ( CVehicleSA *p_CVehicleSA );
 int									isBadPtr_GTA_pVehicle ( CVehicleSAInterface *p_CVehicleSAInterface );
 int									isBadPtr_GTA_pActorInfo ( actor_info *p_ActorInfo );
 int									isBadPtr_GTA_pBuildingInfo ( DWORD p_BuildingInfo );
+int									isBadPtr_GTA_pObjectInfo ( DWORD p_ObjectInfo );
 bool								isBadPtr_handlerAny ( void *pointer, ULONG size, DWORD dwFlags );
 bool								isBadPtr_readAny ( void *pointer, ULONG size );
 bool								isBadPtr_writeAny ( void *pointer, ULONG size );
@@ -413,7 +414,6 @@ int									vehicle_filter_flags ( vehicle_info *info, int flags );
 int									actor_find_nearest ( int flags );
 struct vehicle_info					*actor_vehicle_get ( const struct actor_info *info );
 void								SetCloudsEnabled ( bool bDisabled );
-void								enableCollisionsForEveryStreamedInVehicle ( int iToggle );
 void								loadAllWeaponModels ( void );
 void								loadSpecificModel ( int iModelID );
 

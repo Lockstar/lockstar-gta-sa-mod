@@ -1615,6 +1615,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\cheat_vehRecording.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\cheat_vehRecording.h"
+				>
+			</File>
+			<File
 				RelativePath=".\debug_classify.cpp"
 				>
 			</File>

@@ -43,6 +43,7 @@
 #define SAMP_COLOR_OFFSET			0x1D44B0
 
 #define SAMP_FONT_INFO_OFFSET			0x1F769C
+#define SAMP_CHATBUBBLE_INFO_OFFSET		0x1F76D0
 
 #define VALUE_DRAWING_DISTANCE			0xBBAF0
 
@@ -51,6 +52,7 @@
 #define SAMP_GAMEPROCESSHOOK			0x52868
 #define SAMP_FUNCUPDATESCOREBOARDDATA	0x7580
 #define SAMP_PATCH_NOCARCOLORRESETTING	0x5E170
+#define SAMP_DRAWTEXTLABELS				0x76989
 
 
 #define GAMESTATE_AWAIT_JOIN			29
@@ -114,13 +116,13 @@ struct stSAMPPools
 	struct stTextdrawPool	*pPool_Textdraw;
 	struct stObjectPool		*pPool_Object;
 	struct stGangzonePool	*pPool_Gangzone;
-	void					*pPool_PlayerLabels;
+	struct stTextLabelPool	*pPool_Text3D;
 	struct stPickupPool		*pPool_Pickup;
 	void					*pPool_Menu;
 	struct stPlayerPool		*pPool_Player;
 	struct stVehiclePool	*pPool_Vehicle;
 	uint32_t				*unk;
-	struct stTextLabelPool	*pPool_Text3D;
+	void					*pPool_PlayerLabels;
 };
 
 struct stSampSettings
@@ -607,6 +609,24 @@ struct stKillInfo
 #pragma pack( 1 )
 	int					iEnabled;
 	struct stKillEntry	killEntry[5];
+};
+
+struct stChatPlayer
+{
+#pragma pack( 1 )
+	int			iCreated;
+	char		probablyTheText[256]; // text max length = 144
+	DWORD		dwTickCreated;
+	DWORD		dwLiveLength;
+	DWORD		dwColor;
+	float		fDrawDistance;
+	DWORD		dwUnknown;
+};
+
+struct stChatBubbleInfo
+{
+#pragma pack( 1 )
+	struct stChatPlayer	chatBubble[SAMP_PLAYER_MAX];
 };
 
 struct stStreamedOutPlayerInfo

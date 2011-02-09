@@ -62,7 +62,6 @@ static void cheat_main_actor ( double time_diff )
 	cheat_handle_actor_air_brake( info, time_diff );
 	cheat_handle_stick( NULL, info, time_diff );
 	cheat_handle_actor_autoaim( info, time_diff );
-	cheat_handle_actor_nocols( info );
 
 	//fix for passenger drive by bug
 	if ( info->pedFlags.bInVehicle )
@@ -97,7 +96,6 @@ static void cheat_main_vehicle ( double time_diff )
 	cheat_handle_emo( info, NULL, time_diff );
 
 	// the following functions can be found in cheat_vehicle.cpp
-	cheat_handle_vehicle_nocols( info );
 	cheat_handle_vehicle_protection( info, time_diff );
 	cheat_handle_vehicle_unflip( info, time_diff );
 	cheat_handle_vehicle_nitro( info, time_diff );
@@ -114,6 +112,10 @@ static void cheat_main_vehicle ( double time_diff )
 	cheat_handle_vehicle_repair_car( info, time_diff );
 	cheat_handle_vehicle_fast_exit( info, time_diff );
 	cheat_handle_vehicle_spiderWheels( info, time_diff );
+	//cheat_handle_vehicle_slowTeleport( info, time_diff );
+#ifdef __CHEAT_VEHRECORDING_H__
+	cheat_handle_vehicle_recording( info, time_diff );
+#endif
 }
 
 // the main daddyo
@@ -364,6 +366,15 @@ void cheat_hook ( HWND wnd )
 		else if ( cheat_state->state == CHEAT_STATE_ACTOR )
 		{
 			cheat_main_actor( TIME_TO_FLOAT(time_get() - time_last) );
+		}
+
+		if ( KEY_PRESSED(set.key_disable_Wall_Collisions) )
+		{
+			cheat_state->_generic.nocols_walls_enabled ^= 1;
+			if ( cheat_state->_generic.nocols_walls_enabled )
+				patcher_install( &patch_NoColsWalls );
+			else
+				patcher_remove( &patch_NoColsWalls );
 		}
 
 		for ( i = 0; i < INI_PATCHES_MAX; i++ )

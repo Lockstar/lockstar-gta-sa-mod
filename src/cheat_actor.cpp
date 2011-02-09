@@ -42,53 +42,6 @@ void cheat_actor_teleport ( struct actor_info *info, const float pos[3], int int
 	gta_interior_id_set( interior_id );
 }
 
-void cheat_handle_actor_nocols ( struct actor_info *info )
-{
-	traceLastFunc( "cheat_handle_actor_nocols()" );
-
-	if ( !cheat_state->_generic.nocols_enabled && !cheat_state->_generic.nocols_toggled )
-		return;
-
-	if ( cheat_state->_generic.nocols_toggled && (GetTickCount() - 2000) > cheat_state->_generic.nocols_change_tick )
-	{
-		cheat_state->_generic.nocols_enabled = 1;
-	}
-
-	if ( !cheat_state->_generic.nocols_toggled )
-	{
-		cheat_state->_generic.nocols_enabled = 0;
-	}
-
-	//need to force the player into car while nocols activated (safety checks by gta)
-	uint8_t *enter_exit_key = ( uint8_t * ) ( GTA_KEYS + 0x1E );
-	if ( cheat_state->_generic.nocols_enabled && *enter_exit_key == 0xff )
-	{
-		int					id = vehicle_find_nearest( VEHICLE_ALIVE | VEHICLE_EMPTY );
-		struct vehicle_info *near_veh = vehicle_info_get( id, VEHICLE_ALIVE | VEHICLE_EMPTY );
-		if ( near_veh != NULL
-		 &&	 gta_vehicle_get_by_id(near_veh->base.model_alt_id)->class_id != VEHICLE_CLASS_TRAILER
-		 &&	 near_veh->hitpoints > 250.0f
-		 &&	 vect3_dist(&info->base.matrix[4 * 3], &near_veh->base.matrix[4 * 3]) <= 20.0f )
-		{
-			GTAfunc_EnterCarAsDriver(near_veh);
-		}
-	}
-
-	if ( cheat_state->_generic.nocols_enabled && (DWORD) info->animation->active_animation_task != NULL )
-	{
-		//check if task enter car as * is currently executed (task_info + 0xC = vehicle pointer)
-		struct vehicle_info *veh;
-		uint32_t			vehiclePointer = ( (uint32_t) info->animation->active_animation_task + 0xC );
-		veh = ( vehicle_info * ) ( *(uint32_t *) (vehiclePointer) );
-		if ( !isBadPtr_GTA_pVehicle(veh) )
-		{
-			cheat_state->_generic.nocols_enabled = 0;
-			cheat_state->_generic.nocols_change_tick = GetTickCount();
-			return;
-		}
-	}
-}
-
 static struct patch_set patch_gta_auto_aim =
 {
 	"GTA: Autoaim",

@@ -332,6 +332,7 @@
     <ClInclude Include="cheat_generic.h" />
     <ClInclude Include="cheat_hookers.h" />
     <ClInclude Include="cheat_vehicle.h" />
+    <ClInclude Include="cheat_vehRecording.h" />
     <ClInclude Include="debug_classify.h" />
     <ClInclude Include="dumb_menu.h" />
     <ClInclude Include="GTAfuncs.h" />
@@ -485,6 +486,7 @@
     <ClCompile Include="cheat_generic.cpp" />
     <ClCompile Include="cheat_hookers.cpp" />
     <ClCompile Include="cheat_vehicle.cpp" />
+    <ClCompile Include="cheat_vehRecording.cpp" />
     <ClCompile Include="debug_classify.cpp" />
     <ClCompile Include="dumb_menu.cpp" />
     <ClCompile Include="GTAfuncs.cpp" />
