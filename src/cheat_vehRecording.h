@@ -20,11 +20,33 @@
 	along with mod_sa.  If not, see <http://www.gnu.org/licenses/>.
 
 */
-void				cheat_actor_teleport ( struct actor_info *info, const float pos[3], int interior_id );
-void				cheat_handle_actor_autoaim ( struct actor_info *info, double time_diff );
-void				cheat_handle_actor_air_brake ( struct actor_info *info, double time_diff );
-//void				cheat_handle_SpiderFeet ( struct actor_info *ainfo, double time_diff );
-void				cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff );
 
+#pragma once
 
-CEntitySAInterface	*cheat_actor_GetCEntitySAInterface ( actor_info *ainfo );
+#ifdef __CHEAT_VEHRECORDING_H__
+#pragma comment (lib, "sqlite3/sqlite3.lib")
+
+void cmd_rec_addVeh ( char *text );
+
+enum eRecordingState
+{
+	RECORDING_OFF = 0,
+	RECORDING_RECORD,
+
+	// All play states
+	RECORDING_PLAY,
+	RECORDING_PLAY_CUSTOMSPEED,
+
+	// All reverse play states [rev states need to be after other play states]
+	RECORDING_PLAY_REV,
+	RECORDING_PLAY_REV_CUSTOMSPEED,
+};
+
+int rec_sqlite_getNumTables ();
+char *rec_sqlite_getTableName( int RouteNum );
+bool rec_sqlite_loadTable ( char *tableName );
+bool rec_sqlite_dropTable ( char *tableName );
+bool rec_sqlite_writeTable ();
+bool rec_sqlite_optimizeDatabase ();
+void cheat_handle_vehicle_recording ( struct vehicle_info *info, float time_diff );
+#endif

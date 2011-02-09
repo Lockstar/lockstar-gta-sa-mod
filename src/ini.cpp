@@ -393,11 +393,15 @@ static void ini_init ( void )
 	if ( (ent = ini_register_entry("enable_car_lights_at_day_time", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.enable_car_lights_at_day_time, "false" );
 
-	//keep trailer, wall collision key
+	//keep trailer, wall collision
 	if ( (ent = ini_register_entry("key_keep_trailer", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_keep_trailer, "&0" );
 	if ( (ent = ini_register_entry("key_disable_Wall_Collisions", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_disable_Wall_Collisions, "&0" );
+	if ( (ent = ini_register_entry("wall_collisions_disableObjects", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.wall_collisions_disableObjects, "false" );
+	if ( (ent = ini_register_entry("wall_collisions_disableRender", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.wall_collisions_disableRender, "true" );
 
 	// repair car
 	if ( (ent = ini_register_entry("key_repair_car", TYPE_KEY)) != NULL )
@@ -406,6 +410,28 @@ static void ini_init ( void )
 	// real nitro
 	if ( (ent = ini_register_entry("key_nitro", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_nitro, "np0" );
+
+#ifdef __CHEAT_VEHRECORDING_H__
+	/* (vehicle) recording mod */
+	if ( (ent = ini_register_entry("recording_activated", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.recording_activated, "false" );
+	if ( (ent = ini_register_entry("recording_maxDistToEntryPoint", TYPE_FLOAT)) != NULL )
+		ini_register_data( ent, &set.recording_maxDistToEntryPoint, "0.0" );
+	if ( (ent = ini_register_entry("recording_play_customSpeed", TYPE_FLOAT)) != NULL )
+		ini_register_data( ent, &set.recording_play_customSpeed, "2.0" );
+	if ( (ent = ini_register_entry("key_recording_record", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_recording_record, "&0" );
+	if ( (ent = ini_register_entry("key_recording_continueAfterFinish", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_recording_continueAfterFinish, "&0" );
+	if ( (ent = ini_register_entry("key_recording_play", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_recording_play, "&0" );
+	if ( (ent = ini_register_entry("key_recording_customSpeed", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_recording_customSpeed, "&0" );
+	if ( (ent = ini_register_entry("key_recording_rev", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_recording_rev, "&0" );
+	if ( (ent = ini_register_entry("key_recording_rev_customSpeed", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_recording_rev_customSpeed, "&0" );
+#endif
 
 	/* nitro mod */
 	if ( (ent = ini_register_entry("key_nitro_mod", TYPE_KEY)) != NULL )
@@ -514,6 +540,11 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.stick_accel_time, "1.0" );
 
 	/* teleport */
+	/*if ( (ent = ini_register_entry("teleport_slow", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.teleport_slow, "false" );
+	if ( (ent = ini_register_entry("key_slowTeleport_stop", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_slowTeleport_stop, "&0" );
+	*/
 	if ( (ent = ini_register_entry("key_teleport_hist", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_teleport_hist, "p" );
 	if ( (ent = ini_register_entry("key_teleport", TYPE_KEY)) != NULL )
@@ -729,6 +760,8 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.d3dtext_kill, "true" );
 	if ( (ent = ini_register_entry("d3dtext_score", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.d3dtext_score, "true" );
+	if ( (ent = ini_register_entry("d3dtext_labels", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.d3dtext_labels, "false" );
 
 	if ( (ent = ini_register_entry("anti_spam", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.anti_spam, "false" );

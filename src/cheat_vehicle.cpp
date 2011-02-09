@@ -82,16 +82,10 @@ void vehicleJumper ( int iVehicleID )
 
 	if ( pVehicle->passengers[0] == self )
 		return;
-
+	
 	if ( !pVehicle->base.bUsesCollision )
-	{
-		//cheat_state_text("Can't get in a vehicle that doesn't have collisions enabled.");
-		cheat_state_text( "I do as you command." );
-		cheat_state->_generic.nocols_enabled = 0;
-		cheat_state->_generic.nocols_change_tick = GetTickCount();
 		pVehicle->base.bUsesCollision = 1;
-	}
-
+	
 	// put into first available seat
 	if ( pVehicle->passengers[0] == NULL )
 	{
@@ -150,33 +144,6 @@ void cheat_vehicle_teleport ( struct vehicle_info *info, const float pos[3], int
 		if ( !set.trailer_support )
 			break;
 	}
-}
-
-//Making the vehicle instant jumping and the trailer attaching easier
-void cheat_handle_vehicle_nocols ( struct vehicle_info *info )
-{
-	if ( isBadPtr_GTA_pVehicle(info) )
-		return;
-
-	traceLastFunc( "cheat_handle_vehicle_nocols()" );
-
-	if ( cheat_state->_generic.nocols_toggled )
-	{
-		cheat_state->_generic.nocols_enabled = 1;
-	}
-	else if ( cheat_state->_generic.nocols_enabled )
-	{
-		//for dumb_menu vehicle jumping and trailer attaching
-		int					veh_id = vehicle_find_nearest( NULL );
-		struct vehicle_info *veh = vehicle_info_get( veh_id, 0 );
-		float				dist[3] = { 0.0f, 0.0f, 0.0f };
-		if ( veh != NULL )
-			vect3_vect3_sub( &info->base.matrix[4 * 3], &veh->base.matrix[4 * 3], dist );
-		if ( (info->trailer != NULL && (GetTickCount() - 500) > cheat_state->_generic.nocols_change_tick)
-		 ||	 (info->trailer == NULL && vect3_length(dist) >= 10.0f) ) cheat_state->_generic.nocols_enabled = 0;
-	}
-
-	return;
 }
 
 void cheat_handle_vehicle_unflip ( struct vehicle_info *info, float time_diff )
@@ -442,6 +409,92 @@ void cheat_handle_vehicle_air_brake ( struct vehicle_info *info, double time_dif
 		info->m_SpeedVec.fZ = strife;
 	}
 }
+
+/*
+Causing loading screen way too regulary.
+
+void cheat_handle_vehicle_slowTeleport ( struct vehicle_info *vehicle_info, float time_diff )
+{
+	traceLastFunc( "cheat_handle_vehicle_slowTeleport()" );
+
+	if ( vehicle_info == NULL )
+		return;
+
+	if ( !set.teleport_slow || !cheat_state->vehicle.tele_on
+		|| KEY_PRESSED(set.key_slowTeleport_stop) )
+	{
+		cheat_state->vehicle.tele_on = 0;
+		return;
+	}
+
+	// inveh cross-map-teleport-alike-flying
+	if ( set.teleport_slow && cheat_state->vehicle.tele_on &&
+		cheat_state->state == CHEAT_STATE_VEHICLE && vehicle_info != NULL )
+	{
+		if ( vect3_dist(cheat_state->vehicle.tele_coords, 
+			&vehicle_info->base.matrix[4*3]) < 5.0 )
+		{
+			cheat_state->vehicle.tele_on = 0;
+			vect3_zero( cheat_state->vehicle.tele_coords );
+		}
+
+		CVehicle	*cveh = pPools->GetVehicle( (DWORD *)vehicle_info );
+		CMatrix		cvehMatrix;
+		cveh->GetMatrix( &cvehMatrix );
+
+		CVector *veh_vect = cveh->GetPosition();
+		CVector LocationVect;
+		CVector vectToLocation;
+		LocationVect.fX = cheat_state->vehicle.tele_coords[0];
+		LocationVect.fY = cheat_state->vehicle.tele_coords[1];
+		LocationVect.fZ = cheat_state->vehicle.tele_coords[2];
+		vectToLocation = *veh_vect - LocationVect;
+
+		// direction
+		CVector up = cvehMatrix.vUp;
+		up.CrossProduct( &vectToLocation );
+		up.Normalize();
+
+		CVector down = up;
+		down.CrossProduct( &cvehMatrix.vUp );
+		down.Normalize();
+
+		CVector moredown = down;
+		moredown.CrossProduct( &up );
+		cvehMatrix.vRight = up;
+		cvehMatrix.vUp = moredown;
+		cvehMatrix.vFront = -down;
+		cveh->SetMatrix( &cvehMatrix );
+			
+		// height
+		CVector front = cvehMatrix.vFront;
+		front.CrossProduct( &vectToLocation );
+		front.Normalize();
+
+		CVector back = front;
+		back.CrossProduct( &cvehMatrix.vFront );
+		back.Normalize();
+		CVector moreback = back;
+		moreback.CrossProduct( &front );
+		moreback.Normalize();
+		cvehMatrix.vRight = -back;
+		cvehMatrix.vUp = front;
+		cvehMatrix.vFront = moreback;
+		cveh->SetMatrix( &cvehMatrix );
+
+		// set speed into direction car is facing
+		float	dir[4] = { 0.0f, 1.0f, 0.0f, 0.0f };
+		float	vect[4];
+		matrix_vect4_mult( vehicle_info->base.matrix, dir, vect );
+		if ( !vect3_near_zero(vect) && !vect3_near_zero(vehicle_info->speed) )
+		{
+			float	speed = vect3_length( vehicle_info->speed );
+			vect3_mult( vect, speed, vehicle_info->speed );
+		}
+		//set speed end
+	}
+}
+*/
 
 void cheat_handle_vehicle_warp ( struct vehicle_info *info, float time_diff )
 {
@@ -1524,8 +1577,6 @@ void cheat_handle_vehicle_keepTrailer ( struct vehicle_info *vinfo, float time_d
 					cvehtrailer->SetPosition( &vecTrailerPos );
 
 					// prevent collision from altering speed/spin
-					//cheat_state->_generic.nocols_enabled = 1;
-					//cheat_state->_generic.nocols_change_tick = GetTickCount();
 					cveh->GetVehicleInterface()->vecVelocityCollision = &vZero;
 					cveh->GetVehicleInterface()->vecSpinCollision = &vZero;
 					cvehtrailer->GetVehicleInterface()->vecVelocityCollision = &vZero;
@@ -1539,10 +1590,6 @@ void cheat_handle_vehicle_keepTrailer ( struct vehicle_info *vinfo, float time_d
 
 					// re-attach trailer
 					cvehtrailer->SetTowLink( cveh );
-
-					// prevent collision from altering speed/spin
-					cheat_state->_generic.nocols_enabled = 1;
-					cheat_state->_generic.nocols_change_tick = GetTickCount();
 				}
 			}
 			else

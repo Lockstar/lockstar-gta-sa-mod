@@ -774,6 +774,9 @@
     <ClInclude Include="cheat_vehicle.h">
       <Filter>Cheat</Filter>
     </ClInclude>
+    <ClInclude Include="cheat_vehRecording.h">
+      <Filter>Cheat</Filter>
+    </ClInclude>
     <ClInclude Include="debug_classify.h">
       <Filter>Cheat</Filter>
     </ClInclude>
@@ -1221,6 +1224,9 @@
       <Filter>Cheat</Filter>
     </ClCompile>
     <ClCompile Include="cheat_vehicle.cpp">
+      <Filter>Cheat</Filter>
+    </ClCompile>
+    <ClCompile Include="cheat_vehRecording.cpp">
       <Filter>Cheat</Filter>
     </ClCompile>
     <ClCompile Include="debug_classify.cpp">

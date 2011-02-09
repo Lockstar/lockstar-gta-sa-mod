@@ -276,7 +276,7 @@ static const struct classify_table	classify_table_vehicle[] =
 	"Hitpoints",
 	1220,
 	4,
-	"Armor",
+	"Pointer to pulling truck",
 	1272,
 	4,
 	"Door status",

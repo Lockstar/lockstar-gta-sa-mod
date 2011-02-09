@@ -559,6 +559,25 @@ int isBadPtr_GTA_pBuildingInfo ( DWORD p_BuildingInfo )
 	return 0;
 }
 
+int isBadPtr_GTA_pObjectInfo ( DWORD p_ObjectInfo )
+{
+	if ( p_ObjectInfo == NULL )
+		return 1;
+
+	struct pool *pool_object = *(struct pool **)OBJECT_POOL_POINTER;
+	if ( pool_object == NULL || pool_object->start == NULL || pool_object->size <= 0 )
+		return 1;
+
+	if ( !
+			 (
+			 (DWORD) p_ObjectInfo >= (DWORD) pool_object->start && (DWORD) p_ObjectInfo <=
+			 ((DWORD) pool_object->start + (pool_object->size * 412))
+		) )
+		return 1;
+
+	return 0;
+}
+
 bool isBadPtr_handlerAny ( void *pointer, ULONG size, DWORD dwFlags )
 {
 	DWORD						dwSize;
@@ -1410,22 +1429,6 @@ void SetCloudsEnabled ( bool bEnabled )
 		memcpy_safe( (void *)0x717180, "\x83\xEC\x08", 3 );
 	else
 		memcpy_safe( (void *)0x717180, "\xC2\x04\x00", 3 );
-}
-
-void enableCollisionsForEveryStreamedInVehicle ( int iToggle )
-{
-	traceLastFunc( "enableCollisionsForEveryStreamedInVehicle()" );
-
-	int v;
-	for ( v = 0; v < pool_vehicle->size; v++ )
-	{
-		struct vehicle_info *vehs = vehicle_info_get( v, VEHICLE_ALIVE );
-		if ( vehs == NULL )
-			continue;
-		if ( vehs == vehicle_info_get(VEHICLE_SELF, 0) )
-			continue;
-		vehs->base.bUsesCollision = iToggle;
-	}
 }
 
 // ---------------------------------------------------------------------------------------

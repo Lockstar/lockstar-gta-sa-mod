@@ -118,11 +118,27 @@ struct settings
 
 	int						key_keep_trailer;
 	int						key_disable_Wall_Collisions;
+	bool					wall_collisions_disableObjects;
+	bool					wall_collisions_disableRender;
 
 	int						key_repair_car;
 
 	int						key_nitro;
 
+#ifdef __CHEAT_VEHRECORDING_H__
+	int						recording_activated;
+	float					recording_maxDistToEntryPoint;
+	float					recording_play_customSpeed;
+	int						key_recording_record;
+	int						key_recording_continueAfterFinish;
+	int						key_recording_play;
+	int						key_recording_customSpeed;
+	int						key_recording_rev;
+	int						key_recording_rev_customSpeed;
+#endif
+
+	//bool					teleport_slow;
+	//int					key_slowTeleport_stop;
 	int						key_teleport_hist;
 	int						key_teleport[TELEPORT_MAX];
 	int						key_teleport_set[TELEPORT_MAX];
@@ -252,6 +268,7 @@ struct settings
 
 	int						d3dtext_kill;
 	int						d3dtext_score;
+	int						d3dtext_labels;
 
 	int						anti_spam;
 	int						chatbox_logging;

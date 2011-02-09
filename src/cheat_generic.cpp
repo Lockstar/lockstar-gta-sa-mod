@@ -212,8 +212,13 @@ void cheat_teleport ( const float pos[3], int interior_id )
 {
 	if ( cheat_state->state == CHEAT_STATE_ACTOR )
 		cheat_actor_teleport( actor_info_get(ACTOR_SELF, 0), pos, interior_id );
-	else if ( cheat_state->state == CHEAT_STATE_VEHICLE )
+	else if ( cheat_state->state == CHEAT_STATE_VEHICLE ) //&& !set.teleport_slow )
 		cheat_vehicle_teleport( vehicle_info_get(VEHICLE_SELF, 0), pos, interior_id );
+	/*else if ( cheat_state->state == CHEAT_STATE_VEHICLE && set.teleport_slow )
+	{
+		vect3_copy(pos, cheat_state->vehicle.tele_coords);
+		cheat_state->vehicle.tele_on = 1;
+	}*/
 }
 
 void cheat_teleport_nearest_car ( void )
@@ -256,11 +261,6 @@ void cheat_handle_misc ( void )
 		gta_weather_state_set( set.force_weather );
 
 	SetCloudsEnabled( set.enable_clouds );
-
-	if ( !cheat_state->_generic.nocols_enabled )
-		enableCollisionsForEveryStreamedInVehicle( 1 );
-	else
-		enableCollisionsForEveryStreamedInVehicle( 0 );
 }
 
 void cheat_handle_debug ( HWND wnd )
