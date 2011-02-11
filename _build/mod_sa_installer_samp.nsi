@@ -7,7 +7,7 @@
 !define NAME 'mod_sa'
 !define MP 'SA-MP'
 !define MP_VERSION 'v0.3c'
-!define VERSION 'v4.2.1.1'
+!define VERSION 'v4.2.1.2'
 
 ; create output directory if it doesn't exist
 !system 'mkdir "..\_distro_installers\"'
@@ -100,8 +100,6 @@ Section "Install" SecDummy
 	File ..\bin\data\vehicles.two
 	File ..\bin\data\surface.two
 	SetOverwrite on
-	
-	SetOutPath "$INSTDIR\screenshots"
 
 	WriteUninstaller "$INSTDIR\Uninstall_${NAME}.exe"
 	DetailPrint "${NAME} ${VERSION} for ${MP} ${MP_VERSION} setup finished."

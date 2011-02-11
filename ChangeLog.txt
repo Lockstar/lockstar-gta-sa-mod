@@ -2,8 +2,11 @@ mod_sa
 by jflm, nuckfuts, notaplane, and the game modification community
 http://code.google.com/p/m0d-s0beit-sa/
 
+Version 4.2.1.2
+* Removed custom screenshots.
+* Fixed single player crash.
+
 Version 4.2.1.1
-* Fixed screenshots for anti-aliasing modes!!!
 * Improved "Fly Player"
 
 Version 4.2.1.0

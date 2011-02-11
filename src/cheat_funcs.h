@@ -434,7 +434,7 @@ void								vehicle_setColor0 ( vehicle_info *vinfo, int new_color );
 void								vehicle_setColor1 ( vehicle_info *vinfo, int new_color );
 
 // --------------------------------------------------------------------------------------------
-int									memcpy_safe ( void *dest, const void *src, uint32_t len, int check = 0, const void *checkdata = 0);
+int									memcpy_safe ( void *dest, const void *src, uint32_t len, int check = NULL, const void *checkdata = NULL);
 int									memset_safe ( void *_dest, int c, uint32_t len );
 int									memcmp_safe ( const void *_s1, const void *_s2, uint32_t len );
 

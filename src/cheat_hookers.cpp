@@ -23,10 +23,6 @@
 #include "main.h"
 
 // ---------------------------------------------------
-// Extern vars
-extern bool isPornographyMasterControlRunning;
-
-// ---------------------------------------------------
 CVector *GravityNormal = new CVector( 0.0, 0.0, -1.0 );
 
 // ---------------------------------------------------
@@ -1000,7 +996,7 @@ bool ignoreColWithObjectID ( int iModelID )
 	int maxNum = (i == 0) ? 908 : COLLISION_IGNORE_NUM;
 	for ( ; i < maxNum; i++ )
 	{
-		if ( collision_ignore_array_test[i] == iModelID )
+		if ( collision_ignore_array[i] == iModelID )
 			return true;
 	}
 	return false;
@@ -1186,10 +1182,6 @@ void _declspec ( naked ) HOOK_RenderEntity ()
 
 	if ( !cheat_state->_generic.nocols_walls_enabled || cheat_state->_generic.cheat_panic_enabled 
 		|| cheat_state->vehicle.fly )
-		goto hk_RE_draw;
-
-	// Draw everything normal when a screenshot is needed
-	if ( isPornographyMasterControlRunning && set.screenshot_clean )
 		goto hk_RE_draw;
 
 	if ( set.wall_collisions_disableObjects && !isBadPtr_GTA_pObjectInfo(hook_renderEnt_esi) )

@@ -129,9 +129,7 @@
 #define ID_MISC_BAD_WEAPONS					3
 #define ID_MISC_TRAILERS					4
 #define ID_MISC_FPSLIMIT					5
-// InitWindowMode needs fixing, see notes above it
-//#define ID_MISC_TOGGLEWINDOWED				6
-#define ID_MISC_CLEANSCREENSHOT				7
+#define ID_MISC_TOGGLEWINDOWED				6
 
 #define ID_DEBUG_ENABLE						0
 #define ID_DEBUG_SELF_ACTOR					1
@@ -1794,13 +1792,8 @@ static int menu_callback_misc ( int op, struct menu_item *item )
 
 		case ID_MISC_FPSLIMIT:
 			return 0;
-// InitWindowMode needs fixing, see notes above it
-/*
 		case ID_MISC_TOGGLEWINDOWED:
 			return set.window_mode;
-*/
-		case ID_MISC_CLEANSCREENSHOT:
-			return set.screenshot_clean;
 		}
 	}
 	else if ( op == MENU_OP_SELECT )
@@ -1834,15 +1827,8 @@ static int menu_callback_misc ( int op, struct menu_item *item )
 			set.trailer_support ^= 1;
 			break;
 
-// InitWindowMode needs fixing, see notes above it
-/*
 		case ID_MISC_TOGGLEWINDOWED:
 			toggleWindowedMode();
-			break;
-*/
-
-		case ID_MISC_CLEANSCREENSHOT:
-			set.screenshot_clean ^= 1;
 			break;
 
 		default:
@@ -2710,9 +2696,10 @@ static int menu_callback_playerinfo ( int op, struct menu_item *item )
 int joining_server = 0;
 static int menu_callback_server_list ( int op, struct menu_item *item )
 {
-	struct fav_server	*server = &set.server[item->id];
 	if ( g_SAMP == NULL && g_Players == NULL )
 		return 0;
+
+	struct fav_server	*server = &set.server[item->id];
 
 	if ( op == MENU_OP_ENABLED )
 	{
@@ -2868,24 +2855,27 @@ void menu_maybe_init ( void )
 #endif
 
 	/* samp specific */
-	// main menu
-	menu_players = menu_new( menu_main, ID_MENU_PLAYERS, menu_callback_players );
-	menu_servers = menu_new( menu_main, ID_MENU_SERVER_LIST, menu_callback_server_list );
-	menu_sampmisc = menu_new( menu_main, ID_MENU_SAMPMISC, menu_callback_sampmisc );
-	menu_samppatches = menu_new( menu_main, ID_MENU_SAMPPATCHES, menu_callback_samppatches );
-	// main menu -> players
-	menu_players_warp = menu_new( menu_players, ID_MENU_PLAYERS_WARP, menu_callback_players_warp );
-	menu_players_vehwarp = menu_new( menu_players, ID_MENU_PLAYERS_VEHWARP, menu_callback_players_vehwarp );
-	menu_players_spec = menu_new( menu_players, ID_MENU_PLAYERS_SPEC, menu_callback_spec );
-	menu_player_info = menu_new( menu_players, ID_MENU_PLAYERS_INFO, menu_callback_playerinfo );
-	// main menu -> sampmisc
-	menu_spoof_weapon = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_SPOOF_WEAPON, menu_callback_sampmisc );
-	menu_fake_kill = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_FAKE_KILL, menu_callback_sampmisc );
-	menu_vehicles_instant = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_VEHICLES_INSTANT, menu_callback_vehicles_instant );
-	menu_gamestate = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_GAMESTATE, menu_callback_gamestate );
-	menu_specialaction = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_SPECIALACTION, menu_callback_specialaction );
-	menu_teleobject = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_TELEOBJECT, menu_callback_teleobject );
-	menu_telepickup = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_TELEPICKUP, menu_callback_telepickup );
+	if ( g_SAMP != NULL )
+	{
+		// main menu
+		menu_players = menu_new( menu_main, ID_MENU_PLAYERS, menu_callback_players );
+		menu_servers = menu_new( menu_main, ID_MENU_SERVER_LIST, menu_callback_server_list );
+		menu_sampmisc = menu_new( menu_main, ID_MENU_SAMPMISC, menu_callback_sampmisc );
+		menu_samppatches = menu_new( menu_main, ID_MENU_SAMPPATCHES, menu_callback_samppatches );
+		// main menu -> players
+		menu_players_warp = menu_new( menu_players, ID_MENU_PLAYERS_WARP, menu_callback_players_warp );
+		menu_players_vehwarp = menu_new( menu_players, ID_MENU_PLAYERS_VEHWARP, menu_callback_players_vehwarp );
+		menu_players_spec = menu_new( menu_players, ID_MENU_PLAYERS_SPEC, menu_callback_spec );
+		menu_player_info = menu_new( menu_players, ID_MENU_PLAYERS_INFO, menu_callback_playerinfo );
+		// main menu -> sampmisc
+		menu_spoof_weapon = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_SPOOF_WEAPON, menu_callback_sampmisc );
+		menu_fake_kill = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_FAKE_KILL, menu_callback_sampmisc );
+		menu_vehicles_instant = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_VEHICLES_INSTANT, menu_callback_vehicles_instant );
+		menu_gamestate = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_GAMESTATE, menu_callback_gamestate );
+		menu_specialaction = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_SPECIALACTION, menu_callback_specialaction );
+		menu_teleobject = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_TELEOBJECT, menu_callback_teleobject );
+		menu_telepickup = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_TELEPICKUP, menu_callback_telepickup );
+	}
 
 	/** Menu Items **/
 	/* main menu */
@@ -2899,7 +2889,7 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_main, menu_patches, name, ID_NONE, MENU_COLOR_DEFAULT, NULL );
 
 	/* main menu (samp specific) */
-	if ( g_dwSAMP_Addr != NULL )
+	if ( g_SAMP != NULL )
 	{
 		menu_item_add( menu_main, NULL, "\tSA-MP", ID_NONE, MENU_COLOR_SEPARATOR, NULL );
 		menu_item_add( menu_main, menu_players, "Players", ID_NONE, MENU_COLOR_DEFAULT, NULL );
@@ -3073,13 +3063,6 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_vehicles, NULL, "Freeze nearby vehicles", ID_VEHICLES_FREEZE, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_vehicles, NULL, "Warp vehicles to you", ID_VEHICLES_IWARP, MENU_COLOR_DEFAULT, NULL );
 
-	/* main menu -> players */
-	menu_item_add( menu_players, menu_players_warp, "Warp to player", ID_MENU_PLAYERS_WARP, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_players, menu_players_vehwarp, "Warp instantly to player's vehicle", ID_MENU_PLAYERS_VEHWARP,
-				   MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_players, menu_players_spec, "Spectate player", ID_MENU_PLAYERS_SPEC, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_players, menu_player_info, "Show infos on player", ID_MENU_PLAYERS_INFO, MENU_COLOR_DEFAULT,
-				   NULL );
 
 	/* main menu -> patches */
 	for ( i = 0; i < INI_PATCHES_MAX; i++ )
@@ -3090,23 +3073,33 @@ void menu_maybe_init ( void )
 		menu_item_add( menu_patches, NULL, set.patch[i].name, i, MENU_COLOR_DEFAULT, NULL );
 	}
 
-	for ( i = 0; i < INI_SAMPPATCHES_MAX; i++ )
+	if ( g_SAMP != NULL )
 	{
-		if ( set.sampPatch[i].name == NULL )
-			continue;
+		/* main menu -> players */
+		menu_item_add( menu_players, menu_players_warp, "Warp to player", ID_MENU_PLAYERS_WARP, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_players, menu_players_vehwarp, "Warp instantly to player's vehicle", ID_MENU_PLAYERS_VEHWARP, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_players, menu_players_spec, "Spectate player", ID_MENU_PLAYERS_SPEC, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_players, menu_player_info, "Show infos on player", ID_MENU_PLAYERS_INFO, MENU_COLOR_DEFAULT, NULL );
 
-		menu_item_add( menu_samppatches, NULL, set.sampPatch[i].name, i, MENU_COLOR_DEFAULT, NULL );
-	}
+		// samp patches
+		for ( i = 0; i < INI_SAMPPATCHES_MAX; i++ )
+		{
+			if ( set.sampPatch[i].name == NULL )
+				continue;
 
-	// server list
-	menu_item_add( menu_servers, NULL, "Keep your current nickname", INI_SERVERS_MAX + 1, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_servers, NULL, "\tServers", ID_NONE, MENU_COLOR_SEPARATOR, NULL );
-	for ( i = 0; i < INI_SERVERS_MAX; i++ )
-	{
-		if ( set.server[i].server_name == NULL )
-			continue;
+			menu_item_add( menu_samppatches, NULL, set.sampPatch[i].name, i, MENU_COLOR_DEFAULT, NULL );
+		}
 
-		menu_item_add( menu_servers, NULL, set.server[i].server_name, i, MENU_COLOR_DEFAULT, NULL );
+		// server list
+		menu_item_add( menu_servers, NULL, "Keep your current nickname", INI_SERVERS_MAX + 1, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_servers, NULL, "\tServers", ID_NONE, MENU_COLOR_SEPARATOR, NULL );
+		for ( i = 0; i < INI_SERVERS_MAX; i++ )
+		{
+			if ( set.server[i].server_name == NULL )
+				continue;
+
+			menu_item_add( menu_servers, NULL, set.server[i].server_name, i, MENU_COLOR_DEFAULT, NULL );
+		}
 	}
 
 	/* teleports */
@@ -3138,9 +3131,7 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_misc, menu_hudindicators, "Toggle HUD indicators", ID_NONE, MENU_COLOR_DEFAULT, NULL );
 	snprintf( name, sizeof(name), "FPS limit: %d", set.fps_limit );
 	menu_item_add( menu_misc, NULL, name, ID_MISC_FPSLIMIT, MENU_COLOR_DEFAULT, NULL );
-// InitWindowMode needs fixing, see notes above it
-//	menu_item_add( menu_misc, NULL, "Toggle windowed mode", ID_MISC_TOGGLEWINDOWED, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_misc, NULL, "Toggle clean screenshot", ID_MISC_CLEANSCREENSHOT, MENU_COLOR_DEFAULT, NULL );
+	menu_item_add( menu_misc, NULL, "Toggle windowed mode", ID_MISC_TOGGLEWINDOWED, MENU_COLOR_DEFAULT, NULL );
 #ifdef __CHEAT_VEHRECORDING_H__
 	menu_item_add( menu_misc, menu_routes, "Routes", ID_NONE, MENU_COLOR_DEFAULT, NULL );
 #endif
@@ -3149,7 +3140,8 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_debug, NULL, "Enable", ID_DEBUG_ENABLE, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_debug, NULL, "Self actor", ID_DEBUG_SELF_ACTOR, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_debug, NULL, "Self vehicle", ID_DEBUG_SELF_VEHICLE, MENU_COLOR_DEFAULT, NULL );
-	if ( g_dwSAMP_Addr != NULL )
+
+	if ( g_SAMP != NULL )
 	{
 		menu_item_add( menu_debug, NULL, "SA:MP DLL", ID_DEBUG_SAMP_DLL, MENU_COLOR_DEFAULT, NULL );
 		menu_item_add( menu_debug, NULL, "SA:MP Info", ID_DEBUG_SAMP_INFO, MENU_COLOR_DEFAULT, NULL );
@@ -3191,72 +3183,69 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_hudindicators, NULL, "FPS", ID_HUDIND_FPS, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_hudindicators, NULL, "Toggle left bottom bars", ID_HUDIND_LB_BARS, MENU_COLOR_DEFAULT, NULL );
 
-	// main menu -> sampmisc
-	menu_item_add( menu_sampmisc, menu_vehicles_instant, "Warp instantly to vehicle", ID_NONE, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_sampmisc, menu_fake_kill, "Fake kill", ID_NONE, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_sampmisc, menu_spoof_weapon, "Spoof weapon", ID_NONE, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_sampmisc, NULL, "Player info list", ID_MENU_SAMPMISC_SAMP_INFO_LIST, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_sampmisc, NULL, "Replace chat text rendering", ID_MENU_SAMPMISC_CHAT_TEXT, MENU_COLOR_DEFAULT,
-				   NULL );
-	snprintf( name, sizeof(name), "Display chat lines: %d", set.d3dtext_chat_lines );
-	menu_item_add( menu_sampmisc, NULL, name, ID_MENU_SAMPMISC_CHAT_TEXTLINES, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_sampmisc, menu_gamestate, "Change game state", ID_NONE, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_sampmisc, menu_specialaction, "Special action", ID_NONE, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_sampmisc, NULL, "Drunk", ID_MENU_SAMPMISC_SAMP_DRUNK, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_sampmisc, menu_teleobject, "Teleport to object", ID_MENU_SAMPMISC_TELEOBJECT,
-				   MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_sampmisc, NULL, "Render object texts", ID_MENU_SAMPMISC_RENDEROBJTXT, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_sampmisc, menu_telepickup, "Teleport to pickup", ID_MENU_SAMPMISC_TELEPICKUP,
-				   MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_sampmisc, NULL, "Render pickup texts", ID_MENU_SAMPMISC_RENDERPCKTXT, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_sampmisc, NULL, "Load M0D-Commands", ID_MENU_SAMPMISC_M0DCOMMANDS, MENU_COLOR_DEFAULT, NULL );
-
-	/* main menu -> sampmisc -> change game state */
-	menu_item_add( menu_gamestate, NULL, "Connecting", GAMESTATE_CONNECTING, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_gamestate, NULL, "Connected", GAMESTATE_CONNECTED, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_gamestate, NULL, "Await join", GAMESTATE_AWAIT_JOIN, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_gamestate, NULL, "Game mode restarting", GAMESTATE_RESTARTING, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_gamestate, NULL, "Wait connect", GAMESTATE_WAIT_CONNECT, MENU_COLOR_DEFAULT, NULL );
-
-	/* main menu -> sampmisc -> special action */
-	menu_item_add( menu_specialaction, NULL, "None", ID_MENU_SPECIAL_ACTION_NONE, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_specialaction, NULL, "Smoke Blunt", ID_MENU_SPECIAL_ACTION_SMOKE_CIGGY, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_specialaction, NULL, "Drink Beer", ID_MENU_SPECIAL_ACTION_DRINK_BEER, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_specialaction, NULL, "Drink Wine", ID_MENU_SPECIAL_ACTION_DRINK_WINE, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_specialaction, NULL, "Drink Sprunk", ID_MENU_SPECIAL_ACTION_DRINK_SPRUNK, MENU_COLOR_DEFAULT,
-				   NULL );
-	menu_item_add( menu_specialaction, NULL, "Use Jetpack", ID_MENU_SPECIAL_ACTION_USEJETPACK, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_specialaction, NULL, "Dance1", ID_MENU_SPECIAL_ACTION_DANCE1, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_specialaction, NULL, "Dance2", ID_MENU_SPECIAL_ACTION_DANCE2, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_specialaction, NULL, "Dance3", ID_MENU_SPECIAL_ACTION_DANCE3, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_specialaction, NULL, "Dance4", ID_MENU_SPECIAL_ACTION_DANCE4, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_specialaction, NULL, "Hands Up", ID_MENU_SPECIAL_ACTION_HANDSUP, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_specialaction, NULL, "Use Cellphone", ID_MENU_SPECIAL_ACTION_USECELLPHONE, MENU_COLOR_DEFAULT,
-				   NULL );
-	menu_item_add( menu_specialaction, NULL, "Stop Use Cellphone", ID_MENU_SPECIAL_ACTION_STOPUSECELLPHONE,
-				   MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_specialaction, NULL, "Urinate", ID_MENU_SPECIAL_ACTION_URINATE, MENU_COLOR_DEFAULT, NULL );
-
-	/* main menu -> sampmisc -> fake weapon */
-	for ( i = 0; weapon_list[i].name != NULL; i++ )
+	if ( g_SAMP != NULL )
 	{
-		const struct weapon_entry	*weapon = &weapon_list[i];
+		// main menu -> sampmisc
+		menu_item_add( menu_sampmisc, menu_vehicles_instant, "Warp instantly to vehicle", ID_NONE, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_sampmisc, menu_fake_kill, "Fake kill", ID_NONE, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_sampmisc, menu_spoof_weapon, "Spoof weapon", ID_NONE, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_sampmisc, NULL, "Player info list", ID_MENU_SAMPMISC_SAMP_INFO_LIST, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_sampmisc, NULL, "Replace chat text rendering", ID_MENU_SAMPMISC_CHAT_TEXT, MENU_COLOR_DEFAULT, NULL );
+		snprintf( name, sizeof(name), "Display chat lines: %d", set.d3dtext_chat_lines );
+		menu_item_add( menu_sampmisc, NULL, name, ID_MENU_SAMPMISC_CHAT_TEXTLINES, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_sampmisc, menu_gamestate, "Change game state", ID_NONE, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_sampmisc, menu_specialaction, "Special action", ID_NONE, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_sampmisc, NULL, "Drunk", ID_MENU_SAMPMISC_SAMP_DRUNK, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_sampmisc, menu_teleobject, "Teleport to object", ID_MENU_SAMPMISC_TELEOBJECT, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_sampmisc, NULL, "Render object texts", ID_MENU_SAMPMISC_RENDEROBJTXT, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_sampmisc, menu_telepickup, "Teleport to pickup", ID_MENU_SAMPMISC_TELEPICKUP, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_sampmisc, NULL, "Render pickup texts", ID_MENU_SAMPMISC_RENDERPCKTXT, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_sampmisc, NULL, "Load M0D-Commands", ID_MENU_SAMPMISC_M0DCOMMANDS, MENU_COLOR_DEFAULT, NULL );
 
-		if ( strcmp(weapon->name, "Camera") == 0
-		 ||	 strcmp(weapon->name, "NV Goggles") == 0
-		 ||	 strcmp(weapon->name, "IR Goggles") == 0
-		 ||	 strcmp(weapon->name, "Parachute") == 0
-		 ||	 strcmp(weapon->name, "Detonator") == 0 ) continue;
+		/* main menu -> sampmisc -> change game state */
+		menu_item_add( menu_gamestate, NULL, "Connecting", GAMESTATE_CONNECTING, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_gamestate, NULL, "Connected", GAMESTATE_CONNECTED, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_gamestate, NULL, "Await join", GAMESTATE_AWAIT_JOIN, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_gamestate, NULL, "Game mode restarting", GAMESTATE_RESTARTING, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_gamestate, NULL, "Wait connect", GAMESTATE_WAIT_CONNECT, MENU_COLOR_DEFAULT, NULL );
 
-		snprintf( name, sizeof(name), "Fake killed by %s", weapon->name );
-		menu_item_add( menu_spoof_weapon, NULL, name, ID_MENU_SAMPMISC_SPOOF_WEAPON, MENU_COLOR_DEFAULT,
-					   (void *)(UINT_PTR) weapon->id );
+		/* main menu -> sampmisc -> special action */
+		menu_item_add( menu_specialaction, NULL, "None", ID_MENU_SPECIAL_ACTION_NONE, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_specialaction, NULL, "Smoke Blunt", ID_MENU_SPECIAL_ACTION_SMOKE_CIGGY, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_specialaction, NULL, "Drink Beer", ID_MENU_SPECIAL_ACTION_DRINK_BEER, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_specialaction, NULL, "Drink Wine", ID_MENU_SPECIAL_ACTION_DRINK_WINE, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_specialaction, NULL, "Drink Sprunk", ID_MENU_SPECIAL_ACTION_DRINK_SPRUNK, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_specialaction, NULL, "Use Jetpack", ID_MENU_SPECIAL_ACTION_USEJETPACK, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_specialaction, NULL, "Dance1", ID_MENU_SPECIAL_ACTION_DANCE1, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_specialaction, NULL, "Dance2", ID_MENU_SPECIAL_ACTION_DANCE2, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_specialaction, NULL, "Dance3", ID_MENU_SPECIAL_ACTION_DANCE3, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_specialaction, NULL, "Dance4", ID_MENU_SPECIAL_ACTION_DANCE4, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_specialaction, NULL, "Hands Up", ID_MENU_SPECIAL_ACTION_HANDSUP, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_specialaction, NULL, "Use Cellphone", ID_MENU_SPECIAL_ACTION_USECELLPHONE, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_specialaction, NULL, "Stop Use Cellphone", ID_MENU_SPECIAL_ACTION_STOPUSECELLPHONE, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_specialaction, NULL, "Urinate", ID_MENU_SPECIAL_ACTION_URINATE, MENU_COLOR_DEFAULT, NULL );
+
+		/* main menu -> sampmisc -> fake weapon */
+		for ( i = 0; weapon_list[i].name != NULL; i++ )
+		{
+			const struct weapon_entry	*weapon = &weapon_list[i];
+
+			if ( strcmp(weapon->name, "Camera") == 0
+			 ||	 strcmp(weapon->name, "NV Goggles") == 0
+			 ||	 strcmp(weapon->name, "IR Goggles") == 0
+			 ||	 strcmp(weapon->name, "Parachute") == 0
+			 ||	 strcmp(weapon->name, "Detonator") == 0 ) continue;
+
+			snprintf( name, sizeof(name), "Fake killed by %s", weapon->name );
+			menu_item_add( menu_spoof_weapon, NULL, name, ID_MENU_SAMPMISC_SPOOF_WEAPON, MENU_COLOR_DEFAULT,
+						   (void *)(UINT_PTR) weapon->id );
+		}
+
+		menu_item_add( menu_spoof_weapon, NULL, "Fake death by fall", ID_MENU_SAMPMISC_SPOOF_WEAPON, MENU_COLOR_DEFAULT,
+					   (void *)(UINT_PTR) 20 );
+		menu_item_add( menu_spoof_weapon, NULL, "Fake begin run over", ID_MENU_SAMPMISC_SPOOF_WEAPON, MENU_COLOR_DEFAULT,
+					   (void *)(UINT_PTR) 21 );
 	}
-
-	menu_item_add( menu_spoof_weapon, NULL, "Fake death by fall", ID_MENU_SAMPMISC_SPOOF_WEAPON, MENU_COLOR_DEFAULT,
-				   (void *)(UINT_PTR) 20 );
-	menu_item_add( menu_spoof_weapon, NULL, "Fake begin run over", ID_MENU_SAMPMISC_SPOOF_WEAPON, MENU_COLOR_DEFAULT,
-				   (void *)(UINT_PTR) 21 );
 
 	menu_active = menu_main;
 }

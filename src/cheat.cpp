@@ -119,7 +119,6 @@ static void cheat_main_vehicle ( double time_diff )
 }
 
 // the main daddyo
-extern bool isRequestingScreenshot;
 int			m_InitStages = 0;
 void cheat_hook ( HWND wnd )
 {
@@ -312,13 +311,6 @@ void cheat_hook ( HWND wnd )
 	// more random than random
 	if ( rand() % 5000 == 0 )
 		srand( rand() + time_get() );
-
-	// want some porno?
-	if ( set.screenshot_enable )
-	{
-		if ( KEY_PRESSED(set.key_screenshot) )
-			isRequestingScreenshot = true;
-	}
 
 	// OMGWTFBBQ?!?
 	if ( cheat_panic() )

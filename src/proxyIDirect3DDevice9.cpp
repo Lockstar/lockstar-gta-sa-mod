@@ -93,11 +93,6 @@ struct gui				*gta_money_hud = &set.guiset[7];
 ///////////////////////////////////////////////////////////////////////////////
 // Common D3D functions.
 ///////////////////////////////////////////////////////////////////////////////
-// new screenshot function
-bool					isRequestingScreenshot; // this gets referenced as an external in cheat.cpp
-bool					isPornographyMasterControlRunning = false;
-bool					isPornographyStuntCockReady = false;
-DWORD					g_lastPornographyTickCount = GetTickCount();
 
 static WCHAR *ToWChar ( char *str )
 {
@@ -105,412 +100,6 @@ static WCHAR *ToWChar ( char *str )
 	_wcsset( buffer, 0 );
 	MultiByteToWideChar( CP_ACP, 0, str, strlen(str), buffer, 1024 );
 	return buffer;
-}
-
-struct t_CodecInfo
-{
-    CLSID Clsid;
-    const WCHAR* FilenameExtension;
-    const WCHAR* MimeType;
-    DWORD Version;
-};
-
-t_CodecInfo GetEncoderCodecInfo ( const WCHAR *format )
-{
-	using namespace Gdiplus;
-	UINT			num = 0;	// number of image encoders
-	UINT			size = 0;	// size of the image encoder array in bytes
-	ImageCodecInfo	*pImageCodecInfo = NULL;
-	t_CodecInfo CodecInfo;
-	GetImageEncodersSize( &num, &size );
-	if ( size == 0 )
-		return CodecInfo;		// Failure
-	pImageCodecInfo = ( ImageCodecInfo * ) ( malloc(size) );
-	if ( pImageCodecInfo == NULL )
-		return CodecInfo;		// Failure
-	GetImageEncoders( num, size, pImageCodecInfo );
-	for ( UINT j = 0; j < num; ++j )
-	{
-		if ( wcscmp(pImageCodecInfo[j].MimeType, format) == 0 )
-		{
-			CodecInfo.Clsid = pImageCodecInfo[j].Clsid;
-			CodecInfo.FilenameExtension = pImageCodecInfo[j].FilenameExtension; // useless GDI only returns "*"
-			CodecInfo.MimeType = pImageCodecInfo[j].MimeType;
-			CodecInfo.Version = pImageCodecInfo[j].Version;
-			return CodecInfo;	// Success
-		}
-	}
-
-	free( pImageCodecInfo );
-	return CodecInfo;			// Failure
-}
-
-HBITMAP PornographyGetPorn ( void )
-{
-	traceLastFunc( "PornographyGetPorn()" );
-
-	// make sure we have the original device
-	if ( origIDirect3DDevice9 == NULL )
-	{
-		Log( "PornographyGetPorn() fail, origIDirect3DDevice9 == NULL" );
-		goto getpornfail;
-	}
-
-	// RenderTargetSurface.
-	IDirect3DSurface9	*pRenderTargetSurface = NULL;
-
-	// Multisample TransferTargetSurface.
-	IDirect3DSurface9	*pTransferTargetSurface = NULL;
-
-	// DestinationTargetSurface
-	IDirect3DSurface9	*pDestinationTargetSurface = NULL;
-
-	// DisplayMode
-	D3DDISPLAYMODE		d3dDipMode;
-
-	// localize hWnd
-	HWND				m_hWnd = pPresentParam.hDeviceWindow;
-
-	// Get the client rectangle
-	RECT	rc;
-	GetClientRect( m_hWnd, &rc );
-	ClientToScreen( m_hWnd, LPPOINT(&rc.left) );
-	ClientToScreen( m_hWnd, LPPOINT(&rc.right) );
-
-	// Display Mode (d3dDipMode)
-	if ( FAILED(origIDirect3DDevice9->GetDisplayMode(D3DADAPTER_DEFAULT, &d3dDipMode)) )
-	{
-		Log( "PornographyGetPorn() fail, GetDisplayMode() fail." );
-		goto getpornfail;
-	}
-
-	// calculate correct D3DFormat
-	D3DFORMAT	m_D3DFMT;
-	uint8_t		m_CaptureBitCount;
-	if ( d3dDipMode.Format == D3DFMT_X8R8G8B8 )
-	{
-		// 32bit
-		m_D3DFMT = D3DFMT_A8R8G8B8;
-		m_CaptureBitCount = 32;
-	}
-	else if ( d3dDipMode.Format == D3DFMT_R5G6B5 )
-	{
-		// 16bit
-		m_D3DFMT = D3DFMT_R5G6B5;
-		m_CaptureBitCount = 16;
-	}
-	else
-	{
-		// pray this works, but we shouldn't ever get this
-		Log( "WTF, your D3D format is: %d", d3dDipMode.Format );
-		m_D3DFMT = D3DFMT_A8R8G8B8;
-		m_CaptureBitCount = 32;
-	}
-
-	//GetDestinationTargetSurface
-	if ( FAILED(origIDirect3DDevice9->CreateOffscreenPlainSurface((rc.right - rc.left), (rc.bottom - rc.top), m_D3DFMT,
-				 D3DPOOL_SYSTEMMEM, // D3DPOOL_DEFAULT D3DPOOL_SYSTEMMEM
-				&pDestinationTargetSurface, NULL	// HANDLE* pSharedHandle
-				)) )
-	{
-		Log( "PornographyGetPorn() fail, CreateOffscreenPlainSurface() fail." );
-		goto getpornfail;
-	}
-
-	// GetRenderTargetSurface ASAP
-	if ( FAILED(origIDirect3DDevice9->GetRenderTarget(0, &pRenderTargetSurface)) )
-	{
-		Log( "PornographyGetPorn() fail, GetRenderTarget() fail." );
-		goto getpornfail;
-	}
-
-	// code to handle multisampled video modes
-	D3DSURFACE_DESC pRendTargetDesc;
-	if ( FAILED(pRenderTargetSurface->GetDesc( &pRendTargetDesc )) )
-	{
-		Log( "PornographyGetPorn() fail, GetDesc() fail." );
-		goto getpornfail;
-	}
-	if ( pRendTargetDesc.MultiSampleType != D3DMULTISAMPLE_NONE
-		|| g_pCSettingsSAInterface->antiAliasingMode )
-	{
-		if ( FAILED(origIDirect3DDevice9->CreateRenderTarget((rc.right - rc.left), (rc.bottom - rc.top), // width & height
-					m_D3DFMT, // D3DFORMAT Format
-					D3DMULTISAMPLE_NONE, // D3DMULTISAMPLE_TYPE Multisample
-					0, // DWORD MultisampleQuality
-					0, // BOOL Lockable
-					&pTransferTargetSurface, // IDirect3DSurface9 **ppSurface
-					NULL // HANDLE* pSharedHandle
-					)) )
-		{
-			Log( "PornographyGetPorn() fail, CreateRenderTarget() fail." );
-			goto getpornfail;
-		}
-
-		if ( FAILED(origIDirect3DDevice9->StretchRect(pRenderTargetSurface, NULL, pTransferTargetSurface, NULL,
-					 D3DTEXF_NONE)) )
-		{
-			Log( "PornographyGetPorn() fail, StretchRect() fail." );
-			goto getpornfail;
-		}
-
-		//copy RenderTargetSurface -> DestTarget, and release target surfaces
-		if ( FAILED(origIDirect3DDevice9->GetRenderTargetData(pTransferTargetSurface, pDestinationTargetSurface)) )
-		{
-			Log( "PornographyGetPorn() fail, GetRenderTargetData() fail." );
-			goto getpornfail;
-		}
-
-		// image transfered, reset render target and release
-		//origIDirect3DDevice9->SetRenderTarget(0, pRenderTargetSurface);
-		SAFE_RELEASE( pTransferTargetSurface );
-		SAFE_RELEASE( pRenderTargetSurface );
-	}
-	else
-	{
-		//copy RenderTargetSurface -> DestTarget, and release target surfaces
-		if ( FAILED(origIDirect3DDevice9->GetRenderTargetData(pRenderTargetSurface, pDestinationTargetSurface)) )
-		{
-			Log( "PornographyGetPorn() fail, GetRenderTargetData() fail." );
-			goto getpornfail;
-		}
-		SAFE_RELEASE( pRenderTargetSurface );
-	}
-
-	// create HDC device
-	HDC			hCaptureDC = CreateCompatibleDC( NULL );
-
-	//Create a BITMAPINFO/BITMAPINFOHEADER structure and fill it(parameter 2 for CreateDIBSection())
-	BITMAPINFO	bmpInfo;
-	ZeroMemory( &bmpInfo, sizeof(BITMAPINFO) );
-	bmpInfo.bmiHeader.biSize = sizeof( BITMAPINFOHEADER );
-	bmpInfo.bmiHeader.biBitCount = m_CaptureBitCount;
-	bmpInfo.bmiHeader.biCompression = BI_RGB;
-	bmpInfo.bmiHeader.biWidth = rc.right - rc.left;
-	bmpInfo.bmiHeader.biHeight = rc.bottom - rc.top;
-	bmpInfo.bmiHeader.biSizeImage = 0;
-	bmpInfo.bmiHeader.biPlanes = 1;
-	bmpInfo.bmiHeader.biClrUsed = 0;
-	bmpInfo.bmiHeader.biClrImportant = 0;
-
-	//Create a lock on the DestinationTargetSurface
-	D3DLOCKED_RECT	lockedRC;
-	if ( FAILED(pDestinationTargetSurface->LockRect(&lockedRC, NULL,
-				 D3DLOCK_NO_DIRTY_UPDATE | D3DLOCK_READONLY | D3DLOCK_NOSYSLOCK)) )
-	{
-		Log( "PornographyGetPorn() fail, LockRect() fail." );
-		goto getpornfail;
-	}
-
-	// create the HBITMAP we'll return and populate it with lockedRC.pBits
-	HBITMAP hbm = CreateBitmap( bmpInfo.bmiHeader.biWidth, bmpInfo.bmiHeader.biHeight, 1,	// planes
-								m_CaptureBitCount,	// bits per pixel
-							   lockedRC.pBits		// pointer to bitmap
-							   );
-
-	// unlock & release the RECT
-	if ( FAILED(pDestinationTargetSurface->UnlockRect()) )
-	{
-		Log( "PornographyGetPorn() fail, UnlockRect() fail." );
-		goto getpornfail;
-	}
-
-	SAFE_RELEASE( pDestinationTargetSurface );
-
-	// select the HBITMAP into the HDC, converting format to A8R8G8B8 if needed
-	SelectObject( hCaptureDC, hbm );
-
-	// release the leftovers
-	if ( hCaptureDC )
-		DeleteDC( hCaptureDC );
-
-	// return the 32bit HBITMAP
-	return hbm;
-
-getpornfail:
-	// release everything
-	if ( hbm )
-		DeleteObject( hbm );
-	if ( hCaptureDC )
-		DeleteDC( hCaptureDC );
-	SAFE_RELEASE( pRenderTargetSurface );
-	SAFE_RELEASE( pTransferTargetSurface );
-	SAFE_RELEASE( pDestinationTargetSurface );
-	return 0;
-}
-
-DWORD WINAPI PornographyMasterControl ( LPVOID trash )
-{
-	traceLastFunc( "PornographyMasterControl()" );
-
-	// trigger states and wait for the next render pass
-	isPornographyMasterControlRunning = true;
-
-	// only run on Windows
-	if ( WindowsInfo.osPlatform != 2 )
-	{
-		cheat_state_text( "Could not take a screenshot.  Only compatible with Windows." );
-		isPornographyMasterControlRunning = false;
-		ExitThread( 0 );
-	}
-
-	// let's make sure we can init GDI
-	using namespace		Gdiplus;
-	GdiplusStartupInput gdiplusStartupInput;
-	ULONG_PTR			gdiplusToken;
-	if ( Ok != GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL) )
-	{
-		cheat_state_text( "Could not take a screenshot.  GDI+ FAIL!" );
-		isPornographyMasterControlRunning = false;
-		ExitThread( 0 );
-	}
-
-	// check if PNG should be forced, such as Windows 7 before SP1 with the JPEG bug
-	bool forcePNG = false;
-	//if ( WindowsInfo.winMajor == 6 && WindowsInfo.winVer <= 1537 && WindowsInfo.osVer == 7600 )
-	//{
-	//	forcePNG = true;
-	//}
-
-	// STUNT COCK!
-	while ( !isPornographyStuntCockReady )
-		Sleep( 100 );
-
-	// in case something else happened in another thread while we waited
-	traceLastFunc( "PornographyMasterControl()" );
-
-	// let's get some variables for GDI...
-	EncoderParameters	encoderParameters;
-	ULONG				encoderValue;
-	t_CodecInfo			CodecInfo;
-
-	// setup encoder for saving
-	if ( forcePNG )
-	{
-		CodecInfo = GetEncoderCodecInfo( L"image/png" );
-		CodecInfo.FilenameExtension = (WCHAR*)"png";
-
-		// check that we have a working image encoder
-		if ( !CodecInfo.Version )
-		{
-			cheat_state_text( "Could not take a screenshot.  No appropriate image encoder." );
-			goto fail1;
-		}
-
-		// encoder parameters
-		encoderParameters.Count = 1;
-
-		encoderParameters.Parameter[0].Guid = EncoderCompression;
-		encoderParameters.Parameter[0].Type = EncoderParameterValueTypeShort;
-		encoderParameters.Parameter[0].NumberOfValues = 1;
-		encoderValue = EncoderValueCompressionLZW;
-		encoderParameters.Parameter[0].Value = &encoderValue;
-	}
-	else
-	{
-		CodecInfo = GetEncoderCodecInfo( L"image/jpeg" );
-		CodecInfo.FilenameExtension = (WCHAR*)"jpg";
-
-		// check that we have a working image encoder
-		if ( !CodecInfo.Version )
-		{
-			cheat_state_text( "Could not take a screenshot.  No appropriate image encoder." );
-			goto fail1;
-		}
-
-		// encoder parameters
-		encoderParameters.Count = 3;
-
-		encoderParameters.Parameter[0].Guid = EncoderQuality;
-		encoderParameters.Parameter[0].Type = EncoderParameterValueTypeLong;
-		encoderParameters.Parameter[0].NumberOfValues = 1;
-		encoderValue = set.jpg_quality;
-		encoderParameters.Parameter[0].Value = &encoderValue;
-
-		encoderParameters.Parameter[1].Guid = EncoderChrominanceTable;
-		encoderParameters.Parameter[1].Type = EncoderParameterValueTypeShort;
-		encoderParameters.Parameter[1].NumberOfValues = 1;
-		encoderValue = set.jpg_chrominancetable;
-		encoderParameters.Parameter[1].Value = &encoderValue;
-
-		encoderParameters.Parameter[2].Guid = EncoderLuminanceTable;
-		encoderParameters.Parameter[2].Type = EncoderParameterValueTypeShort;
-		encoderParameters.Parameter[2].NumberOfValues = 1;
-		encoderValue = set.jpg_luminancetable;
-		encoderParameters.Parameter[2].Value = &encoderValue;
-	}
-
-	// get some porn
-	HBITMAP g0tP0rn = PornographyGetPorn();
-	if ( g0tP0rn == 0 )
-	{
-		cheat_state_text( "Could not take a screenshot.  D3D FAIL!  Check mod_sa.log" );
-		goto fail1;
-	}
-
-	// creates new bitmap, "goto fail2;" should be used at this point onward
-	Bitmap	*hardcorePorn = Bitmap::FromHBITMAP( g0tP0rn, NULL );
-
-	// let's save the bastard
-	char		m_PornoName[256];
-	SYSTEMTIME	m_systemTime;
-	GetLocalTime( &m_systemTime );
-
-	if ( GetFileAttributes("screenshots\\") == INVALID_FILE_ATTRIBUTES )
-	{
-		if ( !CreateDirectory("screenshots", NULL) )
-		{
-			cheat_state_text( "Could not take a screenshot.  Screenshots directory could not be created." );
-			goto fail2;
-		}
-	}
-
-	if ( g_SAMP )
-	{
-		sprintf( m_PornoName, "screenshots\\sa-mp_%04d-%02d-%02d_%02d-%02d-%02d.%s", m_systemTime.wYear,
-				 m_systemTime.wMonth, m_systemTime.wDay, m_systemTime.wHour, m_systemTime.wMinute, m_systemTime.wSecond,
-				 CodecInfo.FilenameExtension );
-	}
-	else
-	{
-		sprintf( m_PornoName, "screenshots\\gta-sa_%04d-%02d-%02d_%02d-%02d-%02d.%s", m_systemTime.wYear,
-				 m_systemTime.wMonth, m_systemTime.wDay, m_systemTime.wHour, m_systemTime.wMinute, m_systemTime.wSecond,
-				 CodecInfo.FilenameExtension );
-	}
-
-	if ( Ok == hardcorePorn->Save(ToWChar(m_PornoName), &CodecInfo.Clsid, &encoderParameters) )
-	{
-		cheat_state_text( "Screenshot saved to: %s", m_PornoName );
-	}
-	else
-	{
-		cheat_state_text( "Could not take a screenshot.  Save FAIL!" );
-	};
-
-fail2:
-	// clean up after the bastards
-	if ( hardcorePorn )
-		DeleteObject( hardcorePorn );
-fail1:
-	if ( g0tP0rn )
-		DeleteObject( g0tP0rn );
-	//if ( gdiplusToken )
-		GdiplusShutdown( gdiplusToken );
-	// we're done ere innit'
-	isPornographyMasterControlRunning = false;
-	isPornographyStuntCockReady = false;
-	g_lastPornographyTickCount = GetTickCount();
-	ExitThread( 0 );
-	return 0;
-}
-
-bool Pornography ()
-{
-	// launch the worker bees
-	HANDLE	m_hPornoThread = CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE) PornographyMasterControl, NULL, 0, NULL );
-	if ( m_hPornoThread )
-		return true;
-	return false;
 }
 
 // by s0beit, GHOSTER, Azorbix
@@ -3188,47 +2777,27 @@ void renderSAMP ( void )
 		if ( !g_SAMP->pSettings->bytePlayerMarkersMode && set.markers_show )
 			g_SAMP->pSettings->bytePlayerMarkersMode = PLAYER_MARKERS_MODE_GLOBAL;
 
-		if ( isPornographyMasterControlRunning && set.screenshot_clean )
-		{
-			g_SAMP->pSettings->fNameTagsDistance = 70.0f;
+		g_SAMP->pSettings->fNameTagsDistance = set.line_of_sight_dist;
+		if ( cheat_state->_generic.pickuptexts )
+			RenderPickupTexts();
+		if ( cheat_state->_generic.objecttexts )
+			RenderObjectTexts();
+		if ( cheat_state->player_info_list )
+			renderPlayerInfoList();
 
-			if ( g_Chat->iChatWindowMode == 0 && set.d3dtext_chat )
-				g_Chat->iChatWindowMode = 2;
-			if ( GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score )
-				* (char *)( (*(DWORD *) (g_dwSAMP_Addr + SAMP_SCOREBOARD_INFO)) + 0x1C ) = 1;
-
-			sampPatchDisableNameTags( 0 );
-
-			CPed	*pPedSelf = pPools->GetPedFromRef( CPOOLS_PED_SELF_REF );
-			if ( pPedSelf->GetVehicle() )
-			{
-				pPedSelf->GetVehicle()->SetGravity( &CVector(0.0, 0.0, -1.0) );
-			}
-		}
-		else
-		{
-			g_SAMP->pSettings->fNameTagsDistance = set.line_of_sight_dist;
-			if ( cheat_state->_generic.pickuptexts )
-				RenderPickupTexts();
-			if ( cheat_state->_generic.objecttexts )
-				RenderObjectTexts();
-			if ( cheat_state->player_info_list )
-				renderPlayerInfoList();
-
-			renderKillList();
-			renderChat();
-			renderScoreList();
+		renderKillList();
+		renderChat();
+		renderScoreList();
 			renderTextLabels();
 
-			if ( iViewingInfoPlayer == -1 )
-			{ }
+		if ( iViewingInfoPlayer == -1 )
+		{ }
+		else
+		{
+			if ( iViewingInfoPlayer != -2 && g_Players->pRemotePlayer[iViewingInfoPlayer] == NULL )
+				iViewingInfoPlayer = -1;
 			else
-			{
-				if ( iViewingInfoPlayer != -2 && g_Players->pRemotePlayer[iViewingInfoPlayer] == NULL )
-					iViewingInfoPlayer = -1;
-				else
-					renderPlayerInfo( iViewingInfoPlayer );
-			}
+				renderPlayerInfo( iViewingInfoPlayer );
 		}
 
 		static int	a;
@@ -3238,11 +2807,6 @@ void renderSAMP ( void )
 				memcpy_safe( (void *)(g_dwSAMP_Addr + VALUE_DRAWING_DISTANCE), &set.player_tags_dist, sizeof(float) );
 			else
 				memcpy_safe( (void *)(g_dwSAMP_Addr + VALUE_DRAWING_DISTANCE), &set.line_of_sight_dist, sizeof(float) );
-
-			if ( set.screenshot_enable )
-				sampPatchDisableScreeenshotKey( 1 );
-			else
-				sampPatchDisableScreeenshotKey( 0 );
 
 			a = 1;
 		}
@@ -3403,8 +2967,7 @@ void proxyID3DDevice9_InitOurShit ( D3DPRESENT_PARAMETERS *pPresentationParamete
 	bD3DRenderInit = true;
 }
 
-// this needs to be fixed so antialiasing modes don't crash the screenshot function
-/*
+// window/fullscreen init/update
 bool	g_InitWindowMode_ForceUpdate_Active = false;
 void proxyID3DDevice9_InitWindowMode ( D3DPRESENT_PARAMETERS *pPresentationParameters )
 {
@@ -3627,7 +3190,6 @@ proxyID3DDevice9_InitWindowMode_end: ;
 	// always make sure our window_mode is synced with the game's
 	set.window_mode = ( g_RsGlobal->ps->fullscreen == 0 );
 }
-*/
 
 void renderHandler()
 {
@@ -3688,8 +3250,6 @@ void renderHandler()
 
 		if ( set.d3dtext_hud )
 		{
-			if ( isPornographyMasterControlRunning && set.screenshot_clean )
-				goto no_d3dtext_hud;
 			if ( cheat_panic() || cheat_state->state == CHEAT_STATE_NONE )
 			{
 				if ( set.flickering_problem )
@@ -3871,51 +3431,25 @@ void renderHandler()
 			}
 		}
 
-no_d3dtext_hud: ;
 		renderSAMP();	// sure why not
 		renderPlayerTags();
 
-		// safe sex
-		if ( isPornographyMasterControlRunning && set.screenshot_clean )
-		{
-			CVehicle	*pVehicleSelf = pPedSelf->GetVehicle();
-			// set carlights to automode (turned off at day time)
-			if ( set.enable_car_lights_at_day_time && pVehicleSelf != NULL )
-				pVehicleSelf->SetOverrideLights( 0 );
-		}
-		else
-		{
-			if ( cheat_state->_generic.teletext )
-				RenderTeleportTexts();
-			if ( cheat_state->_generic.menu )
-				RenderMenu();
-			if ( cheat_state->debug_enabled )
-				RenderDebug();
-			if ( cheat_state->render_vehicle_tags )
-				renderVehicleTags();
-			if ( cheat_state->_generic.map )
-				RenderMap();
-		}
+		if ( cheat_state->_generic.teletext )
+			RenderTeleportTexts();
+		if ( cheat_state->_generic.menu )
+			RenderMenu();
+		if ( cheat_state->debug_enabled )
+			RenderDebug();
+		if ( cheat_state->render_vehicle_tags )
+			renderVehicleTags();
+		if ( cheat_state->_generic.map )
+			RenderMap();
 
 no_render: ;
 		render->EndRender();
 	}
 
 	mapMenuTeleport();
-
-	// clean Pornography, thanks to STUNT COCK!!!
-	if ( isPornographyMasterControlRunning && !isPornographyStuntCockReady )
-		isPornographyStuntCockReady = true;
-
-	// sexytime
-	if ( isRequestingScreenshot
-	 &&	 !isPornographyMasterControlRunning
-	 &&	 g_lastPornographyTickCount < (GetTickCount() - 1000) )
-	{
-		isRequestingScreenshot = false;
-		if ( Pornography() == false )
-			cheat_state_text( "Could not take a screenshot.  Thread FAIL!" );
-	}
 
 	traceLastFunc( "it_wasnt_us()" );
 }
@@ -4292,9 +3826,6 @@ HRESULT proxyIDirect3DDevice9::BeginScene ( void )
 {
 	traceLastFunc( "proxyIDirect3DDevice9::BeginScene()" );
 
-	// thanks STUNT COCK!!!  (now go away, please)
-	isPornographyStuntCockReady = false;
-
 	// return original function
 	HRESULT ret = origIDirect3DDevice9->BeginScene();
 	traceLastFunc( "end of proxyIDirect3DDevice9::BeginScene()" );
@@ -4514,8 +4045,7 @@ HRESULT proxyIDirect3DDevice9::DrawIndexedPrimitive ( D3DPRIMITIVETYPE Primitive
 {
 	// chams probably works better with texture instead of shaders
 	if ( set.chams_on
-	 &&	 !cheat_state->_generic.cheat_panic_enabled
-	 &&	 (!isPornographyMasterControlRunning || !set.screenshot_clean) )
+	 &&	 !cheat_state->_generic.cheat_panic_enabled )
 	{
 		DWORD	dwRet_addr = ( DWORD ) _ReturnAddress();
 
@@ -4792,8 +4322,6 @@ HRESULT proxyIDirect3DDevice9::CreateQuery ( D3DQUERYTYPE Type, IDirect3DQuery9 
 	return origIDirect3DDevice9->CreateQuery( Type, ppQuery );
 }
 
-// InitWindowMode needs fixing, see notes above it
-/*
 void toggleWindowedMode ( void )
 {
 	traceLastFunc( "toggleWindowedMode()" );
@@ -4802,4 +4330,3 @@ void toggleWindowedMode ( void )
 	g_isRequesting_RwD3D9ChangeVideoMode = true;
 	proxyID3DDevice9_InitWindowMode( &pPresentParam );
 }
-*/

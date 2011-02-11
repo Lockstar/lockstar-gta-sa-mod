@@ -97,8 +97,6 @@ Section "Install" SecDummy
 	File ..\bin\data\surface.two
 	SetOverwrite on
 
-	SetOutPath "$INSTDIR\screenshots"
-
 	WriteUninstaller "$INSTDIR\Uninstall_${NAME}.exe"
 	DetailPrint "${NAME} ${VERSION} for ${MP} ${MP_VERSION} setup finished."
 	DumpLog::DumpLog "$INSTDIR\${NAME}_setup.log" .R0
