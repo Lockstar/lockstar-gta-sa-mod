@@ -2901,12 +2901,11 @@ int memcpy_safe ( void *_dest, const void *_src, uint32_t len, int check, const 
 	uint8_t			buf[4096];
 	uint8_t			*dest = (uint8_t *)_dest;
 	const uint8_t	*src = (const uint8_t *)_src;
-	int				lenOriginal = len;
 	int				ret = 1;
 
-	if(check)
+	if (check && checkdata)
 	{
-		if(!memcmp_safe(checkdata, _dest, len))
+		if (!memcmp_safe(checkdata, _dest, len))
 			return 0;
 	}
 
@@ -2927,9 +2926,6 @@ int memcpy_safe ( void *_dest, const void *_src, uint32_t len, int check, const 
 		src += this_len;
 		dest += this_len;
 	}
-	// set pointers back
-	src -= lenOriginal;
-	dest -= lenOriginal;
 
 	return ret;
 }
@@ -2945,14 +2941,14 @@ int memset_safe ( void *_dest, int c, uint32_t len )
 	{
 		if ( len > 4096 )
 		{
-			if ( memcpy_safe(dest, buf, 4096) != 1 )
+			if ( !memcpy_safe(dest, buf, 4096) )
 				return 0;
 			dest += 4096;
 			len -= 4096;
 		}
 		else
 		{
-			if ( memcpy_safe(dest, buf, len) != 1 )
+			if ( !memcpy_safe(dest, buf, len) )
 				return 0;
 			break;
 		}
@@ -2971,9 +2967,9 @@ int memcmp_safe ( const void *_s1, const void *_s2, uint32_t len )
 	{
 		if ( len > 4096 )
 		{
-			if ( memcpy_safe(buf, s1, 4096) != 1 )
+			if ( !memcpy_safe(buf, s1, 4096) )
 				return 0;
-			if ( memcmp(buf, s2, 4096) != 0 )
+			if ( memcmp(buf, s2, 4096) )
 				return 0;
 			s1 += 4096;
 			s2 += 4096;
@@ -2981,9 +2977,9 @@ int memcmp_safe ( const void *_s1, const void *_s2, uint32_t len )
 		}
 		else
 		{
-			if ( memcpy_safe(buf, s1, len) != 1 )
+			if ( !memcpy_safe(buf, s1, len) )
 				return 0;
-			if ( memcmp(buf, s2, len) != 0 )
+			if ( memcmp(buf, s2, len) )
 				return 0;
 			break;
 		}

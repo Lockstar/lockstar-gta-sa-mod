@@ -985,6 +985,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 
 /*
 
+// drawing some stuff
 int lineSpace = 0;
 char buf[256];
 sprintf( buf, "speed: %0.1f", ainfo->m_SpeedVec.Length() );
@@ -999,6 +1000,9 @@ if (pPedSelf->GetPedIntelligence()->GetTaskManager()->GetActiveTask())
 	pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
 	lineSpace += 12;
 }
+sprintf( buf, "dwAntiAliasing: %d", g_pCSettingsSAInterface->dwAntiAliasing );
+pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
+lineSpace += 12;
 */
 
 }

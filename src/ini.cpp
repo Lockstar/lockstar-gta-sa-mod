@@ -916,18 +916,6 @@ static void ini_init ( void )
 	//		ini_register_data( ent, &set.esp_players_airride, "true" );
 
 	// end new ESP ish
-	if ( (ent = ini_register_entry("screenshot_enable", TYPE_BOOL)) != NULL )
-		ini_register_data( ent, &set.screenshot_enable, "true" );
-	if ( (ent = ini_register_entry("screenshot_clean", TYPE_BOOL)) != NULL )
-		ini_register_data( ent, &set.screenshot_clean, "true" );
-	if ( (ent = ini_register_entry("key_screenshot", TYPE_KEY)) != NULL )
-		ini_register_data( ent, &set.key_screenshot, "f8" );
-	if ( (ent = ini_register_entry("jpg_quality", TYPE_INT)) != NULL )
-		ini_register_data( ent, &set.jpg_quality, "85" );
-	if ( (ent = ini_register_entry("jpg_chrominancetable", TYPE_INT)) != NULL )
-		ini_register_data( ent, &set.jpg_chrominancetable, "85" );
-	if ( (ent = ini_register_entry("jpg_luminancetable", TYPE_INT)) != NULL )
-		ini_register_data( ent, &set.jpg_luminancetable, "85" );
 
 	if ( (ent = ini_register_entry("enable_clouds", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.enable_clouds, "true" );

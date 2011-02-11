@@ -720,7 +720,6 @@ void											installSAMPHooks ();
 void											setSAMPCustomSendRates ( int iOnFoot, int iInCar, int iAim, int iHeadSync );
 int												sampPatchDisableNameTags ( int iEnabled );
 int												sampPatchDisableInteriorUpdate ( int iEnabled );
-int												sampPatchDisableScreeenshotKey ( int iEnabled );
 int												sampPatchDisableScoreboardToggleOn ( int iEnabled );
 
 // global pointer externals

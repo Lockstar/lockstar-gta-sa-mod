@@ -28,7 +28,6 @@ static HWND			orig_wnd;
 struct key_state	key_table[256];
 
 int					key_being_pressed;
-extern bool			isRequestingScreenshot;
 static void process_key ( int down, int vkey, int repeat, int scancode, int extended, HWND wnd )
 {
 	if ( down && KEY_DOWN(vkey) )
@@ -41,12 +40,6 @@ static void process_key ( int down, int vkey, int repeat, int scancode, int exte
 		//|| 0x90 == *(uint8_t *)0x541DF5
 		)
 	{
-		if ( set.screenshot_enable )
-		{
-			if ( vkey == set.key_screenshot )
-				isRequestingScreenshot = true;
-		}
-
 		if ( !down && KEY_DOWN(vkey) )
 			key_table[vkey].count++;
 		return;

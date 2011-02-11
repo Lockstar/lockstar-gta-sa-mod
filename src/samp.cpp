@@ -1607,24 +1607,11 @@ int sampPatchDisableInteriorUpdate ( int iEnabled )
 	return NULL;
 }
 
+
+// not used anymore
+// fix the damn laggy screenshot function Kye
 #define SAMP_NOPSCREENSHOT	0x764E0
-int sampPatchDisableScreeenshotKey ( int iEnabled )
-{
-	static struct patch_set sampPatchDisableScreeenshotKey_patch =
-	{
-		"NOP screenshot key",
-		0,
-		0,
-		{
-			{ 1, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_NOPSCREENSHOT ), NULL, (uint8_t *)"\xC3", NULL },
-		}
-	};
-	if ( iEnabled && !sampPatchDisableScreeenshotKey_patch.installed )
-		return patcher_install( &sampPatchDisableScreeenshotKey_patch );
-	else if ( !iEnabled && sampPatchDisableScreeenshotKey_patch.installed )
-		return patcher_remove( &sampPatchDisableScreeenshotKey_patch );
-	return NULL;
-}
+
 
 #define SAMP_NOPSCOREBOARDTOGGLEON			0x73A09
 #define SAMP_NOPSCOREBOARDTOGGLEONKEYLOCK	0x73A11

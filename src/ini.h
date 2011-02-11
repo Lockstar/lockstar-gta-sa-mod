@@ -358,15 +358,6 @@ struct settings
 	int						render_teleport_texts;
 	int						render_pickup_texts;
 	int						render_object_texts;
-//	int						esp_players_airride;
-
-	int						screenshot_enable;
-	int						screenshot_clean;
-	int						key_screenshot;
-	int						jpg_quality;
-	int						jpg_chrominancetable;
-	int						jpg_luminancetable;
-
 	bool					enable_clouds;
 
 	///////////////////////////////////////////////

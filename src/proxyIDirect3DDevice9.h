@@ -188,7 +188,6 @@ extern CD3DFont					*pD3DFontChat;
 extern D3DPRESENT_PARAMETERS	pPresentParam;	// updated after a successful Reset()
 
 // externals
-// functions
 
-// InitWindowMode needs fixing, see notes above it
-//void							toggleWindowedMode ( void );
+// functions
+void							toggleWindowedMode ( void );
