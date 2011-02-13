@@ -365,8 +365,10 @@ void getSamp ()
 		{
 			if ( !memcmp_safe((uint8_t *)g_dwSAMP_Addr + 0xBABE, hex_to_bin(SAMP_CMP), 10) )
 			{
-				Log( "Unknown SA:MP version. %s is only supported in this version.", SAMP_VERSION );
+				Log( "Unknown SA:MP version. Only %s is supported in this version. Running in basic mode.", SAMP_VERSION );
 				iIsSAMPSupported = 0;
+				set.basic_mode = true;
+				g_dwSAMP_Addr = NULL;
 				return;
 			}
 
@@ -376,7 +378,9 @@ void getSamp ()
 	}
 	else
 	{
-		Log( "Could not get the samp DLL." );
+		iIsSAMPSupported = 0;
+		set.basic_mode = true;
+		Log( "samp.dll not found. Running in basic mode." );
 	}
 
 	return;

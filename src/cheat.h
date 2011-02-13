@@ -887,8 +887,10 @@ static struct patch_set patch_vehicle_inf_NOS =
 	"Vehicle Infinite NOS",
 	0,
 	0,
-	{ { 1, (void *)0x006A3FFA, (uint8_t *)"\x7A", (uint8_t *)"\xEB", (uint8_t *)"\x7A" }, { 2, (void *)0x006A3FB9,
-				(uint8_t *)"\xFE\xC8", (uint8_t *)"\x90\x90", (uint8_t *)"\xFE\xC8" } }
+	{
+		{ 1, (void *)0x006A3FFA, (uint8_t *)"\x7A", (uint8_t *)"\xEB", (uint8_t *)"\x7A" },
+		{ 2, (void *)0x006A3FB9, (uint8_t *)"\xFE\xC8", (uint8_t *)"\x90\x90", (uint8_t *)"\xFE\xC8" }
+	}
 };
 
 static struct patch_set patch_NotAPlane =
@@ -908,6 +910,17 @@ static struct patch_set patch_NoColsWalls =
 	{
 		// Disable the wall-jump (jumping into air infront of walls)
 		{ 1, (void *)( (uint8_t *)0x679D3A ), (uint8_t *)"\x74", (uint8_t *)"\xEB", (uint8_t *)"\x74" }
+	}
+};
+
+static struct patch_set patch_EnableResolutions =
+{
+	"Enable All Supported Resolutions",
+	0,
+	0,
+	{
+		{ 2, (void *)0x00745BC9, (uint8_t *)"\x7A\x6D", NULL, (uint8_t *)"\x7A\x6D" },
+		{ 2, (void *)0x007459E1, (uint8_t *)"\x7A\x71", NULL, (uint8_t *)"\x7A\x71" }
 	}
 };
 

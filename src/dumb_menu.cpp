@@ -2855,7 +2855,7 @@ void menu_maybe_init ( void )
 #endif
 
 	/* samp specific */
-	if ( g_SAMP != NULL )
+	if ( g_dwSAMP_Addr != NULL )
 	{
 		// main menu
 		menu_players = menu_new( menu_main, ID_MENU_PLAYERS, menu_callback_players );
@@ -2889,7 +2889,7 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_main, menu_patches, name, ID_NONE, MENU_COLOR_DEFAULT, NULL );
 
 	/* main menu (samp specific) */
-	if ( g_SAMP != NULL )
+	if ( g_dwSAMP_Addr != NULL )
 	{
 		menu_item_add( menu_main, NULL, "\tSA-MP", ID_NONE, MENU_COLOR_SEPARATOR, NULL );
 		menu_item_add( menu_main, menu_players, "Players", ID_NONE, MENU_COLOR_DEFAULT, NULL );
@@ -3073,7 +3073,7 @@ void menu_maybe_init ( void )
 		menu_item_add( menu_patches, NULL, set.patch[i].name, i, MENU_COLOR_DEFAULT, NULL );
 	}
 
-	if ( g_SAMP != NULL )
+	if ( g_dwSAMP_Addr != NULL )
 	{
 		/* main menu -> players */
 		menu_item_add( menu_players, menu_players_warp, "Warp to player", ID_MENU_PLAYERS_WARP, MENU_COLOR_DEFAULT, NULL );
@@ -3141,7 +3141,7 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_debug, NULL, "Self actor", ID_DEBUG_SELF_ACTOR, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_debug, NULL, "Self vehicle", ID_DEBUG_SELF_VEHICLE, MENU_COLOR_DEFAULT, NULL );
 
-	if ( g_SAMP != NULL )
+	if ( g_dwSAMP_Addr != NULL )
 	{
 		menu_item_add( menu_debug, NULL, "SA:MP DLL", ID_DEBUG_SAMP_DLL, MENU_COLOR_DEFAULT, NULL );
 		menu_item_add( menu_debug, NULL, "SA:MP Info", ID_DEBUG_SAMP_INFO, MENU_COLOR_DEFAULT, NULL );
@@ -3183,7 +3183,7 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_hudindicators, NULL, "FPS", ID_HUDIND_FPS, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_hudindicators, NULL, "Toggle left bottom bars", ID_HUDIND_LB_BARS, MENU_COLOR_DEFAULT, NULL );
 
-	if ( g_SAMP != NULL )
+	if ( g_dwSAMP_Addr != NULL )
 	{
 		// main menu -> sampmisc
 		menu_item_add( menu_sampmisc, menu_vehicles_instant, "Warp instantly to vehicle", ID_NONE, MENU_COLOR_DEFAULT, NULL );

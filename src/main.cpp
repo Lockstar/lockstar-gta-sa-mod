@@ -30,7 +30,7 @@ FILE					*g_flLogAll = NULL;
 FILE					*g_flLogChatbox = NULL;
 FILE					*g_flLogChatboxAll = NULL;
 char					g_szLastFunc[256];
-uint32_t				g_dwSAMP_Addr;
+uint32_t				g_dwSAMP_Addr = NULL;
 
 CSettingsSAInterface	*g_pCSettingsSAInterface = (CSettingsSAInterface *)CLASS_CMenuManager;
 D3DPRESENT_PARAMETERS	*g_pGTAPresent = (D3DPRESENT_PARAMETERS *)0xC9C040;
@@ -228,15 +228,15 @@ static int init ( void )
 			Log( "sizeof(struct actor_info) == %d, aborting.", sizeof(struct actor_info) );
 			return 0;
 		}
-
 #pragma warning( default : 4127 )
+
 		ini_load();
 		if ( !set.i_have_edited_the_ini_file )
 		{
 			MessageBox( 0, "Looks like you've not edited the .ini file like you were told to!\n""\n"
-						"Before you can use m0d_s0beit, you have to set \"i_have_edited_the_ini_file\" to true.\n"
-						"We did this so you would read the INI file to see the configurability of mod_sa.\n",
-					"You're a retard.", 0 );
+				"Before you can use m0d_s0beit, you have to set \"i_have_edited_the_ini_file\" to true.\n"
+				"We did this so you would read the INI file to see the configurability of mod_sa.\n",
+				"You're a retard.", 0 );
 			ShellExecute( 0, "open", "notepad", INI_FILE, g_szWorkingDirectory, SW_SHOW );
 			return 0;
 		}
@@ -451,6 +451,10 @@ BOOL APIENTRY DllMain ( HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpRese
 		DisableThreadLibraryCalls( hModule );
 		g_hDllModule = hModule;
 		SetUnhandledExceptionFilter( unhandledExceptionFilter );
+		// should be added to a function in another file if
+		// anything else needs load-time patching
+		// maybe "cheat_patches.cpp/.h" or something
+		patcher_install(&patch_EnableResolutions);
 		break;
 
 	case DLL_PROCESS_DETACH:
