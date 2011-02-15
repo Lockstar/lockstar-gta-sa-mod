@@ -20,9 +20,8 @@
 	along with mod_sa.  If not, see <http://www.gnu.org/licenses/>.
 
 */
-/* only works for vehicles atm */
 
-//#define TELEPORT_DETACHABLES
+// time for time
 #define MSEC_TO_TIME( v )	( (uint64_t) (v) * 10 )
 #define TIME_TO_FLOAT( v )	( (float)((double)(v) / (double)MSEC_TO_TIME(1000)) )
 #define TIME_TO_DOUBLE( v ) ( (double)((double)(v) / (double)MSEC_TO_TIME(1000)) )
@@ -453,6 +452,10 @@ struct actor_info
 			CVector m_SpeedVec;
 		};
 		float	speed[3];
+		struct
+		{
+			D3DXVECTOR3 m_SpeedD3DVec;
+		};
 	};
 	float				spin[3];			/* 80 */
 	float				speed_rammed[3];	/* 92 */
@@ -879,49 +882,6 @@ struct vehicle_state
 	float					spin[3];
 	struct vehicle_state	*trailer;
 	struct vehicle_info		*trailerPtr;
-};
-
-/* global patch */
-static struct patch_set patch_vehicle_inf_NOS =
-{
-	"Vehicle Infinite NOS",
-	0,
-	0,
-	{
-		{ 1, (void *)0x006A3FFA, (uint8_t *)"\x7A", (uint8_t *)"\xEB", (uint8_t *)"\x7A" },
-		{ 2, (void *)0x006A3FB9, (uint8_t *)"\xFE\xC8", (uint8_t *)"\x90\x90", (uint8_t *)"\xFE\xC8" }
-	}
-};
-
-static struct patch_set patch_NotAPlane =
-{
-	"Its Not A Plane",			//aka deactivate flying for planes
-	0,
-	0,
-	{ 17, (void *)0x006CC46F,
-			(uint8_t *)"\x51\x8B\x4C\x24\x20\x52\x50\x51\x6A\x03\x8B\xCE\xE8\x70\xC1\x00\x00", NULL, NULL }
-};
-
-static struct patch_set patch_NoColsWalls =
-{
-	"No collision walls",
-	0,
-	0,
-	{
-		// Disable the wall-jump (jumping into air infront of walls)
-		{ 1, (void *)( (uint8_t *)0x679D3A ), (uint8_t *)"\x74", (uint8_t *)"\xEB", (uint8_t *)"\x74" }
-	}
-};
-
-static struct patch_set patch_EnableResolutions =
-{
-	"Enable All Supported Resolutions",
-	0,
-	0,
-	{
-		{ 2, (void *)0x00745BC9, (uint8_t *)"\x7A\x6D", NULL, (uint8_t *)"\x7A\x6D" },
-		{ 2, (void *)0x007459E1, (uint8_t *)"\x7A\x71", NULL, (uint8_t *)"\x7A\x71" }
-	}
 };
 
 /* __time_current is set in cheat_hook(). the time is "cached".

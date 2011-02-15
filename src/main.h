@@ -188,6 +188,7 @@
 #include "ini.h"
 #include "keyhook.h"
 #include "math_stuff.h"
+#include "cheat_patches.h"
 #include "cheat_funcs.h"
 #include "cheat_generic.h"
 #include "cheat_actor.h"

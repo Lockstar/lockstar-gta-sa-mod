@@ -849,6 +849,9 @@
     <ClInclude Include="main.h" />
     <ClInclude Include="stddefs.h" />
     <ClInclude Include="stdtypes.h" />
+    <ClInclude Include="cheat_patches.h">
+      <Filter>Cheat</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="game_sa\C3DMarkerSA.cpp">
@@ -1266,6 +1269,9 @@
       <Filter>D3D9</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="cheat_patches.cpp">
+      <Filter>Cheat</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="mod_sa.def" />

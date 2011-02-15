@@ -1035,19 +1035,14 @@ hk_PlCol_process:
 	if ( cheat_state->_generic.cheat_panic_enabled )
 		goto hk_PlCol_processCol;
 
-	/* already crashed, if true
-	if ( PlayerCollision_esi_back == 0 || PlayerCollision_edi_back == 0 )
-		goto hk_PlCol_processCol;
-	*/
-
 	// get own vehicle
 	PlayerCollision_tmp = (DWORD)vehicle_info_get( VEHICLE_SELF, 0 );
-	if ( PlayerCollision_tmp != 0 )
+	if ( PlayerCollision_tmp )
 		goto hk_PlCol_proceed_w_Veh;
 
 	// get actor
 	PlayerCollision_tmp = (DWORD)actor_info_get( ACTOR_SELF, ACTOR_ALIVE );
-	if ( PlayerCollision_tmp != 0 )
+	if ( PlayerCollision_tmp )
 		goto hk_PlCol_proceed_noveh;
 	__asm jmp hk_PlCol_processCol
 
@@ -1137,8 +1132,9 @@ hk_PlCol_proceed_generic:
 	if ( set.wall_collisions_disableObjects && !isBadPtr_GTA_pObjectInfo(PlayerCollision_edi_back) )
 		goto hk_PlCol_noCol;
 
-	if ( ignoreColWithObjectID(((object_info*)PlayerCollision_edi_back)->base.model_alt_id) )
-		goto hk_PlCol_noCol;
+	if ( PlayerCollision_edi_back != NULL )
+		if ( ignoreColWithObjectID(((object_info*)PlayerCollision_edi_back)->base.model_alt_id) )
+			goto hk_PlCol_noCol;
 
 hk_PlCol_processCol:
 	__asm popad

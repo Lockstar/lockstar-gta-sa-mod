@@ -29,6 +29,8 @@ proxyIDirect3D9::proxyIDirect3D9 ( IDirect3D9 *pOriginal )
 {
 	//Log("proxyIDirect3D9 constructor called. Original IDirect3D9 interface address is 0x%p.", pOriginal);
 	origIDirect3D9 = pOriginal;
+
+	Sleep(1000);
 }
 
 proxyIDirect3D9::~proxyIDirect3D9 ( void )
