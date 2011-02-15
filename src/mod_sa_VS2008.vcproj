@@ -1607,6 +1607,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\cheat_patches.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\cheat_patches.h"
+				>
+			</File>
+			<File
 				RelativePath=".\cheat_vehicle.cpp"
 				>
 			</File>

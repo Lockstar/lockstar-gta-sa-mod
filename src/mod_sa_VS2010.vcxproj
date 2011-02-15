@@ -85,6 +85,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="cheat_patches.h" />
     <ClInclude Include="game_sa\game\C3DMarker.h" />
     <ClInclude Include="game_sa\game\C3DMarkers.h" />
     <ClInclude Include="game_sa\game\CAERadioTrackManager.h" />
@@ -361,6 +362,7 @@
     <ClInclude Include="stdtypes.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cheat_patches.cpp" />
     <ClCompile Include="game_sa\C3DMarkerSA.cpp" />
     <ClCompile Include="game_sa\C3DMarkersSA.cpp" />
     <ClCompile Include="game_sa\CAERadioTrackManagerSA.cpp" />

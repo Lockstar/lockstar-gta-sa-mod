@@ -731,7 +731,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			|| groundZHeight + 1.6f > playerZHeight
 				&& groundZHeight - 1.6f < playerZHeight )
 		{
-			// do nothing
+			// still standing, do nothing
 		}
 		else // I believe I can fly...
 		{
@@ -785,9 +785,148 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				}
 			}
 
-			// get player speed
+//
+
+			// setup variables used through this function
 			CVector vecSpeed;
 			pPedSelf->GetMoveSpeed(&vecSpeed);
+			float theta;
+
+			// copy camera rotation to player
+			ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
+
+			// get camera matrix
+			CMatrix matCamera;
+			pGame->GetCamera()->GetMatrix(&matCamera);
+			matCamera.vRight = -matCamera.vRight; // for some reason this is upside down
+			// normalize camera
+			matCamera.vFront.Normalize();
+			matCamera.vRight.Normalize();
+			matCamera.vUp.Normalize();
+
+			// get player matrix
+			CMatrix matPed;
+			pPedSelf->GetMatrix(&matPed);
+			// copy camera matrix to player
+			matPed.vFront = matCamera.vFront;
+			matPed.vRight = matCamera.vRight;
+			matPed.vUp = matCamera.vUp;
+
+			// tilt player based on side speed & rotation goo
+			CVector rotationAxis = UpNormal;
+			rotationAxis.CrossProduct( &vecSpeed );
+			theta = ( matPed.vFront.DotProduct( &vecSpeed ) / vecSpeed.Length() );// + playerFly_rotateTiltGoo;
+			if ( !near_zero(theta) )
+			{
+				matPed = matPed.Rotate( &rotationAxis, cos(-theta) );
+			}
+			matPed.vFront = matCamera.vFront;
+			// normalize everything
+			matPed.vFront.Normalize();
+			matPed.vRight.Normalize();
+			matPed.vUp.Normalize();
+			// set player matrix
+			pPedSelf->SetMatrix(&matPed);
+
+//
+
+			// acceleration
+			pPedSelf->GetMoveSpeed(&vecSpeed);
+			float fly_speed = 0.1f;
+			float fly_acceleration = 0.3f * time_diff;
+			switch ( keyState )
+			{
+			case accelerate:
+				{
+					fly_speed = 2.0f;
+					fly_acceleration = 0.9f * time_diff;
+				}
+			case none:
+				{
+					if ( vecSpeed.Length() < fly_speed )
+					{
+						vecSpeed += matCamera.vFront * fly_acceleration;
+					}
+
+					// don't have NearZero speeds
+					if ( !vecSpeed.IsNearZero() )
+					{
+						// set speed vector
+						ainfo->m_SpeedVec = vecSpeed;
+					}
+				}
+				break;
+			case decelerate:
+				{
+					// this bit should be converted to mta-style code
+					float speed = vect3_length( ainfo->speed );
+					vect3_normalize( ainfo->speed, ainfo->speed );
+					if (speed > 1.0f)
+					{
+						speed -= time_diff * 0.8f / speed;
+					}
+					else if (speed > 0.5f)
+					{
+						speed -= time_diff * 0.6f / (speed / 2);
+					}
+					else
+					{
+						speed -= time_diff * 0.3f;
+					}
+
+					if ( speed < 0.0f )
+						speed = 0.0f;
+
+					if ( vect3_near_zero(ainfo->speed) )
+					{
+						vect3_zero( ainfo->speed );
+					}
+					else
+					{
+						vect3_mult( ainfo->speed, speed, ainfo->speed );
+					}
+				}
+				break;
+			}
+
+//
+/*
+pPedSelf->GetMoveSpeed(&vecSpeed);
+CVector *position = pPedSelf->GetPosition();
+D3DXVECTOR3 ainfoPos(position->fX, position->fY, position->fZ);
+D3DXVECTOR3 vecSpeedD3D(vecSpeed.fX, vecSpeed.fY, vecSpeed.fZ);
+render->DrawLine( ainfoPos, ainfoPos + (vecSpeedD3D * 10), D3DCOLOR_ARGB(255, 0, 255, 0) );
+
+*/
+
+			// rotate the speed vector slowly to face the player direction
+			pPedSelf->GetMoveSpeed(&vecSpeed);
+			CMatrix matSpeedVecRotate = CMatrix();
+			matSpeedVecRotate.vFront = vecSpeed;
+			matSpeedVecRotate.vFront.Normalize();
+			// calculate rotation multiplier, time_diff * 69.0 is ideal for calculations, always time for 69
+			float rotationMultiplier = (time_diff * 69.0) / ( 32.0f + (vecSpeed.Length() * 8.0f) );
+			// calculate rotation
+			rotationAxis = matPed.vFront;
+			rotationAxis.CrossProduct( &matSpeedVecRotate.vFront );
+			float thetaBase = abs(sinh(matPed.vFront.DotProduct(&matSpeedVecRotate.vFront)) - 1.175f) / 2.35f + 1.0f;
+			theta = thetaBase * rotationMultiplier;
+			if ( !near_zero(theta) )
+			{
+				// rotate
+				matSpeedVecRotate = matSpeedVecRotate.Rotate( &rotationAxis, theta );
+
+				// calculate new speed
+				float speedReduction = time_diff * 0.2f * (thetaBase - 1.0f);
+
+				// set new speed vector
+				matSpeedVecRotate.vFront.Normalize();
+				ainfo->m_SpeedVec = matSpeedVecRotate.vFront * ( ainfo->m_SpeedVec.Length() - speedReduction );
+			}
+			// calculate new speed
+			float speedReduction = time_diff * 0.2f * (thetaBase - 1.0f);
+
+//
 
 			/*
 			// I got my googoo all over it.
@@ -820,151 +959,6 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			}
 			*/
 
-			// copy camera rotation to player
-			ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
-
-			// get camera matrix
-			CMatrix matCamera;
-			pGame->GetCamera()->GetMatrix(&matCamera);
-			matCamera.vRight = -matCamera.vRight; // for some reason this is upside down
-			// normalize camera
-			matCamera.vFront.Normalize();
-			matCamera.vRight.Normalize();
-			matCamera.vUp.Normalize();
-
-			// get player matrix
-			CMatrix matPed;
-			pPedSelf->GetMatrix(&matPed);
-			// copy camera matrix to player
-			matPed.vFront = matCamera.vFront;
-			matPed.vRight = matCamera.vRight;
-			matPed.vUp = matCamera.vUp;
-
-			// tilt player based on side speed & rotation goo
-			CVector rotationAxis = UpNormal;
-			rotationAxis.CrossProduct( &vecSpeed );
-			float theta = ( matPed.vFront.DotProduct( &vecSpeed ) / vecSpeed.Length() );// + playerFly_rotateTiltGoo;
-			if ( !near_zero(theta) )
-			{
-				matPed = matPed.Rotate( &rotationAxis, cos(-theta) );
-			}
-			matPed.vFront = matCamera.vFront;
-			// normalize everything
-			matPed.vFront.Normalize();
-			matPed.vRight.Normalize();
-			matPed.vUp.Normalize();
-			// set player matrix
-			pPedSelf->SetMatrix(&matPed);
-
-//
-
-			// rotate the speed vector slowly to face the player direction
-			CMatrix matSpeedVecRotate = CMatrix();
-			matSpeedVecRotate.vFront = vecSpeed;
-			matSpeedVecRotate.vFront.Normalize();
-			// get rotation divisor
-			float rotationDivisor = 1.0f + vecSpeed.Length() * time_diff * 5000.0f;
-			// rotate it
-			rotationAxis = matPed.vFront;
-			rotationAxis.CrossProduct( &vecSpeed );
-			theta = matPed.vFront.DotProduct( &vecSpeed ) / rotationDivisor;
-			if ( !near_zero(theta) )
-			{
-				matSpeedVecRotate = matSpeedVecRotate.Rotate( &rotationAxis, sin(theta) );
-			}
-			// set new speed vector
-			matSpeedVecRotate.vFront.Normalize();
-			ainfo->m_SpeedVec = matSpeedVecRotate.vFront * vecSpeed.Length();
-
-//
-
-			// speed operations
-			CVector vecPedNewSpeed = vecSpeed;
-
-			// acceleration
-			if ( keyState == none
-				|| keyState == accelerate )
-			{
-				float fly_speed = 0.1f;
-				float fly_acceleration = 0.3f * time_diff;
-
-				if ( keyState == accelerate )
-				{
-					fly_speed = 2.0f;
-					fly_acceleration = 0.9f * time_diff;
-				}
-
-				// positive
-				if ( matPed.vFront.fX >= 0.0f
-					&& vecPedNewSpeed.fX < matPed.vFront.fX * fly_speed )
-				{
-					vecPedNewSpeed.fX += fly_acceleration;
-				}
-				if ( matPed.vFront.fY >= 0.0f
-					&& vecPedNewSpeed.fY < matPed.vFront.fY * fly_speed )
-				{
-					vecPedNewSpeed.fY += fly_acceleration;
-				}
-				// more upward acceleration boost & speed
-				if ( matPed.vFront.fZ >= 0.0f
-					&& vecPedNewSpeed.fZ < matPed.vFront.fZ * fly_speed * 2.0f )
-				{
-					// unfortunately GTA's wind/falling physics limits the upward speed? very odd.
-					vecPedNewSpeed.fZ += fly_acceleration * 2.0f;
-				}
-				// negative
-				if ( matPed.vFront.fX < 0.0f
-					&& vecPedNewSpeed.fX > matPed.vFront.fX * fly_speed )
-				{
-					vecPedNewSpeed.fX -= fly_acceleration;
-				}
-				if ( matPed.vFront.fY < 0.0f
-					&& vecPedNewSpeed.fY > matPed.vFront.fY * fly_speed )
-				{
-					vecPedNewSpeed.fY -= fly_acceleration;
-				}
-				if ( matPed.vFront.fZ < 0.0f
-					&& vecPedNewSpeed.fZ > matPed.vFront.fZ * fly_speed )
-				{
-					vecPedNewSpeed.fZ -= fly_acceleration;
-				}
-				// don't have NearZero speeds
-				if ( !vecPedNewSpeed.IsNearZero() )
-				{
-					// set speed vector
-					ainfo->m_SpeedVec = vecPedNewSpeed;
-				}
-			}
-			else if ( keyState == decelerate )
-			{
-				// this bit should be converted to mta-style code
-				float speed = vect3_length( ainfo->speed );
-				vect3_normalize( ainfo->speed, ainfo->speed );
-				if (speed > 1.0f)
-				{
-					speed -= time_diff * 0.8f / speed;
-				}
-				else if (speed > 0.5f)
-				{
-					speed -= time_diff * 0.6f / (speed / 2);
-				}
-				else
-				{
-					speed -= time_diff * 0.3f;
-				}
-
-				if ( speed < 0.0f )
-					speed = 0.0f;
-
-				if ( vect3_near_zero(ainfo->speed) )
-				{
-					vect3_zero( ainfo->speed );
-				}
-				else
-				{
-					vect3_mult( ainfo->speed, speed, ainfo->speed );
-				}
-			}
 		} // I believe I can touch the sky...
 	}
 	else if ( cheat_state->actor.fly_enabled )
@@ -978,31 +972,20 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
 			ainfo->fTargetRotation = ainfo->fCurrentRotation;
 			// stop animation
-			GTAfunc_DisembarkInstantly();
+			GTAfunc_PerformAnimation("SHOP", "SHP_Jump_Land ", -1, 0, 1, 0, 0, 0, 0, 0);
 		}
 		playerFly_lastKeyState = none;
 	}
 
-/*
 
+/*
 // drawing some stuff
 int lineSpace = 0;
 char buf[256];
 sprintf( buf, "speed: %0.1f", ainfo->m_SpeedVec.Length() );
 pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
 lineSpace += 12;
-if (pPedSelf->GetPedIntelligence()->GetTaskManager()->GetActiveTask())
-{
-	sprintf( buf, "GetTaskName(): %s", pPedSelf->GetPedIntelligence()->GetTaskManager()->GetActiveTask()->GetTaskName() );
-	pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
-	lineSpace += 12;
-	sprintf( buf, "GetTaskType(): %d", pPedSelf->GetPedIntelligence()->GetTaskManager()->GetActiveTask()->GetTaskType() );
-	pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
-	lineSpace += 12;
-}
-sprintf( buf, "dwAntiAliasing: %d", g_pCSettingsSAInterface->dwAntiAliasing );
-pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
-lineSpace += 12;
+
 */
 
 }

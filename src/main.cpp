@@ -52,6 +52,8 @@ void traceLastFunc ( const char *szFunc )
 
 void Log ( const char *fmt, ... )
 {
+	if ( !g_szWorkingDirectory ) return;
+
 	SYSTEMTIME	time;
 	va_list		ap;
 
@@ -272,18 +274,19 @@ IDirect3D9 * WINAPI sys_Direct3DCreate9 ( UINT SDKVersion )
 	if ( init() )
 		pDirect3D9 = new proxyIDirect3D9( orig_Direct3DCreate9(SDKVersion) );
 
+	// do stuff that needs to happen BEFORE gta inits
+	cheat_patches_installRuntimePatches();
+
 	//Log("Direct3DCreate9() called. Returning 0x%p.", pDirect3D9);
 	return pDirect3D9;
 }
+
 LONG WINAPI unhandledExceptionFilter ( struct _EXCEPTION_POINTERS *ExceptionInfo )
 {
 	Log( " ---------------------------------------------------------------------" );
 	Log( " %s has crashed.", NAME );
-
 	Log( " Base address: 0x%p, SA:MP base address: 0x%p", g_hDllModule, g_dwSAMP_Addr );
-
-	Log( " Exception at address: 0x%p, Last function processed: %s", ExceptionInfo->ExceptionRecord->ExceptionAddress,
-		 g_szLastFunc );
+	Log( " Exception at address: 0x%p, Last function processed: %s", ExceptionInfo->ExceptionRecord->ExceptionAddress, g_szLastFunc );
 
 	int m_ExceptionCode = ExceptionInfo->ExceptionRecord->ExceptionCode;
 	int m_exceptionInfo_0 = ExceptionInfo->ExceptionRecord->ExceptionInformation[0];
@@ -451,10 +454,6 @@ BOOL APIENTRY DllMain ( HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpRese
 		DisableThreadLibraryCalls( hModule );
 		g_hDllModule = hModule;
 		SetUnhandledExceptionFilter( unhandledExceptionFilter );
-		// should be added to a function in another file if
-		// anything else needs load-time patching
-		// maybe "cheat_patches.cpp/.h" or something
-		patcher_install(&patch_EnableResolutions);
 		break;
 
 	case DLL_PROCESS_DETACH:
@@ -465,7 +464,7 @@ BOOL APIENTRY DllMain ( HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpRese
 			menu_free_all();
 			ini_free();
 			Log( "Exited\n" );
-			if ( set.chatbox_logging )
+			if ( set.chatbox_logging && g_SAMP )
 				LogChatbox( true, "Logging ended" );
 		}
 
