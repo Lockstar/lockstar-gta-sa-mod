@@ -566,33 +566,31 @@ void cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *act
 		struct vehicle_info *info = vehicle_info;
 		struct vehicle_info *temp;
 
+		// actor_info is NULL, if vehicle_info is not ( we need the actor though )
+		actor_info = actor_info_get( ACTOR_SELF, 0 );
+
 		if ( cheat_state->_generic.hp_cheat )
 		{
 			/* damage reduction */
-			if ( set.freeze_hp_values )
+			if ( cheat_state->vehicle.hp_damage_reduce_on && !near_zero(set.hp_damage_reduce) )
 			{
-				if ( cheat_state->vehicle.hp_damage_reduce_on && !near_zero(set.hp_damage_reduce) )
+				if ( info->hitpoints < cheat_state->vehicle.hitpoints_last )
 				{
-					if ( info->hitpoints < cheat_state->vehicle.hitpoints_last )
+					float	diff = cheat_state->vehicle.hitpoints_last - info->hitpoints;
+
+					for ( temp = info; temp != NULL; temp = temp->trailer )
 					{
-						float	diff = cheat_state->vehicle.hitpoints_last - info->hitpoints;
+						if(temp == NULL) return;
 
-						for ( temp = info; temp != NULL; temp = temp->trailer )
-						{
-							if(temp == NULL) return;
+						// XXX - this is probably wrong :S
+						temp->hitpoints = cheat_state->vehicle.hitpoints_last - diff * ( 1.0f - set.hp_damage_reduce / 100.0f );
 
-							// XXX - this is probably wrong :S
-							temp->hitpoints = cheat_state->vehicle.hitpoints_last - diff * ( 1.0f - set.hp_damage_reduce / 100.0f );
-
-							// plus for SAMP trailer damage isn't synced
-							if ( !set.trailer_support )
-								break;
-						}
+						// plus for SAMP trailer damage isn't synced
+						if ( !set.trailer_support )
+							break;
 					}
 				}
 			}
-			else
-			{ }
 
 			for ( temp = info; temp != NULL; temp = temp->trailer )
 			{
@@ -602,14 +600,14 @@ void cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *act
 				if ( cheat_state->vehicle.hp_minimum_on && temp->hitpoints < set.hp_minimum )
 					temp->hitpoints = set.hp_minimum;
 
-				if ( set.freeze_hp_values )
+				if ( set.hp_keep_vehicleHPsane )
 				{
+					// actor_info was NULL duh
 					if ( temp->passengers[0] == actor_info && temp->hitpoints > 1000.0f )
 					{
 						if ( set.hp_minimum <= 1000.0f )
 							temp->hitpoints = 1000.0f;
-						else
-							/* if(temp->hitpoints > set.hp_minimum) */
+						else if ( temp->hitpoints > set.hp_minimum )
 							temp->hitpoints = set.hp_minimum;
 					}
 				}
@@ -652,8 +650,8 @@ void cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *act
 			{
 				if(temp == NULL) return;
 
-				/* HP cheat disabled - keep HP value sane */
-				if ( set.freeze_hp_values )
+				// HP cheat disabled - keep HP value sane
+				if ( set.hp_keep_vehicleHPsane )
 				{
 					if ( temp->hitpoints > 1000.0f )
 						temp->hitpoints = 1000.0f;
@@ -1058,6 +1056,10 @@ void cheat_handle_unfreeze ( struct vehicle_info *vehicle_info, struct actor_inf
 		GTAfunc_TogglePlayerControllable(0);
 		GTAfunc_LockActor(0);
 		pGameInterface->GetCamera()->RestoreWithJumpCut();
+		
+		// stop all animations
+		if ( actor_info != NULL && !actor_info->pedFlags.bInVehicle )
+			GTAfunc_DisembarkInstantly();
 	}
 }
 

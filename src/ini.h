@@ -71,7 +71,7 @@ struct settings
 	float					hp_damage_reduce;
 	float					hp_regen;
 	float					hp_regen_onfoot;
-	int						freeze_hp_values;
+	int						hp_keep_vehicleHPsane;
 
 	int						secondary_key;
 

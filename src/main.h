@@ -31,9 +31,8 @@
 #define M0D_VERSION		"4.2.1.2"
 #define SAMP_VERSION	"SA:MP 0.3c"
 
-// Use this to activate the SQLite Vehicle Recording
-// Remove references to __CHEAT_VEHRECORDING_H__, if function should
-// be officially added.
+// Use this to activate the SQLite Vehicle Recording.
+// You'll need the SQLite libs. Check sqlite3/readme.txt for help.
 //#define __CHEAT_VEHRECORDING_H__
 
 #define BP _asm int 3

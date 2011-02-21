@@ -1035,6 +1035,25 @@ hk_PlCol_process:
 	if ( cheat_state->_generic.cheat_panic_enabled )
 		goto hk_PlCol_processCol;
 
+	// already crashed, if true
+	if ( PlayerCollision_edi_back == NULL || PlayerCollision_esi_back == NULL )
+		goto hk_PlCol_noCol;
+
+	// No vehicle collisions
+	if ( cheat_state->_generic.nocols_enabled )
+	{
+		// Vehicle (edi) -> vehicle(esi)/actor(esi)
+		if ( !isBadPtr_GTA_pVehicle((vehicle_info *)PlayerCollision_edi_back) &&
+			(!isBadPtr_GTA_pVehicle((vehicle_info *)PlayerCollision_esi_back) ||
+			!isBadPtr_GTA_pActorInfo((actor_info *)PlayerCollision_esi_back) ) )
+			goto hk_PlCol_noCol;
+
+		// Vehicle (esi) -> Actor (edi)
+		if ( !isBadPtr_GTA_pVehicle((vehicle_info *)PlayerCollision_esi_back) &&
+			!isBadPtr_GTA_pActorInfo((actor_info *)PlayerCollision_edi_back) )
+			goto hk_PlCol_noCol;
+	}
+
 	// get own vehicle
 	PlayerCollision_tmp = (DWORD)vehicle_info_get( VEHICLE_SELF, 0 );
 	if ( PlayerCollision_tmp )
@@ -1048,38 +1067,21 @@ hk_PlCol_process:
 
 hk_PlCol_proceed_w_Veh:
 	// check if it is our vehicle or trailer colliding
-	// do not collide with trailer (if trailer_support), or other vehicles (if nocols)
+	// do not collide with trailer (if trailer_support)
 	if ( PlayerCollision_esi_back == PlayerCollision_tmp )
 	{
-		if ( cheat_state->_generic.nocols_enabled )
-		{
-			if ( !isBadPtr_GTA_pVehicle((vehicle_info *)PlayerCollision_edi_back) )
-				goto hk_PlCol_noCol;
-		}
-
 		if ( set.trailer_support && PlayerCollision_edi_back == (DWORD)((vehicle_info *)PlayerCollision_tmp)->trailer )
-			goto hk_PlCol_noCol;		
+			goto hk_PlCol_noCol;
 	}
 	else if ( PlayerCollision_edi_back == PlayerCollision_tmp )
 	{
-		if ( cheat_state->_generic.nocols_enabled )
-		{
-			if ( !isBadPtr_GTA_pVehicle((vehicle_info *)PlayerCollision_esi_back) )
-				goto hk_PlCol_noCol;
-		}
-
 		if ( set.trailer_support && PlayerCollision_esi_back == (DWORD)((vehicle_info *)PlayerCollision_tmp)->trailer )
 			goto hk_PlCol_noCol;
 	}
-	else if ( set.trailer_support && (DWORD)((vehicle_info*)PlayerCollision_tmp)->trailer == PlayerCollision_esi_back ) 
+	else if ( set.trailer_support && ((DWORD)((vehicle_info*)PlayerCollision_tmp)->trailer == PlayerCollision_esi_back
+		|| (DWORD)((vehicle_info*)PlayerCollision_tmp)->trailer == PlayerCollision_edi_back) ) 
 	{
-		if ( cheat_state->_generic.nocols_enabled && !isBadPtr_GTA_pVehicle((vehicle_info *)PlayerCollision_edi_back) )
-			goto hk_PlCol_noCol;	
-	}
-	else if ( set.trailer_support && (DWORD)((vehicle_info*)PlayerCollision_tmp)->trailer == PlayerCollision_edi_back )
-	{
-		if ( cheat_state->_generic.nocols_enabled && !isBadPtr_GTA_pVehicle((vehicle_info *)PlayerCollision_esi_back) )
-			goto hk_PlCol_noCol;
+		// process same way as our car/actor
 	}
 	else
 	{
@@ -1111,15 +1113,6 @@ hk_PlCol_proceed_noveh:
 	if ( PlayerCollision_esi_back != PlayerCollision_tmp && PlayerCollision_edi_back != PlayerCollision_tmp )
 		goto hk_PlCol_processCol;
 
-	// Disable vehicle collisions
-	if ( cheat_state->_generic.nocols_enabled )
-	{
-		if ( !isBadPtr_GTA_pVehicle((vehicle_info *)PlayerCollision_esi_back) )
-			goto hk_PlCol_noCol;
-		if ( !isBadPtr_GTA_pVehicle((vehicle_info *)PlayerCollision_edi_back) )
-			goto hk_PlCol_noCol;
-	}
-
 	// actual anti wall collision after this
 	if ( !cheat_state->_generic.nocols_walls_enabled )
 		goto hk_PlCol_processCol;
@@ -1132,9 +1125,8 @@ hk_PlCol_proceed_generic:
 	if ( set.wall_collisions_disableObjects && !isBadPtr_GTA_pObjectInfo(PlayerCollision_edi_back) )
 		goto hk_PlCol_noCol;
 
-	if ( PlayerCollision_edi_back != NULL )
-		if ( ignoreColWithObjectID(((object_info*)PlayerCollision_edi_back)->base.model_alt_id) )
-			goto hk_PlCol_noCol;
+	if ( ignoreColWithObjectID(((object_info*)PlayerCollision_edi_back)->base.model_alt_id) )
+		goto hk_PlCol_noCol;
 
 hk_PlCol_processCol:
 	__asm popad
