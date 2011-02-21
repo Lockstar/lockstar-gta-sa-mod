@@ -561,13 +561,10 @@ struct actor_info
 	};
 
 	float	vehicle_contact_dist[3];			/* 1388 - distance to the middle of the car standing on */
-	uint8_t __unknown_1400[12]; /* 1400 - somehow related to vehicle_contact
-
-								nf: actually this is for on-foot contact with ground too, 1st & second
-								variables are floats. possibly angles of the plane?
-								*/
-	void	*item_contact;		/* 1412 - standing on top of vehicle/object/building/...*/
-	uint8_t __unknown_1416[4];	/* 1416 */
+	float	fPlaneAnglesContactEntity[3];		/* 1400 - Angles of the plane of the contact entity the actor is
+													standing on (?) */
+	void	*item_contact;						/* 1412 - standing on top of vehicle/object/building/...*/
+	float	fUnknown_1416;						/* 1416 - only changing when slightly under map */
 
 	union
 	{
@@ -582,8 +579,9 @@ struct actor_info
 	uint8_t				__unknown_1804[12]; /* 1804 */
 	uint8_t				weapon_slot;		/* 1816 */
 	uint8_t				__unknown_1817[3];	/* 1817 */
-	void				*ptr;	/* 1820 */
-	uint8_t				__unknown_1824[32]; /* 1824 */
+	void				*ptr_autoAimTarget;	/* 1820 - weapon target */
+	float				fImpactPos_close[3];/* 1824 - last impact point of close range weapon [fist/knife/csaw/etc.] */
+	uint8_t				__unknown_1836[20]; /* 1836 */
 	uint32_t			weapon_model;		/* 1856 */
 	uint8_t				__unknown_1860[28]; /* 1860 */
 	uint32_t			weapon_hit_type;	/* 1888 - last hit by this weapon */
@@ -658,7 +656,8 @@ struct vehicle_info
 	uint32_t					m_TimeOfCreation;	/* 1072 - GetTimeInMilliseconds when this vehicle was created. */
 
 	uint8_t						color[4];			/* 1076 - as in carcolors.dat - body, stripe, body2, stripe2 */
-	uint32_t					modding[8];			/* 1080 - modding data */
+	uint8_t						modding[2];			/* 1080 - modding data */
+	unsigned short				UpgradeModelID[15];	/* 1082 - attached upgrades */
 	float						wheel_size;			/* 1112 */
 	unsigned short				CarAlarmState;		/* 1116 - time left for car alarm to sound in ms */
 	unsigned short				ForcedRandomSeed;	/* 1118 - if this is non-zero the random wander gets deterministic */

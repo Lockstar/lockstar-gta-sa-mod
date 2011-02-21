@@ -236,7 +236,7 @@ static int init ( void )
 		if ( !set.i_have_edited_the_ini_file )
 		{
 			MessageBox( 0, "Looks like you've not edited the .ini file like you were told to!\n""\n"
-				"Before you can use m0d_s0beit, you have to set \"i_have_edited_the_ini_file\" to true.\n"
+				"Before you can use mod_sa, you have to set \"i_have_edited_the_ini_file\" to true.\n"
 				"We did this so you would read the INI file to see the configurability of mod_sa.\n",
 				"You're a retard.", 0 );
 			ShellExecute( 0, "open", "notepad", INI_FILE, g_szWorkingDirectory, SW_SHOW );

@@ -317,13 +317,13 @@ static void ini_init ( void )
 	if ( (ent = ini_register_entry("hp_minimum", TYPE_FLOAT)) != NULL )
 		ini_register_data( ent, &set.hp_minimum, "0.0" );
 	if ( (ent = ini_register_entry("hp_damage_reduce", TYPE_FLOAT)) != NULL )
-		ini_register_data( ent, &set.hp_damage_reduce, "75.0" );
+		ini_register_data( ent, &set.hp_damage_reduce, "0.0" );
 	if ( (ent = ini_register_entry("hp_regen", TYPE_FLOAT)) != NULL )
 		ini_register_data( ent, &set.hp_regen, "1.0" );
 	if ( (ent = ini_register_entry("hp_regen_onfoot", TYPE_FLOAT)) != NULL )
 		ini_register_data( ent, &set.hp_regen_onfoot, "1.0" );
-	if ( (ent = ini_register_entry("freeze_hp_values", TYPE_BOOL)) != NULL )
-		ini_register_data( ent, &set.freeze_hp_values, "true" );
+	if ( (ent = ini_register_entry("hp_keep_vehicleHPsane", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.hp_keep_vehicleHPsane, "false" );
 
 	/* key anti freeze */
 	if ( (ent = ini_register_entry("key_anti_freeze", TYPE_KEY)) != NULL )

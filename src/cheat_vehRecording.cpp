@@ -21,14 +21,6 @@
 
 */
 
-/*
-Compile/Run notes:
- - Create matching lib file by running 'vcvars32.bat' and 'lib.exe /DEF:sqlite3.def', if you are using the
-   precompiled dll.
- - will need sqlite3.dll in same directory as resulting product
- -> keep SQLite version up to date (http://www.sqlite.org/download.html)
-*/
-
 #include "main.h"
 
 #ifdef __CHEAT_VEHRECORDING_H__
