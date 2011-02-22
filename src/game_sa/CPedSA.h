@@ -274,8 +274,8 @@ public:
     CPedSoundSAInterface pedSound;
     BYTE bPad11[472 - sizeof(CPedSoundSAInterface)];
     CPedFlags pedFlags; // 1132 (16 bytes long including alignment probably)
-    CPedIntelligenceSAInterface * pPedIntelligence;
-    CPlayerPedDataSAInterface * pPlayerData; //1152
+    CPedIntelligenceSAInterface * pPedIntelligence; // 1148
+    CPlayerPedDataSAInterface * pPlayerData; // 1152
     BYTE bPad4a[80];
     int iMoveAnimGroup;      // 1236
     BYTE bPad4b[52];

@@ -484,30 +484,6 @@ bool GTAfunc_ProcessLineOfSight ( CVector *vecStart, CVector *vecEnd, CColPoint 
 		add esp, 0x30
 	}
 
-	/*
-    if ( CollisionEntity )
-    {
-	    CPoolsSA * pPools = ((CPoolsSA *)pGameInterface->GetPools());
-	    if(pPools)
-	    {
-		    if(targetEntity)
-		    {
-                switch (targetEntity->nType)
-                {
-                    case ENTITY_TYPE_PED:
-                        *CollisionEntity = pPools->GetPed((DWORD *)targetEntity);
-                        break;
-                    case ENTITY_TYPE_OBJECT:
-                        *CollisionEntity = pPools->GetObject((DWORD *)targetEntity);
-                        break;
-                    case ENTITY_TYPE_VEHICLE:
-                        *CollisionEntity = pPools->GetVehicle((DWORD *)targetEntity);
-				        break;
-                }
-		    }
-	    }
-    }
-*/
 	// hacky method to point to CEntitySA instead of the above
 	//*CollisionEntity = targetEntity;
 	if ( colCollision )
@@ -655,7 +631,7 @@ void GTAfunc_RepairVehicle(vehicle_info *vehicle)
 	if(pVehicle)
 	{
 		pVehicle->Fix();
-		pVehicle->SetHealth(1000.00f);
+		pVehicle->SetHealth(1000.0f);
 	}
 }
 
@@ -711,11 +687,11 @@ void GTAfunc_PerformAnimation(const char *szBlockName, const char *szAnimName, i
 			pPedSelf->GetPedIntelligence()->GetTaskManager()->RemoveTask(TASK_PRIORITY_EVENT_RESPONSE_TEMP);
 
 			// remove jumping task
-			CTask *jumpTask = pPedSelf->GetPedIntelligence()->GetTaskManager()->FindActiveTaskByType(211);
-			if (jumpTask)
-			{
-				pPedSelf->GetPedIntelligence()->GetTaskManager()->RemoveTask(TASK_PRIORITY_PRIMARY);
-			}
+			//CTask *jumpTask = pPedSelf->GetPedIntelligence()->GetTaskManager()->FindActiveTaskByType(211);
+			//if (jumpTask)
+			//{
+			//	pPedSelf->GetPedIntelligence()->GetTaskManager()->RemoveTask(TASK_PRIORITY_PRIMARY);
+			//}
 
 			// more removals if needed ever
 			//pPedSelf->GetPedIntelligence()->GetTaskManager()->RemoveTask(TASK_PRIORITY_EVENT_RESPONSE_NONTEMP);
@@ -753,8 +729,30 @@ void GTAfunc_PerformAnimation(const char *szBlockName, const char *szAnimName, i
 
 void GTAfunc_DisembarkInstantly()
 {
-	DWORD *actor = (DWORD *)pPedSelfSA;
+	CTaskManager *taskManager = pPedSelf->GetPedIntelligence()->GetTaskManager();
+	for ( int i = 0 ; i < TASK_PRIORITY_MAX ; i++ )
+	{
+		CTask * pTask = taskManager->GetTask ( i );
+		if ( pTask )
+		{
+			pTask->MakeAbortable ( pPedSelf, ABORT_PRIORITY_IMMEDIATE, NULL );
+			taskManager->RemoveTask(i);
+		}
+	}
+	for ( int i = 0 ; i < TASK_SECONDARY_MAX ; i++ )
+	{
+		CTask * pTask = taskManager->GetTaskSecondary ( i );
+		if ( pTask )
+		{
+			pTask->MakeAbortable ( pPedSelf, ABORT_PRIORITY_IMMEDIATE, NULL );
+			if (i != TASK_SECONDARY_FACIAL_COMPLEX)
+				taskManager->RemoveTaskSecondary(i);
+		}
+	}
 
+// the following causes crashes sometimes, usually related with flying and collisions
+/*
+	DWORD *actor = (DWORD *)pPedSelfSA;
 	if(actor)
 	{
 		DWORD dwFunc = 0x601640;
@@ -766,6 +764,7 @@ void GTAfunc_DisembarkInstantly()
 			call dwFunc
 		}
 	}
+*/
 }
 
 void GTAfunc_ApplyRotoryPulseAboutAnAxis(float fX, float fY, float fZ)

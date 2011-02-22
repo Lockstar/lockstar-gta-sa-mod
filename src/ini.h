@@ -318,6 +318,9 @@ struct settings
 	int						key_fly_player;
 	int						key_fly_player_accelerate;
 	int						key_fly_player_decelerate;
+	int						key_fly_player_strafeLeft;
+	int						key_fly_player_strafeRight;
+	int						key_fly_player_strafeUp;
 
 	float					handling_multiplier;
 
