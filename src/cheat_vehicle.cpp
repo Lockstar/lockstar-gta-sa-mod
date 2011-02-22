@@ -1629,8 +1629,10 @@ void cheat_handle_vehicle_repair_car ( struct vehicle_info *vehicle_info, float 
 {
 	traceLastFunc( "cheat_handle_repair_car()" );
 
+	// why the crap doesn't this work?!?
 	if ( KEY_PRESSED(set.key_repair_car) )
 	{
+
 		// get info
 		struct vehicle_info *veh_self = vehicle_info_get( VEHICLE_SELF, 0 );
 		if ( veh_self == NULL )

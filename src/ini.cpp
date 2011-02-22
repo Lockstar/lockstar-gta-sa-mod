@@ -389,13 +389,13 @@ static void ini_init ( void )
 
 	//blinking car lights
 	if ( (ent = ini_register_entry("key_blinking_car_lights", TYPE_KEY)) != NULL )
-		ini_register_data( ent, &set.key_blinking_car_lights, "&0" );
+		ini_register_data( ent, &set.key_blinking_car_lights, "f2" );
 	if ( (ent = ini_register_entry("enable_car_lights_at_day_time", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.enable_car_lights_at_day_time, "false" );
 
 	//keep trailer, wall collision
 	if ( (ent = ini_register_entry("key_keep_trailer", TYPE_KEY)) != NULL )
-		ini_register_data( ent, &set.key_keep_trailer, "&0" );
+		ini_register_data( ent, &set.key_keep_trailer, "f1" );
 	if ( (ent = ini_register_entry("key_disable_Wall_Collisions", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_disable_Wall_Collisions, "&0" );
 	if ( (ent = ini_register_entry("wall_collisions_disableObjects", TYPE_BOOL)) != NULL )
@@ -405,7 +405,7 @@ static void ini_init ( void )
 
 	// repair car
 	if ( (ent = ini_register_entry("key_repair_car", TYPE_KEY)) != NULL )
-		ini_register_data( ent, &set.key_repair_car, "&0" );
+		ini_register_data( ent, &set.key_repair_car, "1" );
 
 	// real nitro
 	if ( (ent = ini_register_entry("key_nitro", TYPE_KEY)) != NULL )
@@ -486,6 +486,12 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.key_fly_player_accelerate, "w" );
 	if ( (ent = ini_register_entry("key_fly_player_decelerate", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_fly_player_decelerate, "s" );
+	if ( (ent = ini_register_entry("key_fly_player_strafeLeft", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_fly_player_strafeLeft, "a" );
+	if ( (ent = ini_register_entry("key_fly_player_strafeRight", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_fly_player_strafeRight, "d" );
+	if ( (ent = ini_register_entry("key_fly_player_strafeUp", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_fly_player_strafeUp, "space" );
 
 
 	if ( (ent = ini_register_entry("handling_multiplier", TYPE_FLOAT)) != NULL )
