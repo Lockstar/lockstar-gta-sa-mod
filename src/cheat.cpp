@@ -409,6 +409,9 @@ void cheat_hook ( HWND wnd )
 		sampMainCheat();
 
 out: ;
-	keyhook_run();
+	if ( gta_menu_active() )
+		keyhook_clear_states();
+	else
+		keyhook_run();
 	time_last = time_get();
 }

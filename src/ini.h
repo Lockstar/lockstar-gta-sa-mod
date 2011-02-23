@@ -58,6 +58,8 @@ struct gui
 	int			blue;
 };
 
+// set structure
+// DO NOT use bool types in here, it screws up the alignment even with pragma pack directive
 struct settings
 {
 	int						run_mode;
@@ -118,8 +120,8 @@ struct settings
 
 	int						key_keep_trailer;
 	int						key_disable_Wall_Collisions;
-	bool					wall_collisions_disableObjects;
-	bool					wall_collisions_disableRender;
+	int						wall_collisions_disableObjects;
+	int						wall_collisions_disableRender;
 
 	int						key_repair_car;
 
@@ -137,7 +139,7 @@ struct settings
 	int						key_recording_rev_customSpeed;
 #endif
 
-	//bool					teleport_slow;
+	//int					teleport_slow;
 	//int					key_slowTeleport_stop;
 	int						key_teleport_hist;
 	int						key_teleport[TELEPORT_MAX];
@@ -367,6 +369,7 @@ struct settings
 	// DO NOT PUT ANYTHING AFTER THIS, DUMB FUCK //
 	int						__DUMMYFUCKER_DONOTDELETE;
 };
+
 
 ///////////////////////////////////////////////
 extern struct settings	set;
