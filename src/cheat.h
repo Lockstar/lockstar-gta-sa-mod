@@ -491,13 +491,10 @@ struct actor_info
 	uint8_t				__unknown_380[752]; /* 380 */
 
 	CPedFlags			pedFlags;			/* 1132 */
+	CPedIntelligenceSAInterface *pPedIntelligence; /* 1148 */
+	CPlayerPedDataSAInterface *pPlayerData; /* 1152 */
 
-	// this should be updated with the new classes
-	//CPedIntelligenceSAInterface *pPedIntelligence; /* 1148 */
-	//CPlayerPedDataSAInterface *pPlayerData; /* 1152 */
-	ped_intelligence	*animation;			/* 1148 - Ped Intelligence */
-
-	uint8_t				__unknown_1152[12]; /* 1152 */
+	uint8_t				__unknown_1156[8]; /* 1156 */
 
 	// relative body-part-positions
 	void				*pNeck;				/* 1164 - void* pNeck

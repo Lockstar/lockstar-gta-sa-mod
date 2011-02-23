@@ -56,6 +56,7 @@ int						keyhook_key_up ( int v );
 int						keyhook_key_pressed ( int v );
 int						keyhook_key_released ( int v );
 void					keyhook_key_consume ( int v );
+void					keyhook_clear_states ( void );
 
 extern struct key_state key_table[256];
 extern int				key_being_pressed;

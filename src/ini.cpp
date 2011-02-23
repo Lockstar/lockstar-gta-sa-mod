@@ -173,8 +173,6 @@ static int parse_int ( const char *str )
 
 static int key_lookup ( const char *name )
 {
-	int i = 0;
-
 	if ( name[0] && !name[1] )
 	{
 		if ( name[0] >= 'a' && name[0] <= 'z' )
@@ -186,6 +184,7 @@ static int key_lookup ( const char *name )
 	if ( name[0] == '&' )
 		return parse_int( name + 1 );
 
+	int i = 0;
 	while ( key_alias[i].name != NULL )
 	{
 		if ( strcmp(key_alias[i].name, name) == 0 )

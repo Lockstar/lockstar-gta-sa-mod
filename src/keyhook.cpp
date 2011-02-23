@@ -26,8 +26,9 @@ static WNDPROC		orig_wndproc;
 static HWND			orig_wnd;
 
 struct key_state	key_table[256];
-
+int					keys_cleared;
 int					key_being_pressed;
+
 static void process_key ( int down, int vkey, int repeat, int scancode, int extended, HWND wnd )
 {
 	if ( down && KEY_DOWN(vkey) )
@@ -50,6 +51,9 @@ static void process_key ( int down, int vkey, int repeat, int scancode, int exte
 
 static LRESULT CALLBACK wnd_proc ( HWND wnd, UINT umsg, WPARAM wparam, LPARAM lparam )
 {
+	if (gta_menu_active())
+		goto wnd_proc_original;
+
 	switch ( umsg )
 	{
 	case WM_LBUTTONDOWN:
@@ -146,7 +150,7 @@ static LRESULT CALLBACK wnd_proc ( HWND wnd, UINT umsg, WPARAM wparam, LPARAM lp
 		}
 		break;
 	}
-
+wnd_proc_original:
 	return CallWindowProc( orig_wndproc, wnd, umsg, wparam, lparam );
 }
 
@@ -175,9 +179,8 @@ void keyhook_uninstall ( void )
 
 void keyhook_run ( void )
 {
-	int i;
-
-	for ( i = 0; i < 256; i++ )
+	keys_cleared = 0;
+	for ( int i = 0; i < 256; i++ )
 	{
 		key_table[i].consume = 0;
 
@@ -225,4 +228,18 @@ int keyhook_key_released ( int v )
 void keyhook_key_consume ( int v )
 {
 	key_table[v].consume = 1;
+}
+
+void keyhook_clear_states ( void )
+{
+	if ( !keys_cleared )
+	{
+		keys_cleared = 1;
+		for ( int i = 0; i < 256; i++ )
+		{
+			key_table[i].pstate = 0;
+			key_table[i].count = 0;
+			key_table[i].flip = 0;
+		}
+	}
 }
