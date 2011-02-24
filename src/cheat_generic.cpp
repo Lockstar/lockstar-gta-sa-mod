@@ -85,14 +85,24 @@ int cheat_panic ( void )
 			if ( pPedSelf->GetVehicle() )
 			{
 				CVehicle	*pVehicleSelf = pPedSelf->GetVehicle();
-				pVehicleSelf->SetGravity( &CVector(0.0, 0.0, -1.0) );
-				pVehicleSelf->GetInterface()->nImmunities &= ~VEHICLE_FLAGS_INVULNERABLE;
+				CVehicle	*pVehicleTemp = NULL;
+
+				for ( pVehicleTemp = pVehicleSelf; pVehicleTemp != NULL; pVehicleTemp = pVehicleTemp->GetTowedVehicle() )
+				{
+					pVehicleTemp->SetGravity( &CVector(0.0, 0.0, -1.0) );
+					pVehicleTemp->SetCanBeDamaged( true );
+
+					if ( !set.trailer_support )
+						break;
+				}
+
 				// remove inf NOS
 				if ( pstate_infnos )
 				{
 					pVehicleSelf->RemoveVehicleUpgrade( 1010 );
 					//pVehicleSelf->AddVehicleUpgrade( 1010 );
 				}
+
 				// reset overrideLights, pstate not needed, will be reactivated on demand
 				if ( set.enable_car_lights_at_day_time )
 					pVehicleSelf->SetOverrideLights( 0 );

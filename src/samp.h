@@ -721,6 +721,7 @@ void											setSAMPCustomSendRates ( int iOnFoot, int iInCar, int iAim, int i
 int												sampPatchDisableNameTags ( int iEnabled );
 int												sampPatchDisableInteriorUpdate ( int iEnabled );
 int												sampPatchDisableScoreboardToggleOn ( int iEnabled );
+int												sampPatchDisableChatInputAdjust ( int iEnabled );
 
 // global pointer externals
 extern int										iIsSAMPSupported;

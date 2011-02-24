@@ -1267,15 +1267,17 @@ void renderPlayerTags ( void )
 				vh = g_Players->pRemotePlayer[iSAMPID]->pPlayerData->fActorHealth;
 				va = g_Players->pRemotePlayer[iSAMPID]->pPlayerData->fActorArmor;
 			}
-			else if ( g_Players != NULL )
-			{
-				continue;
-			}
 			else
 			{
-				vh = iterPed->GetHealth();
-				va = iterPed->GetArmor();
+				// SA-MP running, but was not a remote player
+				continue;
 			}
+		}
+		else
+		{
+			// SA-MP not running or failed to initialize g_Players
+			vh = iterPed->GetHealth();
+			va = iterPed->GetArmor();
 		}
 
 		D3DCOLOR	color = D3DCOLOR_ARGB( 75, 0, 200, 0 );
@@ -1359,7 +1361,8 @@ void renderVehicleTags ( void )
 		return;
 
 	// don't display tags during certain key press & game events
-	if	( g_dwSAMP_Addr && 
+	// g_dwSAMP_Addr will be set before sa-mp was completely initialized
+	if	( g_SAMP && g_dwSAMP_Addr &&
 			(
 				(GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
 				|| *(char *)((*(DWORD *) (g_dwSAMP_Addr + SAMP_SCOREBOARD_INFO)) + 0x1C) == 1
@@ -2201,10 +2204,48 @@ void renderChat ( void )
 	if ( GetAsyncKeyState(VK_F10) < 0 )
 		return;
 
+	static int	chat_last = -1, chat_render;
+
+	// Patch to disable chatbox-input field positioning
+	static int	patched = 0;
+	if ( patched && (cheat_state->_generic.cheat_panic_enabled || !chat_render) )
+	{
+		patched = !sampPatchDisableChatInputAdjust( 0 );
+	}
+	else if ( !cheat_state->_generic.cheat_panic_enabled && chat_render )
+	{
+		if ( !patched )
+		{
+			sampPatchDisableChatInputAdjust( 1 );
+			patched = 1;
+		}
+
+		// reposition the input field
+		int chatInput_pos[2];
+		chatInput_pos[1] = ((int)fYChatPosAdj) + 29;
+		if ( chatInput_pos[1] <= 0 )
+		{
+			// top left corner, if above screen
+			chatInput_pos[0] = 35;
+			chatInput_pos[1] = 30;
+		}
+		else if ( chatInput_pos[1] > pPresentParam.BackBufferHeight )
+		{
+			// middle + avoid the mouse cursor being on the text, if under screen
+			chatInput_pos[0] = (pPresentParam.BackBufferWidth/2)-20;
+			chatInput_pos[1] = (pPresentParam.BackBufferHeight/2)-30;
+		}
+		else
+			chatInput_pos[0] = 35;
+
+		// g_ChatInput->ptr_0x8->chatbox_x_0x8 = chatbox_pos[0];
+		*(DWORD*)((*(DWORD*)((*(DWORD*)(g_dwSAMP_Addr + SAMP_CHAT_INPUT_INFO_OFFSET))+0x8))+0x8) = chatInput_pos[0];
+		g_Chat->dwChatboxOffset = chatInput_pos[1];
+	}
+	// Input field repositioning end
+
 	if ( cheat_state->_generic.cheat_panic_enabled )
 		return;
-
-	static int	chat_last = -1, chat_render;
 
 	if ( KEY_RELEASED(VK_TAB) && set.d3dtext_score )
 	{
