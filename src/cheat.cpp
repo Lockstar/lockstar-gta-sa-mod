@@ -63,15 +63,18 @@ static void cheat_main_actor ( double time_diff )
 	cheat_handle_stick( NULL, info, time_diff );
 	cheat_handle_actor_autoaim( info, time_diff );
 
-	//fix for passenger drive by bug
+	// fix for passenger drive by bug
 	if ( info->pedFlags.bInVehicle )
 		cheat_handle_vehicle_fast_exit( NULL, time_diff );
 
-	//cheat_handle_SpiderFeet(info, time_diff);
+	// cheat_handle_SpiderFeet(info, time_diff);
 	cheat_handle_actor_fly(info, time_diff);
 
 	if ( set.runanimation_cj )
 		info->runningStyle = 0x36;
+
+	// take care of any cleanup while exiting a vehicle
+	cheat_handle_exit_vehicle ( NULL, info );
 }
 
 static void cheat_main_vehicle ( double time_diff )
@@ -113,6 +116,7 @@ static void cheat_main_vehicle ( double time_diff )
 	cheat_handle_vehicle_fast_exit( info, time_diff );
 	cheat_handle_vehicle_spiderWheels( info, time_diff );
 	//cheat_handle_vehicle_slowTeleport( info, time_diff );
+	cheat_handle_exit_vehicle ( info, NULL );
 #ifdef __CHEAT_VEHRECORDING_H__
 	cheat_handle_vehicle_recording( info, time_diff );
 #endif
@@ -152,7 +156,6 @@ void cheat_hook ( HWND wnd )
 		cheat_state->vehicle.invulnerable = true;
 		cheat_state->vehicle.hp_tire_support = true;
 		cheat_state->vehicle.hp_minimum_on = 1;
-		cheat_state->vehicle.hp_damage_reduce_on = 1;
 		cheat_state->vehicle.hp_regen_on = 1;
 		cheat_state->actor.hp_regen_on = 1;
 		cheat_state->vehicle.brkdance = 0;
@@ -284,6 +287,13 @@ void cheat_hook ( HWND wnd )
 			// increment stage
 			m_InitStages++;
 		}
+	}
+
+	if ( cheat_state->state != CHEAT_STATE_NONE )
+	{
+		// keep this updated, cos something is switching it now
+		pPedSelf = pPools->GetPedFromRef( CPOOLS_PED_SELF_REF );
+		pPedSelfSA = pPedSelf->GetPedInterface();
 	}
 
 	static bool chat_set_once = false;

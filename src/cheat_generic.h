@@ -44,5 +44,6 @@ void	cheat_handle_teleport ( struct vehicle_info *vehicle_info, struct actor_inf
 void	cheat_handle_checkpoint ( void );
 void	cheat_handle_unfreeze ( struct vehicle_info *vehicle_info, struct actor_info *actor_info, float time_diff );
 void	cheat_handle_emo ( struct vehicle_info *vehicle_info, struct actor_info *actor_info, float time_diff );
+void	cheat_handle_exit_vehicle ( struct vehicle_info *vehicle_info, struct actor_info *actor_info );
 // samp only
 void	cheat_handle_antiHijack ( actor_info *ainfo, vehicle_info *veh, float time_diff );

@@ -80,7 +80,6 @@
 #define ID_CHEAT_INVULN_VEHICLE				1
 #define ID_CHEAT_INVULN_TIRES				2
 #define ID_CHEAT_INVULN_MIN_HP				3
-#define ID_CHEAT_INVULN_DMGRED				4
 #define ID_CHEAT_INVULN_REGEN				5
 #define ID_CHEAT_INVULN_REGEN_ONFOOT		6
 
@@ -1372,9 +1371,6 @@ static int menu_callback_cheats_invuln ( int op, struct menu_item *item )
 		case ID_CHEAT_INVULN_MIN_HP:
 			return cheat_state->vehicle.hp_minimum_on;
 
-		case ID_CHEAT_INVULN_DMGRED:
-			return cheat_state->vehicle.hp_damage_reduce_on;
-
 		case ID_CHEAT_INVULN_REGEN:
 			return cheat_state->vehicle.hp_regen_on;
 
@@ -1400,10 +1396,6 @@ static int menu_callback_cheats_invuln ( int op, struct menu_item *item )
 
 		case ID_CHEAT_INVULN_MIN_HP:
 			cheat_state->vehicle.hp_minimum_on ^= 1;
-			break;
-
-		case ID_CHEAT_INVULN_DMGRED:
-			cheat_state->vehicle.hp_damage_reduce_on ^= 1;
 			break;
 
 		case ID_CHEAT_INVULN_REGEN:
@@ -1450,11 +1442,6 @@ static int menu_callback_cheats_invuln ( int op, struct menu_item *item )
 				set.hp_minimum = roundf( set.hp_minimum );
 
 			menu_item_name_set( item, "Vehicle minimum HP: %d", (int)set.hp_minimum );
-			break;
-
-		case ID_CHEAT_INVULN_DMGRED:
-			set.hp_damage_reduce = roundf( set.hp_damage_reduce + mod * 5.0f );
-			menu_item_name_set( item, "Vehicle damage reduction: %d%%", (int)set.hp_damage_reduce );
 			break;
 
 		case ID_CHEAT_INVULN_REGEN:
@@ -2931,8 +2918,6 @@ void menu_maybe_init ( void )
 	/*menu_item_add(menu_cheats_inv, NULL, "\t", ID_NONE, MENU_COLOR_SEPARATOR, NULL);*/
 	snprintf( name, sizeof(name), "Vehicle minimum HP: %d", (int)set.hp_minimum );
 	menu_item_add( menu_cheats_inv, NULL, name, ID_CHEAT_INVULN_MIN_HP, MENU_COLOR_DEFAULT, NULL );
-	snprintf( name, sizeof(name), "Vehicle damage reduction: %d%%", (int)set.hp_damage_reduce );
-	menu_item_add( menu_cheats_inv, NULL, name, ID_CHEAT_INVULN_DMGRED, MENU_COLOR_DEFAULT, NULL );
 	snprintf( name, sizeof(name), "Vehicle HP regeneration: %dhp/sec", (int)set.hp_regen );
 	menu_item_add( menu_cheats_inv, NULL, name, ID_CHEAT_INVULN_REGEN, MENU_COLOR_DEFAULT, NULL );
 	snprintf( name, sizeof(name), "Onfoot HP regeneration: %dhp/sec", (int)set.hp_regen );

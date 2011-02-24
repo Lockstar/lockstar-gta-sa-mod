@@ -527,17 +527,47 @@ int isBadPtr_GTA_pVehicle ( CVehicleSAInterface *p_CVehicleSAInterface )
 	return ( p_CVehicleSAInterface->Placeable.matrix == NULL );
 }
 
-int isBadPtr_GTA_pActorInfo ( actor_info *p_ActorInfo )
+int isBadPtr_GTA_pPed ( actor_info *pActorInfo )
 {
-	if ( p_ActorInfo == NULL )
+	if ( pActorInfo == NULL )
 		return 1;
 	if ( !
-			 (
-			 (DWORD) p_ActorInfo >= (DWORD) pool_actor->start && (DWORD) p_ActorInfo <=
-			 ((DWORD) pool_actor->start + (pool_actor->size * sizeof(actor_info)))
-		) )
+			(
+				(DWORD) pActorInfo >= (DWORD) pool_actor->start
+				&& (DWORD) pActorInfo <= ((DWORD) pool_actor->start + (pool_actor->size * sizeof(actor_info)))
+			)
+		)
 		return 1;
-	return ( p_ActorInfo->base.matrix == NULL );
+	return ( pActorInfo->base.matrix == NULL );
+}
+
+int isBadPtr_GTA_pPed ( CPed *pCPed )
+{
+	if ( pCPed == NULL )
+		return 1;
+	CPedSAInterface *pCPedSAInterface = pCPed->GetPedInterface();
+	if ( !
+			(
+				(DWORD) pCPedSAInterface >= (DWORD) pool_actor->start
+				&& (DWORD) pCPedSAInterface <= ((DWORD) pool_actor->start + (pool_actor->size * sizeof(CPedSAInterface)))
+			)
+		)
+		return 1;
+	return ( pCPedSAInterface->Placeable.matrix == NULL );
+}
+
+int isBadPtr_GTA_pPed ( CPedSAInterface *pCPedSAInterface )
+{
+	if ( pCPedSAInterface == NULL )
+		return 1;
+	if ( !
+			(
+				(DWORD) pCPedSAInterface >= (DWORD) pool_actor->start
+				&& (DWORD) pCPedSAInterface <= ((DWORD) pool_actor->start + (pool_actor->size * sizeof(CPedSAInterface)))
+			)
+		)
+		return 1;
+	return ( pCPedSAInterface->Placeable.matrix == NULL );
 }
 
 int isBadPtr_GTA_pBuildingInfo ( DWORD p_BuildingInfo )
@@ -957,13 +987,13 @@ struct actor_info *actor_info_get ( int id, int flags )
 	if ( id == ACTOR_SELF )
 	{
 		info = (struct actor_info *)( UINT_PTR ) * (uint32_t *)ACTOR_POINTER_SELF;
-		if ( isBadPtr_GTA_pActorInfo(info) )
+		if ( isBadPtr_GTA_pPed(info) )
 			return NULL;
 	}
 	else
 	{
 		info = &( (struct actor_info *)pool_actor->start )[id];
-		if ( isBadPtr_GTA_pActorInfo(info) )
+		if ( isBadPtr_GTA_pPed(info) )
 			return NULL;
 	}
 

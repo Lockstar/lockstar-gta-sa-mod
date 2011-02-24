@@ -165,9 +165,10 @@ public:
 	//********* END CEntityInfo **********//
 
 	//58-66 padded
-	BYTE pad[8];
-    BYTE nImmunities;
-    BYTE pad2 [ 1 ];
+	BYTE pad[8]; // 58 - needs to be researched
+    BYTE nImmunities; // 65 - immunities structure, needs to be mapped
+    BYTE nFlags; // 66 - unknown flags structure, needs to be mapped, could be part of Immunities
+	// 67 - there should be something here, more flags?
 
     /* IMPORTANT: KEEP "pad" in CVehicle UP-TO-DATE if you add something here (or eventually pad someplace else) */
 };

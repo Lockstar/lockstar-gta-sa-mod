@@ -174,7 +174,6 @@ struct cheat_state_vehicle
 	int		protection;
 	int		hp_tire_support;
 	int		hp_minimum_on;
-	int		hp_damage_reduce_on;
 	int		hp_regen_on;
 	int		keep_trailer_attached;
 	int		brkdance;
@@ -186,7 +185,6 @@ struct cheat_state_vehicle
 	int		blinking_carlights_turnstate;
 	DWORD	blinking_carlights_lastblink;
 	int		fly;
-	float	hitpoints_last;
 	//float	tele_coords[3];
 	//int		tele_on;
 };
@@ -232,6 +230,8 @@ struct cheat_state_generic
 	short	car_jacked_last_vehicle_id;
 	bool	got_vehicle_id;
 	float	car_jacked_lastPos[3];
+
+	struct vehicle_info * pVehicleExit_Last;
 
 	int		interior_patch_enabled;
 
