@@ -1637,3 +1637,24 @@ int sampPatchDisableScoreboardToggleOn ( int iEnabled )
 		return patcher_remove( &sampPatchDisableScoreboard_patch );
 	return NULL;
 }
+
+#define SAMP_CHATINPUTADJUST_Y				0x6E674
+#define SAMP_CHATINPUTADJUST_X				0x6F795
+int sampPatchDisableChatInputAdjust ( int iEnabled )
+{
+	static struct patch_set sampPatchDisableChatInputAdj_patch =
+	{
+		"NOP Adjust Chat input box",
+		0,
+		0,
+		{
+			{ 6, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_CHATINPUTADJUST_Y ), NULL, (uint8_t *)"\x90\x90\x90\x90\x90\x90", NULL },
+			{ 7, (void *)( (uint8_t *)g_dwSAMP_Addr + SAMP_CHATINPUTADJUST_X ), NULL, (uint8_t *)"\x90\x90\x90\x90\x90\x90\x90", NULL }
+		}
+	};
+	if ( iEnabled && !sampPatchDisableChatInputAdj_patch.installed )
+		return patcher_install( &sampPatchDisableChatInputAdj_patch );
+	else if ( !iEnabled && sampPatchDisableChatInputAdj_patch.installed )
+		return patcher_remove( &sampPatchDisableChatInputAdj_patch );
+	return NULL;
+}

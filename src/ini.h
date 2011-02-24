@@ -363,7 +363,7 @@ struct settings
 	int						render_teleport_texts;
 	int						render_pickup_texts;
 	int						render_object_texts;
-	bool					enable_clouds;
+	int						enable_clouds;
 
 	///////////////////////////////////////////////
 	// DO NOT PUT ANYTHING AFTER THIS, DUMB FUCK //

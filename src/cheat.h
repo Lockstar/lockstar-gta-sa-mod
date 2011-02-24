@@ -308,37 +308,6 @@ struct detachable
 	uint8_t __unknown_28[16];
 };
 
-struct ped_intelligence //animation - actor_info +1148
-{
-#pragma pack( 1 )
-	struct actor_info	*actor;			/* 0 - Acting Actor*/
-	uint8_t				__unknown_4[4]; /* 4 */
-	void				*task_fall;		/* 8 - Task set when falling */
-	uint8_t				__unknown_12[4];		/* 12 */
-	void				*active_animation_task; /* 16 - Task being Active */
-	void				*unknown_task;			/* 20 */
-	void				*anim;	/* 24 - Animation (for drinking only one frame)*/
-	uint8_t				__unknown_28[12];	/* 28 */
-	void				*passive_task;		/* 40 - Passive Task (Holding something in hand) */
-	void				*unknown2_task;		/* 44 - Set when normal walking/Jetpack, else NULL */
-	struct actor_info	*actor_;			/* 48 - Acting Actor .. */
-	struct actor_info	*actor__;			/* 52 - Acting Actor .. */
-	uint8_t				__unknown_56[8];	/* 56 */
-	DWORD				pointer_event_fall; /* 64 - Pointer to event (falling) */
-	uint8_t				__unknown_68[40];	/* 68 */
-	struct actor_info	*actor___;			/* 108 - Acting Actor .. */
-	uint8_t				__unknown_112[4];	/* 112 */
-	DWORD				pointer_event;		/* 116 - Pointer to Event (just a frame long), longer for jumping*/
-	uint8_t				__unknown_120[104]; /* 120 */
-	struct vehicle_info *nearest_car[16];	/* 224 - nearest cars (need to be in a grenade-throw range) */
-	struct vehicle_info *nearest_car_;		/* 288 - nearest car */
-	uint8_t				__unknown_292[12];	/* 292 */
-	struct actor_info	*nearest_actor[16]; /* 304 - nearest actors */
-	struct actor_info	*nearest_actor_;	/* 368 */
-	uint8_t				__unknown_372[287]; /* 372*/
-	/* end at 659 */
-};
-
 struct weapon
 {
 #pragma pack( 1 )
