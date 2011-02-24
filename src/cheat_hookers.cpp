@@ -1045,12 +1045,12 @@ hk_PlCol_process:
 		// Vehicle (edi) -> vehicle(esi)/actor(esi)
 		if ( !isBadPtr_GTA_pVehicle((vehicle_info *)PlayerCollision_edi_back) &&
 			(!isBadPtr_GTA_pVehicle((vehicle_info *)PlayerCollision_esi_back) ||
-			!isBadPtr_GTA_pActorInfo((actor_info *)PlayerCollision_esi_back) ) )
+			!isBadPtr_GTA_pPed((actor_info *)PlayerCollision_esi_back) ) )
 			goto hk_PlCol_noCol;
 
 		// Vehicle (esi) -> Actor (edi)
 		if ( !isBadPtr_GTA_pVehicle((vehicle_info *)PlayerCollision_esi_back) &&
-			!isBadPtr_GTA_pActorInfo((actor_info *)PlayerCollision_edi_back) )
+			!isBadPtr_GTA_pPed((actor_info *)PlayerCollision_edi_back) )
 			goto hk_PlCol_noCol;
 	}
 

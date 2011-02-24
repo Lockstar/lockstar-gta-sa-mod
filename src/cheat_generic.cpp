@@ -82,8 +82,6 @@ int cheat_panic ( void )
 			cheat_state->vehicle.infNOS_toggle_on = false;
 			patcher_remove( &patch_vehicle_inf_NOS );
 
-			// we shouldn't have to update pPedSelf here
-			//CPed	*pPedSelf = pPools->GetPedFromRef( CPOOLS_PED_SELF_REF );
 			if ( pPedSelf->GetVehicle() )
 			{
 				CVehicle	*pVehicleSelf = pPedSelf->GetVehicle();
@@ -164,8 +162,6 @@ int cheat_panic ( void )
 				{
 					pVehicleSelf->AddVehicleUpgrade( 1010 );
 				}
-				// set the vehicle health for damage reducer
-				cheat_state->vehicle.hitpoints_last = pVehicleSelf->GetHealth();
 			}
 
 
@@ -571,26 +567,6 @@ void cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *act
 
 		if ( cheat_state->_generic.hp_cheat )
 		{
-			/* damage reduction */
-			if ( cheat_state->vehicle.hp_damage_reduce_on && !near_zero(set.hp_damage_reduce) )
-			{
-				if ( info->hitpoints < cheat_state->vehicle.hitpoints_last )
-				{
-					float	diff = cheat_state->vehicle.hitpoints_last - info->hitpoints;
-
-					for ( temp = info; temp != NULL; temp = temp->trailer )
-					{
-						if(temp == NULL) return;
-
-						// XXX - this is probably wrong :S
-						temp->hitpoints = cheat_state->vehicle.hitpoints_last - diff * ( 1.0f - set.hp_damage_reduce / 100.0f );
-
-						// plus for SAMP trailer damage isn't synced
-						if ( !set.trailer_support )
-							break;
-					}
-				}
-			}
 
 			for ( temp = info; temp != NULL; temp = temp->trailer )
 			{
@@ -611,8 +587,6 @@ void cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *act
 							temp->hitpoints = set.hp_minimum;
 					}
 				}
-				else
-				{ }
 
 				/* regen */
 				if ( temp->hitpoints < 1000.0f )
@@ -620,25 +594,27 @@ void cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *act
 
 				if ( cheat_state->vehicle.invulnerable )
 				{
-					temp->flags |= VEHICLE_FLAGS_INVULNERABLE;	/* invulnerable to most things */
-					temp->flags &= ~2;		/* make sure we're not frozen :p */
-					if ( temp->pulling_truck != NULL )
-						temp->hitpoints = 1000.0f;
-
-					//invulnerable flags dont seem to work for trailers
+					temp->m_nVehicleFlags.bCanBeDamaged = false;
+					//temp->flags |= VEHICLE_FLAGS_INVULNERABLE;	/* invulnerable to most things */
+					temp->flags &= ~2; /* make sure we're not frozen :p */
+					//if ( temp->pulling_truck != NULL )
+					//	temp->hitpoints = 1000.0f;
 				}
 				else
 				{
-					temp->flags &= ~VEHICLE_FLAGS_INVULNERABLE;
+					temp->m_nVehicleFlags.bCanBeDamaged = true;
+					//temp->flags &= ~VEHICLE_FLAGS_INVULNERABLE;
 				}
 
 				if ( cheat_state->vehicle.hp_tire_support )
 					cheat_vehicle_tires_set( temp, 0 );
 
-				/*if(cheat_state->vehicle.is_engine_on == 1)
-				temp->m_nVehicleFlags.bEngineOn = 1;
-			else if((cheat_state->vehicle.is_engine_on == 0))
-				temp->m_nVehicleFlags.bEngineOn = 0;*/
+				/*
+				if(cheat_state->vehicle.is_engine_on == 1)
+					temp->m_nVehicleFlags.bEngineOn = 1;
+				else if((cheat_state->vehicle.is_engine_on == 0))
+					temp->m_nVehicleFlags.bEngineOn = 0;
+				*/
 				// temp->engine_state |= 16; // protect against engine stalls
 				if ( !set.trailer_support )
 					break;
@@ -656,17 +632,14 @@ void cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *act
 					if ( temp->hitpoints > 1000.0f )
 						temp->hitpoints = 1000.0f;
 				}
-				else
-				{ }
 
-				temp->flags &= ~VEHICLE_FLAGS_INVULNERABLE;
+				temp->m_nVehicleFlags.bCanBeDamaged = true;
+				//temp->flags &= ~VEHICLE_FLAGS_INVULNERABLE;
 
 				if ( !set.trailer_support )
 					break;
 			}
 		}
-
-		cheat_state->vehicle.hitpoints_last = info->hitpoints;
 	}
 
 	if ( actor_info != NULL )
@@ -721,7 +694,7 @@ void cheat_handle_stick ( struct vehicle_info *vehicle_info, struct actor_info *
 		// remove any bad vehicle or actor stuffs
 		if ( isBadPtr_GTA_pVehicle(vehicle_info) )
 			vehicle_info = NULL;
-		if ( isBadPtr_GTA_pActorInfo(actor_info) )
+		if ( isBadPtr_GTA_pPed(actor_info) )
 			actor_info = NULL;
 
 		/* check if actor has disappeared.. and if it has, switch to teh nearest */
@@ -1069,7 +1042,7 @@ void cheat_handle_emo ( struct vehicle_info *vehicle_info, struct actor_info *ac
 
 	struct vehicle_info *vtemp;
 
-	if ( !isBadPtr_GTA_pActorInfo(actor_info) )
+	if ( !isBadPtr_GTA_pPed(actor_info) )
 	{
 		if ( KEY_PRESSED(set.key_self_destruct) )
 			actor_info->hitpoints = 0.0f;
@@ -1091,6 +1064,29 @@ void cheat_handle_emo ( struct vehicle_info *vehicle_info, struct actor_info *ac
 						break;
 				}
 			}
+		}
+	}
+}
+
+void cheat_handle_exit_vehicle ( struct vehicle_info *vehicle_info, struct actor_info *actor_info )
+{
+	if (!isBadPtr_GTA_pVehicle(vehicle_info))
+	{
+		if (vehicle_info != cheat_state->_generic.pVehicleExit_Last)
+		{
+			if (!isBadPtr_GTA_pVehicle(cheat_state->_generic.pVehicleExit_Last))
+			{
+				cheat_state->_generic.pVehicleExit_Last->m_nVehicleFlags.bCanBeDamaged = true;
+			}
+			cheat_state->_generic.pVehicleExit_Last = vehicle_info;
+		}
+	}
+	if (!isBadPtr_GTA_pPed(actor_info))
+	{
+		if (!isBadPtr_GTA_pVehicle(cheat_state->_generic.pVehicleExit_Last))
+		{
+			cheat_state->_generic.pVehicleExit_Last->m_nVehicleFlags.bCanBeDamaged = true;
+			cheat_state->_generic.pVehicleExit_Last = NULL;
 		}
 	}
 }

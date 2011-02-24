@@ -32,12 +32,12 @@ int								g_iSpectateEnabled = 0, g_iSpectateLock = 0, g_iSpectatePlayerID = -1
 // global samp pointers
 int								iIsSAMPSupported = 0;
 int								g_renderSAMP_initSAMPstructs;
-stSAMP							*g_SAMP;
-stPlayerPool					*g_Players;
-stVehiclePool					*g_Vehicles;
-stChatInfo						*g_Chat;
-stInputInfo						*g_Input;
-stKillInfo						*g_DeathList;
+stSAMP							*g_SAMP = NULL;
+stPlayerPool					*g_Players = NULL;
+stVehiclePool					*g_Vehicles = NULL;
+stChatInfo						*g_Chat = NULL;
+stInputInfo						*g_Input = NULL;
+stKillInfo						*g_DeathList = NULL;
 
 // global managed support variables
 stTranslateGTASAMP_vehiclePool	translateGTASAMP_vehiclePool;

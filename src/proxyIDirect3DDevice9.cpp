@@ -891,13 +891,15 @@ void renderPlayerTags ( void )
 	// Exit this function and enable samp nametags, if panic key
 	if ( cheat_state->_generic.cheat_panic_enabled || !cheat_state->render_player_tags )
 	{
-		if ( g_SAMP != NULL )
+		if ( g_dwSAMP_Addr && g_SAMP )
+		{
 			sampPatchDisableNameTags( 0 );
+		}
 		return;
 	}
 
 	// don't run during certain samp events
-	if ( g_SAMP != NULL )
+	if ( g_dwSAMP_Addr && g_SAMP )
 	{
 		if (
 			// Scoreboard open?
@@ -919,7 +921,7 @@ void renderPlayerTags ( void )
 		return;
 
 	// don't run if we don't exist
-	if ( !pPedSelf )
+	if (isBadPtr_GTA_pPed(pPedSelf))
 		return;
 
 	// for tracking player states as we iterate through
@@ -944,7 +946,7 @@ void renderPlayerTags ( void )
 	char		buf[256];
 
 	// get our info
-	if ( pPedSelf->GetVehicle() != NULL )
+	if ( pPedSelf->GetVehicle() )
 	{
 		// RC Vehicle Fix (Not showing names of recently streamed in players
 		// while being in a RC Vehicle)
@@ -952,9 +954,10 @@ void renderPlayerTags ( void )
 	}
 	else
 	{
-		ourPosition = pPedSelf->GetInterface()->Placeable.matrix->vPos;
+		ourPosition = pPedSelfSA->Placeable.matrix->vPos;
 	}
 
+	// get our scripting ID so we can exclude ourself
 	selfGTAID = (int)pPedSelf->GetArrayID();
 
 	// setup iterator
@@ -1224,7 +1227,7 @@ void renderPlayerTags ( void )
 	iter = pPools->m_pedPool.map.begin();
 
 	// start render ESP tags
-	float	w, h, playerBaseY;
+	float w, h, playerBaseY;
 	while ( iter.pos < iter.end )
 	{
 		// map iterator pointer to our pointer
@@ -1247,30 +1250,32 @@ void renderPlayerTags ( void )
 			ESP_tag_player_pixelOffsetY;
 
 		int iSAMPID;
-		if ( g_Players != NULL )
+		if ( g_Players )
 			iSAMPID = translateGTASAMP_pedPool.iSAMPID[getPedGTAIDFromInterface( (DWORD *)iterPed->GetPedInterface() )];
 
 		// get Ped health
 		// works in single player, but SAMP maintains its own player health
 		//vh = iterPed->GetHealth();
 		// get samp health
-		if ( g_Players != NULL
-		 &&	 g_Players->pRemotePlayer[iSAMPID] != NULL
-		 &&	 g_Players->pRemotePlayer[iSAMPID]->pPlayerData != NULL
-		 &&  g_Players->pRemotePlayer[iSAMPID]->pPlayerData->pSAMP_Actor != NULL
-		 &&  (DWORD)g_Players->pRemotePlayer[iSAMPID]->pPlayerData->pSAMP_Actor->pGTA_Ped == (DWORD)iterPed->GetPedInterface() )
+		if ( g_Players )
 		{
-			vh = g_Players->pRemotePlayer[iSAMPID]->pPlayerData->fActorHealth;
-			va = g_Players->pRemotePlayer[iSAMPID]->pPlayerData->fActorArmor;
-		}
-		else if ( g_Players != NULL )
-		{
-			continue;
-		}
-		else
-		{
-			vh = iterPed->GetHealth();
-			va = iterPed->GetArmor();
+			if ( g_Players->pRemotePlayer[iSAMPID] != NULL
+				&&	 g_Players->pRemotePlayer[iSAMPID]->pPlayerData != NULL
+				&&  g_Players->pRemotePlayer[iSAMPID]->pPlayerData->pSAMP_Actor != NULL
+				&&  (DWORD)g_Players->pRemotePlayer[iSAMPID]->pPlayerData->pSAMP_Actor->pGTA_Ped == (DWORD)iterPed->GetPedInterface() )
+			{
+				vh = g_Players->pRemotePlayer[iSAMPID]->pPlayerData->fActorHealth;
+				va = g_Players->pRemotePlayer[iSAMPID]->pPlayerData->fActorArmor;
+			}
+			else if ( g_Players != NULL )
+			{
+				continue;
+			}
+			else
+			{
+				vh = iterPed->GetHealth();
+				va = iterPed->GetArmor();
+			}
 		}
 
 		D3DCOLOR	color = D3DCOLOR_ARGB( 75, 0, 200, 0 );
@@ -1305,7 +1310,7 @@ void renderPlayerTags ( void )
 
 		// already check if player is ok before
 		// so now we only need to check if samp is running
-		if ( g_Players == NULL )
+		if ( !g_Players )
 		{
 			_snprintf_s( buf, sizeof(buf), "H: %d, A: %d", (int)iterPed->GetHealth(), (int)iterPed->GetArmor() );
 			pD3DFontFixedSmall->PrintShadow( g_playerTagInfo[iGTAID].tagPosition.fX + 8.0f, playerBaseY - h + 10.0f,
@@ -1354,7 +1359,7 @@ void renderVehicleTags ( void )
 		return;
 
 	// don't display tags during certain key press & game events
-	if	( g_SAMP && 
+	if	( g_dwSAMP_Addr && 
 			(
 				(GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
 				|| *(char *)((*(DWORD *) (g_dwSAMP_Addr + SAMP_SCOREBOARD_INFO)) + 0x1C) == 1
@@ -3282,6 +3287,7 @@ void renderHandler()
 			}
 			else
 			{
+
 				if ( !game_inited )
 				{
 					game_inited = 1;
