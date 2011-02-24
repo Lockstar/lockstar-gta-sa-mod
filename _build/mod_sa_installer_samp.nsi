@@ -84,6 +84,7 @@ Section "Install" SecDummy
 	; install the basics
 	File ..\bin\d3d9.dll
 	File ..\bin\mod_sa.raw
+	File ..\bin\mod_sa_ChangeLog.txt
 	File ..\bin\speedo.png
 	File ..\bin\needle.png
 
