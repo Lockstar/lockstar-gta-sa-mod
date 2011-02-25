@@ -82,6 +82,7 @@
 #define ID_CHEAT_INVULN_MIN_HP				3
 #define ID_CHEAT_INVULN_REGEN				5
 #define ID_CHEAT_INVULN_REGEN_ONFOOT		6
+#define ID_CHEAT_INVULN_DISABLE_EXTRA_INV	7
 
 #define ID_CHEAT_MONEY_GIVE_500				0
 #define ID_CHEAT_MONEY_GIVE_1000			1
@@ -1376,6 +1377,9 @@ static int menu_callback_cheats_invuln ( int op, struct menu_item *item )
 
 		case ID_CHEAT_INVULN_REGEN_ONFOOT:
 			return cheat_state->actor.hp_regen_on;
+
+		case ID_CHEAT_INVULN_DISABLE_EXTRA_INV:
+			return set.hp_disable_inv_sp_enemies;
 		}
 		break;
 
@@ -1404,6 +1408,10 @@ static int menu_callback_cheats_invuln ( int op, struct menu_item *item )
 
 		case ID_CHEAT_INVULN_REGEN_ONFOOT:
 			cheat_state->actor.hp_regen_on ^= 1;
+			break;
+
+		case ID_CHEAT_INVULN_DISABLE_EXTRA_INV:
+			set.hp_disable_inv_sp_enemies ^= 1;
 			break;
 
 		default:
@@ -2922,6 +2930,8 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_cheats_inv, NULL, name, ID_CHEAT_INVULN_REGEN, MENU_COLOR_DEFAULT, NULL );
 	snprintf( name, sizeof(name), "Onfoot HP regeneration: %dhp/sec", (int)set.hp_regen );
 	menu_item_add( menu_cheats_inv, NULL, name, ID_CHEAT_INVULN_REGEN_ONFOOT, MENU_COLOR_DEFAULT, NULL );
+	menu_item_add( menu_cheats_inv, NULL, "Single Player Enemies vulnerable", 
+		ID_CHEAT_INVULN_DISABLE_EXTRA_INV, MENU_COLOR_DEFAULT, NULL );
 
 	/* main menu -> cheats -> money */
 	menu_item_add( menu_cheats_money, NULL, "Give $500", ID_CHEAT_MONEY_GIVE_500, MENU_COLOR_DEFAULT, NULL );

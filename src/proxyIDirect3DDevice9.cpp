@@ -2229,7 +2229,7 @@ void renderChat ( void )
 			chatInput_pos[0] = 35;
 			chatInput_pos[1] = 30;
 		}
-		else if ( chatInput_pos[1] > pPresentParam.BackBufferHeight )
+		else if ( chatInput_pos[1] > (int)pPresentParam.BackBufferHeight )
 		{
 			// middle + avoid the mouse cursor being on the text, if under screen
 			chatInput_pos[0] = (pPresentParam.BackBufferWidth/2)-20;

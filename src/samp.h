@@ -558,7 +558,8 @@ struct stChatEntry
 	D3DCOLOR	clPrefixColor;	// or textOnly colour
 	uint32_t	SystemTime;
 	char		szPrefix[28];
-	char		szText[208];
+	char		szText[144];
+	uint8_t		unknown[64];
 };
 struct stChatInfo
 {
@@ -571,8 +572,13 @@ struct stChatInfo
 	D3DCOLOR			clTextColor;
 	D3DCOLOR			clDebugColor;
 	D3DCOLOR			clInfoColor;
-	DWORD				dwUnk;
+	DWORD				dwChatboxOffset;
 	int					pagesize;
+	uint8_t				unknown_2[12];
+	void				*pChatbox_unknown[3]; // probably classes that handle fonts/sprites
+	uint8_t				unknown_3[4];
+	DWORD				dwChatLinesHeight;
+	DWORD				dwDistanceTextToTimestamp;
 };
 
 typedef void ( __cdecl *CMDPROC ) ( PCHAR );

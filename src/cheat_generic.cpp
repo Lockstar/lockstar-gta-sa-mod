@@ -22,7 +22,7 @@
 */
 #include "main.h"
 
-static struct patch_set patch_actor_hp =
+static struct patch_set patch_actor_hp_extraInv =
 {
 	"Extra actor invincibility",
 	0,
@@ -30,7 +30,8 @@ static struct patch_set patch_actor_hp =
 	{ { 10, (void *)0x00637590, (uint8_t *)"\xC7\x87\x40\x05\x00\x00\x00\x00\x00\x00", NULL, NULL }, { 10,
 				(void *)0x0063070C, (uint8_t *)"\xC7\x86\x40\x05\x00\x00\x00\x00\x00\x00", NULL, NULL }, { 6,
 					(void *)0x004B331F, (uint8_t *)"\x89\x96\x40\x05\x00\x00", NULL, NULL }, { 6, (void *)0x004B3395,
-						(uint8_t *)"\x89\x9e\x40\x05\x00\x00", NULL, NULL } }
+						(uint8_t *)"\x89\x9e\x40\x05\x00\x00", NULL, NULL }, { 6, (void *)0x0064159F,
+						NULL, (uint8_t *)"\xE9\x36\x04\x00\x00\x90", NULL } }
 };
 
 static struct patch_set patch_vehicle_hp =
@@ -121,8 +122,8 @@ int cheat_panic ( void )
 			cheat_state->_generic.menu = 0;
 
 			// remove "Extra actor invincibility" patch
-			pstate_actor_hp = patch_actor_hp.installed;
-			patcher_remove( &patch_actor_hp );
+			pstate_actor_hp = patch_actor_hp_extraInv.installed;
+			patcher_remove( &patch_actor_hp_extraInv );
 
 			// remove vehicle hp patch
 			pstate_vehicle_hp = patch_vehicle_hp.installed;
@@ -177,7 +178,7 @@ int cheat_panic ( void )
 
 			// restore "Extra actor invincibility" patch
 			if ( pstate_actor_hp )
-				patcher_install( &patch_actor_hp );
+				patcher_install( &patch_actor_hp_extraInv );
 
 			// restore vehicle hp patch
 			if ( pstate_vehicle_hp )
@@ -557,10 +558,10 @@ void cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *act
 	if ( KEY_PRESSED(set.key_hp_cheat) )
 		cheat_state->_generic.hp_cheat ^= 1;	/* toggle hp cheat */
 
-	if ( cheat_state->_generic.hp_cheat && cheat_state->actor.invulnerable )
-		patcher_install( &patch_actor_hp );
+	if ( cheat_state->_generic.hp_cheat && cheat_state->actor.invulnerable && !set.hp_disable_inv_sp_enemies )
+		patcher_install( &patch_actor_hp_extraInv );
 	else
-		patcher_remove( &patch_actor_hp );
+		patcher_remove( &patch_actor_hp_extraInv );
 
 	if ( cheat_state->_generic.hp_cheat && cheat_state->vehicle.invulnerable )
 		patcher_install( &patch_vehicle_hp );

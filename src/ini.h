@@ -70,10 +70,10 @@ struct settings
 
 	int						key_hp_cheat;
 	float					hp_minimum;
-	float					hp_damage_reduce;
 	float					hp_regen;
 	float					hp_regen_onfoot;
 	int						hp_keep_vehicleHPsane;
+	int						hp_disable_inv_sp_enemies;
 
 	int						secondary_key;
 
