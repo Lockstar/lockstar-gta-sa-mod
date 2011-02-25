@@ -22,6 +22,7 @@
 */
 #include "main.h"
 
+// Patch will make SP enemies invulnerable
 static struct patch_set patch_actor_hp_extraInv =
 {
 	"Extra actor invincibility",
@@ -32,6 +33,16 @@ static struct patch_set patch_actor_hp_extraInv =
 					(void *)0x004B331F, (uint8_t *)"\x89\x96\x40\x05\x00\x00", NULL, NULL }, { 6, (void *)0x004B3395,
 						(uint8_t *)"\x89\x9e\x40\x05\x00\x00", NULL, NULL }, { 6, (void *)0x0064159F,
 						NULL, (uint8_t *)"\xE9\x36\x04\x00\x00\x90", NULL } }
+};
+
+// Patch won't make SP enemies invulnerable
+static struct patch_set patch_actor_hp =
+{
+	"Extra actor invincibility2",
+	0,
+	0,
+	// Parachute Death
+	{ { 7, (void *)0x00635DA0, NULL, (uint8_t *)"\xB8\x00\x00\x00\x00\xC3\x90", NULL } }
 };
 
 static struct patch_set patch_vehicle_hp =
@@ -51,7 +62,8 @@ int cheat_panic ( void )
 
 	static int	pstate_map = 0, // m0d's map
 		pstate_d3dtext_hud = 0, // hud bar
-		pstate_actor_hp = 0, // "Extra actor invincibility" patch
+		pstate_actor_hp_nSP = 0, // "Extra actor invincibility" patch (invulnerable single player enemies)
+		pstate_actor_hp_SP = 0, // "Extra actor invincibility2" patch (no problems in SP)
 		pstate_vehicle_hp = 0, // vehicle hp patch
 		pstate_generic_menu = 0, // m0d's menu
 		pstate_infnos = 0, // infinite NOS
@@ -122,8 +134,10 @@ int cheat_panic ( void )
 			cheat_state->_generic.menu = 0;
 
 			// remove "Extra actor invincibility" patch
-			pstate_actor_hp = patch_actor_hp_extraInv.installed;
+			pstate_actor_hp_nSP = patch_actor_hp_extraInv.installed;
 			patcher_remove( &patch_actor_hp_extraInv );
+			pstate_actor_hp_SP = patch_actor_hp.installed;
+			patcher_remove( &patch_actor_hp );
 
 			// remove vehicle hp patch
 			pstate_vehicle_hp = patch_vehicle_hp.installed;
@@ -177,8 +191,10 @@ int cheat_panic ( void )
 
 
 			// restore "Extra actor invincibility" patch
-			if ( pstate_actor_hp )
+			if ( pstate_actor_hp_nSP )
 				patcher_install( &patch_actor_hp_extraInv );
+			if ( pstate_actor_hp_SP )
+				patcher_install( &patch_actor_hp );
 
 			// restore vehicle hp patch
 			if ( pstate_vehicle_hp )
@@ -558,10 +574,16 @@ void cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *act
 	if ( KEY_PRESSED(set.key_hp_cheat) )
 		cheat_state->_generic.hp_cheat ^= 1;	/* toggle hp cheat */
 
+	// check for hp_disable_inv_sp_enemies, because this will make SP enemies invulnerable
 	if ( cheat_state->_generic.hp_cheat && cheat_state->actor.invulnerable && !set.hp_disable_inv_sp_enemies )
 		patcher_install( &patch_actor_hp_extraInv );
 	else
 		patcher_remove( &patch_actor_hp_extraInv );
+
+	if ( cheat_state->_generic.hp_cheat && cheat_state->actor.invulnerable )
+		patcher_install( &patch_actor_hp );
+	else
+		patcher_remove( &patch_actor_hp );
 
 	if ( cheat_state->_generic.hp_cheat && cheat_state->vehicle.invulnerable )
 		patcher_install( &patch_vehicle_hp );

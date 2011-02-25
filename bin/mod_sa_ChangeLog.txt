@@ -6,6 +6,7 @@ Version 4.2.1.2
 * Added left/right/up strafing to Fly Player.
 * Added text label rendering
 * Improved vehicle HP cheat.
+* Improved actor HP cheat (parachute death fixed).
 * Fixed single player crash.
 * Fixed keys setting/sticking during menu & alt-tab.
 * Removed custom screenshots.
