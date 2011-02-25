@@ -415,7 +415,7 @@ int									vehicle_find_nearest ( int flags );
 int									vehicle_filter_flags ( vehicle_info *info, int flags );
 int									actor_find_nearest ( int flags );
 struct vehicle_info					*actor_vehicle_get ( const struct actor_info *info );
-void								SetCloudsEnabled ( bool bDisabled );
+void								SetCloudsEnabled ( int iEnabled );
 void								loadAllWeaponModels ( void );
 void								loadSpecificModel ( int iModelID );
 
