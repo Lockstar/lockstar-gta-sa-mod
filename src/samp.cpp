@@ -335,7 +335,7 @@ void cmd_tele_locations ()
 // new functions to check for bad pointers
 int isBadPtr_SAMP_iVehicleID ( int iVehicleID )
 {
-	if ( g_Vehicles == NULL )
+	if ( g_Vehicles == NULL || iVehicleID == (uint16_t)-1)
 		return 1;
 	return !g_Vehicles->iIsListed[iVehicleID];
 
@@ -345,7 +345,7 @@ int isBadPtr_SAMP_iVehicleID ( int iVehicleID )
 
 int isBadPtr_SAMP_iPlayerID ( int iPlayerID )
 {
-	if ( g_Players == NULL )
+	if ( g_Players == NULL || iPlayerID < 0 || iPlayerID > SAMP_PLAYER_MAX)
 		return 1;
 	return !g_Players->iIsListed[iPlayerID];
 }
@@ -862,6 +862,8 @@ int getPlayerVehicleGTAScriptingID ( int iPlayerID )
 	// fix to always return our own vehicle always if that's what's being asked for
 	if ( iPlayerID == ACTOR_SELF )
 	{
+		if(g_Players->pLocalPlayer->sCurrentVehicleID == (uint16_t)-1) return 0;
+
 		stSAMPVehicle	*sampveh = g_Vehicles->pSAMP_Vehicle[g_Players->pLocalPlayer->sCurrentVehicleID];
 		if ( sampveh )
 		{
