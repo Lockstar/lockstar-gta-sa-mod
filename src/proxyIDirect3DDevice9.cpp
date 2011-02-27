@@ -2861,7 +2861,7 @@ void renderSAMP ( void )
 
 void mapMenuTeleport ( void )
 {
-	if ( (*(int *)0xBA6774 != 0) && GetAsyncKeyState(VK_RBUTTON) & 1 && pGameInterface != NULL )
+	if ( (*(int *)0xBA6774 != 0) && GetAsyncKeyState(VK_RBUTTON) && pGameInterface != NULL )
 	{
 		// ty to Racer_S for this
 		float	mapPos[3];
