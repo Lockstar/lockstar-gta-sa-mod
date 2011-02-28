@@ -2238,8 +2238,8 @@ void renderChat ( void )
 		else
 			chatInput_pos[0] = 35;
 
-		// g_ChatInput->ptr_0x8->chatbox_x_0x8 = chatbox_pos[0];
-		*(DWORD*)((*(DWORD*)((*(DWORD*)(g_dwSAMP_Addr + SAMP_CHAT_INPUT_INFO_OFFSET))+0x8))+0x8) = chatInput_pos[0];
+		// two different locations because of the way the patch is working
+		g_Input->pDXUTEditBox->dwPosChatInput[0] = chatInput_pos[0];
 		g_Chat->dwChatboxOffset = chatInput_pos[1];
 	}
 	// Input field repositioning end
@@ -2290,6 +2290,90 @@ void renderChat ( void )
 		else
 		{
 			fYChatPos = fYChatPosAdj;
+		}
+
+		// Open urls when clicking on it in the chatbox
+		if ( g_Input->iInputEnabled && g_Input->pDXUTEditBox != NULL )
+		{
+			POINT cursor_pos;
+			if ( GetCursorPos(&cursor_pos) && ScreenToClient(pPresentParam.hDeviceWindow, &cursor_pos) )
+			{
+				float pos_array = (float)cursor_pos.y;
+				pos_array -= fYChatPos;
+				pos_array /= (1.0f + pD3DFontChat->DrawHeight());
+				int array_pos = 98+(int)pos_array;
+
+				if ( array_pos >= 0 && array_pos <= 99 && g_Chat->chatEntry[array_pos].iType != NULL
+					&& strlen(g_Chat->chatEntry[array_pos].szText) > 11 )
+				{
+					struct stChatEntry	*ent = &g_Chat->chatEntry[array_pos];
+					char *pUrl = NULL;
+					for ( int i = 0; pUrl == NULL && i < 4; i++ )
+					{
+						switch ( i )
+						{
+							case 0:
+								pUrl = strstr( ent->szText, "http://" );
+								break;
+							case 1:
+								pUrl = strstr( ent->szText, "https://" );
+								break;
+							case 2:
+								pUrl = strstr( ent->szText, "ftp://" );
+								break;
+							case 3:
+								pUrl = strstr( ent->szText, "samp://" );
+								break;
+						}
+					}
+					if ( pUrl != NULL )
+					{
+						float chatPos[2];
+
+						// Filter the URL
+						char url_buffer[99];
+						strcpy_s( url_buffer, sizeof(url_buffer), pUrl );
+						char *pUrl_End = strstr( url_buffer, " " );
+						if ( pUrl_End )
+							*pUrl_End = NULL;
+						cheat_state_text( "URL: %s", url_buffer );
+
+						// calculate x1 by getting the getting the length it takes until the beginning of the URL is reached
+						*pUrl = NULL;
+						chatPos[0] = 35.0f + pD3DFontChat->DrawLength( ent->szText );
+						// restore the original first character in the url
+						*pUrl = url_buffer[0];
+						if ( ent->iType == 10 )
+							chatPos[0] += pD3DFontChat->DrawLength( ent->szPrefix );
+
+						// y pos
+						chatPos[1] = fYChatPos + ((1.0f + pD3DFontChat->DrawHeight())*(int)pos_array);
+						// Underline the URL
+						render->D3DBox( chatPos[0], chatPos[1], (pD3DFontChat->DrawLength(url_buffer)), (3.0f), 0xFF0000CC );
+						
+						if ( GetKeyState(VK_LBUTTON) < 0 )
+						{
+							if ( strncmp(url_buffer, "samp://", 7) == 0 )
+							{
+								extern int joining_server;
+								char *port = strstr( &url_buffer[7],":" );
+								if ( port != NULL )
+								{
+									*port = NULL;
+									port++;
+									strcpy( g_SAMP->szIP, &url_buffer[7] );
+									g_SAMP->ulPort = atoi( port );
+									joining_server = 1;
+								}
+								else //- Try to connect to port 7777? Looks invalid though
+									addMessageToChatWindow( "Port missing. Correct would be: samp://127.0.0.1:7777" );
+							}
+							else
+								ShellExecute( NULL, "open", url_buffer, NULL, NULL, SW_SHOWNORMAL );
+						}
+					}
+				}
+			}
 		}
 
 		float	pw;
