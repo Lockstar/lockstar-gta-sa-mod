@@ -581,23 +581,40 @@ struct stChatInfo
 	DWORD				dwDistanceTextToTimestamp;
 };
 
+struct stInputBox
+{
+#pragma pack( 1 )
+	void	*pUnknown;
+	uint8_t	bIsChatboxOpen;
+	uint8_t	bIsMouseInChatbox;
+	uint8_t	bMouseClick_related;
+	uint8_t	bUnknown;
+	DWORD	dwPosChatInput[2];
+	uint8_t	unknown[263];
+	int		iCursorPosition;
+	uint8_t	unknown_2;
+	int		iMarkedText_startPos; // Highlighted text between this and iCursorPosition
+	uint8_t	unknown_3[20];
+	int		iMouseLeftButton;
+};
+
 typedef void ( __cdecl *CMDPROC ) ( PCHAR );
 struct stInputInfo
 {
 #pragma pack( 1 )
-	void	*pD3DDevice;
-	void	*pDXUTDialog;
-	void	*pDXUTEditBox;
-	CMDPROC pszCMDs[MAX_CLIENTCMDS];
-	char	szCMDNames[MAX_CLIENTCMDS][33];
-	int		iCMDCount;
-	int		iInputEnabled;
-	char	szInputBuffer[129];
-	char	szRecallBufffer[10][129];
-	char	szCurrentBuffer[129];
-	int		iCurrentRecall;
-	int		iTotalRecalls;
-	CMDPROC pszDefaultCMD;
+	void		*pD3DDevice;
+	void		*pDXUTDialog;
+	stInputBox	*pDXUTEditBox;
+	CMDPROC 	pszCMDs[MAX_CLIENTCMDS];
+	char		szCMDNames[MAX_CLIENTCMDS][33];
+	int			iCMDCount;
+	int			iInputEnabled;
+	char		szInputBuffer[129];
+	char		szRecallBufffer[10][129];
+	char		szCurrentBuffer[129];
+	int			iCurrentRecall;
+	int			iTotalRecalls;
+	CMDPROC 	pszDefaultCMD;
 };
 
 struct stKillEntry
