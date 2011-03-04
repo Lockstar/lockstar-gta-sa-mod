@@ -403,13 +403,13 @@ void cheat_hook ( HWND wnd )
 
 		if ( KEY_PRESSED(set.key_vehicle_jumper) )
 		{
-			int iVehicleID = vehicle_find_nearest( VEHICLE_ALIVE );
+			int iVehicleID = vehicle_find_nearest( VEHICLE_ALIVE + VEHICLE_NOTBURNING );
 			vehicleJumper( iVehicleID );
 		}
 
 		if ( KEY_PRESSED(set.key_vehicle_occupied_jumper) )
 		{
-			int iVehicleID = vehicle_find_nearest( VEHICLE_ALIVE + VEHICLE_OCCUPIED );
+			int iVehicleID = vehicle_find_nearest( VEHICLE_ALIVE + VEHICLE_NOTBURNING + VEHICLE_OCCUPIED );
 			vehicleJumper( iVehicleID );
 		}
 	}	// cheat_state->state != CHEAT_STATE_NONE

@@ -2,25 +2,28 @@ mod_sa
 by jflm, nuckfuts, notaplane, and the game modification community
 http://code.google.com/p/m0d-s0beit-sa/
 
-Version 4.2.1.2
+Version 4.2.2.0
+* Added text label rendering.
 * Added left/right/up strafing to Fly Player.
-* Added text label rendering
+* Improved Fly Player.
 * Improved vehicle HP cheat.
 * Improved actor HP cheat (parachute death fixed).
+
+Version 4.2.1.2
 * Fixed single player crash.
 * Fixed keys setting/sticking during menu & alt-tab.
 * Removed custom screenshots.
 
 Version 4.2.1.1
-* Improved Fly Player
+* Improved Fly Player.
 
 Version 4.2.1.0
 * Added Fly Player, Default: .
-* Removed Sacky's scripting hook
+* Removed Sacky's scripting hook.
 
 Version 4.2.0.0
 * Support for SA-MP 0.3c.
-* Project renamed to mod_sa
+* Project renamed to mod_sa.
 
 Version 4.1.0.0
 * Support for SA-MP 0.3a.

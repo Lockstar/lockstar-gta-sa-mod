@@ -62,8 +62,7 @@ void Log ( const char *fmt, ... )
 		char	filename[512];
 		snprintf( filename, sizeof(filename), "%s\\%s", g_szWorkingDirectory, "mod_sa.log" );
 
-		remove( filename );
-		g_flLog = fopen( filename, "a" );
+		g_flLog = fopen( filename, "w" );
 		if ( g_flLog == NULL )
 			return;
 	}
@@ -106,8 +105,7 @@ void LogChatbox ( bool bLast, const char *fmt, ... )
 		char	filename[512];
 		snprintf( filename, sizeof(filename), "%s\\%s", g_szWorkingDirectory, "mod_sa_chatbox.log" );
 
-		remove( filename );
-		g_flLogChatbox = fopen( filename, "a" );
+		g_flLogChatbox = fopen( filename, "w" );
 		if ( g_flLogChatbox == NULL )
 			return;
 	}
