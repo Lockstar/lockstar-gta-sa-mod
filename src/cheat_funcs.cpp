@@ -1332,13 +1332,6 @@ int vehicle_find_nearest ( int flags )
 				continue;
 		}
 
-		// these vehicles shouldn't even be streamed in now in SA:MP v0.3
-		// don't include vehicles that have invisible Renderware flag
-		//if (!(info->base.bIsVisible))
-		//	continue;
-		//don't include vehicles from another interior id
-		//if (info->base.interior_id != g_Players->pLocalPlayer->byteCurrentInterior)
-		//	continue;
 		// filter vehicle by flags function
 		if ( vehicle_filter_flags(info, flags) == 0 )
 			continue;
@@ -1360,6 +1353,8 @@ int vehicle_filter_flags ( vehicle_info *info, int flags )
 {
 	// filters
 	int isOccupied = 0, seat;
+	if ( (flags & VEHICLE_NOTBURNING) && info->burn_timer > 0.0f )
+		return 0;
 	if ( (flags & VEHICLE_ALIVE) && (info->hitpoints < 250.0f && info->burn_timer == 0.0f) )
 		return 0;
 	if ( (flags & VEHICLE_OCCUPIED) || (flags & VEHICLE_EMPTY) )

@@ -668,6 +668,7 @@ enum playerFly_keyStrafeStates
 	strafe_up
 };
 playerFly_keySpeedStates playerFly_lastKeySpeedState = speed_none;
+CMatrix playerFly_lastPedRotation = CMatrix();
 
 void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 {
@@ -740,7 +741,10 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				&& groundZHeight + 1.6f > playerZHeight
 				&& groundZHeight - 1.6f < playerZHeight )
 		{
-			// still standing, do nothing
+			// still standing
+
+			// update the last matrix
+			pPedSelf->GetMatrix(&playerFly_lastPedRotation);
 		}
 		else // I believe I can fly...
 		{
@@ -759,17 +763,17 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				keySpeedState = speed_none;
 			}
 			playerFly_keyStrafeStates keyStrafeState;
-			if ( KEY_DOWN(set.key_fly_player_strafeUp) )
-			{
-				keyStrafeState = strafe_up;
-			}
-			else if ( KEY_DOWN(set.key_fly_player_strafeLeft) && !KEY_DOWN(set.key_fly_player_strafeRight) )
+			if ( KEY_DOWN(set.key_fly_player_strafeLeft) && !KEY_DOWN(set.key_fly_player_strafeRight) )
 			{
 				keyStrafeState = strafe_left;
 			}
 			else if ( KEY_DOWN(set.key_fly_player_strafeRight) && !KEY_DOWN(set.key_fly_player_strafeLeft) )
 			{
 				keyStrafeState = strafe_right;
+			}
+			else if ( KEY_DOWN(set.key_fly_player_strafeUp) )
+			{
+				keyStrafeState = strafe_up;
 			}
 			else
 			{
@@ -811,12 +815,12 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				}
 			}
 
-//
+// init variables
 
 			// setup variables used through this function
-			CVector vecSpeed;
+			CVector vecSpeed, rotationAxis;
+			float theta, thetaBase, rotationMultiplier;
 			pPedSelf->GetMoveSpeed(&vecSpeed);
-			float theta;
 
 			// copy camera rotation to player
 			ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
@@ -830,34 +834,9 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			matCamera.vRight.Normalize();
 			matCamera.vUp.Normalize();
 
-			// get player matrix
-			CMatrix matPed;
-			pPedSelf->GetMatrix(&matPed);
-			// copy camera matrix to player
-			matPed.vFront = matCamera.vFront;
-			matPed.vRight = matCamera.vRight;
-			matPed.vUp = matCamera.vUp;
-
-			// tilt player based on side speed & rotation goo
-			CVector rotationAxis = UpNormal;
-			rotationAxis.CrossProduct( &vecSpeed );
-			theta = ( matPed.vFront.DotProduct( &vecSpeed ) / vecSpeed.Length() );// + playerFly_rotateTiltGoo;
-			if ( !near_zero(theta) )
-			{
-				matPed = matPed.Rotate( &rotationAxis, cos(-theta) );
-			}
-			matPed.vFront = matCamera.vFront;
-			// normalize everything
-			matPed.vFront.Normalize();
-			matPed.vRight.Normalize();
-			matPed.vUp.Normalize();
-			// set player matrix
-			pPedSelf->SetMatrix(&matPed);
-
-//
+// acceleration/deceleration
 
 			// acceleration
-			pPedSelf->GetMoveSpeed(&vecSpeed);
 			float fly_speed = 0.1f;
 			float fly_acceleration = 0.3f * time_diff;
 			switch ( keySpeedState )
@@ -915,10 +894,10 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				break;
 			}
 
-//
+// set speed target
 
-			// calculate the desired rotation target
-			CVector rotationTarget = matPed.vFront;
+			// calculate the desired speed target
+			CVector rotationTarget = matCamera.vFront;
 			switch ( keyStrafeState )
 			{
 			case strafe_up:
@@ -931,10 +910,16 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 					CMatrix matTargetRotate;
 					matTargetRotate.vFront = rotationTarget;
 					rotationAxis = matCamera.vUp;
-					//rotationAxis.CrossProduct(&matTargetRotate.vFront);
 					theta = -1.57;
 					matTargetRotate = matTargetRotate.Rotate( &rotationAxis, theta );
+					if (KEY_DOWN(set.key_fly_player_strafeUp))
+					{
+						rotationAxis = matCamera.vFront;
+						theta = -0.785;
+						matTargetRotate = matTargetRotate.Rotate( &rotationAxis, theta );
+					}
 					rotationTarget = matTargetRotate.vFront;
+					rotationTarget.Normalize();
 				}
 				break;
 			case strafe_right:
@@ -942,29 +927,34 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 					CMatrix matTargetRotate;
 					matTargetRotate.vFront = rotationTarget;
 					rotationAxis = matCamera.vUp;
-					//rotationAxis.CrossProduct(&matTargetRotate.vFront);
 					theta = 1.57;
 					matTargetRotate = matTargetRotate.Rotate( &rotationAxis, theta );
+					if (KEY_DOWN(set.key_fly_player_strafeUp))
+					{
+						rotationAxis = matCamera.vFront;
+						theta = 0.785;
+						matTargetRotate = matTargetRotate.Rotate( &rotationAxis, theta );
+					}
 					rotationTarget = matTargetRotate.vFront;
-
+					rotationTarget.Normalize();
 				}
 				break;
 			case strafe_none:
 				break;
 			}
 
+// rotate the speed
 
-			// rotate the speed vector slowly to face the desired angle
-			pPedSelf->GetMoveSpeed(&vecSpeed);
+			// rotate the speed vector slowly to face the desired target
 			CMatrix matSpeedVecRotate;
 			matSpeedVecRotate.vFront = vecSpeed;
 			matSpeedVecRotate.vFront.Normalize();
 			// calculate rotation multiplier, time_diff * 69.0 is ideal for calculations, always time for 69
-			float rotationMultiplier = (time_diff * 69.0) / ( 32.0f + (vecSpeed.Length() * 10.0f) );
+			rotationMultiplier = (time_diff * 69.0f) / ( 32.0f + (vecSpeed.Length() * 10.0f) );
 			// calculate rotation
 			rotationAxis = rotationTarget;
 			rotationAxis.CrossProduct( &matSpeedVecRotate.vFront );
-			float thetaBase = abs(sinh(rotationTarget.DotProduct(&matSpeedVecRotate.vFront)) - 1.175f) / 2.35f + 1.0f;
+			thetaBase = abs(sinh(rotationTarget.DotProduct(&matSpeedVecRotate.vFront)) - 1.175f) / 2.35f + 1.0f;
 			theta = thetaBase * rotationMultiplier;
 			if ( !near_zero(theta) )
 			{
@@ -982,6 +972,89 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				matSpeedVecRotate.vFront.Normalize();
 				ainfo->m_SpeedVec = matSpeedVecRotate.vFront * ( ainfo->m_SpeedVec.Length() - speedReduction );
 			}
+
+// set the ped rotation target
+
+			// copy speed and normalize, for initial direction
+			CVector vecSpeedRotate = vecSpeed;
+			vecSpeedRotate.Normalize();
+
+			CMatrix matPedTarget;
+			//pPedSelf->GetMatrix(&matPedTarget);
+			matPedTarget.vFront = matCamera.vFront;
+			matPedTarget.vRight = matCamera.vRight;
+			matPedTarget.vUp = matCamera.vUp;
+
+			// rotate the ped rotation target to direction of speed
+			if (!near_zero(vecSpeed.Length()))
+			{
+				// rotate
+				rotationAxis = UpNormal;
+				rotationAxis.CrossProduct( &vecSpeedRotate );
+				thetaBase = rotationTarget.DotProduct(&vecSpeedRotate);
+				rotationMultiplier = (time_diff * 69.0f) / ( 8.0f + (vecSpeed.Length() * 1.5f) );
+				theta = cos(thetaBase * rotationMultiplier);
+				if ( !near_zero(theta) )
+				{
+					matPedTarget = matPedTarget.Rotate( &rotationAxis, theta );
+				}
+				// recopy original front
+				matPedTarget.vFront = vecSpeedRotate;
+			}
+			// normalize everything
+			matPedTarget.vFront.Normalize();
+			matPedTarget.vRight.Normalize();
+			matPedTarget.vUp.Normalize();
+
+// rotate the ped
+
+			// actual rotation of the ped to smooth movements
+			rotationMultiplier = (time_diff * 69.0f) / ( 12.0f + (vecSpeed.Length() * 1.5f) );
+
+			// front
+			rotationAxis = playerFly_lastPedRotation.vFront;
+			rotationAxis.CrossProduct( &matPedTarget.vFront );
+			thetaBase = playerFly_lastPedRotation.vFront.DotProduct(&matPedTarget.vFront);
+			theta = -cos(thetaBase) * rotationMultiplier;
+			if ( !near_zero(theta) )
+			{
+				playerFly_lastPedRotation = playerFly_lastPedRotation.Rotate( &rotationAxis, theta );
+				matPedTarget = matPedTarget.Rotate( &rotationAxis, theta );
+			}
+
+			// right
+			rotationAxis = playerFly_lastPedRotation.vRight;
+			rotationAxis.CrossProduct( &matPedTarget.vRight );
+			thetaBase = playerFly_lastPedRotation.vRight.DotProduct(&matPedTarget.vRight);
+			theta = -cos(thetaBase) * rotationMultiplier;
+			if ( !near_zero(theta) )
+			{
+				playerFly_lastPedRotation = playerFly_lastPedRotation.Rotate( &rotationAxis, theta );
+				//matPedTarget = matPedTarget.Rotate( &rotationAxis, theta );
+			}
+
+			// up
+			/*rotationAxis = playerFly_lastPedRotation.vUp;
+			rotationAxis.CrossProduct( &matPedTarget.vUp );
+			thetaBase = playerFly_lastPedRotation.vUp.DotProduct(&matPedTarget.vUp);
+			theta = -cos(thetaBase) * rotationMultiplier;
+			if ( !near_zero(theta) )
+			{
+				playerFly_lastPedRotation = playerFly_lastPedRotation.Rotate( &rotationAxis, theta );
+				//matPedTarget = matPedTarget.Rotate( &rotationAxis, theta );
+			}*/
+
+			// normalize everything
+			playerFly_lastPedRotation.vFront.Normalize();
+			playerFly_lastPedRotation.vRight.Normalize();
+			playerFly_lastPedRotation.vUp.Normalize();
+
+			// set the position
+			playerFly_lastPedRotation.vPos = pPedSelfSA->Placeable.matrix->vPos;
+
+			// set player matrix
+			pPedSelf->SetMatrix(&playerFly_lastPedRotation);
+
 
 		} // I believe I can touch the sky...
 	}
