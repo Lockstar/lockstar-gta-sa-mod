@@ -28,6 +28,7 @@
 //randomStuff
 extern int						iViewingInfoPlayer;
 int								g_iSpectateEnabled = 0, g_iSpectateLock = 0, g_iSpectatePlayerID = -1;
+int								g_iCursorEnabled = 0;
 
 // global samp pointers
 int								iIsSAMPSupported = 0;
@@ -44,6 +45,8 @@ stTranslateGTASAMP_vehiclePool	translateGTASAMP_vehiclePool;
 stTranslateGTASAMP_pedPool		translateGTASAMP_pedPool;
 
 stStreamedOutPlayerInfo			g_stStreamedOutInfo;
+
+
 
 //////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////// FUNCTIONS //////////////////////////////////////
@@ -1361,6 +1364,38 @@ void sendSCMEvent ( int iEvent, int iVehicleID, int iParam1, int iParam2 )
 	__asm push iEvent
 	__asm call func
 }
+
+#define FUNC_TOGGLECURSOR			0x50FD0
+#define FUNC_CURSORUNLOCKACTORCAM	0x50EB0
+void toggleSAMPCursor(int iToggle)
+{
+	if(g_Input->iInputEnabled) return;
+
+	uint32_t	func = g_dwSAMP_Addr + FUNC_TOGGLECURSOR;
+
+	if(iToggle)
+	{
+		_asm mov ecx, g_Input
+		_asm push 0
+		_asm push 2
+		_asm call func
+		g_iCursorEnabled = 1;
+	}
+	else
+	{
+		_asm mov ecx, g_Input
+		_asm push 1
+		_asm push 0
+		_asm call func
+
+		uint32_t funcunlock = g_dwSAMP_Addr + FUNC_CURSORUNLOCKACTORCAM;
+		_asm mov ecx, g_Input
+		_asm call funcunlock
+
+		g_iCursorEnabled = 0;
+	}
+}
+
 
 #define HOOK_EXIT_ANTICARJACKED_HOOK	0xF79C
 uint16_t	anticarjacked_vehid;

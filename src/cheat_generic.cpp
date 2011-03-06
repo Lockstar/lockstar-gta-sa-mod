@@ -22,6 +22,8 @@
 */
 #include "main.h"
 
+int iPoint2WarpEnabled = 0;
+
 // Patch will make SP enemies invulnerable
 static struct patch_set patch_actor_hp_extraInv =
 {
@@ -257,6 +259,16 @@ void cheat_teleport_nearest_car ( void )
 
 void cheat_handle_misc ( void )
 {
+	if(KEY_PRESSED(set.key_point2warp_enable))
+	{
+		g_iCursorEnabled ^= 1;
+		toggleSAMPCursor(g_iCursorEnabled);
+	}
+	if(g_iCursorEnabled && KEY_PRESSED(set.key_point2warp_click))
+	{
+		iPoint2WarpEnabled = 1;
+	}
+
 	if ( KEY_PRESSED(set.key_map) )
 	{
 		cheat_state->_generic.map ^= 1; /* toggle minimap */

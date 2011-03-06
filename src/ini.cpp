@@ -793,6 +793,13 @@ static void ini_init ( void )
 	if ( (ent = ini_register_entry("headsync_sendrate", TYPE_INT)) != NULL )
 		ini_register_data( ent, &set.headsync_sendrate, "1000" );
 
+	if ( (ent = ini_register_entry("point2warp_enabled", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.point2warp_enabled, "false" );
+	if ( (ent = ini_register_entry("key_point2warp_enable", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_point2warp_enable, "mbutton" );
+	if ( (ent = ini_register_entry("key_point2warp_click", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.key_point2warp_click, "lbutton" );
+
 	if ( (ent = ini_register_entry("key_player_info_list", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_player_info_list, "i" );
 

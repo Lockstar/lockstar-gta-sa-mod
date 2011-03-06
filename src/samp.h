@@ -738,6 +738,7 @@ void											setPassword ( char *password );
 void											sendSetInterior ( uint8_t interiorID );
 void											setSpecialAction ( uint8_t byteSpecialAction );
 void											sendSCMEvent ( int iEvent, int iVehicleID, int iParam1, int iParam2 );
+void											toggleSAMPCursor(int iToggle);
 
 void											installSAMPHooks ();
 void											setSAMPCustomSendRates ( int iOnFoot, int iInCar, int iAim, int iHeadSync );
@@ -762,3 +763,4 @@ extern struct stTranslateGTASAMP_vehiclePool	translateGTASAMP_vehiclePool;
 extern struct stTranslateGTASAMP_pedPool		translateGTASAMP_pedPool;
 
 extern int										g_iSpectateEnabled;
+extern int										g_iCursorEnabled;
