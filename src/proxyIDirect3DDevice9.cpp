@@ -90,6 +90,8 @@ struct gui				*menu_selected_item_text = &set.guiset[5];
 struct gui				*gta_hp_bar = &set.guiset[6];
 struct gui				*gta_money_hud = &set.guiset[7];
 
+extern int				iPoint2WarpEnabled;
+
 ///////////////////////////////////////////////////////////////////////////////
 // Common D3D functions.
 ///////////////////////////////////////////////////////////////////////////////
@@ -864,6 +866,30 @@ void CalcScreenCoors ( D3DXVECTOR3 *vecWorld, D3DXVECTOR3 *vecScreen )
 	double	fRecip = (double)1.0 / vecScreen->z;	//(vecScreen->z - (*dwLenZ));
 	vecScreen->x *= (float)( fRecip * (*dwLenX) );
 	vecScreen->y *= (float)( fRecip * (*dwLenY) );
+}
+void CalcWorldCoors ( D3DXVECTOR3 *vecScreen, D3DXVECTOR3 *vecWorld )
+{
+	// Get the static view matrix as D3DXMATRIX
+	D3DXMATRIX	m ( (float *)(0xB6FA2C) );
+
+	// Invert the view matrix
+	D3DXMATRIX minv;
+	memset ( &minv, 0, sizeof ( D3DXMATRIX ) );
+	m._44 = 1.0f;
+	D3DXMatrixInverse ( &minv, NULL, &m );
+
+	DWORD		*dwLenX = ( DWORD * ) ( 0xC17044 );
+	DWORD		*dwLenY = ( DWORD * ) ( 0xC17048 );
+
+	// Reverse screen coordinates
+	double fRecip = (double)1.0 / vecScreen->z;
+	vecScreen->x /= (float)(fRecip * (*dwLenX) );
+	vecScreen->y /= (float)(fRecip * (*dwLenY) );
+
+	// Do an (inverse) transformation
+	vecWorld->x = ( vecScreen->z * minv._31 ) + ( vecScreen->y * minv._21 ) + ( vecScreen->x * minv._11 ) + minv._41;
+	vecWorld->y = ( vecScreen->z * minv._32 ) + ( vecScreen->y * minv._22 ) + ( vecScreen->x * minv._12 ) + minv._42;
+	vecWorld->z = ( vecScreen->z * minv._33 ) + ( vecScreen->y * minv._23 ) + ( vecScreen->x * minv._13 ) + minv._43;
 }
 
 // for renderPlayerTags()
@@ -2180,6 +2206,38 @@ void renderKillList ( void )
 	}
 }
 
+void point2warp()
+{
+	POINT cursor_pos;
+	if ( GetCursorPos(&cursor_pos) && ScreenToClient(pPresentParam.hDeviceWindow, &cursor_pos) )
+	{
+		D3DXVECTOR3 poss, screenposs;
+		float pos[3];
+
+		if(iPoint2WarpEnabled)
+		{
+			screenposs.x = (float)cursor_pos.x;
+			screenposs.y = (float)cursor_pos.y;
+			screenposs.z = 300.0f;
+			CalcWorldCoors(&screenposs, &poss);
+
+			CVector vecGroundPos(poss.x, poss.y, poss.z);
+			pGameInterface->GetWorld()->FindGroundZFor3DPosition(&vecGroundPos);
+			pos[0] = vecGroundPos.fX;
+			pos[1] = vecGroundPos.fY;
+			pos[2] = (pGameInterface->GetWorld()->FindGroundZForPosition(pos[0], pos[1]) + 2.0f);
+
+			cheat_teleport(pos, gta_interior_id_get());
+			GTAfunc_TogglePlayerControllable(0);
+			GTAfunc_LockActor(0);
+			pGameInterface->GetCamera()->RestoreWithJumpCut();
+
+			iPoint2WarpEnabled = 0;
+			toggleSAMPCursor(0);
+		}
+	}
+}
+
 float	fYChatPosAdj = 167.0f;
 void renderChat ( void )
 {
@@ -2918,7 +2976,8 @@ void renderSAMP ( void )
 		renderKillList();
 		renderChat();
 		renderScoreList();
-			renderTextLabels();
+		renderTextLabels();
+		point2warp();
 
 		if ( iViewingInfoPlayer == -1 )
 		{ }
