@@ -2287,17 +2287,20 @@ void point2warp()
 
 		if(iPoint2WarpEnabled)
 		{
-			if(pVehicleTeleport != NULL)
+			if( !isBadPtr_GTA_pVehicle(pVehicleTeleport) && pVehicleTeleport->passengers[0] == NULL )
 			{
 				GTAfunc_PutActorInCar((vehicle_info *)pVehicleTeleport);
 				pGameInterface->GetCamera()->RestoreWithJumpCut();
 			}
+			else
+			{
+				pos[0] = vecGroundPos.fX;
+				pos[1] = vecGroundPos.fY;
+				pos[2] = (pGameInterface->GetWorld()->FindGroundZForPosition(pos[0], pos[1]) + 0.5f);
 
-			pos[0] = vecGroundPos.fX;
-			pos[1] = vecGroundPos.fY;
-			pos[2] = (pGameInterface->GetWorld()->FindGroundZForPosition(pos[0], pos[1]) + 0.5f);
+				cheat_teleport(pos, gta_interior_id_get());
+			}
 
-			cheat_teleport(pos, gta_interior_id_get());
 			GTAfunc_TogglePlayerControllable(0);
 			GTAfunc_LockActor(0);
 			//pGameInterface->GetCamera()->RestoreWithJumpCut();
@@ -2491,7 +2494,7 @@ void renderChat ( void )
 						// restore the original first character in the url
 						*pUrl = url_buffer[0];
 						if ( ent->iType == 10 )
-							chatPos[0] += pD3DFontChat->DrawLength( ent->szPrefix );
+							chatPos[0] += pD3DFontChat->DrawLength( ent->szPrefix ) + pD3DFontChat->DrawLength( " " );
 
 						// y pos
 						chatPos[1] = fYChatPos + ((1.0f + pD3DFontChat->DrawHeight())*(int)pos_array);
