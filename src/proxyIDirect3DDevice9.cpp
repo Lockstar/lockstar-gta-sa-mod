@@ -2208,32 +2208,107 @@ void renderKillList ( void )
 
 void point2warp()
 {
+	if(!g_iCursorEnabled) return;
+
 	POINT cursor_pos;
 	if ( GetCursorPos(&cursor_pos) && ScreenToClient(pPresentParam.hDeviceWindow, &cursor_pos) )
 	{
 		D3DXVECTOR3 poss, screenposs;
 		float pos[3];
+		char buf[256];
+
+		struct vehicle_info *pVehicleTeleport = NULL;
+
+		screenposs.x = (float)cursor_pos.x;
+		screenposs.y = (float)cursor_pos.y;
+		screenposs.z = 500.0f;
+
+		CalcWorldCoors(&screenposs, &poss);
+
+		CVector vecTarget(poss.x, poss.y, poss.z);
+
+		// setup variables
+		CVector				vecOrigin, vecGroundPos;
+		CColPoint			*pCollision = NULL;
+		CEntitySAInterface	*pCollisionEntity = NULL;
+
+		// origin = our camera
+		vecOrigin = *pGame->GetCamera()->GetCam(pGame->GetCamera()->GetActiveCam())->GetSource();
+
+		// check for collision
+		bool	bCollision = GTAfunc_ProcessLineOfSight( &vecOrigin, &vecTarget, &pCollision, &pCollisionEntity,
+			1, 1, 0, 1, 1, 0, 0, 0 );
+
+		if ( bCollision )
+		{
+			vecGroundPos = *pCollision->GetPosition();
+			if (cheat_state->state == CHEAT_STATE_VEHICLE)
+			{
+				vecGroundPos = vecGroundPos - (*pCollision->GetNormal() * 2.0f);
+			}
+			else
+			{
+				vecGroundPos = vecGroundPos - (*pCollision->GetNormal() * 0.5f);
+			}
+
+			if(pCollisionEntity && pCollisionEntity->nType == ENTITY_TYPE_VEHICLE)
+			{
+				CVehicle *pVehicle = pGameInterface->GetPools()->GetVehicle((DWORD *)pCollisionEntity);
+				if(pVehicle)
+				{
+					if(pVehicle->GetDriver() == NULL)
+					{
+						const struct vehicle_entry *vehicleEntry = gta_vehicle_get_by_id(pVehicle->GetModelIndex());
+						if(vehicleEntry != NULL)
+						{
+							sprintf(buf, "Warp to %s", vehicleEntry->name);
+							pVehicleTeleport = (struct vehicle_info *)pCollisionEntity;
+						}
+					}
+				}
+			}
+
+			// destroy the collision object
+			pCollision->Destroy();
+		}
+		else
+		{
+			return;
+		}
+		pGameInterface->GetWorld()->FindGroundZFor3DPosition(&vecGroundPos);
+
 
 		if(iPoint2WarpEnabled)
 		{
-			screenposs.x = (float)cursor_pos.x;
-			screenposs.y = (float)cursor_pos.y;
-			screenposs.z = 300.0f;
-			CalcWorldCoors(&screenposs, &poss);
+			if(pVehicleTeleport != NULL)
+			{
+				GTAfunc_PutActorInCar((vehicle_info *)pVehicleTeleport);
+				pGameInterface->GetCamera()->RestoreWithJumpCut();
+			}
 
-			CVector vecGroundPos(poss.x, poss.y, poss.z);
-			pGameInterface->GetWorld()->FindGroundZFor3DPosition(&vecGroundPos);
 			pos[0] = vecGroundPos.fX;
 			pos[1] = vecGroundPos.fY;
-			pos[2] = (pGameInterface->GetWorld()->FindGroundZForPosition(pos[0], pos[1]) + 2.0f);
+			pos[2] = (pGameInterface->GetWorld()->FindGroundZForPosition(pos[0], pos[1]) + 0.5f);
 
 			cheat_teleport(pos, gta_interior_id_get());
 			GTAfunc_TogglePlayerControllable(0);
 			GTAfunc_LockActor(0);
-			pGameInterface->GetCamera()->RestoreWithJumpCut();
+			//pGameInterface->GetCamera()->RestoreWithJumpCut();
 
 			iPoint2WarpEnabled = 0;
 			toggleSAMPCursor(0);
+		}
+
+		if(pVehicleTeleport != NULL)
+		{
+			D3DXVECTOR3 vehPoss, vehScreenposs;
+
+			vehPoss.x = pVehicleTeleport->base.matrix[4*3];
+			vehPoss.y = pVehicleTeleport->base.matrix[4*3+1];
+			vehPoss.z = pVehicleTeleport->base.matrix[4*3+2] + -1.0f;
+			CalcScreenCoors( &vehPoss, &vehScreenposs );
+
+			pD3DFontChat->PrintShadow(vehScreenposs.x, vehScreenposs.y, -1, buf);
 		}
 	}
 }
