@@ -2209,6 +2209,7 @@ void renderKillList ( void )
 void point2warp()
 {
 	if(!g_iCursorEnabled) return;
+	if(gta_menu_active()) return;
 
 	POINT cursor_pos;
 	if ( GetCursorPos(&cursor_pos) && ScreenToClient(pPresentParam.hDeviceWindow, &cursor_pos) )
@@ -2221,7 +2222,7 @@ void point2warp()
 
 		screenposs.x = (float)cursor_pos.x;
 		screenposs.y = (float)cursor_pos.y;
-		screenposs.z = 500.0f;
+		screenposs.z = 700.0f;
 
 		CalcWorldCoors(&screenposs, &poss);
 
@@ -2241,14 +2242,19 @@ void point2warp()
 
 		if ( bCollision )
 		{
-			vecGroundPos = *pCollision->GetPosition();
-			if (cheat_state->state == CHEAT_STATE_VEHICLE)
+			if(pCollision)
 			{
-				vecGroundPos = vecGroundPos - (*pCollision->GetNormal() * 2.0f);
-			}
-			else
-			{
-				vecGroundPos = vecGroundPos - (*pCollision->GetNormal() * 0.5f);
+				vecGroundPos = *pCollision->GetPosition();
+				if (cheat_state->state == CHEAT_STATE_VEHICLE)
+				{
+					vecGroundPos = vecGroundPos - (*pCollision->GetNormal() * 2.0f);
+				}
+				else
+				{
+					vecGroundPos = vecGroundPos - (*pCollision->GetNormal() * 0.5f);
+				}
+
+				sprintf(buf, "Distance %0.2f", vect3_dist(&vecOrigin.fX, &vecGroundPos.fX));
 			}
 
 			if(pCollisionEntity && pCollisionEntity->nType == ENTITY_TYPE_VEHICLE)
@@ -2273,6 +2279,7 @@ void point2warp()
 		}
 		else
 		{
+			iPoint2WarpEnabled = 0; // force disable, prevents clicks
 			return;
 		}
 		pGameInterface->GetWorld()->FindGroundZFor3DPosition(&vecGroundPos);
@@ -2309,6 +2316,13 @@ void point2warp()
 			CalcScreenCoors( &vehPoss, &vehScreenposs );
 
 			pD3DFontChat->PrintShadow(vehScreenposs.x, vehScreenposs.y, -1, buf);
+		}
+		else
+		{
+			pD3DFontChat->PrintShadow(
+				(float)cursor_pos.x - pD3DFontChat->DrawLength(buf) + pD3DFontChat->DrawLength(buf) / 2 + 3.5f,
+				((float)cursor_pos.y + 38.0f),
+				-1, buf);
 		}
 	}
 }
