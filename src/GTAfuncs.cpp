@@ -485,7 +485,7 @@ bool GTAfunc_ProcessLineOfSight ( CVector *vecStart, CVector *vecEnd, CColPoint 
 	}
 
 	// hacky method to point to CEntitySA instead of the above
-	//*CollisionEntity = targetEntity;
+	*CollisionEntity = targetEntity;
 	if ( colCollision )
 		*colCollision = pColPointSA;
 	else
