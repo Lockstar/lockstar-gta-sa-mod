@@ -2,6 +2,11 @@ mod_sa
 by jflm, nuckfuts, notaplane, and the game modification community
 http://code.google.com/p/m0d-s0beit-sa/
 
+Version 4.2.2.1
+* Added ClickWarp.  Default: Middle Mouse & Left Mouse
+* Improved Fly Player.
+* Fixed Fast Exit.
+
 Version 4.2.2.0
 * Added text label rendering.
 * Added left/right/up strafing to Fly Player.
