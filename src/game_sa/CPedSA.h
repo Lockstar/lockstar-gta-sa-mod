@@ -323,6 +323,8 @@ private:
 
 	DWORD				m_dwType;
     unsigned char       m_ucOccupiedSeat;
+
+	CVector				m_vecGravity;
 public:
 	                    CPedSA(  );
 	                    CPedSA( CPedSAInterface * pedInterface );
@@ -420,6 +422,9 @@ public:
     void                GetVoice                ( const char** pszVoiceType, const char** pszVoice );
     void                SetVoice                ( short sVoiceType, short sVoiceID );
     void                SetVoice                ( const char* szVoiceType, const char* szVoice );
+
+	void				GetGravity				( CVector* pvecGravity ) const  { *pvecGravity = m_vecGravity; }
+	void				SetGravity				( const CVector* pvecGravity );
 };
 
 #endif

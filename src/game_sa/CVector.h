@@ -210,4 +210,9 @@ public:
     }
 };
 
+// global vector normals
+CVector const g_vecFrontNormal ( 1.0, 0.0, 0.0 );
+CVector const g_vecRightNormal ( 0.0, 1.0, 0.0 );
+CVector const g_vecUpNormal ( 0.0, 0.0, 1.0 );
+
 #endif

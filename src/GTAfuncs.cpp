@@ -594,6 +594,7 @@ void GTAfunc_PutActorInCarAsPassenger(vehicle_info *vehicle, int iSeat)
 	}
 }
 
+bool GTAfunc_RemoveActorFromCarAndPutAt_requestingTeleport = false;
 void GTAfunc_RemoveActorFromCarAndPutAt(float fPos[3])
 {
 	CVehicle *pCurrentVehicle = pGameInterface->GetPools()->GetVehicle((DWORD *)vehicle_info_get(VEHICLE_SELF, 0));
@@ -609,6 +610,7 @@ void GTAfunc_RemoveActorFromCarAndPutAt(float fPos[3])
 			pOutTask->SetIsWarpingPedOutOfCar ();
 			pOutTask->Destroy();
 
+			GTAfunc_RemoveActorFromCarAndPutAt_requestingTeleport = true;
 			cheat_teleport(fPos, 0);
 		}
 	}

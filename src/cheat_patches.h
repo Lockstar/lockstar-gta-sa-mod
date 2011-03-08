@@ -67,7 +67,49 @@ static struct patch_set patch_NoColsWalls =
 	"No collision walls", // Disable the wall-jump (jumping into air infront of walls)
 	0,
 	0,
-	{ 1, (void *)((uint8_t *)0x679D3A), (uint8_t *)"\x74", (uint8_t *)"\xEB", (uint8_t *)"\x74" }
+	{ 1, (void *)((uint8_t *)0x00679D3A), (uint8_t *)"\x74", (uint8_t *)"\xEB", (uint8_t *)"\x74" }
+};
+
+// Patch will make SP enemies invulnerable
+static struct patch_set patch_actor_hp_extraInv =
+{
+	"Extra actor invincibility",
+	0,
+	0,
+	{ { 10, (void *)0x00637590, (uint8_t *)"\xC7\x87\x40\x05\x00\x00\x00\x00\x00\x00", NULL, NULL }, { 10,
+	(void *)0x0063070C, (uint8_t *)"\xC7\x86\x40\x05\x00\x00\x00\x00\x00\x00", NULL, NULL }, { 6,
+	(void *)0x004B331F, (uint8_t *)"\x89\x96\x40\x05\x00\x00", NULL, NULL }, { 6, (void *)0x004B3395,
+	(uint8_t *)"\x89\x9e\x40\x05\x00\x00", NULL, NULL }, { 6, (void *)0x0064159F,
+	NULL, (uint8_t *)"\xE9\x36\x04\x00\x00\x90", NULL } }
+};
+
+// Patch won't make SP enemies invulnerable
+static struct patch_set patch_actor_hp =
+{
+	"Extra actor invincibility2",
+	0,
+	0,
+	// Parachute Death
+	{ { 7, (void *)0x00635DA0, NULL, (uint8_t *)"\xB8\x00\x00\x00\x00\xC3\x90", NULL } }
+};
+
+static struct patch_set patch_vehicle_hp =
+{
+	"Additional vehicle HP invincibility",
+	0,
+	0,
+	{
+		// Invincible Boats (no matching invulnerable flags)
+		{ 6, (void *)0x006F1B5C, (uint8_t *)"\x0F\x85\x10\x01\x00\x00", (uint8_t *)"\xE9\x11\x01\x00\x00\x90", NULL } 
+	}
+};
+
+static struct patch_set patch_RemoveFlyUpLimit =
+{
+	"Remove Fly Up Speed Limit", // removes the up speed limiter when "falling", for Player Fly
+	0,
+	0,
+	{ 7, (void *)((uint8_t *)0x005E91CE), (uint8_t *)"\xC7\x46\x4C\x00\x00\x80\x3E", NULL, (uint8_t *)"\xC7\x46\x4C\x00\x00\x80\x3E" }
 };
 
 

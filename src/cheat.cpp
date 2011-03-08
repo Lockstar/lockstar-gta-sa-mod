@@ -63,17 +63,16 @@ static void cheat_main_actor ( double time_diff )
 	cheat_handle_stick( NULL, info, time_diff );
 	cheat_handle_actor_autoaim( info, time_diff );
 
-	// fix for passenger drive by bug
-	if ( info->pedFlags.bInVehicle )
-		cheat_handle_vehicle_fast_exit( NULL, time_diff );
-
 	// cheat_handle_SpiderFeet(info, time_diff);
 	cheat_handle_actor_fly(info, time_diff);
 
 	if ( set.runanimation_cj )
 		info->runningStyle = 0x36;
 
-	// take care of any cleanup while exiting a vehicle
+
+	// these NEED to stay last, because they can remove the player from the vehicle
+	if ( info->pedFlags.bInVehicle )
+		cheat_handle_vehicle_fast_exit( NULL, time_diff );
 	cheat_handle_exit_vehicle ( NULL, info );
 }
 
@@ -113,13 +112,15 @@ static void cheat_main_vehicle ( double time_diff )
 	cheat_handle_vehicle_fly( info, time_diff );
 	cheat_handle_vehicle_keepTrailer( info, time_diff );
 	cheat_handle_vehicle_repair_car( info, time_diff );
-	cheat_handle_vehicle_fast_exit( info, time_diff );
 	cheat_handle_vehicle_spiderWheels( info, time_diff );
 	//cheat_handle_vehicle_slowTeleport( info, time_diff );
-	cheat_handle_exit_vehicle ( info, NULL );
 #ifdef __CHEAT_VEHRECORDING_H__
 	cheat_handle_vehicle_recording( info, time_diff );
 #endif
+
+	// these NEED to stay last, because they can remove the player from the vehicle
+	cheat_handle_vehicle_fast_exit( info, time_diff );
+	cheat_handle_exit_vehicle ( info, NULL );
 }
 
 // the main daddyo

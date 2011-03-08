@@ -22,7 +22,8 @@ extern CGameSA* pGame;
 CPedSA::CPedSA (  ) :
     m_pPedIntelligence ( NULL ),
     m_pPedInterface ( NULL ),
-    m_pPedSound ( NULL )
+    m_pPedSound ( NULL ),
+	m_vecGravity ( 0.0f, 0.0f, -1.0f )
 {
 	DEBUG_TRACE("CPedSA::CPedSA(  )");
 
@@ -32,7 +33,8 @@ CPedSA::CPedSA (  ) :
 CPedSA::CPedSA( CPedSAInterface * pPedInterface ) :
     m_pPedIntelligence ( NULL ),
     m_pPedInterface ( pPedInterface ),
-    m_pPedSound ( NULL )
+    m_pPedSound ( NULL ),
+	m_vecGravity ( 0.0f, 0.0f, -1.0f )
 {
 	DEBUG_TRACE("CPedSA::CPedSA( CPedSAInterface * pedInterface )");
 
@@ -1617,3 +1619,29 @@ ePedState CPedSA::GetPedState()
 {
 	return (ePedState)((CPedSAInterface *)this->GetInterface())->PedState;
 }*/
+
+void CPedSA::SetGravity ( const CVector* pvecGravity )
+{
+	if ( pGame->GetPools ()->GetPedFromRef ( 1 ) == this )
+	{
+		// If this is the local player, adjust the camera's position history.
+		// This is to keep the automatic camera settling
+		// nice and consistent while the gravity changes.
+		CCam* pCam = pGame->GetCamera ()->GetCam ( pGame->GetCamera ()->GetActiveCam () );
+
+		CMatrix matOld, matNew;
+		GetMatrixForGravity ( m_vecGravity, matOld );
+		GetMatrixForGravity ( *pvecGravity, matNew );
+
+		CVector* pvecPosition = &m_pInterface->Placeable.matrix->vPos;
+
+		matOld.Invert ();
+		pCam->GetTargetHistoryPos () [ 0 ] = matOld * (pCam->GetTargetHistoryPos () [ 0 ] - *pvecPosition);
+		pCam->GetTargetHistoryPos () [ 0 ] = matNew * pCam->GetTargetHistoryPos () [ 0 ] + *pvecPosition;
+
+		pCam->GetTargetHistoryPos () [ 1 ] = matOld * (pCam->GetTargetHistoryPos () [ 1 ] - *pvecPosition);
+		pCam->GetTargetHistoryPos () [ 1 ] = matNew * pCam->GetTargetHistoryPos () [ 1 ] + *pvecPosition;
+	}
+
+	m_vecGravity = *pvecGravity;
+}

@@ -654,7 +654,7 @@ uint32_t GetFromPool ( DWORD value, DWORD Pool, DWORD function )
 	uint32_t	retval;
 	__asm
 	{
-		mov ecx, Pool // [Pool] doesnt seem to work when using inline?
+		mov ecx, Pool
 		mov ecx, [ecx]
 		push value
 		call function

@@ -20,5 +20,6 @@
 	along with mod_sa.  If not, see <http://www.gnu.org/licenses/>.
 
 */
+
 // install hooks
 void	cheat_hookers_installhooks ( void );

@@ -119,9 +119,9 @@ void _cdecl CPhysical_ApplyGravity ( DWORD dwThis )
 			}
 			else if ( cheat_state->actor.SpiderFeet_on )
 			{
-				// NinjaMode
-				CVector vecGravity = cheat_state->actor.gravityVector;
-				CVector vecMoveSpeed;
+				// use our gravity vector
+				CVector vecGravity, vecMoveSpeed;
+				pPed->GetGravity( &vecGravity );
 				pPed->GetMoveSpeed( &vecMoveSpeed );
 				vecMoveSpeed += vecGravity * fTimeStep * fGravity;
 				pPed->SetMoveSpeed( &vecMoveSpeed );
@@ -1229,6 +1229,7 @@ hkPlCl_noClimb:
 	}
 }
 
+
 // ---------------------------------------------------
 // ---------------------------------------------------
 // ---------------------------------------------------
@@ -1488,12 +1489,302 @@ void _declspec ( naked ) HOOK_CMatrix__rotateAroundZ ()
 */
 
 
+// ---------------------------------------------------
+// ---------------------------------------------------
+// ---------------------------------------------------
+
+CMatrix gravCamPed_matGravity;
+CMatrix gravCamPed_matInvertGravity;
+CMatrix gravCamPed_matPedTransform;
+CVector gravCamPed_vecPedVelocity;
+
+// ---------------------------------------------------
+
+#define HOOKPOS_PedCamStart 0x522D78
+DWORD	RETURN_PedCamStart_success = 0x522D7E;
+DWORD	RETURN_PedCamStart_failure = 0x5245A2;
+
+bool _cdecl PedCamStart ( DWORD dwCam, DWORD pPedInterface )
+{
+	traceLastFunc( "PedCamStart()" );
+
+	// Inverse transform some things so that they match a downward pointing gravity.
+	// This way SA's gravity-goes-downward assumptive code can calculate the camera
+	// spherical coords correctly. Of course we restore these after the camera function
+	// completes.
+	CPed	*pPed = pPools->GetPed( (DWORD *)pPedInterface );
+
+	if ( !pPed )
+		return false;
+
+	CVector vecGravity;
+	pPed->GetGravity( &vecGravity );
+
+	GetMatrixForGravity( vecGravity, gravCamPed_matGravity );
+	gravCamPed_matInvertGravity = gravCamPed_matGravity;
+	gravCamPed_matInvertGravity.Invert();
+
+	pPed->GetMatrix( &gravCamPed_matPedTransform );
+
+	CMatrix matPedInverted = gravCamPed_matInvertGravity * gravCamPed_matPedTransform;
+	matPedInverted.vPos = gravCamPed_matPedTransform.vPos;
+	//pPed->SetMatrix( &matPedInverted );
+
+	pPed->GetMoveSpeed( &gravCamPed_vecPedVelocity );
+
+	CVector vecVelocityInverted = gravCamPed_matInvertGravity * gravCamPed_vecPedVelocity;
+	//pPed->SetMoveSpeed( &vecVelocityInverted );
+	return true;
+}
+
+void _declspec ( naked ) HOOK_PedCamStart ()
+{
+	_asm
+	{
+		push ebp;
+		push edi;
+		call PedCamStart;
+		add esp, 8;
+
+		test eax, eax;
+		jz fail;
+		mov eax, [ebp + 0x598];
+		jmp RETURN_PedCamStart_success;
+
+fail:
+		add esp, 4;
+		jmp RETURN_PedCamStart_failure;
+	}
+}
+
+// ---------------------------------------------------
+
+#define HOOKPOS_PedCamLookDir1	0x52346C
+DWORD	RETURN_PedCamLookDir1 = 0x523471;
+
+void _cdecl PedCamLookDir1 ( DWORD dwCam, DWORD pPedInterface )
+{
+	traceLastFunc( "PedCamLookDir1()" );
+
+	// For the same reason as in PedCamStart, inverse transform the camera's lookdir
+	// at this point
+	CVector *pvecLookDir = ( CVector * ) ( dwCam + 0x190 );
+	*pvecLookDir = gravCamPed_matInvertGravity * ( *pvecLookDir );
+}
+
+void _declspec ( naked ) HOOK_PedCamLookDir1 ()
+{
+	_asm
+	{
+		mov eax, 0x59C910;	// CVector::Normalise
+		call eax;
+
+		push ebp;
+		push edi;
+		call PedCamLookDir1;
+		add esp, 8;
+
+		jmp RETURN_PedCamLookDir1;
+	}
+}
+
+// ---------------------------------------------------
+
+#define HOOKPOS_PedCamLookDir2	0x5241CC
+DWORD	RETURN_PedCamLookDir2 = 0x524213;
+
+bool _cdecl PedCamLookDir2 ( DWORD dwCam )
+{
+	traceLastFunc( "PedCamLookDir2()" );
+
+	// Calculates the look direction vector for the ped camera. This vector
+	// is later multiplied by a factor and added to the ped position by SA
+	// to obtain the final camera position.
+	float	fPhi = *(float *)( dwCam + 0xBC );
+	float	fTheta = *(float *)( dwCam + 0xAC );
+
+	*( CVector * ) ( dwCam + 0x190 ) = -gravCamPed_matGravity.vRight *
+		cos( fPhi ) *
+		cos( fTheta ) -
+		gravCamPed_matGravity.vFront *
+		sin( fPhi ) *
+		cos( fTheta ) +
+		gravCamPed_matGravity.vUp *
+		sin( fTheta );
+
+	*(float *)0x8CCE6C = fPhi;
+
+	traceLastFunc( "PedCamLookDir2() End" );
+	return true;
+}
+
+void _declspec ( naked ) HOOK_PedCamLookDir2 ()
+{
+	_asm
+	{
+		push edi; // pCam
+		call PedCamLookDir2;
+		add esp, 4;
+
+		lea eax, [edi + 0x190];
+		jmp RETURN_PedCamLookDir2;
+	}
+}
+
+// ---------------------------------------------------
+
+#define HOOKPOS_PedCamHistory	0x5242CD
+DWORD	RETURN_PedCamHistory = 0x5243B1;
+
+void _cdecl PedCamHistory ( DWORD dwCam, CVector *pvecTarget, float fTargetTheta, float fRadius, float fZoom )
+{
+	traceLastFunc( "PedCamHistory()" );
+
+	float	fPhi = *(float *)( dwCam + 0xBC );
+	CVector vecDir = -gravCamPed_matGravity.vRight * cos( fPhi ) * cos( fTargetTheta ) - gravCamPed_matGravity.vFront * sin( fPhi ) * cos( fTargetTheta ) + gravCamPed_matGravity.vUp * sin( fTargetTheta );
+	( (CVector *) (dwCam + 0x1D8) )[0] = *pvecTarget - vecDir * fRadius;
+	( (CVector *) (dwCam + 0x1D8) )[1] = *pvecTarget - vecDir * fZoom;
+}
+
+void _declspec ( naked ) HOOK_PedCamHistory ()
+{
+	_asm
+	{
+		push[esp + 0x0 + 0x7C]; // zoom
+		push[esp + 0x4 + 0x2C]; // radius
+		push[esp + 0x8 + 0x14]; // targetTheta
+		lea ecx, [esp + 0xC + 0x48]; // pushed on the next line
+		push ecx; // pvecTarget - ecx?
+		push ebx; // pCam
+		call PedCamHistory;
+		add esp, 0x14;
+
+		mov edx, [esp + 0x24];
+		jmp RETURN_PedCamHistory;
+	}
+}
+
+// ---------------------------------------------------
+
+#define CALL_PedCamUp		0x524527
+void _cdecl PedCamUp ( DWORD dwCam )
+{
+	traceLastFunc( "PedCamUp()" );
+
+	// Calculates the up vector for the ped camera.
+	CVector *pvecUp = ( CVector * ) ( dwCam + 0x1B4 );
+	CVector *pvecLookDir = ( CVector * ) ( dwCam + 0x190 );
+
+	CVector smoothedGrav = gravCamPed_matGravity.vUp + (g_vecUpNormal * 2.0f);
+	smoothedGrav.Normalize();
+
+	//*pvecUp = *pvecLookDir;
+	*pvecUp = *pvecLookDir;
+	//pvecUp->CrossProduct( &gravCamPed_matGravity.vUp );
+	pvecUp->CrossProduct( &smoothedGrav );
+	//pvecUp->CrossProduct( pvecLookDir );
+	pvecUp->CrossProduct( pvecLookDir );
+
+	/*CVector vecSpeed;
+	pPedSelf->GetMoveSpeed( &vecSpeed );
+	if ( !near_zero(vecSpeed.Length()) )
+	{
+		vecSpeed.Normalize();
+		*pvecUp = vecSpeed;
+		pvecUp->CrossProduct( &gravCamPed_matGravity.vUp );
+		pvecUp->CrossProduct( &vecSpeed );
+	}
+	else
+	{
+		*pvecUp = *pvecLookDir;
+		pvecUp->CrossProduct( &gravCamPed_matGravity.vUp );
+		pvecUp->CrossProduct( pvecLookDir );
+	}*/
+}
+
+void _declspec ( naked ) HOOK_PedCamUp ()
+{
+	_asm
+	{
+		mov edx, ecx;
+		mov ecx, [ecx + 0x21C]; // CCam::pTargetEntity
+		mov eax, 0x46A2C0; // CEntity::GetType
+		call eax;
+
+		cmp al, 3; // Is it a ped?
+		jz docustom;
+
+		mov ecx, edx;
+		mov eax, 0x509CE0; // CCam::GetVectorsReadyForRW
+		jmp eax;
+
+docustom:
+		push edx;
+		call PedCamUp;
+		add esp, 4;
+		ret;
+	}
+}
+
+// ---------------------------------------------------
+
+#define HOOKPOS_PedCamEnd	0x524527
+DWORD	RETURN_PedCamEnd = 0x524530;
+
+void _cdecl PedCamEnd ( DWORD pPedInterface )
+{
+	traceLastFunc( "PedCamEnd()" );
+
+	// Restore the things that we inverse transformed in VehicleCamStart
+	CPed	*pPed = pPools->GetPed( (DWORD *)pPedInterface );
+	if ( !pPed )
+		return;
+	pPed->SetMatrix( &gravCamPed_matPedTransform );
+	pPed->SetMoveSpeed( &gravCamPed_vecPedVelocity );
+}
+
+void _declspec ( naked ) HOOK_PedCamEnd ()
+{
+	_asm
+	{
+		mov		eax, 0x509CE0;
+		call    eax;
+		pop     esi;
+		test    ebx, ebx;
+		pop     ebx;
+
+		push edi;
+		call PedCamEnd;
+		add esp, 4;
+
+		jmp RETURN_PedCamEnd;
+	}
+}
+
+
+
+// ---------------------------------------------------
+// ---------------------------------------------------
+// ---------------------------------------------------
+
+
 
 // ---------------------------------------------------
 // hook installers
 void cheat_hookers_installhooks ( void )
 {
 	// hooks
+	HookInstall( HOOKPOS_PedCamStart, (DWORD) HOOK_PedCamStart, 6 );
+	//HookInstall( HOOKPOS_PedCamLookDir1, (DWORD) HOOK_PedCamLookDir1, 5 );
+	//HookInstall( HOOKPOS_PedCamLookDir2, (DWORD) HOOK_PedCamLookDir2, 6 );
+	HookInstall( HOOKPOS_PedCamHistory, (DWORD) HOOK_PedCamHistory, 8 );
+	HookInstallCall( CALL_PedCamUp, (DWORD) HOOK_PedCamUp );
+	//HookInstall( HOOKPOS_PedCamEnd, (DWORD) HOOK_PedCamEnd, 9 );
+	
+	
+	
+
+
 	HookInstall( HOOKPOS_VehicleCamStart, (DWORD) HOOK_VehicleCamStart, 6 );
 	HookInstall( HOOKPOS_VehicleCamTargetZTweak, (DWORD) HOOK_VehicleCamTargetZTweak, 8 );
 	HookInstall( HOOKPOS_VehicleCamLookDir1, (DWORD) HOOK_VehicleCamLookDir1, 5 );
@@ -1502,7 +1793,9 @@ void cheat_hookers_installhooks ( void )
 	HookInstall( HOOKPOS_VehicleCamEnd, (DWORD) HOOK_VehicleCamEnd, 6 );
 	HookInstall( HOOKPOS_VehicleLookBehind, (DWORD) HOOK_VehicleLookBehind, 6 );
 	HookInstall( HOOKPOS_VehicleLookAside, (DWORD) HOOK_VehicleLookAside, 6 );
+
 	HookInstall( HOOKPOS_CPhysical_ApplyGravity, (DWORD) HOOK_CPhysical_ApplyGravity, 6 );
+
 	HookInstall( HOOKPOS_CVehicle_constructor, (DWORD) HOOK_CVehicle_constructor, 6 );
 	HookInstall( HOOKPOS_CVehicle_destructor, (DWORD) HOOK_CVehicle_destructor, 6 );
 	HookInstall( HOOKPOS_CPed_constructor, (DWORD) HOOK_CPed_constructor, 6 );

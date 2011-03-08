@@ -286,9 +286,9 @@ struct settings
 	int						aim_sendrate;
 	int						headsync_sendrate;
 
-	int						point2warp_enabled;
-	int						key_point2warp_enable;
-	int						key_point2warp_click;
+	int						clickwarp_enabled;
+	int						key_clickwarp_enable;
+	int						key_clickwarp_click;
 
 	int						key_player_info_list;
 	int						key_fast_exit;

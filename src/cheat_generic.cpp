@@ -22,41 +22,7 @@
 */
 #include "main.h"
 
-int iPoint2WarpEnabled = 0;
-
-// Patch will make SP enemies invulnerable
-static struct patch_set patch_actor_hp_extraInv =
-{
-	"Extra actor invincibility",
-	0,
-	0,
-	{ { 10, (void *)0x00637590, (uint8_t *)"\xC7\x87\x40\x05\x00\x00\x00\x00\x00\x00", NULL, NULL }, { 10,
-				(void *)0x0063070C, (uint8_t *)"\xC7\x86\x40\x05\x00\x00\x00\x00\x00\x00", NULL, NULL }, { 6,
-					(void *)0x004B331F, (uint8_t *)"\x89\x96\x40\x05\x00\x00", NULL, NULL }, { 6, (void *)0x004B3395,
-						(uint8_t *)"\x89\x9e\x40\x05\x00\x00", NULL, NULL }, { 6, (void *)0x0064159F,
-						NULL, (uint8_t *)"\xE9\x36\x04\x00\x00\x90", NULL } }
-};
-
-// Patch won't make SP enemies invulnerable
-static struct patch_set patch_actor_hp =
-{
-	"Extra actor invincibility2",
-	0,
-	0,
-	// Parachute Death
-	{ { 7, (void *)0x00635DA0, NULL, (uint8_t *)"\xB8\x00\x00\x00\x00\xC3\x90", NULL } }
-};
-
-static struct patch_set patch_vehicle_hp =
-{
-	"Additional vehicle HP invincibility",
-	0,
-	0,
-	{
-		// Invincible Boats (no matching invulnerable flags)
-		{ 6, (void *)0x006F1B5C, (uint8_t *)"\x0F\x85\x10\x01\x00\x00", (uint8_t *)"\xE9\x11\x01\x00\x00\x90", NULL } 
-	}
-};
+int iClickWarpEnabled = 0;
 
 int cheat_panic ( void )
 {
@@ -233,10 +199,15 @@ int cheat_panic ( void )
 }
 
 /* XXX move to cheat_funcs.cpp? */
+extern bool GTAfunc_RemoveActorFromCarAndPutAt_requestingTeleport;
 void cheat_teleport ( const float pos[3], int interior_id )
 {
-	if ( cheat_state->state == CHEAT_STATE_ACTOR )
+	if ( cheat_state->state == CHEAT_STATE_ACTOR
+		|| GTAfunc_RemoveActorFromCarAndPutAt_requestingTeleport )
+	{
+		GTAfunc_RemoveActorFromCarAndPutAt_requestingTeleport = false;
 		cheat_actor_teleport( actor_info_get(ACTOR_SELF, 0), pos, interior_id );
+	}
 	else if ( cheat_state->state == CHEAT_STATE_VEHICLE ) //&& !set.teleport_slow )
 		cheat_vehicle_teleport( vehicle_info_get(VEHICLE_SELF, 0), pos, interior_id );
 	/*else if ( cheat_state->state == CHEAT_STATE_VEHICLE && set.teleport_slow )
@@ -259,16 +230,16 @@ void cheat_teleport_nearest_car ( void )
 
 void cheat_handle_misc ( void )
 {
-	if ( set.point2warp_enabled )
+	if ( set.clickwarp_enabled )
 	{
-		if(KEY_PRESSED(set.key_point2warp_enable))
+		if(KEY_PRESSED(set.key_clickwarp_enable))
 		{
 			g_iCursorEnabled ^= 1;
 			toggleSAMPCursor(g_iCursorEnabled);
 		}
-		if(g_iCursorEnabled && KEY_PRESSED(set.key_point2warp_click))
+		if(g_iCursorEnabled && KEY_PRESSED(set.key_clickwarp_click))
 		{
-			iPoint2WarpEnabled = 1;
+			iClickWarpEnabled = 1;
 		}
 	}
 

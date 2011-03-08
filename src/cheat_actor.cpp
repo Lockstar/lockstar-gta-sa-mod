@@ -22,11 +22,6 @@
 */
 #include "main.h"
 
-
-// non-global vector pointer
-CVector UpNormal ( 0.0, 0.0, 1.0 );
-CVector FrontNormal ( 1.0, 0.0, 0.0 );
-
 // new function to help converting from actor_info->base to CEntitySAInterface
 CEntitySAInterface *cheat_actor_GetCEntitySAInterface ( actor_info *ainfo )
 {
@@ -409,15 +404,6 @@ CVector cheat_actor_getPositionUnder ( actor_info *ainfo )
 	return offsetVector;
 }
 
-void cheat_actor_setGravity ( actor_info *ainfo, CVector pvecGravity )
-{
-	traceLastFunc( "cheat_actor_setGravity()" );
-
-	// set the d-dang gravity
-	cheat_state->actor.gravityVector = pvecGravity;
-}
-
-
 /*
 static CMatrix_Padded * mat_SpiderFeetCollisionTransform = new CMatrix_Padded();
 static CMatrix_Padded * mat_SpiderFeetCollisionTransform_Original = (CMatrix_Padded*)0x968988;
@@ -706,6 +692,15 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			cheat_state->actor.fly_active = false;
 			playerFly_lastKeySpeedState = speed_none;
 
+			// set gravity down
+			pPedSelf->SetGravity( &-g_vecUpNormal );
+
+			// remove fly up speed limit patch
+			if (patch_RemoveFlyUpLimit.installed)
+			{
+				patcher_remove(&patch_RemoveFlyUpLimit);
+			}
+
 			// copy camera rotation to player
 			ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
 			ainfo->fTargetRotation = ainfo->fCurrentRotation;
@@ -721,9 +716,9 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				pPedSelf->GetMatrix(&matPed);
 
 				// tilt player upright
-				CVector rotationAxis = UpNormal;
+				CVector rotationAxis = g_vecUpNormal;
 				rotationAxis.CrossProduct( &matPed.vUp );
-				float theta = ( matPed.vUp.DotProduct( &UpNormal ) );
+				float theta = ( matPed.vUp.DotProduct( &g_vecUpNormal ) );
 				if ( !near_zero(theta) )
 				{
 					matPed = matPed.Rotate( &rotationAxis, cos(theta) );
@@ -784,6 +779,11 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			if ( !cheat_state->actor.fly_active )
 			{
 				cheat_state->actor.fly_active = true;
+				// install up speed remover
+				if (!patch_RemoveFlyUpLimit.installed)
+				{
+					patcher_install(&patch_RemoveFlyUpLimit);
+				}
 				if ( keySpeedState == speed_none )
 				{
 					// start fly animation
@@ -989,7 +989,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			if (!near_zero(vecSpeed.Length()))
 			{
 				// rotate
-				rotationAxis = UpNormal;
+				rotationAxis = g_vecUpNormal;
 				rotationAxis.CrossProduct( &vecSpeedRotate );
 				thetaBase = rotationTarget.DotProduct(&vecSpeedRotate);
 				rotationMultiplier = (time_diff * 69.0f) / ( 8.0f + (vecSpeed.Length() * 1.5f) );
@@ -1055,6 +1055,30 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			// set player matrix
 			pPedSelf->SetMatrix(&playerFly_lastPedRotation);
 
+			//CCameraSA *Camera = (CCameraSA*)pGameInterface->GetCamera();
+			//Camera->GetInterface()->m_vecBottomFrustumNormal = playerFly_lastPedRotation.vUp;
+			//Camera->GetInterface()->m_vecFrustumNormals[0] = playerFly_lastPedRotation.vFront;
+			//Camera->GetInterface()->m_vecFrustumWorldNormals[2] = playerFly_lastPedRotation.vUp;
+			//Camera->GetInterface()->m_vecRightFrustumNormal = playerFly_lastPedRotation.vRight;
+			//Camera->GetInterface()->m_viewMatrix.vRight = playerFly_lastPedRotation.vRight;
+			//Camera->GetInterface()->Placeable.m_transform.m_translate = playerFly_lastPedRotation.vFront;
+
+			//CCamSA *Cam = (CCamSA*)pGame->GetCamera()->GetCam(pGame->GetCamera()->GetActiveCam());
+			//CCamSAInterface *CamSA = Cam->GetInterface();
+			//CamSA->Up = playerFly_lastPedRotation.vUp;
+			//CamSA->f_Roll = playerFly_lastPedRotation.vRight.fY;
+
+//
+
+			// we should be setting it like this
+			//CVector smoothedGrav = -playerFly_lastPedRotation.vUp + (g_vecUpNormal * 2.0f);
+			//smoothedGrav.Normalize();
+			//pPedSelf->SetGravity( &smoothedGrav );
+
+			// but the function is hacked to hell to make it work, so since we're the only
+			// thing using it so far, we'll just do this, and fudge the camera in the hook
+			pPedSelf->SetGravity( &-playerFly_lastPedRotation.vUp );
+
 
 		} // I believe I can touch the sky...
 	}
@@ -1065,6 +1089,13 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 		if (cheat_state->actor.fly_active)
 		{
 			cheat_state->actor.fly_active = false;
+			// set gravity down
+			pPedSelf->SetGravity( &-g_vecUpNormal );
+			// remove up speed limiter patch
+			if (patch_RemoveFlyUpLimit.installed)
+			{
+				patcher_remove(&patch_RemoveFlyUpLimit);
+			}
 			// copy camera rotation to player
 			ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
 			ainfo->fTargetRotation = ainfo->fCurrentRotation;
@@ -1079,11 +1110,24 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 // drawing some stuff
 int lineSpace = 0;
 char buf[256];
-sprintf( buf, "speed: %0.1f", ainfo->m_SpeedVec.Length() );
+
+extern DWORD cameraTypeSwitch_eax_back;
+
+sprintf( buf, "camera mode: %d", cameraTypeSwitch_eax_back );
 pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
 lineSpace += 12;
 
+sprintf( buf, "B6EC2E: %d", *(DWORD*)0xB6EC2E );
+pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
+lineSpace += 12;
+
+sprintf( buf, "8CCF00: %d", *(DWORD*)0x8CCF00 );
+pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
+lineSpace += 12;
 */
+
+
+
 /*
 CVector vecSpeed;
 pPedSelf->GetMoveSpeed(&vecSpeed);

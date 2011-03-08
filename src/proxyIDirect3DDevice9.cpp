@@ -90,7 +90,7 @@ struct gui				*menu_selected_item_text = &set.guiset[5];
 struct gui				*gta_hp_bar = &set.guiset[6];
 struct gui				*gta_money_hud = &set.guiset[7];
 
-extern int				iPoint2WarpEnabled;
+extern int				iClickWarpEnabled;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Common D3D functions.
@@ -2206,20 +2206,21 @@ void renderKillList ( void )
 	}
 }
 
-void point2warp()
+void clickWarp()
 {
-	if(!g_iCursorEnabled) return;
-	if(gta_menu_active()) return;
+	traceLastFunc("clickWarp()");
+
+	if (!g_iCursorEnabled) return;
+	if (gta_menu_active()) return;
 
 	POINT cursor_pos;
-	if ( GetCursorPos(&cursor_pos) && ScreenToClient(pPresentParam.hDeviceWindow, &cursor_pos) )
+	if (GetCursorPos(&cursor_pos) && ScreenToClient(pPresentParam.hDeviceWindow, &cursor_pos))
 	{
 		D3DXVECTOR3 poss, screenposs;
 		float pos[3];
 		char buf[256];
 
-		struct vehicle_info *pVehicleTeleport = NULL;
-
+		CVehicle *pCVehicleTeleport = NULL;
 		screenposs.x = (float)cursor_pos.x;
 		screenposs.y = (float)cursor_pos.y;
 		screenposs.z = 700.0f;
@@ -2237,41 +2238,55 @@ void point2warp()
 		vecOrigin = *pGame->GetCamera()->GetCam(pGame->GetCamera()->GetActiveCam())->GetSource();
 
 		// check for collision
-		bool	bCollision = GTAfunc_ProcessLineOfSight( &vecOrigin, &vecTarget, &pCollision, &pCollisionEntity,
+		bool bCollision = GTAfunc_ProcessLineOfSight( &vecOrigin, &vecTarget, &pCollision, &pCollisionEntity,
 			1, 1, 0, 1, 1, 0, 0, 0 );
 
-		if ( bCollision )
+		if (bCollision && pCollision)
 		{
-			if(pCollision)
+			// calculate position to check for ground
+			vecGroundPos = *pCollision->GetPosition();
+			if ( cheat_state->state == CHEAT_STATE_VEHICLE )
 			{
-				vecGroundPos = *pCollision->GetPosition();
-				if (cheat_state->state == CHEAT_STATE_VEHICLE)
+				vecGroundPos = vecGroundPos - (*pCollision->GetNormal() * 2.0f);
+			}
+			else
+			{
+				vecGroundPos = vecGroundPos - (*pCollision->GetNormal() * 0.5f);
+			}
+
+			// get ground position from collision position
+			if (pPedSelf->GetAreaCode() == 0)
+			{
+				vecGroundPos.fZ = pGameInterface->GetWorld()->FindGroundZForPosition(vecGroundPos.fX, vecGroundPos.fY);
+			}
+			else
+			{
+				CVector vecGroundPosSlightlyAbove = vecGroundPos;
+				vecGroundPosSlightlyAbove.fZ += 1.0f;
+				vecGroundPos.fZ = pGameInterface->GetWorld()->FindGroundZFor3DPosition(&vecGroundPosSlightlyAbove);
+			}
+
+			// setup some stuff for vehicle jumper
+			if (pCollisionEntity && pCollisionEntity->nType == ENTITY_TYPE_VEHICLE)
+			{
+				pCVehicleTeleport = pGameInterface->GetPools()->GetVehicle((DWORD *)pCollisionEntity);
+				if (pCVehicleTeleport)
 				{
-					vecGroundPos = vecGroundPos - (*pCollision->GetNormal() * 2.0f);
+					const struct vehicle_entry *vehicleEntry = gta_vehicle_get_by_id(pCVehicleTeleport->GetModelIndex());
+					if (vehicleEntry != NULL)
+					{
+						sprintf(buf, "Warp to %s", vehicleEntry->name);
+					}
 				}
 				else
 				{
-					vecGroundPos = vecGroundPos - (*pCollision->GetNormal() * 0.5f);
+					sprintf(buf, "Distance %0.2f", vect3_dist(&vecOrigin.fX, &vecGroundPos.fX));
 				}
-
-				sprintf(buf, "Distance %0.2f", vect3_dist(&vecOrigin.fX, &vecGroundPos.fX));
 			}
-
-			if(pCollisionEntity && pCollisionEntity->nType == ENTITY_TYPE_VEHICLE)
+			// setup some stuff for normal warp
+			else
 			{
-				CVehicle *pVehicle = pGameInterface->GetPools()->GetVehicle((DWORD *)pCollisionEntity);
-				if(pVehicle)
-				{
-					if(pVehicle->GetDriver() == NULL)
-					{
-						const struct vehicle_entry *vehicleEntry = gta_vehicle_get_by_id(pVehicle->GetModelIndex());
-						if(vehicleEntry != NULL)
-						{
-							sprintf(buf, "Warp to %s", vehicleEntry->name);
-							pVehicleTeleport = (struct vehicle_info *)pCollisionEntity;
-						}
-					}
-				}
+				sprintf(buf, "Distance %0.2f", vect3_dist(&vecOrigin.fX, &vecGroundPos.fX));
 			}
 
 			// destroy the collision object
@@ -2279,52 +2294,156 @@ void point2warp()
 		}
 		else
 		{
-			iPoint2WarpEnabled = 0; // force disable, prevents clicks
+			iClickWarpEnabled = 0; // force disable, prevents clicks
+			//toggleSAMPCursor(0);
 			return;
 		}
-		pGameInterface->GetWorld()->FindGroundZFor3DPosition(&vecGroundPos);
 
-
-		if(iPoint2WarpEnabled)
+		if (iClickWarpEnabled)
 		{
-			if( !isBadPtr_GTA_pVehicle(pVehicleTeleport) && pVehicleTeleport->passengers[0] == NULL )
+			if (pCVehicleTeleport != NULL)
 			{
-				GTAfunc_PutActorInCar((vehicle_info *)pVehicleTeleport);
-				pGameInterface->GetCamera()->RestoreWithJumpCut();
-			}
+				// ClickWarp to vehicle
+				int iVehicleID = getVehicleGTAIDFromInterface( (DWORD*) pCVehicleTeleport->GetInterface() );
+				if ( !vehicleJumper(iVehicleID) && cheat_state->state != CHEAT_STATE_VEHICLE )
+				{
+					// failed to jump into vehicle, warp to it instead if we're not in a vehicle
+
+					// check for collision
+					CMatrix matVehicle;
+					pCVehicleTeleport->GetMatrix(&matVehicle);
+					CVector vecVehicleAbove = (matVehicle.vUp * 5.0f) + *pCVehicleTeleport->GetPosition(); // up multiplier should be enough to get above most vehicles, but not enough to jump above things over it
+					bool bCollision = GTAfunc_ProcessLineOfSight( &vecVehicleAbove, pCVehicleTeleport->GetPosition(), &pCollision, &pCollisionEntity,
+						1, 1, 0, 1, 1, 0, 0, 0 );
+					if (bCollision && pCollision)
+					{
+						// set pos floats for actual teleporting
+						pos[0] = pCollision->GetPosition()->fX;
+						pos[1] = pCollision->GetPosition()->fY;
+						pos[2] = pCollision->GetPosition()->fZ + 0.5f; // should be enough so we're surfing properly
+						// destroy the collision object
+						pCollision->Destroy();
+					}
+					else
+					{
+						// set pos floats for actual teleporting
+						pos[0] = vecGroundPos.fX;
+						pos[1] = vecGroundPos.fY;
+						pos[2] = vecGroundPos.fZ + 0.5f;
+					}
+
+					// teleport
+					cheat_teleport(pos, gta_interior_id_get());
+					GTAfunc_TogglePlayerControllable(0);
+					GTAfunc_LockActor(0);
+				}
+			} // end ClickWarp to vehicle
 			else
 			{
-				pos[0] = vecGroundPos.fX;
-				pos[1] = vecGroundPos.fY;
-				pos[2] = (pGameInterface->GetWorld()->FindGroundZForPosition(pos[0], pos[1]) + 0.5f);
+				// ClickWarp to location
+				if ( cheat_state->state == CHEAT_STATE_VEHICLE )
+				{
+					// check for collision
+					CVehicle *vehSelf = pPedSelf->GetVehicle();
+					if (vehSelf)
+					{
+						// check for collision
+						CVector vecVehicleGravity;
+						vehSelf->GetGravity(&vecVehicleGravity);
+						CVector vecVehicleAbove = (-vecVehicleGravity * 5.0f) + vecGroundPos;
+						CVector vecVehicleBelow = (vecVehicleGravity * 5.0f) + vecGroundPos;
+						bool bCollision = GTAfunc_ProcessLineOfSight( &vecVehicleAbove, &vecVehicleBelow, &pCollision, &pCollisionEntity,
+							1, 0, 0, 1, 1, 0, 0, 0 ); // not checking for vehicle collisions
+						if (bCollision && pCollision)
+						{
+							// set vehicle to same Up position has surface normal
+							CMatrix matVehicleSelf;
+							vehSelf->GetMatrix(&matVehicleSelf);
+							CVector vecCollisionNormal = *pCollision->GetNormal();
 
+							// get "down" from vehicle model
+							CVector rotationAxis = matVehicleSelf.vUp;
+
+							// normalize our vectors
+							vecCollisionNormal.Normalize();
+							rotationAxis.Normalize();
+
+							// axis and rotation for gravity
+							float	theta = acos(rotationAxis.DotProduct(&vecCollisionNormal));
+							if (!near_zero(theta))
+							{
+								rotationAxis.CrossProduct(&vecCollisionNormal);
+								rotationAxis.Normalize();
+								rotationAxis.ZeroNearZero();
+								matVehicleSelf = matVehicleSelf.Rotate(&rotationAxis, -theta);
+							}
+
+							// set the new matrix
+							vehSelf->SetMatrix(&matVehicleSelf);
+
+							// set pos floats for actual teleporting
+							pos[0] = pCollision->GetPosition()->fX;
+							pos[1] = pCollision->GetPosition()->fY;
+							pos[2] = pCollision->GetPosition()->fZ + 1.0f; // should be enough to stay above the ground properly
+							
+							// destroy the collision object
+							pCollision->Destroy();
+						}
+						else
+						{
+							// set pos floats for actual teleporting
+							pos[0] = vecGroundPos.fX;
+							pos[1] = vecGroundPos.fY;
+							pos[2] = vecGroundPos.fZ + 0.5f;
+						}
+					}
+					else
+					{
+						// set pos floats for actual teleporting
+						pos[0] = vecGroundPos.fX;
+						pos[1] = vecGroundPos.fY;
+						pos[2] = vecGroundPos.fZ + 0.5f;
+					}
+				}
+				else
+				{
+					// set pos floats for actual teleporting
+					pos[0] = vecGroundPos.fX;
+					pos[1] = vecGroundPos.fY;
+					pos[2] = vecGroundPos.fZ + 0.5f;
+				}
+
+				// teleport
 				cheat_teleport(pos, gta_interior_id_get());
-			}
+				GTAfunc_TogglePlayerControllable(0);
+				GTAfunc_LockActor(0);
+			} // end ClickWarp to location
 
-			GTAfunc_TogglePlayerControllable(0);
-			GTAfunc_LockActor(0);
-			//pGameInterface->GetCamera()->RestoreWithJumpCut();
-
-			iPoint2WarpEnabled = 0;
+			iClickWarpEnabled = 0;
 			toggleSAMPCursor(0);
 		}
 
-		if(pVehicleTeleport != NULL)
+		if (pCVehicleTeleport != NULL)
 		{
 			D3DXVECTOR3 vehPoss, vehScreenposs;
-
-			vehPoss.x = pVehicleTeleport->base.matrix[4*3];
-			vehPoss.y = pVehicleTeleport->base.matrix[4*3+1];
-			vehPoss.z = pVehicleTeleport->base.matrix[4*3+2] + -1.0f;
+			vehPoss.x = pCVehicleTeleport->GetPosition()->fX;
+			vehPoss.y = pCVehicleTeleport->GetPosition()->fY;
+			vehPoss.z = pCVehicleTeleport->GetPosition()->fZ + -1.0f;
 			CalcScreenCoors( &vehPoss, &vehScreenposs );
-
-			pD3DFontChat->PrintShadow(vehScreenposs.x, vehScreenposs.y, -1, buf);
+			// print vehicle warp target name below vehicle & vehicle esp
+			pD3DFontChat->PrintShadow(vehScreenposs.x, vehScreenposs.y + 10.0f, -1, buf);
 		}
-		else
+		else if (bCollision && pCollision)
 		{
+			D3DXVECTOR3 groundPoss, groundScreenposs;
+			groundPoss.x = vecGroundPos.fX;
+			groundPoss.y = vecGroundPos.fY;
+			groundPoss.z = vecGroundPos.fZ;
+			CalcScreenCoors( &groundPoss, &groundScreenposs );
+			// print warp distance
 			pD3DFontChat->PrintShadow(
-				(float)cursor_pos.x - pD3DFontChat->DrawLength(buf) + pD3DFontChat->DrawLength(buf) / 2 + 3.5f,
-				((float)cursor_pos.y + 38.0f),
+				groundScreenposs.x - (pD3DFontChat->DrawLength(buf) / 2.0f) + 3.5f,
+				groundScreenposs.y - 20.0f,
 				-1, buf);
 		}
 	}
@@ -2494,7 +2613,7 @@ void renderChat ( void )
 						// restore the original first character in the url
 						*pUrl = url_buffer[0];
 						if ( ent->iType == 10 )
-							chatPos[0] += pD3DFontChat->DrawLength( ent->szPrefix ) + pD3DFontChat->DrawLength( " " );
+							chatPos[0] += pD3DFontChat->DrawLength( ent->szPrefix );
 
 						// y pos
 						chatPos[1] = fYChatPos + ((1.0f + pD3DFontChat->DrawHeight())*(int)pos_array);
@@ -3069,7 +3188,7 @@ void renderSAMP ( void )
 		renderChat();
 		renderScoreList();
 		renderTextLabels();
-		point2warp();
+		clickWarp();
 
 		if ( iViewingInfoPlayer == -1 )
 		{ }
