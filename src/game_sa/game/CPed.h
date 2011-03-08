@@ -228,6 +228,9 @@ public:
     virtual void            GetVoice           ( const char** pszVoiceType, const char** pszVoice ) = 0;
     virtual void            SetVoice           ( short sVoiceType, short sVoiceID ) = 0;
     virtual void            SetVoice           ( const char* szVoiceType, const char* szVoice ) = 0;
+
+	virtual void			GetGravity			( CVector* pvecGravity ) const = 0;
+	virtual void			SetGravity			( const CVector* pvecGravity ) = 0;
 };
 
 #endif

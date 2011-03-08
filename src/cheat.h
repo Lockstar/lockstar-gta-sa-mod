@@ -161,7 +161,6 @@ struct cheat_state_actor
 	bool	fly_on;
 	bool	fly_enabled;
 	bool	fly_active;
-	CVector gravityVector;
 };
 
 struct cheat_state_vehicle

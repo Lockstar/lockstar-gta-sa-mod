@@ -23,18 +23,18 @@
 #include "main.h"
 
 // new function to jump into vehicles without jacking (also for single player)
-void vehicleJumper ( int iVehicleID )
+bool vehicleJumper ( int iVehicleID )
 {
 	// can't touch this
 	if ( iVehicleID == VEHICLE_SELF )
-		return;
+		return false;
 
 	// get vehicle_info
 	struct vehicle_info *pVehicle = vehicle_info_get( iVehicleID, 0 );
 
 	// check that the vehicle is legit
 	if ( isBadPtr_GTA_pVehicle(pVehicle) )
-		return;
+		return false;
 
 	traceLastFunc( "vehicleJumper()" );
 
@@ -43,45 +43,45 @@ void vehicleJumper ( int iVehicleID )
 	{
 		int iVehicleSAMPID = getSAMPVehicleIDFromGTAVehicle( pVehicle );
 		if ( isBadPtr_SAMP_iVehicleID(iVehicleSAMPID) )
-			return;
+			return false;
 	}
 
 	if ( pVehicle->hitpoints == 0.0f )
 	{
 		cheat_state_text( "Vehicle is destroyed" );
-		return;
+		return false;
 	}
 
 	if ( cheat_state->actor.air_brake )
 	{
 		cheat_state_text( "On foot airbrake must be disabled" );
-		return;
+		return false;
 	}
 
 	if ( cheat_state->actor.stick )
 	{
 		cheat_state_text( "On foot stick must be disabled" );
-		return;
+		return false;
 	}
 
 	if ( !pVehicle->base.bIsVisible )
 	{
 		cheat_state_text( "Vehicle is not visible." );
-		return;
+		return false;
 	}
 
 	struct actor_info	*self = actor_info_get( ACTOR_SELF, 0 );
 	if ( self != NULL && pVehicle->base.interior_id != self->base.interior_id )
 	{
 		cheat_state_text( "Vehicle is in another interior." );
-		return;
+		return false;
 	}
 
 	int iGTAVehicleID;
 	iGTAVehicleID = ScriptCarId( pVehicle );
 
 	if ( pVehicle->passengers[0] == self )
-		return;
+		return false;
 	
 	if ( !pVehicle->base.bUsesCollision )
 		pVehicle->base.bUsesCollision = 1;
@@ -91,7 +91,7 @@ void vehicleJumper ( int iVehicleID )
 	{
 		GTAfunc_PutActorInCar(GetVehicleByGtaId(iGTAVehicleID));
 		pGameInterface->GetCamera()->RestoreWithJumpCut();
-		return;
+		return true;
 	}
 
 	const int	seat_count = gta_vehicle_get_by_id( pVehicle->base.model_alt_id )->passengers;
@@ -103,14 +103,14 @@ void vehicleJumper ( int iVehicleID )
 			{
 				GTAfunc_PutActorInCarAsPassenger(GetVehicleByGtaId((iGTAVehicleID)), seat - 1);
 				pGameInterface->GetCamera()->RestoreWithJumpCut();
-				return;
+				return true;
 			}
 		}
 	}
 
 	// no seats left, oh well
 	cheat_state_text( "No seats left to teleport into." );
-	return;
+	return false;
 }
 
 void cheat_vehicle_teleport ( struct vehicle_info *info, const float pos[3], int interior_id )
@@ -1617,10 +1617,35 @@ void cheat_handle_vehicle_fast_exit ( struct vehicle_info *vehicle_info, float t
 
 	if ( KEY_PRESSED(set.key_fast_exit) )
 	{
-		float				*coord =
-			( cheat_state->state == CHEAT_STATE_VEHICLE ) ? cheat_state->vehicle.coords : cheat_state->actor.coords;
-		struct actor_info	*self = actor_info_get( ACTOR_SELF, ACTOR_ALIVE );
-		coord[2] += 3.0f;
+		float *coord = new float[3];
+
+		// check for collision
+		CVehicle *pVehicle = pPedSelf->GetVehicle();
+		if (pVehicle)
+		{
+			CColPoint			*pCollision = NULL;
+			CEntitySAInterface	*pCollisionEntity = NULL;
+			CVector vecPedAbove = (g_vecUpNormal * 15.0f) + *pVehicle->GetPosition(); // up multiplier should be enough to get above most vehicles, but not enough to jump above things over it
+			bool bCollision = GTAfunc_ProcessLineOfSight( &vecPedAbove, pVehicle->GetPosition(), &pCollision, &pCollisionEntity,
+				0, 1, 0, 1, 0, 0, 0, 0 );
+			if (bCollision && pCollision)
+			{
+				// set pos floats for actual teleporting
+				coord[0] = pCollision->GetPosition()->fX;
+				coord[1] = pCollision->GetPosition()->fY;
+				coord[2] = pCollision->GetPosition()->fZ + 0.5f; // should be enough so we're surfing properly
+				// destroy the collision object
+				pCollision->Destroy();
+			}
+		}
+		else
+		{
+			// set pos floats for actual teleporting
+			coord[0] = pPedSelf->GetPosition()->fX;
+			coord[1] = pPedSelf->GetPosition()->fY;
+			coord[2] = pPedSelf->GetPosition()->fZ + 5.0f;
+		}
+
 		GTAfunc_RemoveActorFromCarAndPutAt(coord);
 	}
 }

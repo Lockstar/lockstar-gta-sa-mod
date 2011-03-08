@@ -1365,6 +1365,20 @@ void sendSCMEvent ( int iEvent, int iVehicleID, int iParam1, int iParam2 )
 	__asm call func
 }
 
+/*
+// this doesn't work when wrapped around the toggle below, samp sux
+CMatrix toggleSAMPCursor_Camera = CMatrix();
+void _cdecl toggleSAMPCursor_SaveCamera ( void )
+{
+	pGame->GetCamera()->GetMatrix(&toggleSAMPCursor_Camera);
+}
+
+void _cdecl toggleSAMPCursor_RestoreCamera ( void )
+{
+	pGame->GetCamera()->SetMatrix(&toggleSAMPCursor_Camera);
+}
+*/
+
 #define FUNC_TOGGLECURSOR			0x50FD0
 #define FUNC_CURSORUNLOCKACTORCAM	0x50EB0
 void toggleSAMPCursor(int iToggle)
@@ -1375,23 +1389,32 @@ void toggleSAMPCursor(int iToggle)
 
 	if(iToggle)
 	{
-		_asm mov ecx, g_Input
-		_asm push 0
-		_asm push 2
-		_asm call func
+		_asm
+		{
+			//call toggleSAMPCursor_SaveCamera;
+			mov ecx, g_Input;
+			push 0;
+			push 2;
+			call func;
+			//call toggleSAMPCursor_RestoreCamera;
+		}
 		g_iCursorEnabled = 1;
 	}
 	else
 	{
-		_asm mov ecx, g_Input
-		_asm push 1
-		_asm push 0
-		_asm call func
-
+		_asm
+		{
+			mov ecx, g_Input;
+			push 1;
+			push 0;
+			call func;
+		}
 		uint32_t funcunlock = g_dwSAMP_Addr + FUNC_CURSORUNLOCKACTORCAM;
-		_asm mov ecx, g_Input
-		_asm call funcunlock
-
+		_asm
+		{
+			mov ecx, g_Input;
+			call funcunlock;
+		}
 		g_iCursorEnabled = 0;
 	}
 }
