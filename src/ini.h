@@ -317,9 +317,11 @@ struct settings
 	float					vehicle_hop_speed;
 
 	int						key_spiderwheels;
+	/*
 	int						key_spiderfeet;
 	int						key_ninjaflipfront;
 	int						key_ninjaflipback;
+	*/
 
 	int						key_fly_player;
 	int						key_fly_player_accelerate;
