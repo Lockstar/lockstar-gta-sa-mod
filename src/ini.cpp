@@ -471,12 +471,14 @@ static void ini_init ( void )
 	/* Spiders and Ninjas */
 	if ( (ent = ini_register_entry("key_spiderwheels", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_spiderwheels, "np5" );
+	/*
 	if ( (ent = ini_register_entry("key_spiderfeet", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_spiderfeet, "np5" );
 	if ( (ent = ini_register_entry("key_ninjaflipfront", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_ninjaflipfront, "r" );
 	if ( (ent = ini_register_entry("key_ninjaflipback", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_ninjaflipback, "f" );
+	*/
 
 	/* OnFoot Fly */
 	if ( (ent = ini_register_entry("key_fly_player", TYPE_KEY)) != NULL )
