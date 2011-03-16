@@ -5,8 +5,10 @@ relre:.*\.sdf
 relre:.*\.opensdf
 relre:d3d9\.dll
 relre:_build[/]revision.txt
-relre:src/ipch/.*
-relre:src/obj/.*
+relre:.*/ipch/.*
+relre:.*/obj/.*
+relre:.*/Release/.*
+relre:.*/Debug/.*
 relre:_DEV_installers/.*
 relre:_distro_installers/.*
 relre:_distro_source/.*
