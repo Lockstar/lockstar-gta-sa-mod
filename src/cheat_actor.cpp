@@ -695,10 +695,15 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			// set gravity down
 			pPedSelf->SetGravity( &-g_vecUpNormal );
 
-			// remove fly up speed limit patch
-			if (patch_RemoveFlyUpLimit.installed)
+			// remove fly up speed hard limit patch
+			if (patch_RemoveFlyUpHardLimit.installed)
 			{
-				patcher_remove(&patch_RemoveFlyUpLimit);
+				patcher_remove(&patch_RemoveFlyUpHardLimit);
+			}
+			// remove fly soft limiters patch
+			if (patch_RemoveFlySoftLimit.installed)
+			{
+				patcher_remove(&patch_RemoveFlySoftLimit);
 			}
 
 			// copy camera rotation to player
@@ -779,10 +784,15 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			if ( !cheat_state->actor.fly_active )
 			{
 				cheat_state->actor.fly_active = true;
-				// install up speed remover
-				if (!patch_RemoveFlyUpLimit.installed)
+				// install up speed hard limiter patch
+				if (!patch_RemoveFlyUpHardLimit.installed)
 				{
-					patcher_install(&patch_RemoveFlyUpLimit);
+					patcher_install(&patch_RemoveFlyUpHardLimit);
+				}
+				// install fly soft limiters patch
+				if (!patch_RemoveFlySoftLimit.installed)
+				{
+					patcher_install(&patch_RemoveFlySoftLimit);
 				}
 				if ( keySpeedState == speed_none )
 				{
@@ -843,8 +853,8 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			{
 			case speed_accelerate:
 				{
-					fly_speed = 2.0f;
-					fly_acceleration = 0.9f * time_diff;
+					fly_speed = 100.0f; // 2.0
+					fly_acceleration = 3.0f * time_diff; // 0.9
 				}
 			case speed_none:
 				{
@@ -1091,10 +1101,15 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			cheat_state->actor.fly_active = false;
 			// set gravity down
 			pPedSelf->SetGravity( &-g_vecUpNormal );
-			// remove up speed limiter patch
-			if (patch_RemoveFlyUpLimit.installed)
+			// remove up speed hard limiter patch
+			if (patch_RemoveFlyUpHardLimit.installed)
 			{
-				patcher_remove(&patch_RemoveFlyUpLimit);
+				patcher_remove(&patch_RemoveFlyUpHardLimit);
+			}
+			// remove fly soft limiters patch
+			if (patch_RemoveFlySoftLimit.installed)
+			{
+				patcher_remove(&patch_RemoveFlySoftLimit);
 			}
 			// copy camera rotation to player
 			ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
