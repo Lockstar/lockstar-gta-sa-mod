@@ -74,7 +74,6 @@ Section "Install" SecDummy
 	Delete m0d_s0beit_sa.log
 	Delete m0d_s0beit_sa_all.log
 	; delete from current previous installation
-	Delete mod_sa.raw
 	Delete mod_sa_setup.log
 
 	; install stuff
