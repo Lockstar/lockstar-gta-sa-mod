@@ -104,6 +104,22 @@ static struct patch_set patch_vehicle_hp =
 	}
 };
 
+static struct patch_set patch_gta_auto_aim =
+{
+	"GTA: Autoaim",
+	0,
+	0,
+	{ { 1, (void *)0x00B6EC2E, (uint8_t *)"\x01", (uint8_t *)"\x00", NULL }, { 1, (void *)0x00BA6818, (uint8_t *)"\x00",
+	(uint8_t *)"\x01", NULL }, { 5, (void *)0x00524013,
+	(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL }, { 5, (void *)0x00523F3E,
+	(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL }, { 5, (void *)0x00525615,
+	(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL }, { 5, (void *)0x005221FC,
+	(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL }, { 6, (void *)0x0060E08E,
+	(uint8_t *)"\x0F\x85\x79\x02\x00\x00", NULL, NULL }, { 6, (void *)0x0060E6B1,
+	(uint8_t *)"\x0F\x85\xAC\x00\x00\x00", NULL, NULL }
+	}
+};
+
 static struct patch_set patch_RemoveFlyUpHardLimit =
 {
 	"Remove Fly Up Hard Limit", // removes the up speed hard limiter when "falling", for Player Fly

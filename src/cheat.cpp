@@ -164,12 +164,8 @@ void cheat_hook ( HWND wnd )
 		cheat_state->vehicle.is_engine_on = 1;
 		cheat_state->_generic.interior_patch_enabled = 0;
 
-		// esp states
-		cheat_state->render_player_tags = set.esp_players_defaulton;
-		cheat_state->render_vehicle_tags = set.esp_vehicles_defaulton;
-		cheat_state->_generic.teletext = set.render_teleport_texts;
-		cheat_state->_generic.pickuptexts = set.render_pickup_texts;
-		cheat_state->_generic.objecttexts = set.render_object_texts;
+		// refreshes any cheat_state stuff set from the INI
+		ini_load_setSettings();
 
 		/* install patches from the .ini file */
 		for ( i = 0; i < INI_PATCHES_MAX; i++ )

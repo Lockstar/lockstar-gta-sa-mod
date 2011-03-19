@@ -329,6 +329,7 @@ struct settings
 	int						key_fly_player_strafeLeft;
 	int						key_fly_player_strafeRight;
 	int						key_fly_player_strafeUp;
+	float					fly_player_speed;
 
 	float					handling_multiplier;
 
@@ -383,3 +384,4 @@ extern struct settings	set;
 void					ini_load ( void );
 void					ini_reload ( void );
 void					ini_free ( void );
+void					ini_load_setSettings( void );

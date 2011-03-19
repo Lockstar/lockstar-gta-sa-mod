@@ -73,8 +73,9 @@
 #define ID_CHEAT_HANDLING					170
 #define ID_CHEAT_KEEP_TRAILER				180
 #define ID_CHEAT_NOCOLS						190
-#define ID_CHEAT_CHAMS					200
+#define ID_CHEAT_CHAMS						200
 #define ID_CHEAT_CJ_RUNSTYLE				210
+#define ID_CHEAT_FLY_SPEED					220
 
 #define ID_CHEAT_INVULN_ACTOR				0
 #define ID_CHEAT_INVULN_VEHICLE				1
@@ -1089,6 +1090,9 @@ static int menu_callback_cheats ( int op, struct menu_item *item )
 
 		case ID_CHEAT_CJ_RUNSTYLE:
 			return set.runanimation_cj;
+
+		case ID_CHEAT_FLY_SPEED:
+			return cheat_state->actor.fly_on;
 		}
 		break;
 
@@ -1168,6 +1172,10 @@ static int menu_callback_cheats ( int op, struct menu_item *item )
 			set.runanimation_cj ^= 1;
 			break;
 
+		case ID_CHEAT_FLY_SPEED:
+			cheat_state->actor.fly_on ^= 1;
+			break;
+
 		default:
 			return 0;
 		}
@@ -1191,7 +1199,31 @@ static int menu_callback_cheats ( int op, struct menu_item *item )
 			cheat_state->game_speed += (float)mod * 0.05f;
 			menu_item_name_set( item, "Game speed: %d%%", (int)roundf(cheat_state->game_speed * 100.0f) );
 			return 1;
-		}
+
+		case ID_CHEAT_FLY_SPEED:
+			if (cheat_state->actor.fly_player_speed <= 4.95f)
+			{
+				cheat_state->actor.fly_player_speed += mod * 0.1f;
+			}
+			else if (cheat_state->actor.fly_player_speed <= 5.05f
+				&& mod < 0)
+			{
+				cheat_state->actor.fly_player_speed += mod * 0.1f;
+			}
+			else
+			{
+				cheat_state->actor.fly_player_speed += mod * 1.0f;
+			}
+			// don't allow it to go under 0.1f
+			if (cheat_state->actor.fly_player_speed < 0.1f)
+			{
+				cheat_state->actor.fly_player_speed = 0.1f;
+			}
+
+			menu_item_name_set( item, "Player Fly Speed: %0.01f", cheat_state->actor.fly_player_speed );
+			return 1;
+
+		} // end of INC/DEC
 	}
 
 	return 0;
@@ -2917,6 +2949,7 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_cheats, NULL, "Toggle vehicle collisions", ID_CHEAT_NOCOLS, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_cheats, NULL, "Chams", ID_CHEAT_CHAMS, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_cheats, NULL, "Use CJ running style", ID_CHEAT_CJ_RUNSTYLE, MENU_COLOR_DEFAULT, NULL );
+	menu_item_add( menu_cheats, NULL, "Player Fly Speed: 1.0", ID_CHEAT_FLY_SPEED, MENU_COLOR_DEFAULT, NULL );
 
 	/* main menu -> cheats -> invulnerable */
 	menu_item_add( menu_cheats_inv, NULL, "Actor invulnerability", ID_CHEAT_INVULN_ACTOR, MENU_COLOR_DEFAULT, NULL );

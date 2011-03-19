@@ -38,22 +38,6 @@ void cheat_actor_teleport ( struct actor_info *info, const float pos[3], int int
 	gta_interior_id_set( interior_id );
 }
 
-static struct patch_set patch_gta_auto_aim =
-{
-	"GTA: Autoaim",
-	0,
-	0,
-	{ { 1, (void *)0x00B6EC2E, (uint8_t *)"\x01", (uint8_t *)"\x00", NULL }, { 1, (void *)0x00BA6818, (uint8_t *)"\x00",
-				(uint8_t *)"\x01", NULL }, { 5, (void *)0x00524013,
-					(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL }, { 5, (void *)0x00523F3E,
-						(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL }, { 5, (void *)0x00525615,
-							(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL }, { 5, (void *)0x005221FC,
-								(uint8_t *)"\xA0\x2E\xEC\xB6\x00", NULL, NULL }, { 6, (void *)0x0060E08E,
-									(uint8_t *)"\x0F\x85\x79\x02\x00\x00", NULL, NULL }, { 6, (void *)0x0060E6B1,
-										(uint8_t *)"\x0F\x85\xAC\x00\x00\x00", NULL, NULL }
-	}
-};
-
 void cheat_handle_actor_autoaim ( struct actor_info *info, double time_diff )
 {
 	traceLastFunc( "cheat_handle_actor_autoaim()" );
@@ -748,7 +732,9 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 		}
 		else // I believe I can fly...
 		{
-			// keys/buttons input
+
+// keys/buttons input
+
 			playerFly_keySpeedStates keySpeedState;
 			if ( KEY_DOWN(set.key_fly_player_accelerate) )
 			{
@@ -831,6 +817,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			CVector vecSpeed, rotationAxis;
 			float theta, thetaBase, rotationMultiplier;
 			pPedSelf->GetMoveSpeed(&vecSpeed);
+			float speed = vecSpeed.Length();
 
 			// copy camera rotation to player
 			ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
@@ -847,21 +834,72 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 // acceleration/deceleration
 
 			// acceleration
-			float fly_speed = 0.1f;
-			float fly_acceleration = 0.3f * time_diff;
+			float fly_speed_max;
+			float fly_acceleration;
+			float fly_speed = cheat_state->actor.fly_player_speed;
 			switch ( keySpeedState )
 			{
 			case speed_accelerate:
 				{
-					fly_speed = 100.0f; // 2.0
-					fly_acceleration = 3.0f * time_diff; // 0.9
-				}
-			case speed_none:
-				{
-					if ( vecSpeed.Length() < fly_speed )
+					if (fly_speed >= 1.0f)
+					{
+						fly_speed_max = 1.333f * (1.0f + (0.5f / fly_speed)) * fly_speed;
+						fly_acceleration = time_diff * ((0.7f + (0.25f / (fly_speed / 4.0f))) * fly_speed);
+					}
+					else
+					{
+						fly_speed_max = 1.333f * (1.0f + (0.5f * fly_speed)) * fly_speed;
+						fly_acceleration = time_diff * ((0.7f + fly_speed) * fly_speed);
+					}
+
+					if ( vecSpeed.Length() < fly_speed_max )
 					{
 						vecSpeed += matCamera.vFront * fly_acceleration;
 					}
+
+					// don't have NearZero speeds
+					if ( !vecSpeed.IsNearZero() )
+					{
+						// set speed vector
+						ainfo->m_SpeedVec = vecSpeed;
+					}
+
+				}
+				break;
+			case speed_none:
+				{
+					if (fly_speed >= 1.0f)
+					{
+						fly_speed_max = 0.1f;
+						fly_acceleration = time_diff * 0.3f;
+					}
+					else
+					{
+						fly_speed_max = 0.1f * fly_speed;
+						fly_acceleration = time_diff * (0.3f * fly_speed);
+					}
+
+					if ( vecSpeed.Length() < fly_speed_max )
+					{
+						vecSpeed += matCamera.vFront * fly_acceleration;
+					}
+
+					// calculate wind resistance
+					float windResistance;
+					float windSpeedDivisor = 1.5f;
+					if (fly_speed >= windSpeedDivisor)
+					{
+						windResistance = time_diff * ( ( (fly_speed * 0.028f) + (speed * (fly_speed / (fly_speed / windSpeedDivisor)) * 0.38f) ) / (fly_speed / windSpeedDivisor) );
+					}
+					else if (fly_speed >= 1.0f)
+					{
+						windResistance = time_diff * ( ( (fly_speed * 0.028f) + (speed * (fly_speed / (fly_speed / windSpeedDivisor)) * 0.38f) ) * (fly_speed / windSpeedDivisor) );
+					}
+					else
+					{
+						windResistance = time_diff * ( ( (fly_speed * 0.028f) + (speed * 0.38f) ) * fly_speed );
+					}
+					vecSpeed -= vecSpeed * windResistance;
 
 					// don't have NearZero speeds
 					if ( !vecSpeed.IsNearZero() )
@@ -874,20 +912,9 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			case speed_decelerate:
 				{
 					// this bit should be converted to mta-style code
-					float speed = vect3_length( ainfo->speed );
 					vect3_normalize( ainfo->speed, ainfo->speed );
-					if (speed > 1.0f)
-					{
-						speed -= time_diff * 0.8f / speed;
-					}
-					else if (speed > 0.5f)
-					{
-						speed -= time_diff * 0.6f / (speed / 2);
-					}
-					else
-					{
-						speed -= time_diff * 0.3f;
-					}
+
+					speed -= time_diff * ((0.1f + speed) * (0.6f / (fly_speed / 2.0f)) * fly_speed);
 
 					if ( speed < 0.0f )
 						speed = 0.0f;
@@ -960,7 +987,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			matSpeedVecRotate.vFront = vecSpeed;
 			matSpeedVecRotate.vFront.Normalize();
 			// calculate rotation multiplier, time_diff * 69.0 is ideal for calculations, always time for 69
-			rotationMultiplier = (time_diff * 69.0f) / ( 32.0f + (vecSpeed.Length() * 10.0f) );
+			rotationMultiplier = (time_diff * 69.0f) / ( 32.0f + (vecSpeed.Length() * 5.0f) );
 			// calculate rotation
 			rotationAxis = rotationTarget;
 			rotationAxis.CrossProduct( &matSpeedVecRotate.vFront );
@@ -972,11 +999,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				matSpeedVecRotate = matSpeedVecRotate.Rotate( &rotationAxis, theta );
 
 				// calculate new speed
-				float speedReduction = 0.0f;
-				if ( keyStrafeState != strafe_up )
-				{
-					speedReduction = time_diff * 0.2f * (thetaBase - 1.0f);
-				}
+				float speedReduction = time_diff * (vecSpeed.Length() * (thetaBase - 1.0f));
 
 				// set new speed vector
 				matSpeedVecRotate.vFront.Normalize();
@@ -1002,7 +1025,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				rotationAxis = g_vecUpNormal;
 				rotationAxis.CrossProduct( &vecSpeedRotate );
 				thetaBase = rotationTarget.DotProduct(&vecSpeedRotate);
-				rotationMultiplier = (time_diff * 69.0f) / ( 8.0f + (vecSpeed.Length() * 1.5f) );
+				rotationMultiplier = (time_diff * 69.0f) / ( 16.0f + (vecSpeed.Length() * 2.0f) );
 				theta = cos(thetaBase * rotationMultiplier);
 				if ( !near_zero(theta) )
 				{
@@ -1040,19 +1063,19 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			if ( !near_zero(theta) )
 			{
 				playerFly_lastPedRotation = playerFly_lastPedRotation.Rotate( &rotationAxis, theta );
-				//matPedTarget = matPedTarget.Rotate( &rotationAxis, theta );
+				matPedTarget = matPedTarget.Rotate( &rotationAxis, theta );
 			}
 
 			// up
-			/*rotationAxis = playerFly_lastPedRotation.vUp;
+			rotationAxis = playerFly_lastPedRotation.vUp;
 			rotationAxis.CrossProduct( &matPedTarget.vUp );
 			thetaBase = playerFly_lastPedRotation.vUp.DotProduct(&matPedTarget.vUp);
-			theta = -cos(thetaBase) * rotationMultiplier;
+			theta = -cos(thetaBase) * (rotationMultiplier / 10.0f);
 			if ( !near_zero(theta) )
 			{
 				playerFly_lastPedRotation = playerFly_lastPedRotation.Rotate( &rotationAxis, theta );
 				//matPedTarget = matPedTarget.Rotate( &rotationAxis, theta );
-			}*/
+			}
 
 			// normalize everything
 			playerFly_lastPedRotation.vFront.Normalize();
@@ -1065,20 +1088,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			// set player matrix
 			pPedSelf->SetMatrix(&playerFly_lastPedRotation);
 
-			//CCameraSA *Camera = (CCameraSA*)pGameInterface->GetCamera();
-			//Camera->GetInterface()->m_vecBottomFrustumNormal = playerFly_lastPedRotation.vUp;
-			//Camera->GetInterface()->m_vecFrustumNormals[0] = playerFly_lastPedRotation.vFront;
-			//Camera->GetInterface()->m_vecFrustumWorldNormals[2] = playerFly_lastPedRotation.vUp;
-			//Camera->GetInterface()->m_vecRightFrustumNormal = playerFly_lastPedRotation.vRight;
-			//Camera->GetInterface()->m_viewMatrix.vRight = playerFly_lastPedRotation.vRight;
-			//Camera->GetInterface()->Placeable.m_transform.m_translate = playerFly_lastPedRotation.vFront;
-
-			//CCamSA *Cam = (CCamSA*)pGame->GetCamera()->GetCam(pGame->GetCamera()->GetActiveCam());
-			//CCamSAInterface *CamSA = Cam->GetInterface();
-			//CamSA->Up = playerFly_lastPedRotation.vUp;
-			//CamSA->f_Roll = playerFly_lastPedRotation.vRight.fY;
-
-//
+// set the camera (our CPed gravity gets ignored while flying)
 
 			// we should be setting it like this
 			//CVector smoothedGrav = -playerFly_lastPedRotation.vUp + (g_vecUpNormal * 2.0f);
@@ -1126,19 +1136,10 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 int lineSpace = 0;
 char buf[256];
 
-extern DWORD cameraTypeSwitch_eax_back;
-
-sprintf( buf, "camera mode: %d", cameraTypeSwitch_eax_back );
+sprintf( buf, "text: %d", VARIABLE );
 pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
 lineSpace += 12;
 
-sprintf( buf, "B6EC2E: %d", *(DWORD*)0xB6EC2E );
-pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
-lineSpace += 12;
-
-sprintf( buf, "8CCF00: %d", *(DWORD*)0x8CCF00 );
-pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
-lineSpace += 12;
 */
 
 

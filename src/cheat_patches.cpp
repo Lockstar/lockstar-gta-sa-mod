@@ -23,9 +23,8 @@
 
 #include "main.h"
 
+// these get installed before most functions within the process get called
 void cheat_patches_installRuntimePatches(void)
 {
 	patcher_install(&patch_EnableResolutions);
-	//memcpy((void *)0x00745BC9, "\x90\x90", 2);
-	//memcpy((void *)0x007459E1, "\x90\x90", 2);
 }

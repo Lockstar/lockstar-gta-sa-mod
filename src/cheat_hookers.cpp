@@ -1773,18 +1773,15 @@ void _declspec ( naked ) HOOK_PedCamEnd ()
 // hook installers
 void cheat_hookers_installhooks ( void )
 {
-	// hooks
+	// ped cam
 	HookInstall( HOOKPOS_PedCamStart, (DWORD) HOOK_PedCamStart, 6 );
 	//HookInstall( HOOKPOS_PedCamLookDir1, (DWORD) HOOK_PedCamLookDir1, 5 );
 	//HookInstall( HOOKPOS_PedCamLookDir2, (DWORD) HOOK_PedCamLookDir2, 6 );
 	HookInstall( HOOKPOS_PedCamHistory, (DWORD) HOOK_PedCamHistory, 8 );
 	HookInstallCall( CALL_PedCamUp, (DWORD) HOOK_PedCamUp );
 	//HookInstall( HOOKPOS_PedCamEnd, (DWORD) HOOK_PedCamEnd, 9 );
-	
-	
-	
 
-
+	// vehicle cam
 	HookInstall( HOOKPOS_VehicleCamStart, (DWORD) HOOK_VehicleCamStart, 6 );
 	HookInstall( HOOKPOS_VehicleCamTargetZTweak, (DWORD) HOOK_VehicleCamTargetZTweak, 8 );
 	HookInstall( HOOKPOS_VehicleCamLookDir1, (DWORD) HOOK_VehicleCamLookDir1, 5 );
@@ -1793,24 +1790,25 @@ void cheat_hookers_installhooks ( void )
 	HookInstall( HOOKPOS_VehicleCamEnd, (DWORD) HOOK_VehicleCamEnd, 6 );
 	HookInstall( HOOKPOS_VehicleLookBehind, (DWORD) HOOK_VehicleLookBehind, 6 );
 	HookInstall( HOOKPOS_VehicleLookAside, (DWORD) HOOK_VehicleLookAside, 6 );
+	HookInstallCall( CALL_VehicleCamUp, (DWORD) HOOK_VehicleCamUp );
+	HookInstallCall( CALL_VehicleLookBehindUp, (DWORD) HOOK_VehicleCamUp );
+	HookInstallCall( CALL_VehicleLookAsideUp, (DWORD) HOOK_VehicleCamUp );
 
+	// CPhysical gravity
 	HookInstall( HOOKPOS_CPhysical_ApplyGravity, (DWORD) HOOK_CPhysical_ApplyGravity, 6 );
 
+	// pool population
 	HookInstall( HOOKPOS_CVehicle_constructor, (DWORD) HOOK_CVehicle_constructor, 6 );
 	HookInstall( HOOKPOS_CVehicle_destructor, (DWORD) HOOK_CVehicle_destructor, 6 );
 	HookInstall( HOOKPOS_CPed_constructor, (DWORD) HOOK_CPed_constructor, 6 );
 	HookInstall( HOOKPOS_CPed_destructor, (DWORD) HOOK_CPed_destructor, 6 );
 
+	// collision removal
 	HookInstall( HOOKPOS_PlayerCollision, (DWORD) HOOK_PlayerCollision, 6 );
 	//HookInstall( HOOKPOS_PlayerCollision_CrashFix, (DWORD) PlayerCollision_CrashFix, 6 );
 	//HookInstall( HOOKPOS_PlayerCollision_CrashFixX, (DWORD) PlayerCollision_CrashFixX, 6 );
 	HookInstall( HOOKPOS_CEntity_Render, (DWORD) HOOK_RenderEntity, 6 );
 	HookInstall( HOOKPOS_Player_Climb, (DWORD) HOOK_PlayerClimb, 9 );
-
-	// calls
-	HookInstallCall( CALL_VehicleCamUp, (DWORD) HOOK_VehicleCamUp );
-	HookInstallCall( CALL_VehicleLookBehindUp, (DWORD) HOOK_VehicleCamUp );
-	HookInstallCall( CALL_VehicleLookAsideUp, (DWORD) HOOK_VehicleCamUp );
 
 	// SpiderFeet
 	//HookInstallCall( CALL_CMatrix__rotateAroundZ, (DWORD) HOOK_CMatrix__rotateAroundZ );
