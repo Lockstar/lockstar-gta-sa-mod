@@ -493,6 +493,8 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.key_fly_player_strafeRight, "d" );
 	if ( (ent = ini_register_entry("key_fly_player_strafeUp", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_fly_player_strafeUp, "space" );
+	if ( (ent = ini_register_entry("fly_player_speed", TYPE_FLOAT)) != NULL )
+		ini_register_data( ent, &set.fly_player_speed, "1.0" );
 
 
 	if ( (ent = ini_register_entry("handling_multiplier", TYPE_FLOAT)) != NULL )
@@ -1559,6 +1561,28 @@ parse_continue: ;
 
 	//Log("Done.");
 	first_load = 0;
+
+	// refreshes any cheat_state stuff set from the INI
+	ini_load_setSettings();
+}
+
+void ini_load_setSettings ( void )
+{
+	if ( cheat_state != NULL )
+	{
+		// updatable fly settings
+		if (set.fly_player_speed < 0.1f)
+			cheat_state->actor.fly_player_speed = 0.1f;
+		else
+			cheat_state->actor.fly_player_speed = set.fly_player_speed;
+
+		// esp states
+		cheat_state->render_player_tags = set.esp_players_defaulton;
+		cheat_state->render_vehicle_tags = set.esp_vehicles_defaulton;
+		cheat_state->_generic.teletext = set.render_teleport_texts;
+		cheat_state->_generic.pickuptexts = set.render_pickup_texts;
+		cheat_state->_generic.objecttexts = set.render_object_texts;
+	}
 }
 
 void ini_reload ( void )
