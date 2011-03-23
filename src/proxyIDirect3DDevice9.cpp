@@ -2613,7 +2613,7 @@ void renderChat ( void )
 						// restore the original first character in the url
 						*pUrl = url_buffer[0];
 						if ( ent->iType == 10 )
-							chatPos[0] += pD3DFontChat->DrawLength( ent->szPrefix );
+							chatPos[0] += pD3DFontChat->DrawLength( ent->szPrefix ) + pD3DFontChat->DrawLength( " " );
 
 						// y pos
 						chatPos[1] = fYChatPos + ((1.0f + pD3DFontChat->DrawHeight())*(int)pos_array);

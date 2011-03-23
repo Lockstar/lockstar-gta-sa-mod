@@ -494,7 +494,9 @@ static void ini_init ( void )
 	if ( (ent = ini_register_entry("key_fly_player_strafeUp", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_fly_player_strafeUp, "space" );
 	if ( (ent = ini_register_entry("fly_player_speed", TYPE_FLOAT)) != NULL )
-		ini_register_data( ent, &set.fly_player_speed, "1.0" );
+		ini_register_data( ent, &set.fly_player_speed, "2.0" );
+	if ( (ent = ini_register_entry("fly_player_accel_time", TYPE_FLOAT)) != NULL )
+		ini_register_data( ent, &set.fly_player_accel_time, "0.5" );
 
 
 	if ( (ent = ini_register_entry("handling_multiplier", TYPE_FLOAT)) != NULL )
@@ -1571,10 +1573,8 @@ void ini_load_setSettings ( void )
 	if ( cheat_state != NULL )
 	{
 		// updatable fly settings
-		if (set.fly_player_speed < 0.1f)
-			cheat_state->actor.fly_player_speed = 0.1f;
-		else
-			cheat_state->actor.fly_player_speed = set.fly_player_speed;
+		if ( set.fly_player_speed < 0.1f )
+			set.fly_player_speed = 0.1f;
 
 		// esp states
 		cheat_state->render_player_tags = set.esp_players_defaulton;
