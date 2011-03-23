@@ -704,10 +704,12 @@ void cheat_handle_vehicle_nitro ( struct vehicle_info *info, float time_diff )
 		float	speed = set.nitro_high;
 
 		if ( !near_zero(set.nitro_accel_time) )
+		{
 			etime += 1.0f - ( set.nitro_high - speed_off ) / set.nitro_high;
 
-		if ( etime < 1.0f && !near_zero(set.nitro_accel_time) )
-			speed = set.nitro_high * etime;
+			if ( etime < 1.0f )
+				speed *= etime;
+		}
 
 		for ( temp = info; temp != NULL; temp = temp->trailer )
 		{
