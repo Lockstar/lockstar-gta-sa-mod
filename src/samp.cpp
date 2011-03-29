@@ -1447,28 +1447,56 @@ uint8_t _declspec ( naked ) carjacked_hook ( void )
 }
 
 #define HOOK_EXIT_SERVERMESSAGE_HOOK	0x6EAE3
+int		g_iNumPlayersMuted = 0;
+bool	g_bPlayerMuted[SAMP_PLAYER_MAX];
 uint8_t _declspec ( naked ) server_message_hook ( void )
 {
 	int		thismsg;
 	DWORD	thiscolor;
+
 	__asm mov thismsg, esi
 	__asm mov thiscolor, eax
 	thiscolor = ( thiscolor >> 8 ) | 0xFF000000;
 
 	static char		last_servermsg[256];
 	static DWORD	allow_show_again;
-	if ( (strcmp(last_servermsg, (char *)thismsg) != NULL || GetTickCount() > allow_show_again)
-	 ||	 cheat_state->_generic.cheat_panic_enabled
-	 ||	 !set.anti_spam )
+	if ( !set.anti_spam || cheat_state->_generic.cheat_panic_enabled
+	 || (strcmp(last_servermsg, (char *)thismsg) != NULL || GetTickCount() > allow_show_again) )
 	{
+		// might be a personal message by muted player - look for name in server message
+		// ignore message, if name was found
+		if ( set.anti_spam && g_iNumPlayersMuted > 0 )
+		{
+			int i, j;
+			char *playerName = NULL;
+			for ( i = 0, j = 0; i < SAMP_PLAYER_MAX && j < g_iNumPlayersMuted; i++ )
+			{
+				if ( g_bPlayerMuted[i] )
+				{
+					playerName = (char*)getPlayerName(i);
+
+					if ( playerName == NULL )
+					{
+						// Player not connected anymore - remove player from muted list
+						g_bPlayerMuted[i] = false;
+						g_iNumPlayersMuted--;
+						continue;
+					}
+					else if ( strstr((char*)thismsg, playerName) != NULL )
+						goto ignoreThisServChatMsg;
+					j++;
+				}
+			}
+		}
 		strcpy_s( last_servermsg, sizeof(last_servermsg), (char *)thismsg );
 		addToChatWindow( (char *)thismsg, thiscolor );
 		allow_show_again = GetTickCount() + 5000;
+		
+		if( set.chatbox_logging )
+			LogChatbox( false, "%s", thismsg );
 	}
 
-	if( set.chatbox_logging )
-		LogChatbox( false, "%s", thismsg );
-
+ignoreThisServChatMsg:
 	__asm mov ebx, g_dwSAMP_Addr
 	__asm add ebx, HOOK_EXIT_SERVERMESSAGE_HOOK
 	__asm jmp ebx
@@ -1480,6 +1508,7 @@ uint8_t _declspec ( naked ) client_message_hook ( void )
 	static char last_clientmsg[SAMP_PLAYER_MAX][256];
 	int			thismsg;
 	uint16_t	id;
+
 	__asm mov id, dx
 	__asm lea edx, [esp+0x128]
 	__asm mov thismsg, edx
@@ -1492,7 +1521,7 @@ uint8_t _declspec ( naked ) client_message_hook ( void )
 
 			if( set.chatbox_logging )
 				LogChatbox( false, "%s: %s", getPlayerName(id), thismsg );
-			goto us;
+			goto client_message_hook_jump_out;
 		}
 
 		static DWORD	allow_show_again = GetTickCount();
@@ -1500,6 +1529,10 @@ uint8_t _declspec ( naked ) client_message_hook ( void )
 		 ||  (strcmp(last_clientmsg[id], (char *)thismsg) != NULL || GetTickCount() > allow_show_again)
 		 ||	 cheat_state->_generic.cheat_panic_enabled )
 		{
+			// ignore chat from muted players
+			if ( set.anti_spam && g_iNumPlayersMuted > 0 && g_bPlayerMuted[id] )
+				goto client_message_hook_jump_out;
+
 			// nothing to copy anymore, after chatbox_logging, so copy this before
 			strcpy_s( last_clientmsg[id], sizeof(last_clientmsg[id]), (char *)thismsg );
 
@@ -1511,7 +1544,7 @@ uint8_t _declspec ( naked ) client_message_hook ( void )
 		}
 	}
 
-us:;
+client_message_hook_jump_out:;
 	__asm mov ebx, g_dwSAMP_Addr
 	__asm add ebx, HOOK_EXIT_CLIENTMESSAGE_HOOK
 	__asm jmp ebx
