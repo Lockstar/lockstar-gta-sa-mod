@@ -764,3 +764,5 @@ extern struct stTranslateGTASAMP_pedPool		translateGTASAMP_pedPool;
 
 extern int										g_iSpectateEnabled;
 extern int										g_iCursorEnabled;
+extern int										g_iNumPlayersMuted;
+extern bool										g_bPlayerMuted[SAMP_PLAYER_MAX];

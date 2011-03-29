@@ -43,6 +43,7 @@
 #define ID_MENU_PLAYERS_VEHWARP 101
 #define ID_MENU_PLAYERS_SPEC	102
 #define ID_MENU_PLAYERS_INFO	113
+#define ID_MENU_PLAYERS_MUTE	114
 #define ID_MENU_SAMPPATCHES		20
 #define ID_MENU_SERVER_LIST		21
 #define ID_MENU_HUDINDICATORS	22
@@ -703,6 +704,27 @@ static void menu_playerinfo_populate ( struct menu *menu )
 	}
 }
 
+static void menu_playermute_populate ( struct menu *menu )
+{
+	menu_items_free( menu );
+	if ( g_Players == NULL )
+		return;
+
+	char	text[64];
+	int		i;
+	for ( i = 0; i < SAMP_PLAYER_MAX; i++ )
+	{
+		if ( g_Players->iIsListed[i] != 1 || g_Players->pRemotePlayer[i] == NULL )
+		{
+			g_bPlayerMuted[i] = false;
+			continue;
+		}
+
+		snprintf( text, sizeof(text), "Mute %s (ID: %d)", getPlayerName(i), i );
+		menu_item_add( menu, NULL, text, i, MENU_COLOR_DEFAULT, (void *)(UINT_PTR) i );
+	}
+}
+
 #ifdef __CHEAT_VEHRECORDING_H__
 static void menu_routes_drop_populate ( struct menu *menu )
 {
@@ -807,6 +829,10 @@ static void menu_event_activate ( struct menu *menu )
 
 	case ID_MENU_PLAYERS_INFO:
 		menu_playerinfo_populate( menu );
+		break;
+
+	case ID_MENU_PLAYERS_MUTE:
+		menu_playermute_populate( menu );
 		break;
 
 #ifdef __CHEAT_VEHRECORDING_H__
@@ -2101,6 +2127,16 @@ static int menu_callback_sampmisc ( int op, struct menu_item *item )
 
 static int menu_callback_players ( int op, struct menu_item *item )
 {
+	if ( op == MENU_OP_ENABLED )
+	{
+		if ( item->id == ID_MENU_PLAYERS_MUTE )
+			return set.anti_spam;
+	}
+	else if ( op == MENU_OP_SELECT )
+	{
+		if ( item->id == ID_MENU_PLAYERS_MUTE )
+			set.anti_spam ^= 1;
+	}
 	return 0;
 }
 
@@ -2720,6 +2756,37 @@ static int menu_callback_playerinfo ( int op, struct menu_item *item )
 	return 0;
 }
 
+static int menu_callback_playermute ( int op, struct menu_item *item )
+{
+	if ( g_Players == NULL )
+		return 0;
+
+	int id = item->id;
+	if ( op == MENU_OP_ENABLED )
+	{
+		if ( id < SAMP_PLAYER_MAX && id >= 0 )
+			return g_bPlayerMuted[id];
+		return 0;
+	}
+	else if ( op == MENU_OP_SELECT )
+	{
+		if ( id < SAMP_PLAYER_MAX && id >= 0 )
+		{
+			if ( g_bPlayerMuted[id] )
+				g_iNumPlayersMuted--;
+			else
+				g_iNumPlayersMuted++;
+			
+			g_bPlayerMuted[id] ^= 1;
+			return 1;
+		}
+
+		return 1;
+	}
+
+	return 0;
+}
+
 int joining_server = 0;
 static int menu_callback_server_list ( int op, struct menu_item *item )
 {
@@ -2842,7 +2909,8 @@ void menu_maybe_init ( void )
 #endif
 
 	//*menu_cheats_handling,
-	*menu_player_info, *menu_sampmisc, *menu_spoof_weapon, *menu_fake_kill, *menu_vehicles_instant, *menu_gamestate, *menu_specialaction, *menu_teleobject, *menu_telepickup, *menu_samppatches;
+	*menu_player_info, *menu_players_mute, *menu_sampmisc, *menu_spoof_weapon, *menu_fake_kill, *menu_vehicles_instant, 
+	*menu_gamestate, *menu_specialaction, *menu_teleobject, *menu_telepickup, *menu_samppatches;
 
 	char		name[128];
 	int			i, slot;
@@ -2894,6 +2962,7 @@ void menu_maybe_init ( void )
 		menu_players_vehwarp = menu_new( menu_players, ID_MENU_PLAYERS_VEHWARP, menu_callback_players_vehwarp );
 		menu_players_spec = menu_new( menu_players, ID_MENU_PLAYERS_SPEC, menu_callback_spec );
 		menu_player_info = menu_new( menu_players, ID_MENU_PLAYERS_INFO, menu_callback_playerinfo );
+		menu_players_mute = menu_new( menu_players, ID_MENU_PLAYERS_MUTE, menu_callback_playermute );
 		// main menu -> sampmisc
 		menu_spoof_weapon = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_SPOOF_WEAPON, menu_callback_sampmisc );
 		menu_fake_kill = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_FAKE_KILL, menu_callback_sampmisc );
@@ -3109,6 +3178,7 @@ void menu_maybe_init ( void )
 		menu_item_add( menu_players, menu_players_vehwarp, "Warp instantly to player's vehicle", ID_MENU_PLAYERS_VEHWARP, MENU_COLOR_DEFAULT, NULL );
 		menu_item_add( menu_players, menu_players_spec, "Spectate player", ID_MENU_PLAYERS_SPEC, MENU_COLOR_DEFAULT, NULL );
 		menu_item_add( menu_players, menu_player_info, "Show infos on player", ID_MENU_PLAYERS_INFO, MENU_COLOR_DEFAULT, NULL );
+		menu_item_add( menu_players, menu_players_mute, "Mute player chat (Anti-spam)", ID_MENU_PLAYERS_MUTE, MENU_COLOR_DEFAULT, NULL );
 
 		// samp patches
 		for ( i = 0; i < INI_SAMPPATCHES_MAX; i++ )
