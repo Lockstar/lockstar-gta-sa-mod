@@ -494,9 +494,11 @@ static void ini_init ( void )
 	if ( (ent = ini_register_entry("key_fly_player_strafeUp", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_fly_player_strafeUp, "space" );
 	if ( (ent = ini_register_entry("fly_player_speed", TYPE_FLOAT)) != NULL )
-		ini_register_data( ent, &set.fly_player_speed, "2.0" );
-	if ( (ent = ini_register_entry("fly_player_accel_time", TYPE_FLOAT)) != NULL )
-		ini_register_data( ent, &set.fly_player_accel_time, "0.5" );
+		ini_register_data( ent, &set.fly_player_speed, "1.0" );
+	if ( (ent = ini_register_entry("fly_player_accel_multiplier", TYPE_FLOAT)) != NULL )
+		ini_register_data( ent, &set.fly_player_accel_multiplier, "1.0" );
+	if ( (ent = ini_register_entry("fly_player_decel_multiplier", TYPE_FLOAT)) != NULL )
+		ini_register_data( ent, &set.fly_player_decel_multiplier, "1.0" );
 
 
 	if ( (ent = ini_register_entry("handling_multiplier", TYPE_FLOAT)) != NULL )

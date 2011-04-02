@@ -730,7 +730,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			// update the last matrix
 			pPedSelf->GetMatrix(&playerFly_lastPedRotation);
 		}
-		else if ( time_diff < 1 )// I believe I can fly...
+		else if ( time_diff < 1.0f ) // I believe I can fly...
 		{
 
 // keys/buttons input
@@ -790,6 +790,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			// change animation
 			if ( playerFly_lastKeySpeedState != keySpeedState )
 			{
+				playerFly_lastKeySpeedState = keySpeedState;
 				switch ( keySpeedState )
 				{
 				case speed_none:
@@ -833,40 +834,30 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 // acceleration/deceleration
 
 			// acceleration
-			static uint32_t	fly_acceleration_start;
-			static float	fly_speed_start;
-			float			fly_acceleration;
-			float			fly_speed_max;
-			float			fly_speed = set.fly_player_speed;
+			float fly_speed_max;
+			float fly_acceleration;
+			float fly_speed = set.fly_player_speed;
+			float fly_acceleration_multiplier = set.fly_player_accel_multiplier;
+			float fly_deceleration_multiplier = set.fly_player_decel_multiplier;
 			switch ( keySpeedState )
 			{
 			case speed_accelerate:
 				{
-					fly_speed_max = set.fly_player_speed;
-					if ( playerFly_lastKeySpeedState != keySpeedState )
+					if (fly_speed >= 1.0f)
 					{
-						fly_acceleration_start = time_get();
-						fly_speed_start = speed;
+						fly_speed_max = 1.333f * (1.0f + (0.5f / fly_speed)) * fly_speed;
+						fly_acceleration = time_diff * ((0.7f + (0.25f / (fly_speed / 4.0f))) * fly_speed) * fly_acceleration_multiplier;
 					}
-					
-					fly_acceleration = fly_speed_max;
-					if ( !near_zero(set.fly_player_accel_time) )
+					else
 					{
-						float etime = TIME_TO_FLOAT( time_get() - fly_acceleration_start ) / set.fly_player_accel_time;
-						etime += 1.0f - ( fly_speed_max - fly_speed_start ) / fly_speed_max;
-						if ( etime < 1.0f )
-							fly_acceleration = fly_speed_max * etime;
-						else if ( speed < fly_speed_max )
-						{
-							// for some reason we arn't at full speed, although time indicates we should be
-							// reset timer so we can accelerate again next frame
-							fly_acceleration_start = time_get();
-							fly_speed_start = speed;
-						}
+						fly_speed_max = 1.333f * (1.0f + (0.5f * fly_speed)) * fly_speed;
+						fly_acceleration = time_diff * ((0.7f + fly_speed) * fly_speed) * fly_acceleration_multiplier;
 					}
 
-					vecSpeed.Normalize();
-					vecSpeed *= fly_acceleration;
+					if ( vecSpeed.Length() < fly_speed_max )
+					{
+						vecSpeed += matCamera.vFront * fly_acceleration;
+					}
 
 					// don't have NearZero speeds
 					if ( !vecSpeed.IsNearZero() )
@@ -925,7 +916,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 					// this bit should be converted to mta-style code
 					vect3_normalize( ainfo->speed, ainfo->speed );
 
-					speed -= time_diff * ((0.1f + speed) * (0.6f / (fly_speed / 2.0f)) * fly_speed);
+					speed -= time_diff * ((0.1f + speed) * (0.6f / (fly_speed / 2.0f)) * fly_speed) * fly_deceleration_multiplier;
 
 					if ( speed < 0.0f )
 						speed = 0.0f;
@@ -1110,8 +1101,6 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			// thing using it so far, we'll just do this, and fudge the camera in the hook
 			pPedSelf->SetGravity( &-playerFly_lastPedRotation.vUp );
 
-			// save the key state
-			playerFly_lastKeySpeedState = keySpeedState;
 
 		} // I believe I can touch the sky...
 	}
