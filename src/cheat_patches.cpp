@@ -27,4 +27,5 @@
 void cheat_patches_installRuntimePatches(void)
 {
 	patcher_install(&patch_EnableResolutions);
+	patcher_install(&patch_DisableLoadingScreen);
 }
