@@ -84,7 +84,6 @@ CGameSA::CGameSA()
 	this->m_pFont					= new CFontSA();
 	this->m_pPathFind				= new CPathFindSA();
 	this->m_pPopulation				= new CPopulationSA();
-// crashing right now
 	this->m_pTaskManagementSystem   = new CTaskManagementSystemSA();
 	this->m_pSettings               = new CSettingsSA();
 	this->m_pCarEnterExit           = new CCarEnterExitSA();
