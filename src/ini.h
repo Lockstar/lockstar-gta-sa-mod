@@ -330,7 +330,8 @@ struct settings
 	int						key_fly_player_strafeRight;
 	int						key_fly_player_strafeUp;
 	float					fly_player_speed;
-	float					fly_player_accel_time;
+	float					fly_player_accel_multiplier;
+	float					fly_player_decel_multiplier;
 
 	float					handling_multiplier;
 
