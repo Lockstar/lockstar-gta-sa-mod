@@ -3,6 +3,7 @@ relre:.*\.user
 relre:.*\.suo
 relre:.*\.sdf
 relre:.*\.opensdf
+relre:.*\.rej
 relre:d3d9\.dll
 relre:_build[/]revision.txt
 relre:.*/ipch/.*

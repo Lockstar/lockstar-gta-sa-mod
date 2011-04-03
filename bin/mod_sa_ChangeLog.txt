@@ -2,6 +2,12 @@ mod_sa
 by jflm, nuckfuts, notaplane, and the game modification community
 http://code.google.com/p/m0d-s0beit-sa/
 
+Version 4.2.3.1
+* Added mute-player function to anti-spam.
+* Added Player Fly acceleration/deceleration multipliers to INI.
+* Disabled loading screen, thanks to MTA.
+* Fixed Player Fly animation bugs.
+
 Version 4.2.3.0
 * Added speed setting for Player Fly to the INI and Cheats menu.
 * Added default keys for Stick - NumPad 4 7 8 9
