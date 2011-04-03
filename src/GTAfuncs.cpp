@@ -685,15 +685,18 @@ void GTAfunc_PerformAnimation(const char *szBlockName, const char *szAnimName, i
 
 		if(bLoaded)
 		{
+			// allow tasks to be removed
+			pPedSelf->GetPedIntelligence()->GetTaskManager()->Flush(TASK_PRIORITY_PRIMARY);
+
 			// removes temporary tasks caused by events like falling
 			pPedSelf->GetPedIntelligence()->GetTaskManager()->RemoveTask(TASK_PRIORITY_EVENT_RESPONSE_TEMP);
 
 			// remove jumping task
-			//CTask *jumpTask = pPedSelf->GetPedIntelligence()->GetTaskManager()->FindActiveTaskByType(211);
-			//if (jumpTask)
-			//{
-			//	pPedSelf->GetPedIntelligence()->GetTaskManager()->RemoveTask(TASK_PRIORITY_PRIMARY);
-			//}
+			CTask *jumpTask = pPedSelf->GetPedIntelligence()->GetTaskManager()->FindActiveTaskByType(211);
+			if (jumpTask)
+			{
+				pPedSelf->GetPedIntelligence()->GetTaskManager()->RemoveTask(TASK_PRIORITY_PRIMARY);
+			}
 
 			// more removals if needed ever
 			//pPedSelf->GetPedIntelligence()->GetTaskManager()->RemoveTask(TASK_PRIORITY_EVENT_RESPONSE_NONTEMP);
@@ -719,7 +722,7 @@ void GTAfunc_PerformAnimation(const char *szBlockName, const char *szAnimName, i
 			if(pTask)
 			{
 				pTask->SetAsPedTask(pPedSelf, TASK_PRIORITY_PRIMARY);
-			}                
+			}
 		}
 		else
 		{

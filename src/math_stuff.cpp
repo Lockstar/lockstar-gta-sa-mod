@@ -54,8 +54,8 @@ float vect2_length ( const float in[2] )
 
 int vect2_near_zero ( const float in[2] )
 {
-	if ( !isfinite(in[0]) || !isfinite(in[1]) )
-		return 1;
+	//if ( !isfinite(in[0]) || !isfinite(in[1]) )
+	//	return 1;
 	return near_zero( in[0] ) && near_zero( in[1] );
 }
 
@@ -138,8 +138,8 @@ void vect3_invert ( const float in[3], float out[3] )
 
 int vect3_near_zero ( const float in[3] )
 {
-	if ( !isfinite(in[0]) || !isfinite(in[1]) || !isfinite(in[2]) )
-		return 1;
+	//if ( !isfinite(in[0]) || !isfinite(in[1]) || !isfinite(in[2]) )
+	//	return 1;
 	return near_zero( in[0] ) && near_zero( in[1] ) && near_zero( in[2] );
 }
 
@@ -158,8 +158,8 @@ float vect3_dist ( const float in1[3], const float in2[3] )
 
 int vect4_near_zero ( const float in[4] )
 {
-	if ( !isfinite(in[0]) || !isfinite(in[1]) || !isfinite(in[2]) || !isfinite(in[3]) )
-		return 1;
+	//if ( !isfinite(in[0]) || !isfinite(in[1]) || !isfinite(in[2]) || !isfinite(in[3]) )
+	//	return 1;
 	return near_zero( in[0] ) && near_zero( in[1] ) && near_zero( in[2] ) && near_zero( in[3] );
 }
 
