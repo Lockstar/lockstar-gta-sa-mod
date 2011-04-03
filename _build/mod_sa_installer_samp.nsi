@@ -33,7 +33,7 @@ ReserveFile "${BASSMOD_PATH}\bassmod.dll"
 ReserveFile "${BASSMOD_PATH}\music.mod"
 Function .onInit
 	!insertmacro NSISBASSMOD_Init
-	File /oname=$PLUGINSDIR\music.mod "${BASSMOD_PATH}\music.mod"
+	File "/oname=$PLUGINSDIR\music.mod" "${BASSMOD_PATH}\music.mod"
 	!insertmacro NSISBASSMOD_MusicPlay "$PLUGINSDIR\music.mod"
 FunctionEnd
 Function .onGUIEnd
@@ -42,11 +42,13 @@ Function .onGUIEnd
 	!insertmacro NSISBASSMOD_Free
 FunctionEnd
 
+; branding url
 !define MUI_CUSTOMFUNCTION_GUIINIT onGUIInit
 Function onGUIInit
  BrandingURL::Set /NOUNLOAD "0" "0" "200" "http://code.google.com/p/m0d-s0beit-sa/"
 FunctionEnd
 
+; main installation screen variables
 Page directory
 DirText "Welcome to the installer for ${NAME} ${VERSION} for ${MP} ${MP_VERSION}.$\r$\n$\r$\nCheck out ${NAME} at Google Code for the lastest versions and information.  Just click the link on the bottom left." "Please select your GTA San Andreas directory."
 InstallDirRegKey HKLM "SOFTWARE\Rockstar Games\GTA San Andreas\Installation" ExePath
@@ -55,11 +57,13 @@ Function .onVerifyInstDir
 		Abort
 FunctionEnd
 
+; setup MUI
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_LANGUAGE "English"
 
+; Install Sequence
 Section "Install" SecDummy
 	DetailPrint "Log created by ${NAME} ${VERSION} for ${MP} ${MP_VERSION} setup."
 
@@ -101,11 +105,19 @@ Section "Install" SecDummy
 	File ..\bin\data\surface.two
 	SetOverwrite on
 
+	; directx runtime upgrader
+	DetailPrint "Updating DirectX 9.0c if needed.  Please wait... (this could take a few minutes)"
+	File "/oname=$PLUGINSDIR\dxwebsetup.exe" ".\nsis\dxwebsetup.exe"
+	ExecWait '"$PLUGINSDIR\dxwebsetup.exe" /Q'
+	Delete "$PLUGINSDIR\dxwebsetup.exe"
+	DetailPrint "Done updating DirectX 9.0c."
+
 	WriteUninstaller "$INSTDIR\Uninstall_${NAME}.exe"
 	DetailPrint "${NAME} ${VERSION} for ${MP} ${MP_VERSION} setup finished."
 	DumpLog::DumpLog "$INSTDIR\${NAME}_setup.log" .R0
 SectionEnd
 
+; Uninstall Sequence
 Section "Uninstall"
 	Delete "$INSTDIR\d3d9.dll"
 	Delete "$INSTDIR\mod_sa.log"
