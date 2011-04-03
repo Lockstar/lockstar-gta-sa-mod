@@ -786,7 +786,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 					GTAfunc_PerformAnimation("SWIM", "Swim_Breast", -1, 1, 1, 0, 0, 0, 1, 0);
 				}
 			}
-			
+
 			// change animation
 			if ( playerFly_lastKeySpeedState != keySpeedState )
 			{
