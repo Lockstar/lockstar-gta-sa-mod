@@ -638,6 +638,8 @@ enum playerFly_keyStrafeStates
 	strafe_up
 };
 playerFly_keySpeedStates playerFly_lastKeySpeedState = speed_none;
+playerFly_keyStrafeStates playerFly_lastKeyStrafeStates = strafe_none;
+bool playerFly_animationSpeedChanged = false;
 CMatrix playerFly_lastPedRotation = CMatrix();
 
 void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
@@ -783,31 +785,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				if ( keySpeedState == speed_none )
 				{
 					// start fly animation
-					GTAfunc_PerformAnimation("SWIM", "Swim_Breast", -1, 1, 1, 0, 0, 0, 1, 0);
-				}
-			}
-
-			// change animation
-			if ( playerFly_lastKeySpeedState != keySpeedState )
-			{
-				playerFly_lastKeySpeedState = keySpeedState;
-				switch ( keySpeedState )
-				{
-				case speed_none:
-					{
-						GTAfunc_PerformAnimation("SWIM", "Swim_Breast", -1, 1, 1, 0, 0, 0, 1, 0);
-						break;
-					}
-				case speed_accelerate:
-					{
-						GTAfunc_PerformAnimation("SWIM", "SWIM_crawl", -1, 1, 1, 0, 0, 0, 1, 0);
-						break;
-					}
-				case speed_decelerate:
-					{
-						GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 0);
-						break;
-					}
+					GTAfunc_PerformAnimation("PARACHUTE", "FALL_skyDive", -1, 1, 1, 0, 0, 0, 1, 0);
 				}
 			}
 
@@ -830,6 +808,80 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			matCamera.vFront.Normalize();
 			matCamera.vRight.Normalize();
 			matCamera.vUp.Normalize();
+
+// change animation
+
+			if ( playerFly_lastKeyStrafeStates != keyStrafeState
+				|| playerFly_lastKeySpeedState != keySpeedState )
+			{
+				playerFly_lastKeyStrafeStates = keyStrafeState;
+				playerFly_lastKeySpeedState = keySpeedState;
+				switch ( keyStrafeState )
+				{
+				case strafe_none:
+				case strafe_left:
+				case strafe_right:
+					{
+						switch ( keySpeedState )
+						{
+						case speed_none:
+							{
+								GTAfunc_PerformAnimation("SWIM", "Swim_Breast", -1, 1, 1, 0, 0, 0, 1, 0);
+								break;
+							}
+						case speed_accelerate:
+							{
+								GTAfunc_PerformAnimation("SWIM", "SWIM_crawl", -1, 1, 1, 0, 0, 0, 1, 0);
+								break;
+							}
+						case speed_decelerate:
+							{
+								GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 0);
+								break;
+							}
+						}
+						break;
+					}
+				case strafe_up:
+					{
+						switch ( keySpeedState )
+						{
+						case speed_none:
+							{
+								GTAfunc_PerformAnimation("PARACHUTE", "FALL_skyDive", -1, 1, 1, 0, 0, 0, 1, 0);
+								break;
+							}
+						case speed_accelerate:
+							{
+								GTAfunc_PerformAnimation("SWIM", "SWIM_crawl", -1, 1, 1, 0, 0, 0, 1, 0);
+								break;
+							}
+						case speed_decelerate:
+							{
+								GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 0);
+								break;
+							}
+						}
+						break;
+					}
+				}
+				playerFly_animationSpeedChanged = false;
+			}
+			else if (!playerFly_animationSpeedChanged)
+			{
+				switch ( keyStrafeState )
+				{
+				case strafe_up:
+					{
+						if ( speed < 0.5f && keySpeedState == speed_none )
+						{
+							GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 0);
+							playerFly_animationSpeedChanged = true;
+						}
+						break;
+					}
+				}
+			}
 
 // acceleration/deceleration
 
