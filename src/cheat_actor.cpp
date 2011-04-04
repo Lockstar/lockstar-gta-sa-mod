@@ -785,7 +785,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				if ( keySpeedState == speed_none )
 				{
 					// start fly animation
-					GTAfunc_PerformAnimation("PARACHUTE", "FALL_skyDive", -1, 1, 1, 0, 0, 0, 1, 0);
+					GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 0);
 				}
 			}
 
@@ -848,7 +848,14 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 						{
 						case speed_none:
 							{
-								GTAfunc_PerformAnimation("PARACHUTE", "FALL_skyDive", -1, 1, 1, 0, 0, 0, 1, 0);
+								if ( speed > 0.5f )
+								{
+									GTAfunc_PerformAnimation("PARACHUTE", "FALL_skyDive", -1, 1, 1, 0, 0, 0, 1, 0);
+								}
+								else
+								{
+									GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 0);
+								}
 								break;
 							}
 						case speed_accelerate:
@@ -873,13 +880,18 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				{
 				case strafe_up:
 					{
-						if ( speed < 0.5f && keySpeedState == speed_none )
+						if ( speed < 0.5f )
 						{
-							GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 0);
+							if ( keySpeedState == speed_none )
+							{
+								GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 0);
+							}
 							playerFly_animationSpeedChanged = true;
 						}
 						break;
 					}
+				default:
+					break;
 				}
 			}
 
