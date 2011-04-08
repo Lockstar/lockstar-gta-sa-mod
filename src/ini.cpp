@@ -928,6 +928,8 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.render_teleport_texts, "true" );
 	if ( (ent = ini_register_entry("render_pickup_texts", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.render_pickup_texts, "false" );
+	if ( (ent = ini_register_entry("pickup_tags_dist", TYPE_FLOAT)) != NULL )
+		ini_register_data( ent, &set.pickup_tags_dist, "100.0" );
 	if ( (ent = ini_register_entry("render_object_texts", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.render_object_texts, "false" );
 

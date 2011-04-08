@@ -47,7 +47,7 @@ t_WindowsInfo			WindowsInfo;
 
 void traceLastFunc ( const char *szFunc )
 {
-	_snprintf_s( g_szLastFunc, sizeof(g_szLastFunc), szFunc );
+	_snprintf_s( g_szLastFunc, sizeof(g_szLastFunc)-1, szFunc );
 }
 
 void Log ( const char *fmt, ... )

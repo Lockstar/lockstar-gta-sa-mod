@@ -42,6 +42,13 @@ enum eRecordingState
 	RECORDING_PLAY_REV_CUSTOMSPEED,
 };
 
+// generic sqlite functions
+int sqliteDB_checkTableExists ( sqlite3 *db, char *tableName );
+int sqliteDB_getNumTables ( sqlite3 *db, bool filter_sqlite_tables );
+bool sqliteDB_dropTable ( sqlite3 *db, char *tableName );
+// end of generic sqlite functions
+
+// recording functions
 int rec_sqlite_getNumTables ();
 char *rec_sqlite_getTableName( int RouteNum );
 bool rec_sqlite_loadTable ( char *tableName );

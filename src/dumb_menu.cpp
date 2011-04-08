@@ -246,8 +246,9 @@ static void menu_item_name_set ( struct menu_item *item, const char *fmt, ... )
 	char		name[64];
 	va_list		ap;
 
+	memset( name, 0, sizeof(name) );
 	va_start( ap, fmt );
-	vsnprintf( name, sizeof(name), fmt, ap );
+	vsnprintf( name, sizeof(name)-1, fmt, ap );
 	va_end( ap );
 
 	if ( (name_new = _strdup(name)) != NULL )
@@ -749,7 +750,7 @@ static void menu_routes_drop_populate ( struct menu *menu )
 			continue;
 
 		// remember to change menu_callback_routes_drop, if you change the "Delete" text
-		_snprintf_s( table_name_, sizeof(table_name_), "Delete '%s'", table_name );
+		_snprintf_s( table_name_, sizeof(table_name_)-1, "Delete '%s'", table_name );
 		menu_item_add( menu, NULL, table_name_, i, MENU_COLOR_DEFAULT, NULL );
 	}
 }
@@ -1845,6 +1846,7 @@ static int menu_callback_misc ( int op, struct menu_item *item )
 
 		case ID_MISC_FPSLIMIT:
 			return 0;
+
 		case ID_MISC_TOGGLEWINDOWED:
 			return set.window_mode;
 		}
@@ -1916,7 +1918,7 @@ static int menu_callback_routes_drop ( int op, struct menu_item *item )
 		{
 			// Remove "Delete '%s'"
 			char tableName[64];
-			_snprintf_s( tableName, sizeof(tableName), "%s", (item->name+8) );
+			_snprintf_s( tableName, sizeof(tableName)-1, "%s", (item->name+8) );
 			tableName[ (strlen(item->name)-9) ] = NULL; // remove the last '
 			rec_sqlite_dropTable( tableName );
 

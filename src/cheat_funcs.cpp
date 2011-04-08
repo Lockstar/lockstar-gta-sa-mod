@@ -966,8 +966,10 @@ void cheat_state_text ( const char *fmt, ... )
 		return;
 	}
 
+	memset( cheat_state->text, 0, sizeof(cheat_state->text) );
+
 	va_start( ap, fmt );
-	vsnprintf( cheat_state->text, sizeof(cheat_state->text), fmt, ap );
+	vsnprintf( cheat_state->text, sizeof(cheat_state->text)-1, fmt, ap );
 	va_end( ap );
 	cheat_state->text_time = time_get();
 }

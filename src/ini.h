@@ -371,6 +371,7 @@ struct settings
 	int						esp_players_defaulton;
 	int						render_teleport_texts;
 	int						render_pickup_texts;
+	float					pickup_tags_dist;
 	int						render_object_texts;
 	int						enable_clouds;
 
