@@ -202,6 +202,23 @@ void cmd_change_server_fav ( char *param )
 	if ( strlen(param) == 0 )
 	{
 		addMessageToChatWindow( "/m0d_fav_server <server name/part of server name>" );
+		addMessageToChatWindow( "In order to see the favorite server list type: /m0d_fav_server list" );
+		return;
+	}
+
+	if ( strncmp(param, "list", 4) == 0 )
+	{
+		int count = 0;
+		for ( int i = 0; i < INI_SERVERS_MAX; i++ )
+		{
+			if ( set.server[i].server_name == NULL )
+				continue;
+
+			count++;
+			addMessageToChatWindow( "%s", set.server[i].server_name );
+		}
+		if ( count == 0 )
+			addMessageToChatWindow( "No servers in favorite server list. Edit the ini file to add some." );
 		return;
 	}
 
@@ -213,7 +230,8 @@ void cmd_change_server_fav ( char *param )
 
 	for ( int i = 0; i < INI_SERVERS_MAX; i++ )
 	{
-		if ( strlen(set.server[i].server_name) == 0 || strlen(set.server[i].ip) == 0 || set.server[i].port == 0 )
+		if ( set.server[i].server_name == NULL || set.server[i].ip == NULL
+			|| strlen(set.server[i].ip) < 7 || set.server[i].port == 0 )
 			continue;
 
 		if ( !findstrinstr((char *)set.server[i].server_name, param) )
@@ -221,6 +239,7 @@ void cmd_change_server_fav ( char *param )
 
 		if ( !set.use_current_name )
 			setLocalPlayerName( set.server[i].nickname );
+
 		strcpy( g_SAMP->szIP, set.server[i].ip );
 		g_SAMP->ulPort = set.server[i].port;
 		setPassword( set.server[i].password );
@@ -239,6 +258,7 @@ void cmd_current_server ( char *param )
 	addMessageToChatWindow( "Username: %s", getPlayerName(g_Players->sLocalPlayerID) );
 }
 
+// strtokstristr?
 bool findstrinstr ( char *text, char *find )
 {
 	char	realtext[256];
@@ -248,11 +268,14 @@ bool findstrinstr ( char *text, char *find )
 	char	temp;
 	int		i = 0;
 
-	memset( realtext, 0, sizeof(char) * 255 );
-	memset( subtext, 0, sizeof(char) * 255 );
+	traceLastFunc( "findstrinstr()" );
 
-	//lower case text
-	while ( text[i] != NULL && i <= (int)strlen(text) && i < 255 )
+	// can't find stuff that isn't there unless you are high
+	if ( text == NULL || find == NULL )
+		return false;
+
+	// lower case text ( sizeof()-2 = 1 for array + 1 for termination after while() )
+	while ( text[i] != NULL && i < (sizeof(realtext)-2) )
 	{
 		temp = text[i];
 		if ( isupper(temp) )
@@ -260,10 +283,11 @@ bool findstrinstr ( char *text, char *find )
 		realtext[i] = temp;
 		i++;
 	}
+	realtext[i] = 0;
 
-	//replace unwanted characters/spaces with dots
+	// replace unwanted characters/spaces with dots
 	i = 0;
-	while ( find[i] != NULL && i <= (int)strlen(find) && i < 255 )
+	while ( find[i] != NULL && i < (sizeof(subtext)-2) )
 	{
 		temp = find[i];
 		if ( isupper(temp) )
@@ -271,17 +295,37 @@ bool findstrinstr ( char *text, char *find )
 		if ( !isalpha(temp) )
 			temp = '.';
 		subtext[i] = temp;
-
 		i++;
 	}
+	subtext[i] = 0;
 
-	//split and find every part of subtext/find in text
+	// use i to count the successfully found text parts
+	i = 0;
+
+	// split and find every part of subtext/find in text
 	result = &subtext[0];
-	while ( result != NULL )
+	while ( *result != NULL )
 	{
 		next = strstr( result, "." );
 		if ( next != NULL )
-			*next = NULL;
+		{
+			// more than one non-alphabetic character
+			if ( next == result )
+			{
+				do
+					next++;
+				while ( *next == '.' );
+
+				if ( *next == NULL )
+					return (i != 0);
+				result = next;
+				next = strstr( result, "." );
+				if ( next != NULL )
+					*next = NULL;
+			}
+			else
+				*next = NULL;
+		}
 
 		if ( strstr(realtext, result) == NULL )
 			return false;
@@ -289,6 +333,7 @@ bool findstrinstr ( char *text, char *find )
 		if ( next == NULL )
 			return true;
 
+		i++;
 		result = next + 1;
 	}
 
@@ -1010,7 +1055,8 @@ int m0d_cmd_num = 0;
 
 void cmd_showCMDS ()
 {
-	for ( int i = 0; i < m0d_cmd_num; i++ )
+	int i = 0;
+	for ( ; i < m0d_cmd_num; i++ )
 	{
 		addMessageToChatWindow( "%s", m0d_cmd_list[i].cmd_name );
 	}
@@ -1034,8 +1080,13 @@ void addClientCommand ( char *name, int function )
 		return;
 	}
 
-	strcpy_s( m0d_cmd_list[m0d_cmd_num].cmd_name, 30, name );
-	m0d_cmd_num++;
+	if ( m0d_cmd_num < (MAX_CLIENTCMDS - 22) )
+	{
+		strncpy_s( m0d_cmd_list[m0d_cmd_num].cmd_name, name, sizeof(m0d_cmd_list[m0d_cmd_num].cmd_name)-1 );
+		m0d_cmd_num++;
+	}
+	else
+		Log( "m0d_cmd_list[] too short." );
 
 	uint32_t	data = g_dwSAMP_Addr + SAMP_CHAT_INPUT_INFO_OFFSET;
 	uint32_t	func = g_dwSAMP_Addr + FUNC_ADDCLIENTCMD;
@@ -1087,7 +1138,7 @@ void addMessageToChatWindow ( const char *text, ... )
 		memset( tmp, 0, 512 );
 
 		va_start( ap, text );
-		vsprintf( tmp, text, ap );
+		vsnprintf( tmp, sizeof(tmp)-1, text, ap );
 		va_end( ap );
 
 		addToChatWindow( tmp, D3DCOLOR_XRGB(gui_samp_cheat_state_text->red, gui_samp_cheat_state_text->green,
@@ -1103,7 +1154,7 @@ void addMessageToChatWindow ( const char *text, ... )
 		memset( tmp, 0, 512 );
 
 		va_start( ap, text );
-		vsprintf( tmp, text, ap );
+		vsnprintf( tmp, sizeof(tmp)-1, text, ap );
 		va_end( ap );
 
 		cheat_state_text( tmp, D3DCOLOR_ARGB(255, 0, 200, 200) );
@@ -1176,8 +1227,8 @@ void addToChatWindow ( char *text, D3DCOLOR textColor, int playerID )
 		__asm push text
 		__asm push 10
 		__asm call func
-		__asm pop eax
-		__asm pop ecx
+//		__asm pop eax
+//		__asm pop ecx
 		return;
 	}
 
@@ -1189,8 +1240,9 @@ void addToChatWindow ( char *text, D3DCOLOR textColor, int playerID )
 	__asm push text
 	__asm push 12
 	__asm call func
-	__asm pop eax
-	__asm pop ecx
+//	__asm pop eax
+//	__asm pop ecx
+	return;
 }
 
 #define FUNC_RESTARTGAME	0x87F0
@@ -1488,7 +1540,7 @@ uint8_t _declspec ( naked ) server_message_hook ( void )
 				}
 			}
 		}
-		strcpy_s( last_servermsg, sizeof(last_servermsg), (char *)thismsg );
+		strncpy_s( last_servermsg, (char *)thismsg, sizeof(last_servermsg)-1 );
 		addToChatWindow( (char *)thismsg, thiscolor );
 		allow_show_again = GetTickCount() + 5000;
 		
@@ -1534,7 +1586,7 @@ uint8_t _declspec ( naked ) client_message_hook ( void )
 				goto client_message_hook_jump_out;
 
 			// nothing to copy anymore, after chatbox_logging, so copy this before
-			strcpy_s( last_clientmsg[id], sizeof(last_clientmsg[id]), (char *)thismsg );
+			strncpy_s( last_clientmsg[id], (char *)thismsg, sizeof(last_clientmsg[id])-1 );
 
 			if( set.chatbox_logging )
 				LogChatbox( false, "%s: %s", getPlayerName(id), thismsg );

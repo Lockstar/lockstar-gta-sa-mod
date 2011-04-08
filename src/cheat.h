@@ -763,13 +763,16 @@ struct vehicle_info
 
 	//maybe also door positions in here, like in 15xx?
 	struct detachable	detachable_bike2[4];	/* 1632 - bike/motorcycle and boat parts */
-	uint8_t				__unknown_1808[20];		/* 1808 */
+	uint8_t				__unknown_1808[8];		/* 1808 */
+	float				fPos_FireCarLadder[3];	/* 1816 - train ladder positioning (part of detachables?) */
 	struct detachable	detachable_car[4];		/* 1828 - car/helicopter/airplane parts */
 	uint8_t				__unknown_2004[12];		/* 2004 */
 	float				suspension[4];			/* 2016 - FL, RL, FR, RR suspension height */
 	uint8_t				__unknown_2032[244];	/* 2032 */
-	float				burn_timer; /* 2276 - burn timer counting up from 0.0f */
-	uint8_t				__unknown_2280[156];	/* 2280 */
+	float				burn_timer;				/* 2276 - burn timer counting up from 0.0f */
+	uint8_t				__unknown_2280[100];	/* 2280 */
+	float				fCannonAimX_Y[2];		/* 2380 - cannon offset (x/y) */
+	uint8_t				__unknown_2388[48];		/* 2388 */
 	float				fHeliDistanceToGround;	/* 2436 - (between 0.9 and 1 = touching ground) */
 	uint8_t				__unknown_2440[24];		/* 2440 */
 	float				fHeliMainRotorDistance;	/* 2464 - distance/rotation */

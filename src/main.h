@@ -194,6 +194,7 @@
 #include "cheat_vehicle.h"
 #include "cheat_hookers.h"
 #ifdef __CHEAT_VEHRECORDING_H__
+#include "sqlite3/sqlite3.h"
 #include "cheat_vehRecording.h"
 #endif
 #include "dumb_menu.h"

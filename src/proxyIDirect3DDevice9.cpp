@@ -592,7 +592,7 @@ void RenderMap ( void )
 					continue;
 				if ( g_Players->pRemotePlayer[i] == NULL )
 					continue;
-				_snprintf_s( buf, sizeof(buf), "%s(%d)", getPlayerName(i), i );
+				_snprintf_s( buf, sizeof(buf)-1, "%s(%d)", getPlayerName(i), i );
 				RenderMapDot( &self->base.matrix[4 * 3], pos, samp_color_get(i), buf );
 			}
 		}
@@ -603,7 +603,7 @@ void RenderMap ( void )
 				struct actor_info	*info = actor_info_get( i, ACTOR_ALIVE );
 				if ( info == NULL )
 					continue;
-				_snprintf_s( buf, sizeof(buf), "%d", i );
+				_snprintf_s( buf, sizeof(buf)-1, "%d", i );
 				RenderMapDot( &self->base.matrix[4 * 3], &info->base.matrix[4 * 3], D3DCOLOR_XRGB(255, 255, 255), buf );
 			}
 		}
@@ -627,7 +627,7 @@ void RenderMap ( void )
 						if ( g_Players->pLocalPlayer->sCurrentVehicleID == i )
 							continue;
 
-						_snprintf_s( buf, sizeof(buf), "%s(%d)", vehicle->name, i );
+						_snprintf_s( buf, sizeof(buf)-1, "%s(%d)", vehicle->name, i );
 						RenderMapDot( &self->base.matrix[4 * 3],
 									  &g_Vehicles->pSAMP_Vehicle[i]->pGTA_Vehicle->base.matrix[4 * 3],
 									  D3DCOLOR_XRGB(150, 150, 150), buf );
@@ -643,7 +643,7 @@ void RenderMap ( void )
 				if ( vehs == NULL )
 					continue;
 				vehicle = gta_vehicle_get_by_id( vehs->base.model_alt_id );
-				_snprintf_s( buf, sizeof(buf), "%s (%d)", vehicle->name, i );
+				_snprintf_s( buf, sizeof(buf)-1, "%s (%d)", vehicle->name, i );
 				RenderMapDot( &self->base.matrix[4 * 3], &vehs->base.matrix[4 * 3], D3DCOLOR_XRGB(150, 150, 150), buf );
 			}
 		}
@@ -656,7 +656,7 @@ void RenderMap ( void )
 			vect3_copy( &cheat_state->teleport[i].matrix[4 * 3], pos );
 			if ( vect3_near_zero(pos) )
 				continue;
-			_snprintf_s( buf, sizeof(buf), "Teleport %d", i );
+			_snprintf_s( buf, sizeof(buf)-1, "Teleport %d", i );
 			RenderMapDot( &self->base.matrix[4 * 3], pos, D3DCOLOR_XRGB(0, 200, 200), buf );
 		}
 	}
@@ -682,19 +682,19 @@ void RenderPedHPBar ( void )
 
 	render->D3DBoxi( 0, bottom - fontHeight, 101, fontHeight, D3DCOLOR_ARGB(127, 0, 0, 0), NULL );
 	render->D3DBoxi( 0, bottom - fontHeight + 1, (int)info->hitpoints, fontHeight - 2, D3DCOLOR_ARGB(127, 191, 0, 0), 100 );
-	_snprintf_s( text, sizeof(text), "Health: %d", (int)info->hitpoints );
+	_snprintf_s( text, sizeof(text)-1, "Health: %d", (int)info->hitpoints );
 	pD3DFontFixed->PrintShadow( (float)(2), (float)(bottom - fontHeight), D3DCOLOR_XRGB(255, 255, 255), text );
 
 	render->D3DBoxi( 0, bottom - 20, 101, 10, D3DCOLOR_ARGB(127, 0, 0, 0), NULL );
 	if ( info->armor == NULL )
 	{
-		_snprintf_s( text, sizeof(text), "No armor" );
+		_snprintf_s( text, sizeof(text)-1, "No armor" );
 		pD3DFontFixed->PrintShadow( (float)(2), (float)(bottom - (fontHeight*2)), D3DCOLOR_XRGB(255, 255, 255), text );
 	}
 	else
 	{
 		render->D3DBoxi( 0, bottom - (fontHeight*2) + 1, (int)info->armor, fontHeight - 2, D3DCOLOR_ARGB(127, 255, 255, 255), 100 );
-		_snprintf_s( text, sizeof(text), "Armor: %d", (int)info->armor );
+		_snprintf_s( text, sizeof(text)-1, "Armor: %d", (int)info->armor );
 		pD3DFontFixed->PrintShadow( (float)(2), (float)(bottom - (fontHeight*2)), D3DCOLOR_XRGB(255, 255, 255), text );
 	}
 }
@@ -726,7 +726,7 @@ void RenderVehicleHPBar ( void )
 
 	render->D3DBoxi( 0, bottom - fontHeight, 101, fontHeight + 2, D3DCOLOR_ARGB(127, 0, 0, 0), NULL );
 	render->D3DBoxi( 0, bottom - fontHeight + 1, hp, fontHeight, D3DCOLOR_ARGB(127, 191, 0, 0), 1000 );
-	_snprintf_s( text, sizeof(text), "VHealth: %d", hp );
+	_snprintf_s( text, sizeof(text)-1, "VHealth: %d", hp );
 	pD3DFontFixed->PrintShadow( (float)(2), (float)(bottom - fontHeight - 1), D3DCOLOR_XRGB(255, 255, 255), text );
 
 	if ( !set.speedometer_old_enable )
@@ -735,7 +735,7 @@ void RenderVehicleHPBar ( void )
 		render->D3DBoxi( 0, bottom - (fontHeight*2) + 1, (int)pinfo->hitpoints, fontHeight, D3DCOLOR_ARGB(127, 191, 0, 0), 100 );
 		if ( pinfo->armor != NULL )
 			render->D3DBoxi( 0, bottom - (fontHeight*2), (int)pinfo->armor, 8, D3DCOLOR_ARGB(127, 255, 255, 255), 100 );
-		_snprintf_s( text, sizeof(text), "PHealth: %d", (int)pinfo->hitpoints );
+		_snprintf_s( text, sizeof(text)-1, "PHealth: %d", (int)pinfo->hitpoints );
 		pD3DFontFixed->PrintShadow( (float)(2), (float)(bottom - (fontHeight*2)  - 1), D3DCOLOR_XRGB(255, 255, 255), text );
 	}
 	else if ( !cheat_state->vehicle.air_brake )
@@ -743,7 +743,7 @@ void RenderVehicleHPBar ( void )
 		float	spood = vect3_length( vinfo->speed );
 		render->D3DBoxi( 0, bottom - barHeight - fontHeight, 101, 10, D3DCOLOR_ARGB(127, 0, 0, 0), NULL );
 		render->D3DBoxi( 0, bottom - barHeight - fontHeight + 1, (int)(spood * 64), 8, D3DCOLOR_ARGB(127, 191, 191, 0), 100 );
-		_snprintf_s( text, sizeof(text), "%0.2f km/h", (float)(spood * 170) );
+		_snprintf_s( text, sizeof(text)-1, "%0.2f km/h", (float)(spood * 170) );
 		pD3DFontFixed->PrintShadow( (float)(2), (float)(bottom - (fontHeight*2) - 1), D3DCOLOR_XRGB(255, 255, 255), text );
 	}
 
@@ -786,7 +786,7 @@ void RenderVehicleHPBar ( void )
 		{
 			render->D3DBoxi( 0, bottom - barHeight - fontHeight, 101, 10, D3DCOLOR_ARGB(127, 0, 0, 0), NULL );
 			render->D3DBoxi( 0, bottom - barHeight - fontHeight + 1, (int)(speed_dist * 1.3f), 8, D3DCOLOR_ARGB(127, 191, 191, 0), 100 );
-			_snprintf_s( text, sizeof(text), "%0.2f km/h", (float)(speed_dist * 3.43f) );
+			_snprintf_s( text, sizeof(text)-1, "%0.2f km/h", (float)(speed_dist * 3.43f) );
 			pD3DFontFixed->PrintShadow( (float)(2), (float)(bottom - (fontHeight*2) - 1), D3DCOLOR_XRGB(255, 255, 255), text );
 		}
 	}
@@ -839,7 +839,7 @@ void RenderVehicleHPBar ( void )
 		render->D3DBoxi( 0, bottom - barHeight - 19, (int)(speed_acceleration * -4.8f), 8, D3DCOLOR_ARGB(127, 191, 191, 0), 100 );
 	else
 		render->D3DBoxi( 0, bottom - barHeight - 19, (int)(speed_acceleration * 4.8f), 8, D3DCOLOR_ARGB(127, 191, 191, 0), 100 );
-	_snprintf_s( text, sizeof(text), "%0.2f m/ss", (float)(speed_acceleration) );
+	_snprintf_s( text, sizeof(text)-1, "%0.2f m/ss", (float)(speed_acceleration) );
 	pD3DFontFixed->PrintShadow( (float)(2), (float)(bottom - barHeight - 21), D3DCOLOR_XRGB(255, 255, 255), text );
 
 }
@@ -1340,13 +1340,13 @@ void renderPlayerTags ( void )
 		// so now we only need to check if samp is running
 		if ( !g_Players )
 		{
-			_snprintf_s( buf, sizeof(buf), "H: %d, A: %d", (int)iterPed->GetHealth(), (int)iterPed->GetArmor() );
+			_snprintf_s( buf, sizeof(buf)-1, "H: %d, A: %d", (int)iterPed->GetHealth(), (int)iterPed->GetArmor() );
 			pD3DFontFixedSmall->PrintShadow( g_playerTagInfo[iGTAID].tagPosition.fX + 8.0f, playerBaseY - h + 10.0f,
 										 D3DCOLOR_ARGB(130, 0xFF, 0x6A, 0), buf );
 		}
 		else
 		{
-			_snprintf_s( buf, sizeof(buf), "H: %d, A: %d",
+			_snprintf_s( buf, sizeof(buf)-1, "H: %d, A: %d",
 						 (int)g_Players->pRemotePlayer[iSAMPID]->pPlayerData->fActorHealth,
 						 (int)g_Players->pRemotePlayer[iSAMPID]->pPlayerData->fActorArmor );
 			pD3DFontFixedSmall->PrintShadow( g_playerTagInfo[iGTAID].tagPosition.fX + 8.0f, playerBaseY - h + 10.0f,
@@ -1355,7 +1355,7 @@ void renderPlayerTags ( void )
 			// render the main nametag last so it's on top
 			// this should calculate the anti-aliasing top edge somehow
 			h = pD3DFont_sampStuff->DrawHeight() - 1;
-			_snprintf_s( buf, sizeof(buf), "%s (%d)", getPlayerName(iSAMPID), iSAMPID );
+			_snprintf_s( buf, sizeof(buf)-1, "%s (%d)", getPlayerName(iSAMPID), iSAMPID );
 			w = pD3DFont_sampStuff->DrawLength( buf );
 			pD3DFont_sampStuff->PrintShadow( g_playerTagInfo[iGTAID].tagPosition.fX, playerBaseY - h,
 				samp_color_get( iSAMPID, 0xDD000000 ), buf );
@@ -1485,7 +1485,7 @@ void renderVehicleTags ( void )
 		/////////////////
 		// render time //
 		h = pD3DFontFixed->DrawHeight();
-		_snprintf_s( buf, sizeof(buf), "%s (%d)", vehicle->name, v );
+		_snprintf_s( buf, sizeof(buf)-1, "%s (%d)", vehicle->name, v );
 		w = pD3DFontFixed->DrawLength( buf );
 
 		// different color if car is being driven
@@ -1520,7 +1520,7 @@ void renderVehicleTags ( void )
 						vh - 2.0f, 9.0f, vcolor );
 
 		h = pD3DFontFixedSmall->DrawHeight();
-		_snprintf_s( buf, sizeof(buf), "Health: %d", (int)vh );
+		_snprintf_s( buf, sizeof(buf)-1, "Health: %d", (int)vh );
 		pD3DFontFixedSmall->PrintShadow( screenPosition.fX + 4.0f,
 										 screenPosition.fY - h + 10.0f + ESP_tag_vehicle_pixelOffsetY,
 										 D3DCOLOR_ARGB(90, 0, 255, 0), buf );
@@ -1637,7 +1637,7 @@ void RenderPickupTexts ( void )
 			vect3_copy( g_SAMP->pPools->pPool_Pickup->pickup[i].fPosition, pos );
 			if ( vect3_near_zero(pos) )
 				continue;
-			if ( vect3_dist(pos, &self->base.matrix[4 * 3]) > set.player_tags_dist )
+			if ( vect3_dist( pos, &self->base.matrix[4 * 3] ) > set.pickup_tags_dist )
 				continue;
 
 			poss.x = pos[0];
@@ -1650,7 +1650,7 @@ void RenderPickupTexts ( void )
 			if ( screenpos[2] < 1.f )
 				continue;
 
-			sprintf( buf, "Pickup: %d, ModelID: %d", i, g_SAMP->pPools->pPool_Pickup->pickup[i].iModelID );
+			_snprintf_s( buf, sizeof(buf)-1, "Pickup: %d, ModelID: %d", i, g_SAMP->pPools->pPool_Pickup->pickup[i].iModelID );
 			pD3DFontFixed->PrintShadow( screenpos[0], screenpos[1] - 5.0f, D3DCOLOR_XRGB(0, 200, 0), buf );
 		}
 	}
@@ -1701,7 +1701,7 @@ void RenderObjectTexts ( void )
 		if ( screenpos[2] < 1.f )
 			continue;
 
-		sprintf( buf, "Object: %d, ModelID: %d", i,
+		_snprintf_s( buf, sizeof(buf)-1, "Object: %d, ModelID: %d", i,
 				 g_SAMP->pPools->pPool_Object->object[i]->pGTAObject->base.model_alt_id );
 		pD3DFontFixed->PrintShadow( screenpos[0], screenpos[1] - 5.0f, D3DCOLOR_XRGB(200, 200, 0), buf );
 	}
@@ -1799,7 +1799,7 @@ void renderPlayerInfoList ( void )
 		if ( g_Players->pRemotePlayer[i]->pPlayerData == NULL
 		 ||	 g_Players->pRemotePlayer[i]->pPlayerData->pSAMP_Actor == NULL )
 		{
-			_snprintf_s( buf, sizeof(buf), "Name: %s (ID: %d), not streamed in", getPlayerName(i), i );
+			_snprintf_s( buf, sizeof(buf)-1, "Name: %s (ID: %d), not streamed in", getPlayerName(i), i );
 			pD3DFont_sampStuff->PrintShadow( width, height, color, buf );
 			height += 1.0f + pD3DFont_sampStuff->DrawHeight();
 			continue;
@@ -1826,36 +1826,36 @@ void renderPlayerInfoList ( void )
 		switch ( getPlayerState(i) )
 		{
 		case PLAYER_STATE_NONE:
-			_snprintf_s( buf, sizeof(buf), "Name: %s (ID: %d), State: None", szPlayerName, i );
+			_snprintf_s( buf, sizeof(buf)-1, "Name: %s (ID: %d), State: None", szPlayerName, i );
 			pD3DFont_sampStuff->PrintShadow( width, height, color, buf );
 			break;
 
 		case PLAYER_STATE_ONFOOT:
-			_snprintf_s( buf, sizeof(buf), "Name: %s (ID: %d), State: On foot, Health: %d, Armor: %d, Distance: %0.2f",
+			_snprintf_s( buf, sizeof(buf)-1, "Name: %s (ID: %d), State: On foot, Health: %d, Armor: %d, Distance: %0.2f",
 						 szPlayerName, i, iPlayerHealth, iPlayerArmor, vect3_dist((float *)pos, &self->base.matrix[4 * 3]) );
 			pD3DFont_sampStuff->PrintShadow( width, height, color, buf );
 			break;
 
 		case PLAYER_STATE_DRIVER:
-			_snprintf_s( buf, sizeof(buf), "Name: %s (ID: %d), State: Driver (%s (%d)), VHealth: %d, Distance: %0.2f",
+			_snprintf_s( buf, sizeof(buf)-1, "Name: %s (ID: %d), State: Driver (%s (%d)), VHealth: %d, Distance: %0.2f",
 						 szPlayerName, i, vehicle->name, iVehicleID, iVehicleHealth,
 						 vect3_dist((float *)pos, &self->base.matrix[4 * 3]) );
 			pD3DFont_sampStuff->PrintShadow( width, height, color, buf );
 			break;
 
 		case PLAYER_STATE_PASSENGER:
-			_snprintf_s( buf, sizeof(buf), "Name: %s (ID: %d), State: Passenger (%s (%d)), Distance: %0.2f",
+			_snprintf_s( buf, sizeof(buf)-1, "Name: %s (ID: %d), State: Passenger (%s (%d)), Distance: %0.2f",
 						 szPlayerName, i, vehicle->name, iVehicleID, vect3_dist((float *)pos, &self->base.matrix[4 * 3]) );
 			pD3DFont_sampStuff->PrintShadow( width, height, color, buf );
 			break;
 
 		case PLAYER_STATE_WASTED:
-			_snprintf_s( buf, sizeof(buf), "Name: %s (ID: %d), State: Wasted", szPlayerName, i );
+			_snprintf_s( buf, sizeof(buf)-1, "Name: %s (ID: %d), State: Wasted", szPlayerName, i );
 			pD3DFont_sampStuff->PrintShadow( width, height, color, buf );
 			break;
 
 		case PLAYER_STATE_SPAWNED:
-			_snprintf_s( buf, sizeof(buf), "Name: %s (ID: %d), State: Spawned", szPlayerName, i );
+			_snprintf_s( buf, sizeof(buf)-1, "Name: %s (ID: %d), State: Spawned", szPlayerName, i );
 			pD3DFont_sampStuff->PrintShadow( width, height, color, buf );
 			break;
 		}
@@ -2060,7 +2060,7 @@ void renderScoreList ()
 	loc[1] -= 1.0f + pD3DFont_sampStuff->DrawHeight();
 	render->D3DBox( loc[0] - 10.0f, loc[1] - 2.0f, (pPresentParam.BackBufferWidth / 2),
 					pD3DFont_sampStuff->DrawHeight() + 3.0f, D3DCOLOR_ARGB(150, 200, 200, 200) );
-	_snprintf_s( buffer, sizeof(buffer), "%s (%s:%d) Connected Players: %d", g_SAMP->szHostname, g_SAMP->szIP,
+	_snprintf_s( buffer, sizeof(buffer)-1, "%s (%s:%d) Connected Players: %d", g_SAMP->szHostname, g_SAMP->szIP,
 				 g_SAMP->ulPort, amount_players );
 	pD3DFont_sampStuff->PrintShadow( loc[0], loc[1], D3DCOLOR_ARGB(200, 255, 255, 255), buffer );
 	loc[1] += 10.0f + pD3DFont_sampStuff->DrawHeight();
@@ -2068,15 +2068,15 @@ void renderScoreList ()
 	render->D3DBox( loc[0] - 10.0f, loc[1] - 10.0f, (pPresentParam.BackBufferWidth / 2),
 					pPresentParam.BackBufferHeight - loc[1] - lowest, D3DCOLOR_ARGB(150, 100, 100, 100) );
 
-	_snprintf_s( buffer, sizeof(buffer), "%s (%d)", getPlayerName(g_Players->sLocalPlayerID), g_Players->sLocalPlayerID );
+	_snprintf_s( buffer, sizeof(buffer)-1, "%s (%d)", getPlayerName(g_Players->sLocalPlayerID), g_Players->sLocalPlayerID );
 	pD3DFont_sampStuff->PrintShadow( loc[0], loc[1], samp_color_get(g_Players->sLocalPlayerID), buffer );
 
 	loc[0] += ( pPresentParam.BackBufferWidth / 4 );
-	_snprintf_s( buffer, sizeof(buffer), "%d", g_Players->iLocalPlayerScore );
+	_snprintf_s( buffer, sizeof(buffer)-1, "%d", g_Players->iLocalPlayerScore );
 	pD3DFont_sampStuff->PrintShadow( loc[0], loc[1], samp_color_get(g_Players->sLocalPlayerID), buffer );
 
 	loc[0] += ( pPresentParam.BackBufferWidth / 4 ) - 70.0f;
-	_snprintf_s( buffer, sizeof(buffer), "%d", g_Players->iLocalPlayerPing );
+	_snprintf_s( buffer, sizeof(buffer)-1, "%d", g_Players->iLocalPlayerPing );
 	pD3DFont_sampStuff->PrintShadow( loc[0], loc[1], samp_color_get(g_Players->sLocalPlayerID), buffer );
 
 	for ( int i = current_player_id; i < SAMP_PLAYER_MAX; i++ )
@@ -2091,18 +2091,18 @@ void renderScoreList ()
 		loc[1] += 1.0f + pD3DFont_sampStuff->DrawHeight();
 
 		if ( g_Players->pRemotePlayer[i]->iIsNPC == 1 )
-			_snprintf_s( buffer, sizeof(buffer), "[BOT]%s (%d)", getPlayerName(i), i );
+			_snprintf_s( buffer, sizeof(buffer)-1, "[BOT]%s (%d)", getPlayerName(i), i );
 		else
-			_snprintf_s( buffer, sizeof(buffer), "%s (%d)", getPlayerName(i), i );
+			_snprintf_s( buffer, sizeof(buffer)-1, "%s (%d)", getPlayerName(i), i );
 
 		pD3DFont_sampStuff->PrintShadow( loc[0], loc[1], samp_color_get(i), buffer );
 
 		loc[0] += ( pPresentParam.BackBufferWidth / 4 );
-		_snprintf_s( buffer, sizeof(buffer), "%d", g_Players->pRemotePlayer[i]->iScore );
+		_snprintf_s( buffer, sizeof(buffer)-1, "%d", g_Players->pRemotePlayer[i]->iScore );
 		pD3DFont_sampStuff->PrintShadow( loc[0], loc[1], samp_color_get(i), buffer );
 
 		loc[0] += ( pPresentParam.BackBufferWidth / 4 ) - 70.0f;
-		_snprintf_s( buffer, sizeof(buffer), "%d", g_Players->pRemotePlayer[i]->iPing );
+		_snprintf_s( buffer, sizeof(buffer)-1, "%d", g_Players->pRemotePlayer[i]->iPing );
 		pD3DFont_sampStuff->PrintShadow( loc[0], loc[1], samp_color_get(i), buffer );
 
 		if ( rendered_players >= max_amount_players )
@@ -2601,7 +2601,7 @@ void renderChat ( void )
 
 						// Filter the URL
 						char url_buffer[99];
-						strcpy_s( url_buffer, sizeof(url_buffer), pUrl );
+						strncpy_s( url_buffer, pUrl, sizeof(url_buffer)-1 );
 						char *pUrl_End = strstr( url_buffer, " " );
 						if ( pUrl_End )
 							*pUrl_End = NULL;
@@ -2628,9 +2628,10 @@ void renderChat ( void )
 								char *port = strstr( &url_buffer[7],":" );
 								if ( port != NULL )
 								{
+									// 0-terminate the IP
 									*port = NULL;
 									port++;
-									strcpy( g_SAMP->szIP, &url_buffer[7] );
+									strncpy_s( g_SAMP->szIP, &url_buffer[7], sizeof(g_SAMP->szIP)-1 );
 									g_SAMP->ulPort = atoi( port );
 									joining_server = 1;
 								}
@@ -3737,11 +3738,11 @@ void renderHandler()
 						color_fps = D3DCOLOR_XRGB( 200, 0, 0 );
 					if ( pGameInterface && pGameInterface->GetSettings()->IsFrameLimiterEnabled() )
 					{
-						_snprintf_s( buf, sizeof(buf), "%0.0f (%d)", m_FPS, *(int *)0xC1704C );
+						_snprintf_s( buf, sizeof(buf)-1, "%0.0f (%d)", m_FPS, *(int *)0xC1704C );
 					}
 					else
 					{
-						_snprintf_s( buf, sizeof(buf), "%0.0f", m_FPS );
+						_snprintf_s( buf, sizeof(buf)-1, "%0.0f", m_FPS );
 					}
 
 					pD3DFont->PrintShadow( pPresentParam.BackBufferWidth - pD3DFont->DrawLength(buf) - 2,
@@ -3811,7 +3812,7 @@ void renderHandler()
 						( cheat_state->state == CHEAT_STATE_VEHICLE )
 							? cheat_state->vehicle.coords : cheat_state->actor.coords;
 
-					_snprintf_s( buf, sizeof(buf), "  %.2f, %.2f, %.2f  %d", coord[0], coord[1], coord[2],
+					_snprintf_s( buf, sizeof(buf)-1, "  %.2f, %.2f, %.2f  %d", coord[0], coord[1], coord[2],
 								 gta_interior_id_get() );
 					HUD_TEXT( x, color_text, buf );
 				}
@@ -3826,7 +3827,7 @@ void renderHandler()
 
 				color = D3DCOLOR_ARGB( alpha, 255, 255, 255 );
 
-				_snprintf_s( buf, sizeof(buf), "%s <-", cheat_state->text );
+				_snprintf_s( buf, sizeof(buf)-1, "%s <-", cheat_state->text );
 				pD3DFont->PrintShadow( pPresentParam.BackBufferWidth - pD3DFont->DrawLength(buf) - 3.0f, 1,
 									   D3DCOLOR_ARGB(alpha, 255, 255, 255), buf );
 			}
@@ -4509,12 +4510,12 @@ HRESULT proxyIDirect3DDevice9::DrawIndexedPrimitive ( D3DPRIMITIVETYPE Primitive
 				origIDirect3DDevice9->SetRenderState( D3DRS_FILLMODE, D3DFILL_WIREFRAME );
 
 				// weapon behind wall
-				origIDirect3DDevice9->SetPixelShader( wallhack_red );
+				origIDirect3DDevice9->SetPixelShader( chams_red );
 				origIDirect3DDevice9->DrawIndexedPrimitive( PrimitiveType, BaseVertexIndex, MinVertexIndex, NumVertices,
 															startIndex, primCount );
 
 				// weapon infront wall
-				origIDirect3DDevice9->SetPixelShader( wallhack_blue );
+				origIDirect3DDevice9->SetPixelShader( chams_blue );
 				origIDirect3DDevice9->SetRenderState( D3DRS_ZENABLE, true );
 				origIDirect3DDevice9->DrawIndexedPrimitive( PrimitiveType, BaseVertexIndex, MinVertexIndex, NumVertices,
 															startIndex, primCount );
