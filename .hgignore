@@ -4,6 +4,8 @@ relre:.*\.suo
 relre:.*\.sdf
 relre:.*\.opensdf
 relre:.*\.rej
+relre:.*\.orig
+relre:.*\.aps
 relre:d3d9\.dll
 relre:_build[/]revision.txt
 relre:.*/ipch/.*
