@@ -640,6 +640,7 @@ enum playerFly_keyStrafeStates
 playerFly_keySpeedStates playerFly_lastKeySpeedState = speed_none;
 playerFly_keyStrafeStates playerFly_lastKeyStrafeStates = strafe_none;
 bool playerFly_animationSpeedChanged = false;
+bool playerFly_animationDeceleration = false;
 CMatrix playerFly_lastPedRotation = CMatrix();
 
 void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
@@ -816,54 +817,40 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			{
 				playerFly_lastKeyStrafeStates = keyStrafeState;
 				playerFly_lastKeySpeedState = keySpeedState;
-				switch ( keyStrafeState )
+				playerFly_animationDeceleration = false;
+				switch ( keySpeedState )
 				{
-				case strafe_none:
-				case strafe_left:
-				case strafe_right:
+				case speed_none:
 					{
-						switch ( keySpeedState )
-						{
-						case speed_none:
-							{
-								GTAfunc_PerformAnimation("SWIM", "Swim_Breast", -1, 1, 1, 0, 0, 0, 1, 0);
-								break;
-							}
-						case speed_accelerate:
-							{
-								GTAfunc_PerformAnimation("SWIM", "SWIM_crawl", -1, 1, 1, 0, 0, 0, 1, 0);
-								break;
-							}
-						case speed_decelerate:
-							{
-								GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 0);
-								break;
-							}
-						}
+						GTAfunc_PerformAnimation("SWIM", "Swim_Breast", -1, 1, 1, 0, 0, 0, 1, 0);
 						break;
 					}
-				case strafe_up:
+				case speed_accelerate:
 					{
-						switch ( keySpeedState )
+						GTAfunc_PerformAnimation("SWIM", "SWIM_crawl", -1, 1, 1, 0, 0, 0, 1, 0);
+						break;
+					}
+				case speed_decelerate:
+					{
+						switch ( keyStrafeState )
 						{
-						case speed_none:
+						case strafe_none:
+						case strafe_up:
+						case strafe_left:
+						case strafe_right:
 							{
-								if ( speed > 0.5f )
+								if ( speed > 0.45f )
 								{
 									GTAfunc_PerformAnimation("PARACHUTE", "FALL_skyDive", -1, 1, 1, 0, 0, 0, 1, 0);
+									playerFly_animationDeceleration = true;
 								}
 								else
 								{
 									GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 0);
 								}
-								break;
 							}
-						case speed_accelerate:
-							{
-								GTAfunc_PerformAnimation("SWIM", "SWIM_crawl", -1, 1, 1, 0, 0, 0, 1, 0);
-								break;
-							}
-						case speed_decelerate:
+							break;
+						default:
 							{
 								GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 0);
 								break;
@@ -876,16 +863,14 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			}
 			else if (!playerFly_animationSpeedChanged)
 			{
-				switch ( keyStrafeState )
+				switch ( keySpeedState )
 				{
-				case strafe_up:
+				case speed_decelerate:
 					{
-						if ( speed < 0.5f )
+						if ( speed < 0.45f )
 						{
-							if ( keySpeedState == speed_none )
-							{
-								GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 0);
-							}
+							GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 0);
+							playerFly_animationDeceleration = false;
 							playerFly_animationSpeedChanged = true;
 						}
 						break;
@@ -1100,6 +1085,19 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				// recopy original front
 				matPedTarget.vFront = vecSpeedRotate;
 			}
+
+			// rotate the ped rotation target upward when up strafing
+			if (playerFly_animationDeceleration)
+			{
+				
+				//CVector upStrafeAxis = matPedTarget.vFront;
+				CVector upStrafeAxis = matCamera.vFront;
+
+				upStrafeAxis.CrossProduct(&matPedTarget.vUp);
+				theta = -1.5; // 1.57
+				matPedTarget = matPedTarget.Rotate( &upStrafeAxis, theta );
+			}
+
 			// normalize everything
 			matPedTarget.vFront.Normalize();
 			matPedTarget.vRight.Normalize();
