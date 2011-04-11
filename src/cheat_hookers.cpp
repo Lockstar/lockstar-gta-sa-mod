@@ -1671,19 +1671,25 @@ void _cdecl PedCamUp ( DWORD dwCam )
 {
 	traceLastFunc( "PedCamUp()" );
 
+	if (!dwCam)
+		return;
+
 	// Calculates the up vector for the ped camera.
 	CVector *pvecUp = ( CVector * ) ( dwCam + 0x1B4 );
 	CVector *pvecLookDir = ( CVector * ) ( dwCam + 0x190 );
 
+	if (!pvecUp || !pvecLookDir)
+		return;
+
 	CVector smoothedGrav = gravCamPed_matGravity.vUp + (g_vecUpNormal * 2.0f);
 	smoothedGrav.Normalize();
 
-	//*pvecUp = *pvecLookDir;
-	*pvecUp = *pvecLookDir;
-	//pvecUp->CrossProduct( &gravCamPed_matGravity.vUp );
-	pvecUp->CrossProduct( &smoothedGrav );
-	//pvecUp->CrossProduct( pvecLookDir );
-	pvecUp->CrossProduct( pvecLookDir );
+	CVector newVecUp = *pvecLookDir;
+	newVecUp.CrossProduct( &smoothedGrav );
+	newVecUp.CrossProduct( pvecLookDir );
+	
+	if (!newVecUp.IsNearZero())
+		*pvecUp = newVecUp;
 
 	/*CVector vecSpeed;
 	pPedSelf->GetMoveSpeed( &vecSpeed );

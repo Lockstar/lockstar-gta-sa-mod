@@ -895,12 +895,12 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 					if (fly_speed >= 1.0f)
 					{
 						fly_speed_max = 1.333f * (1.0f + (0.5f / fly_speed)) * fly_speed;
-						fly_acceleration = time_diff * ((0.7f + (0.25f / (fly_speed / 4.0f))) * fly_speed) * fly_acceleration_multiplier;
+						fly_acceleration = time_diff * ((0.5f + (0.25f / (fly_speed / 4.0f))) * fly_speed) * fly_acceleration_multiplier;
 					}
 					else
 					{
 						fly_speed_max = 1.333f * (1.0f + (0.5f * fly_speed)) * fly_speed;
-						fly_acceleration = time_diff * ((0.7f + fly_speed) * fly_speed) * fly_acceleration_multiplier;
+						fly_acceleration = time_diff * ((0.5f + fly_speed) * fly_speed) * fly_acceleration_multiplier;
 					}
 
 					if ( vecSpeed.Length() < fly_speed_max )
@@ -940,15 +940,15 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 					float windSpeedDivisor = 1.5f;
 					if (fly_speed >= windSpeedDivisor)
 					{
-						windResistance = time_diff * ( ( (fly_speed * 0.028f) + (speed * (fly_speed / (fly_speed / windSpeedDivisor)) * 0.38f) ) / (fly_speed / windSpeedDivisor) );
+						windResistance = time_diff * ( ( (fly_speed * 0.022f) + (speed * (fly_speed / (fly_speed / windSpeedDivisor)) * 0.32f) ) / (fly_speed / windSpeedDivisor) );
 					}
 					else if (fly_speed >= 1.0f)
 					{
-						windResistance = time_diff * ( ( (fly_speed * 0.028f) + (speed * (fly_speed / (fly_speed / windSpeedDivisor)) * 0.38f) ) * (fly_speed / windSpeedDivisor) );
+						windResistance = time_diff * ( ( (fly_speed * 0.022f) + (speed * (fly_speed / (fly_speed / windSpeedDivisor)) * 0.32f) ) * (fly_speed / windSpeedDivisor) );
 					}
 					else
 					{
-						windResistance = time_diff * ( ( (fly_speed * 0.028f) + (speed * 0.38f) ) * fly_speed );
+						windResistance = time_diff * ( ( (fly_speed * 0.022f) + (speed * 0.32f) ) * fly_speed );
 					}
 					vecSpeed -= vecSpeed * windResistance;
 
@@ -965,7 +965,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 					// this bit should be converted to mta-style code
 					vect3_normalize( ainfo->speed, ainfo->speed );
 
-					speed -= time_diff * ((0.1f + speed) * (0.6f / (fly_speed / 2.0f)) * fly_speed) * fly_deceleration_multiplier;
+					speed -= time_diff * ((0.1f + speed) * (0.45f / (fly_speed / 2.0f)) * fly_speed) * fly_deceleration_multiplier;
 
 					if ( speed < 0.0f )
 						speed = 0.0f;
@@ -1086,15 +1086,12 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				matPedTarget.vFront = vecSpeedRotate;
 			}
 
-			// rotate the ped rotation target upward when up strafing
+			// rotate the ped rotation target upward when up decelerating
 			if (playerFly_animationDeceleration)
 			{
-				
-				//CVector upStrafeAxis = matPedTarget.vFront;
 				CVector upStrafeAxis = matCamera.vFront;
-
 				upStrafeAxis.CrossProduct(&matPedTarget.vUp);
-				theta = -1.5; // 1.57
+				theta = -1.5;
 				matPedTarget = matPedTarget.Rotate( &upStrafeAxis, theta );
 			}
 
