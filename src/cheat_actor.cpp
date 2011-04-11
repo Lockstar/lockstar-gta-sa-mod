@@ -940,15 +940,15 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 					float windSpeedDivisor = 1.5f;
 					if (fly_speed >= windSpeedDivisor)
 					{
-						windResistance = time_diff * ( ( (fly_speed * 0.022f) + (speed * (fly_speed / (fly_speed / windSpeedDivisor)) * 0.32f) ) / (fly_speed / windSpeedDivisor) );
+						windResistance = time_diff * ( ( (fly_speed * 0.023f) + (speed * (fly_speed / (fly_speed / windSpeedDivisor)) * 0.38f) ) / (fly_speed / windSpeedDivisor) );
 					}
 					else if (fly_speed >= 1.0f)
 					{
-						windResistance = time_diff * ( ( (fly_speed * 0.022f) + (speed * (fly_speed / (fly_speed / windSpeedDivisor)) * 0.32f) ) * (fly_speed / windSpeedDivisor) );
+						windResistance = time_diff * ( ( (fly_speed * 0.023f) + (speed * (fly_speed / (fly_speed / windSpeedDivisor)) * 0.38f) ) * (fly_speed / windSpeedDivisor) );
 					}
 					else
 					{
-						windResistance = time_diff * ( ( (fly_speed * 0.022f) + (speed * 0.32f) ) * fly_speed );
+						windResistance = time_diff * ( ( (fly_speed * 0.023f) + (speed * 0.38f) ) * fly_speed );
 					}
 					vecSpeed -= vecSpeed * windResistance;
 
