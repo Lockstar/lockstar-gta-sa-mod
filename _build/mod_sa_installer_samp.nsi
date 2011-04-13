@@ -16,7 +16,8 @@ Name "${NAME} ${VERSION}"
 OutFile "..\_distro_installers\${NAME}.${VERSION}.${MP}.${MP_VERSION}.Setup.exe"
 SetCompressor /SOLID lzma
 CRCCheck force
-BrandingText /TRIMCENTER "Visit ${NAME} at Google Code, Click Here"
+BrandingText "Visit ${NAME} at Google Code, Click Here"
+CompletedText "${NAME} ${VERSION} for ${MP} ${MP_VERSION} setup finished"
 ShowInstDetails show
 ShowUninstDetails show
 RequestExecutionLevel admin
@@ -57,15 +58,34 @@ Function .onVerifyInstDir
 		Abort
 FunctionEnd
 
+; dump detail text to a log file
+Function .onInstSuccess
+	DumpLog::DumpLog "$INSTDIR\${NAME}_setup.log" .R0
+FunctionEnd
+Function .onInstFailed
+	DumpLog::DumpLog "$INSTDIR\${NAME}_setup.log" .R0
+FunctionEnd
+
 ; setup MUI
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_LANGUAGE "English"
 
+Function DirectXUpdater
+	; directx runtime upgrader
+	DetailPrint "Updating DirectX 9.0c if needed.  Please wait... (this could take a few minutes)"
+	SetDetailsPrint none
+	File "/oname=$PLUGINSDIR\dxwebsetup.exe" ".\nsis\dxwebsetup.exe"
+	ExecWait '"$PLUGINSDIR\dxwebsetup.exe" /Q' ; no matter what this always returns 0, stupid microsoft
+	Delete "$PLUGINSDIR\dxwebsetup.exe"
+	SetDetailsPrint both
+	DetailPrint "DirectX 9.0c Done Updating"
+FunctionEnd
+
 ; Install Sequence
 Section "Install" SecDummy
-	DetailPrint "Log created by ${NAME} ${VERSION} for ${MP} ${MP_VERSION} setup."
+	DetailPrint "Setup log created by ${NAME} ${VERSION} for ${MP} ${MP_VERSION} setup"
 
 	SetOutPath "$INSTDIR"
 	SetOverwrite on
@@ -105,16 +125,10 @@ Section "Install" SecDummy
 	File ..\bin\data\surface.two
 	SetOverwrite on
 
-	; directx runtime upgrader
-	DetailPrint "Updating DirectX 9.0c if needed.  Please wait... (this could take a few minutes)"
-	File "/oname=$PLUGINSDIR\dxwebsetup.exe" ".\nsis\dxwebsetup.exe"
-	ExecWait '"$PLUGINSDIR\dxwebsetup.exe" /Q'
-	Delete "$PLUGINSDIR\dxwebsetup.exe"
-	DetailPrint "Done updating DirectX 9.0c."
+	; update DirectX from a function so it doesn't add to "Space required"
+	Call DirectXUpdater
 
 	WriteUninstaller "$INSTDIR\Uninstall_${NAME}.exe"
-	DetailPrint "${NAME} ${VERSION} for ${MP} ${MP_VERSION} setup finished."
-	DumpLog::DumpLog "$INSTDIR\${NAME}_setup.log" .R0
 SectionEnd
 
 ; Uninstall Sequence
