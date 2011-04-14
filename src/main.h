@@ -180,6 +180,9 @@
 // selected MTA class includes
 #include "CDirect3DData.h"
 
+// WDL includes
+#include "mutex.h"
+
 // normal includes
 #include "patcher.h"
 #include "CDetour.h"
@@ -204,6 +207,15 @@
 #include "GTAfuncs.h"
 #include "proxyIDirect3D9.h"
 #include "proxyIDirect3DDevice9.h"
+
+// mod_sa_voice includes
+#define RakAssert assert
+#define _FILE_AND_LINE_ "",0
+#include "voice/RakVoice/RakPeerInterface.h"
+#include "voice/RakVoice/PacketEnumerations.h"
+#include "voice/RakVoice/BitStream.h"
+#include "voice/RakVoice/RakVoice.h"
+#include "voice/mod_sa_voice.h"
 
 // main.cpp functions
 void							traceLastFunc ( const char *szFunc );

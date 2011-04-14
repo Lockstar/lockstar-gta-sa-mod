@@ -808,6 +808,11 @@ static void ini_init ( void )
 	if ( (ent = ini_register_entry("key_clickwarp_click", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_clickwarp_click, "lbutton" );
 
+	if ( (ent = ini_register_entry("voice_enabled", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.voice_enabled, "false" );
+	if ( (ent = ini_register_entry("voice_key", TYPE_KEY)) != NULL )
+		ini_register_data( ent, &set.voice_key, "y" );
+
 	if ( (ent = ini_register_entry("key_player_info_list", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_player_info_list, "i" );
 

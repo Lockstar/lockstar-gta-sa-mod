@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="RakVoice">
+      <UniqueIdentifier>{7dca76a8-3d43-4f14-a54a-385140536424}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK">
+      <UniqueIdentifier>{0e1040bb-0208-4989-aeaf-1a1aa9a228e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\amx">
+      <UniqueIdentifier>{960886dd-a3b1-48f7-98fa-f40cb9574a9a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="RakVoice\ArrayList.h">
+      <Filter>RakVoice</Filter>
+    </ClInclude>
+    <ClInclude Include="RakVoice\BitStream.h">
+      <Filter>RakVoice</Filter>
+    </ClInclude>
+    <ClInclude Include="RakVoice\BitStream_NoTemplate.h">
+      <Filter>RakVoice</Filter>
+    </ClInclude>
+    <ClInclude Include="RakVoice\GetTime.h">
+      <Filter>RakVoice</Filter>
+    </ClInclude>
+    <ClInclude Include="RakVoice\NetworkTypes.h">
+      <Filter>RakVoice</Filter>
+    </ClInclude>
+    <ClInclude Include="RakVoice\PacketEnumerations.h">
+      <Filter>RakVoice</Filter>
+    </ClInclude>
+    <ClInclude Include="RakVoice\PacketPriority.h">
+      <Filter>RakVoice</Filter>
+    </ClInclude>
+    <ClInclude Include="RakVoice\RakNetQueue.h">
+      <Filter>RakVoice</Filter>
+    </ClInclude>
+    <ClInclude Include="RakVoice\RakPeerInterface.h">
+      <Filter>RakVoice</Filter>
+    </ClInclude>
+    <ClInclude Include="RakVoice\SimpleMutex.h">
+      <Filter>RakVoice</Filter>
+    </ClInclude>
+    <ClInclude Include="RakVoice\SingleProducerConsumer.h">
+      <Filter>RakVoice</Filter>
+    </ClInclude>
+    <ClInclude Include="main.h" />
+    <ClInclude Include="SDK\plugin.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\plugincommon.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\amx\amx.h">
+      <Filter>SDK\amx</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\amx\getch.h">
+      <Filter>SDK\amx</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\amx\sclinux.h">
+      <Filter>SDK\amx</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="RakVoice\BitStream.cpp">
+      <Filter>RakVoice</Filter>
+    </ClCompile>
+    <ClCompile Include="RakVoice\BitStream_NoTemplate.cpp">
+      <Filter>RakVoice</Filter>
+    </ClCompile>
+    <ClCompile Include="RakVoice\GetTime.cpp">
+      <Filter>RakVoice</Filter>
+    </ClCompile>
+    <ClCompile Include="RakVoice\NetworkTypes.cpp">
+      <Filter>RakVoice</Filter>
+    </ClCompile>
+    <ClCompile Include="RakVoice\SimpleMutex.cpp">
+      <Filter>RakVoice</Filter>
+    </ClCompile>
+    <ClCompile Include="mod_sa_voice.cpp" />
+    <ClCompile Include="SDK\amxplugin.cpp">
+      <Filter>SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="SDK\amx\getch.c">
+      <Filter>SDK\amx</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="mod_sa_voice.def" />
+  </ItemGroup>
+</Project>
