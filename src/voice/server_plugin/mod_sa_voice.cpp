@@ -269,7 +269,7 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load( void **ppData )
 
 	// receive hook
 #ifdef WIN32
-	if(memcmp((void *)RECEIVE_HOOKPOS, "\x8B\x4F\x10\x8A\x01", 5))
+	if(!memcmp((void *)RECEIVE_HOOKPOS, "\x8B\x4E\x10\x8A\x01", 5))
 #else
 	if(!memcmp((void *)RECEIVE_HOOKPOS, "\x0F\xB6\xC0\x83\xE8\x20", 6))
 #endif
