@@ -775,6 +775,8 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.d3dtext_score, "true" );
 	if ( (ent = ini_register_entry("d3dtext_labels", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.d3dtext_labels, "false" );
+	if ( (ent = ini_register_entry("d3dtext_labels_maxDist", TYPE_FLOAT)) != NULL )
+		ini_register_data( ent, &set.d3dtext_labels_maxDist, "100.0" );
 
 	if ( (ent = ini_register_entry("anti_spam", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.anti_spam, "false" );
@@ -937,6 +939,8 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.pickup_tags_dist, "100.0" );
 	if ( (ent = ini_register_entry("render_object_texts", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.render_object_texts, "false" );
+	if ( (ent = ini_register_entry("object_tags_dist", TYPE_FLOAT)) != NULL )
+		ini_register_data( ent, &set.object_tags_dist, "100.0" );
 
 	//
 	//	if ( (ent = ini_register_entry("esp_players_airride", TYPE_BOOL)) != NULL )

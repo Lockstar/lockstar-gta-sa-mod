@@ -271,6 +271,7 @@ struct settings
 	int						d3dtext_kill;
 	int						d3dtext_score;
 	int						d3dtext_labels;
+	float					d3dtext_labels_maxDist;
 
 	int						anti_spam;
 	int						chatbox_logging;
@@ -376,6 +377,7 @@ struct settings
 	int						render_pickup_texts;
 	float					pickup_tags_dist;
 	int						render_object_texts;
+	float					object_tags_dist;
 	int						enable_clouds;
 
 	///////////////////////////////////////////////
