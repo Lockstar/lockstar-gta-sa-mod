@@ -1696,7 +1696,7 @@ void RenderObjectTexts ( void )
 		vect3_copy( &g_SAMP->pPools->pPool_Object->object[i]->pGTAObject->base.matrix[4 * 3], pos );
 		if ( vect3_near_zero(pos) )
 			continue;
-		if ( vect3_dist(pos, &self->base.matrix[4 * 3]) > set.player_tags_dist )
+		if ( vect3_dist(pos, &self->base.matrix[4 * 3]) > set.object_tags_dist )
 			continue;
 
 		poss.x = pos[0];
@@ -1945,8 +1945,7 @@ void renderTextLabels ()
 
 			if ( vect3_near_zero(pos) )
 				continue;
-			if ( vect3_dist(pos, &self->base.matrix[4 * 3]) > set.player_tags_dist )
-				//set.Label_Dist_Maximum
+			if ( vect3_dist(pos, &self->base.matrix[4 * 3]) > set.d3dtext_labels_maxDist )
 				continue;
 
 			poss.x = pos[0];

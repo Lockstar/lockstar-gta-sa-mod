@@ -2164,7 +2164,11 @@ static int menu_callback_players ( int op, struct menu_item *item )
 	else if ( op == MENU_OP_SELECT )
 	{
 		if ( item->id == ID_MENU_PLAYERS_MUTE )
+		{
 			set.anti_spam ^= 1;
+			// don't open submenu via select button
+			return 1;
+		}
 	}
 	return 0;
 }
