@@ -15,9 +15,9 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
     <CLRSupport>false</CLRSupport>
     <WholeProgramOptimization>false</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -51,12 +51,13 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);.\;sparsehash\windows;sparsehash;game_sa</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);_WIN32_WINNT=0x501;WIN32;NDEBUG;_WINDOWS;_USRDLL;mod_sa_PROXY_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\;sparsehash\windows;sparsehash;game_sa;voice/speex-1.1.12/include;voice/speex-1.1.12/win32;voice/portaudio_v18_1/pa_common;voice/portaudio_v18_1/pa_win_ds;wdl/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;NDEBUG;_WINDOWS;_USRDLL;HAVE_CONFIG_H;mod_sa_PROXY_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>
       </ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -65,7 +66,7 @@
       <DisableSpecificWarnings>4995;4244;4996;4482;4409;4250;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>d3dx9.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3dx9.lib;gdiplus.lib;dsound.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>../bin/d3d9.dll</OutputFile>
       <AdditionalLibraryDirectories>dxsdk_apr2005/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>mod_sa.def</ModuleDefinitionFile>
@@ -78,14 +79,15 @@
       <ImportLibrary>$(OutDir)mod_sa_proxy.lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
-    <Manifest />
+    <Manifest>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Manifest>
     <PostBuildEvent>
       <Command>
       </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="cheat_patches.h" />
     <ClInclude Include="game_sa\game\C3DMarker.h" />
     <ClInclude Include="game_sa\game\C3DMarkers.h" />
     <ClInclude Include="game_sa\game\CAERadioTrackManager.h" />
@@ -332,6 +334,7 @@
     <ClInclude Include="cheat_funcs.h" />
     <ClInclude Include="cheat_generic.h" />
     <ClInclude Include="cheat_hookers.h" />
+    <ClInclude Include="cheat_patches.h" />
     <ClInclude Include="cheat_vehicle.h" />
     <ClInclude Include="cheat_vehRecording.h" />
     <ClInclude Include="debug_classify.h" />
@@ -357,12 +360,71 @@
     <ClInclude Include="sparsehash\windows\config.h" />
     <ClInclude Include="sparsehash\windows\port.h" />
     <ClInclude Include="sparsehash\windows\google\sparsehash\sparseconfig.h" />
+    <ClInclude Include="voice\mod_sa_voice.h" />
+    <ClInclude Include="voice\RakVoice\ArrayList.h" />
+    <ClInclude Include="voice\RakVoice\BitStream.h" />
+    <ClInclude Include="voice\RakVoice\BitStream_NoTemplate.h" />
+    <ClInclude Include="voice\RakVoice\GetTime.h" />
+    <ClInclude Include="voice\RakVoice\NetworkTypes.h" />
+    <ClInclude Include="voice\RakVoice\PacketEnumerations.h" />
+    <ClInclude Include="voice\RakVoice\PacketPriority.h" />
+    <ClInclude Include="voice\RakVoice\RakMemoryOverride.h" />
+    <ClInclude Include="voice\RakVoice\RakNetQueue.h" />
+    <ClInclude Include="voice\RakVoice\RakNetTime.h" />
+    <ClInclude Include="voice\RakVoice\RakPeerInterface.h" />
+    <ClInclude Include="voice\RakVoice\RakVoice.h" />
+    <ClInclude Include="voice\RakVoice\SingleProducerConsumer.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\_kiss_fft_guts.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\arch.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\cb_search.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\cb_search_arm4.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\cb_search_bfin.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\cb_search_sse.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\fftwrap.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\filters.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\filters_arm4.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\filters_bfin.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\filters_sse.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\fixed_arm4.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\fixed_arm5e.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\fixed_bfin.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\fixed_debug.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\fixed_generic.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\kiss_fft.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\kiss_fftr.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\lpc.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\lpc_bfin.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\lsp.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\ltp.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\ltp_arm4.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\ltp_bfin.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\ltp_sse.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\math_approx.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\misc.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\misc_bfin.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\modes.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\nb_celp.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\pseudofloat.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\quant_lsp.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\sb_celp.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\smallft.h" />
+    <ClInclude Include="voice\speex-1.1.12\win32\speex_config.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\stack_alloc.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\vbr.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\vorbis_psy.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\vq.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\vq_arm4.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\vq_bfin.h" />
+    <ClInclude Include="voice\speex-1.1.12\libspeex\vq_sse.h" />
+    <ClInclude Include="voice\portaudio_v18_1\pa_win_ds\dsound_wrapper.h" />
+    <ClInclude Include="voice\portaudio_v18_1\pa_common\pa_host.h" />
+    <ClInclude Include="voice\portaudio_v18_1\pa_common\pa_trace.h" />
+    <ClInclude Include="voice\portaudio_v18_1\pa_common\portaudio.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="stddefs.h" />
     <ClInclude Include="stdtypes.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cheat_patches.cpp" />
     <ClCompile Include="game_sa\C3DMarkerSA.cpp" />
     <ClCompile Include="game_sa\C3DMarkersSA.cpp" />
     <ClCompile Include="game_sa\CAERadioTrackManagerSA.cpp" />
@@ -487,6 +549,7 @@
     <ClCompile Include="cheat_funcs.cpp" />
     <ClCompile Include="cheat_generic.cpp" />
     <ClCompile Include="cheat_hookers.cpp" />
+    <ClCompile Include="cheat_patches.cpp" />
     <ClCompile Include="cheat_vehicle.cpp" />
     <ClCompile Include="cheat_vehRecording.cpp" />
     <ClCompile Include="debug_classify.cpp" />
@@ -501,6 +564,295 @@
     <ClCompile Include="d3drender.cpp" />
     <ClCompile Include="proxyIDirect3D9.cpp" />
     <ClCompile Include="proxyIDirect3DDevice9.cpp" />
+    <ClCompile Include="voice\mod_sa_voice.cpp" />
+    <ClCompile Include="voice\RakVoice\BitStream.cpp">
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">main.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\RakVoice\BitStream_NoTemplate.cpp">
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">main.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\RakVoice\GetTime.cpp">
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">main.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\RakVoice\NetworkTypes.cpp">
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">main.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\RakVoice\RakMemoryOverride.cpp">
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">main.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\RakVoice\RakVoice.cpp">
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">main.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\bits.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\cb_search.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\exc_10_16_table.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\exc_10_32_table.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\exc_20_32_table.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\exc_5_256_table.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\exc_5_64_table.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\exc_8_128_table.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\fftwrap.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\filters.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\gain_table.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\gain_table_lbr.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\hexc_10_32_table.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\hexc_table.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\high_lsp_tables.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\jitter.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\kiss_fft.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\kiss_fftr.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\lbr_48k_tables.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\lpc.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\lsp.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\lsp_tables_nb.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\ltp.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\math_approx.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\mdf.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\misc.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\modes.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\nb_celp.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\pcm_wrapper.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\preprocess.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\quant_lsp.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\sb_celp.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\smallft.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\speex.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\speex_callbacks.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\speex_header.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\stereo.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\vbr.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\vorbis_psy.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\speex-1.1.12\libspeex\vq.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\portaudio_v18_1\pa_win_ds\dsound_wrapper.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\portaudio_v18_1\pa_common\pa_convert.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\portaudio_v18_1\pa_win_ds\pa_dsound.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\portaudio_v18_1\pa_common\pa_lib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="voice\portaudio_v18_1\pa_common\pa_trace.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
     <ClCompile Include="main.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
