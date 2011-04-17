@@ -6,7 +6,7 @@ relre:.*\.opensdf
 relre:.*\.rej
 relre:.*\.orig
 relre:.*\.aps
-relre:d3d9\.dll
+relre:.*\.dll
 relre:_build[/]revision.txt
 relre:.*/ipch/.*
 relre:.*/obj/.*
