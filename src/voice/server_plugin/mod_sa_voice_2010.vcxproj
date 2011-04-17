@@ -69,7 +69,6 @@
     <ClInclude Include="RakVoice\PacketPriority.h" />
     <ClInclude Include="RakVoice\RakNetQueue.h" />
     <ClInclude Include="RakVoice\RakPeerInterface.h" />
-    <ClInclude Include="RakVoice\SimpleMutex.h" />
     <ClInclude Include="RakVoice\SingleProducerConsumer.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="SDK\amx\amx.h" />
@@ -83,7 +82,6 @@
     <ClCompile Include="RakVoice\BitStream_NoTemplate.cpp" />
     <ClCompile Include="RakVoice\GetTime.cpp" />
     <ClCompile Include="RakVoice\NetworkTypes.cpp" />
-    <ClCompile Include="RakVoice\SimpleMutex.cpp" />
     <ClCompile Include="mod_sa_voice.cpp" />
     <ClCompile Include="SDK\amxplugin.cpp" />
     <ClCompile Include="SDK\amx\getch.c" />

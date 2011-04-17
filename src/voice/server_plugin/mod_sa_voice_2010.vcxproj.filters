@@ -39,9 +39,6 @@
     <ClInclude Include="RakVoice\RakPeerInterface.h">
       <Filter>RakVoice</Filter>
     </ClInclude>
-    <ClInclude Include="RakVoice\SimpleMutex.h">
-      <Filter>RakVoice</Filter>
-    </ClInclude>
     <ClInclude Include="RakVoice\SingleProducerConsumer.h">
       <Filter>RakVoice</Filter>
     </ClInclude>
@@ -73,9 +70,6 @@
       <Filter>RakVoice</Filter>
     </ClCompile>
     <ClCompile Include="RakVoice\NetworkTypes.cpp">
-      <Filter>RakVoice</Filter>
-    </ClCompile>
-    <ClCompile Include="RakVoice\SimpleMutex.cpp">
       <Filter>RakVoice</Filter>
     </ClCompile>
     <ClCompile Include="mod_sa_voice.cpp" />
