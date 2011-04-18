@@ -139,7 +139,7 @@ static struct patch_set patch_gta_auto_aim =
 	}
 };
 
-static struct patch_set patch_RemoveFlyUpHardLimit =
+static struct patch_set patch_RemoveFlyUpSpeedLimit =
 {
 	"Remove Fly Up Hard Limit", // removes the up speed hard limiter when "falling", for Player Fly
 	0,
@@ -147,7 +147,7 @@ static struct patch_set patch_RemoveFlyUpHardLimit =
 	{ 7, (void *)((uint8_t *)0x005E91CE), (uint8_t *)"\xC7\x46\x4C\x00\x00\x80\x3E", NULL, (uint8_t *)"\xC7\x46\x4C\x00\x00\x80\x3E" }
 };
 
-static struct patch_set patch_RemoveFlySoftLimit =
+static struct patch_set patch_RemoveFlyWindSpeedLimit =
 {
 	"Remove Fly Soft Limits", // removes all speed and spin limiters when "falling", for Player Fly
 	0,
