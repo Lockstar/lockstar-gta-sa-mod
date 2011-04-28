@@ -85,6 +85,12 @@ struct vehicle_upgrade_info
 	const char	*upgradeName;			// upgrade name
 };
 
+struct move_animation_info
+{
+	eMoveAnim		moveStyleId;  // CPed.h
+	const char*		moveStyleName;
+};
+
 struct str_split
 {
 	char	*str;
@@ -341,6 +347,50 @@ const struct vehicle_upgrade_info	cveh_upgrade_info[VEHICLE_UPGRADES_COUNT] =
 	{ 1098, "Wheels", "Access" }
 };
 
+#define MOVE_ANIMATIONS_COUNT		27
+const struct move_animation_info	move_animations[MOVE_ANIMATIONS_COUNT] =
+{
+	// ordered by eMoveAnim-ids (ascending)
+	{ MOVE_PLAYER, "CJ" },
+//	{ MOVE_PLAYER_F, "Player (F)" },
+//	{ MOVE_PLAYER_M, "Player (M)" },
+	{ MOVE_ROCKET, "Rocket" },
+//	{ MOVE_ROCKET_F, "Rocket (F)" },
+//	{ MOVE_ROCKET_M, "Rocket (M)" },
+	{ MOVE_ARMED, "Armed" },
+//	{ MOVE_ARMED_F, "Armed (F)" },
+//	{ MOVE_ARMED_M, "Armed (M)" },
+	{ MOVE_BBBAT, "Baseball" },
+//	{ MOVE_BBBAT_F, "Baseball (F)" },
+//	{ MOVE_BBBAT_M, "Baseball (M)" },
+	{ MOVE_CSAW, "Chainsaw" },
+//	{ MOVE_CSAW_F, "Chainsaw (F)" },
+//	{ MOVE_CSAW_M, "Chainsaw (M)" },
+	{ MOVE_SNEAK, "Sneak" },
+	{ MOVE_JETPACK, "Jetpack" },
+	{ MOVE_MAN, "Man" },
+	{ MOVE_SHUFFLE, "Shuffle" },
+	{ MOVE_OLDMAN, "Old (M)" },
+	{ MOVE_GANG1, "Gang1" },
+	{ MOVE_GANG2, "Gang2" },
+	{ MOVE_OLDFATMAN, "Old fat (M)" },
+	{ MOVE_FATMAN, "Fat (M)" },
+	{ MOVE_JOGGER, "Jogger (M)" },
+	{ MOVE_DRUNKMAN, "Drunk" },
+	{ MOVE_BLINDMAN, "Woozie" },
+	{ MOVE_SWAT, "SWAT" },
+	{ MOVE_WOMAN, "Woman" },
+	{ MOVE_SHOPPING, "Shopping" },
+	{ MOVE_BUSYWOMAN, "Busy (F)" },
+	{ MOVE_SEXYWOMAN, "Sexy (F)" },
+	{ MOVE_PRO, "Pro" },
+	{ MOVE_OLDWOMAN, "Old (F)" },
+	{ MOVE_FATWOMAN, "Fat (F)" },
+	{ MOVE_JOGWOMAN, "Jogger (F)" },
+	{ MOVE_OLDFATWOMAN, "Old fat (F)" },
+//	{ MOVE_SKATE, "Skate" }, /needs to be loaded from some not always loaded file?
+};
+
 // this blows the doors off Microsoft's version, mmmmkay
 int									isBadPtr_GTA_pVehicle ( vehicle_info *p_VehicleInfo );
 int									isBadPtr_GTA_pVehicle ( CVehicle *p_CVehicle );
@@ -419,6 +469,11 @@ struct vehicle_info					*actor_vehicle_get ( const struct actor_info *info );
 void								SetCloudsEnabled ( int iEnabled );
 void								loadAllWeaponModels ( void );
 void								loadSpecificModel ( int iModelID );
+
+// ped animations
+bool								pPedSelf_setMoveAnimation__array ( int move_animations__arrayId );
+bool								isMoveAnimationIdValid ( int iAnimationID );
+bool								pPedSelf_setMoveAnimation ( int iAnimationID );
 
 // new vehicle types and upgrades
 bool								vehicle_iModelID_IsValid ( int iModelID );

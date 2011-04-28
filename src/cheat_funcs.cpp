@@ -1459,6 +1459,60 @@ void SetCloudsEnabled ( int iEnabled )
 }
 
 // ---------------------------------------------------------------------------------------
+// ped animations
+bool pPedSelf_setMoveAnimation__array ( int move_animations__arrayId )
+{
+	traceLastFunc( "pPedSelf_setMoveAnimation__array()" );
+
+	// should be an array id
+	if ( move_animations__arrayId < 0 || move_animations__arrayId >= MOVE_ANIMATIONS_COUNT
+		|| pPedSelf == NULL )
+		return false;
+
+    CPlayerPedSA* pLocalPlayerSA = dynamic_cast < CPlayerPedSA* > ( pPedSelf );
+	if ( pLocalPlayerSA == NULL )
+			return false;
+
+	if ( pLocalPlayerSA->GetMoveAnim() != move_animations[move_animations__arrayId].moveStyleId )
+		pLocalPlayerSA->SetMoveAnim( move_animations[move_animations__arrayId].moveStyleId );
+	//pPedSelf->GetPedInterface()->iMoveAnimGroup = move_animations[move_animations__arrayId].moveStyleId;
+	return true;
+}
+
+bool isMoveAnimationIdValid ( int iAnimationID )
+{
+	// id invalid when < lowest id or > highest id (move_animations is sorted by the ID)
+	if ( iAnimationID < move_animations[0].moveStyleId ||
+		iAnimationID > move_animations[MOVE_ANIMATIONS_COUNT-1].moveStyleId )
+		return false;
+
+	for ( int i = 0; i < MOVE_ANIMATIONS_COUNT; i++ )
+	{
+		if ( move_animations[i].moveStyleId == iAnimationID )
+			return true;
+	}
+	return false;
+}
+
+bool pPedSelf_setMoveAnimation ( int iAnimationID )
+{
+	traceLastFunc( "pPedSelf_setMoveAnimation()" );
+
+	// would crash with invalid animation ID
+	if ( pPedSelf == NULL || !isMoveAnimationIdValid(iAnimationID) )
+		return false;
+
+	CPlayerPedSA* pLocalPlayerSA = dynamic_cast < CPlayerPedSA* > ( pPedSelf );
+	if ( pLocalPlayerSA == NULL )
+		return false;
+
+	if ( (int)pLocalPlayerSA->GetMoveAnim() != iAnimationID )
+		pLocalPlayerSA->SetMoveAnim( (eMoveAnim)iAnimationID );
+	return true;
+}
+
+// ---------------------------------------------------------------------------------------
+// new vehicle types and upgrades
 bool vehicle_iModelID_IsValid ( int iModelID )
 {
 	return iModelID >= 400 && iModelID <= 611;
