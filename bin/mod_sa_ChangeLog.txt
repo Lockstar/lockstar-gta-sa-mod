@@ -2,6 +2,13 @@ mod_sa
 by jflm, nuckfuts, notaplane, and the game modification community
 http://code.google.com/p/m0d-s0beit-sa/
 
+Version 4.2.4.1
+* Added Player Fly fast turning animations.
+* Support for SA-MP 0.3c R3.
+
+Version 4.2.4.0
+* Added RakNet voice support for SA-MP.
+
 Version 4.2.3.2
 * Added Player Fly deceleration animation.
 

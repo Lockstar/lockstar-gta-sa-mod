@@ -23,7 +23,7 @@
 #include "main.h"
 
 #define SAMP_DLL	"samp.dll"
-#define SAMP_CMP	"5E2F060083C40CEB4B55"
+#define SAMP_CMP	"6A088D4C2420518D4C24"
 
 //randomStuff
 extern int						iViewingInfoPlayer;
@@ -762,7 +762,7 @@ int getPlayerCount ( void )
 	return iCount + 1;
 }
 
-#define SAMP_FUNC_NAMECHANGE	0x9830
+#define SAMP_FUNC_NAMECHANGE	0x98F0
 int setLocalPlayerName ( const char *name )
 {
 	if ( g_Players == NULL || g_Players->pLocalPlayer == NULL )
@@ -1062,7 +1062,7 @@ void cmd_showCMDS ()
 	}
 }
 
-#define FUNC_ADDCLIENTCMD	0x6F9E0
+#define FUNC_ADDCLIENTCMD	0x5F870
 void addClientCommand ( char *name, int function )
 {
 	if ( name == NULL || function == NULL || g_Input == NULL )
@@ -1195,7 +1195,7 @@ void addMessageToChatWindowSS ( const char *text, ... )
 	}
 }
 
-#define FUNC_ADDTOCHATWND	0x6E6A0
+#define FUNC_ADDTOCHATWND	0x5E460
 void addToChatWindow ( char *text, D3DCOLOR textColor, int playerID )
 {
 	if ( g_SAMP == NULL || g_Chat == NULL )
@@ -1245,7 +1245,7 @@ void addToChatWindow ( char *text, D3DCOLOR textColor, int playerID )
 	return;
 }
 
-#define FUNC_RESTARTGAME	0x87F0
+#define FUNC_RESTARTGAME	0x8840
 void restartGame ()
 {
 	if ( g_SAMP == NULL )
@@ -1283,7 +1283,7 @@ void say ( char *text, ... )
 }
 
 #define FUNC_SAY		0x4D00
-#define FUNC_SENDCMD	0x6FB10
+#define FUNC_SENDCMD	0x5F9A0
 void addSayToChatWindow ( char *msg )
 {
 	if ( g_SAMP == NULL )
@@ -1312,7 +1312,7 @@ void addSayToChatWindow ( char *msg )
 	}
 }
 
-#define FUNC_GAMETEXT	0x514D0
+#define FUNC_GAMETEXT	0x8E910
 void showGameText ( char *text, int time, int textsize )
 {
 	if ( g_SAMP == NULL )
@@ -1431,8 +1431,8 @@ void _cdecl toggleSAMPCursor_RestoreCamera ( void )
 }
 */
 
-#define FUNC_TOGGLECURSOR			0x50FD0
-#define FUNC_CURSORUNLOCKACTORCAM	0x50EB0
+#define FUNC_TOGGLECURSOR			0x8E410
+#define FUNC_CURSORUNLOCKACTORCAM	0x8E2F0
 void toggleSAMPCursor(int iToggle)
 {
 	if(g_Input->iInputEnabled) return;
@@ -1472,7 +1472,7 @@ void toggleSAMPCursor(int iToggle)
 }
 
 
-#define HOOK_EXIT_ANTICARJACKED_HOOK	0xF79C
+#define HOOK_EXIT_ANTICARJACKED_HOOK	0xF84C
 uint16_t	anticarjacked_vehid;
 DWORD		anticarjacked_ebx_backup;
 DWORD		anticarjacked_jmp;
@@ -1498,7 +1498,7 @@ uint8_t _declspec ( naked ) carjacked_hook ( void )
 	__asm jmp anticarjacked_jmp
 }
 
-#define HOOK_EXIT_SERVERMESSAGE_HOOK	0x6EAE3
+#define HOOK_EXIT_SERVERMESSAGE_HOOK	0x5E953
 int		g_iNumPlayersMuted = 0;
 bool	g_bPlayerMuted[SAMP_PLAYER_MAX];
 uint8_t _declspec ( naked ) server_message_hook ( void )
@@ -1554,7 +1554,7 @@ ignoreThisServChatMsg:
 	__asm jmp ebx
 }
 
-#define HOOK_EXIT_CLIENTMESSAGE_HOOK	0xCA1E
+#define HOOK_EXIT_CLIENTMESSAGE_HOOK	0xCABE
 uint8_t _declspec ( naked ) client_message_hook ( void )
 {
 	static char last_clientmsg[SAMP_PLAYER_MAX][256];
@@ -1602,7 +1602,7 @@ client_message_hook_jump_out:;
 	__asm jmp ebx
 }
 
-#define HOOK_CALL_STREAMEDOUTINFO	0x51580
+#define HOOK_CALL_STREAMEDOUTINFO	0x8E9C0
 DWORD dwStreamedOutInfoOrigFunc;
 float fStreamedOutInfoPosX, fStreamedOutInfoPosY, fStreamedOutInfoPosZ;
 uint16_t wStreamedOutInfoPlayerID;
@@ -1641,10 +1641,10 @@ uint8_t _declspec ( naked ) StreamedOutInfo ( void )
 	}
 }
 
-#define SAMP_HOOKPOS_ServerMessage	0x6EACC
-#define SAMP_HOOKPOS_ClientMessage	0xC9C1
-#define SAMP_HOOK_STATECHANGE		0xF78B
-#define SAMP_HOOK_StreamedOutInfo	0xDE4B
+#define SAMP_HOOKPOS_ServerMessage	0x5E93C
+#define SAMP_HOOKPOS_ClientMessage	0xCA61
+#define SAMP_HOOK_STATECHANGE		0xF83B
+#define SAMP_HOOK_StreamedOutInfo	0xDEEB
 void installSAMPHooks ()
 {
 	if( g_SAMP == NULL )
@@ -1701,9 +1701,9 @@ void installSAMPHooks ()
 #define SAMP_HEADSYNCSENDRATE	0x00000
 void setSAMPCustomSendRates ( int iOnFoot, int iInCar, int iAim, int iHeadSync )
 {
-	if ( !set.samp_custom_sendrates_enable )
+//	if ( !set.samp_custom_sendrates_enable )
 		return;
-	if ( g_dwSAMP_Addr == NULL )
+/*	if ( g_dwSAMP_Addr == NULL )
 		return;
 	if ( g_SAMP == NULL )
 		return;
@@ -1712,10 +1712,10 @@ void setSAMPCustomSendRates ( int iOnFoot, int iInCar, int iAim, int iHeadSync )
 	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_INCARSENDRATE), &iInCar, sizeof(int) );
 	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_AIMSENDRATE), &iAim, sizeof(int) );
 //	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_HEADSYNCSENDRATE), &iHeadSync, sizeof(int) );
-}
+*/}
 
-#define SAMP_DISABLE_NAMETAGS		0x762A0
-#define SAMP_DISABLE_NAMETAGS_HP	0x75290
+#define SAMP_DISABLE_NAMETAGS		0x66140
+#define SAMP_DISABLE_NAMETAGS_HP	0x65130
 int sampPatchDisableNameTags ( int iEnabled )
 {
 	static struct patch_set sampPatchEnableNameTags_patch =
@@ -1738,6 +1738,7 @@ int sampPatchDisableNameTags ( int iEnabled )
 #define SAMP_SKIPSENDINTERIOR 0x6413
 int sampPatchDisableInteriorUpdate ( int iEnabled )
 {
+/*
 	static struct patch_set sampPatchDisableInteriorUpdate_patch =
 	{
 		"NOP sendinterior",
@@ -1752,18 +1753,18 @@ int sampPatchDisableInteriorUpdate ( int iEnabled )
 		return patcher_install( &sampPatchDisableInteriorUpdate_patch );
 	else if ( !iEnabled && sampPatchDisableInteriorUpdate_patch.installed )
 		return patcher_remove( &sampPatchDisableInteriorUpdate_patch );
-
+*/
 	return NULL;
 }
 
 
 // not used anymore
 // fix the damn laggy screenshot function Kye
-#define SAMP_NOPSCREENSHOT	0x764E0
+#define SAMP_NOPSCREENSHOT	0x66380
 
 
-#define SAMP_NOPSCOREBOARDTOGGLEON			0x73A09
-#define SAMP_NOPSCOREBOARDTOGGLEONKEYLOCK	0x73A11
+#define SAMP_NOPSCOREBOARDTOGGLEON			0x638A9
+#define SAMP_NOPSCOREBOARDTOGGLEONKEYLOCK	0x638B1
 int sampPatchDisableScoreboardToggleOn ( int iEnabled )
 {
 	static struct patch_set sampPatchDisableScoreboard_patch =
@@ -1783,8 +1784,8 @@ int sampPatchDisableScoreboardToggleOn ( int iEnabled )
 	return NULL;
 }
 
-#define SAMP_CHATINPUTADJUST_Y				0x6E674
-#define SAMP_CHATINPUTADJUST_X				0x6F795
+#define SAMP_CHATINPUTADJUST_Y				0x5E434
+#define SAMP_CHATINPUTADJUST_X				0x5F625
 int sampPatchDisableChatInputAdjust ( int iEnabled )
 {
 	static struct patch_set sampPatchDisableChatInputAdj_patch =
