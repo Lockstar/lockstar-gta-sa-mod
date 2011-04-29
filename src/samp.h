@@ -52,7 +52,7 @@
 #define SAMP_GAMEPROCESSHOOK			0x8FCB8
 #define SAMP_FUNCUPDATESCOREBOARDDATA	0x75B0
 #define SAMP_PATCH_NOCARCOLORRESETTING	0x9B520
-#define SAMP_DRAWTEXTLABELS				0x6680E
+#define SAMP_DRAWTEXTLABELS				0x6681C
 
 
 #define GAMESTATE_AWAIT_JOIN			29
@@ -401,14 +401,15 @@ struct stLocalPlayer
 struct stRemotePlayerData
 {
 #pragma pack( 1 )
-	uint8_t					bUnk1;
-	uint32_t				dwTick;
 	uint8_t					byteTeamID;
 	uint8_t					bytePlayerState;
 	uint16_t				sVehicleID;
 	uint8_t					byteSeatID;
 	int						iPassengerDriveBy;
-	int						iUnknown_1;
+	uint8_t					bUnk1;
+	uint32_t				dwTick;
+	uint32_t				dwLastStreamedInTick;	//is 0 when currently streamed in
+	uint32_t				dwUnknown_18;
 	int						iShowNameTag;
 	int						iHasJetPack;
 	uint8_t					byteSpecialAction;
@@ -420,7 +421,7 @@ struct stRemotePlayerData
 	int						iUnknown_3;
 	uint16_t				sPlayerID;
 	struct stHeadSync		headSyncData;
-	uint8_t					byteUnknown_73[16];
+	uint8_t					byteUnknown_77[16];
 	struct stPassengerData	passengerData;
 	struct stAimData		aimData;		//not used
 	struct stTrailerData	trailerData;	//not used
@@ -431,7 +432,7 @@ struct stRemotePlayerData
 	float					fVehiclePosition[3];
 	float					fVehicleMoveSpeed[3];
 	float					fVehicleRoll[4];
-	uint8_t					byteUnknown_389[24];
+	uint8_t					byteUnknown_393[24];
 	int						iGlobalMarkerLoaded;
 	int						iGlobalMarkerLocation[3];
 	uint32_t				ulGlobalMarker_GTAID;

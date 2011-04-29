@@ -1698,12 +1698,11 @@ void installSAMPHooks ()
 #define SAMP_ONFOOTSENDRATE		0xD30B8
 #define SAMP_INCARSENDRATE		0xD30BC
 #define SAMP_AIMSENDRATE		0xD30C0
-#define SAMP_HEADSYNCSENDRATE	0x00000
 void setSAMPCustomSendRates ( int iOnFoot, int iInCar, int iAim, int iHeadSync )
 {
-//	if ( !set.samp_custom_sendrates_enable )
+	if ( !set.samp_custom_sendrates_enable )
 		return;
-/*	if ( g_dwSAMP_Addr == NULL )
+	if ( g_dwSAMP_Addr == NULL )
 		return;
 	if ( g_SAMP == NULL )
 		return;
@@ -1711,8 +1710,7 @@ void setSAMPCustomSendRates ( int iOnFoot, int iInCar, int iAim, int iHeadSync )
 	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_ONFOOTSENDRATE), &iOnFoot, sizeof(int) );
 	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_INCARSENDRATE), &iInCar, sizeof(int) );
 	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_AIMSENDRATE), &iAim, sizeof(int) );
-//	memcpy_safe( (void *)(g_dwSAMP_Addr + SAMP_HEADSYNCSENDRATE), &iHeadSync, sizeof(int) );
-*/}
+}
 
 #define SAMP_DISABLE_NAMETAGS		0x66140
 #define SAMP_DISABLE_NAMETAGS_HP	0x65130
@@ -1738,7 +1736,6 @@ int sampPatchDisableNameTags ( int iEnabled )
 #define SAMP_SKIPSENDINTERIOR 0x6413
 int sampPatchDisableInteriorUpdate ( int iEnabled )
 {
-/*
 	static struct patch_set sampPatchDisableInteriorUpdate_patch =
 	{
 		"NOP sendinterior",
@@ -1753,7 +1750,6 @@ int sampPatchDisableInteriorUpdate ( int iEnabled )
 		return patcher_install( &sampPatchDisableInteriorUpdate_patch );
 	else if ( !iEnabled && sampPatchDisableInteriorUpdate_patch.installed )
 		return patcher_remove( &sampPatchDisableInteriorUpdate_patch );
-*/
 	return NULL;
 }
 
