@@ -78,6 +78,7 @@
 #define ID_CHEAT_CHAMS						200
 #define ID_CHEAT_CJ_RUNSTYLE				210
 #define ID_CHEAT_FLY_SPEED					220
+#define ID_CHEAT_DISABLE_WAVES				230
 
 #define ID_CHEAT_INVULN_ACTOR				0
 #define ID_CHEAT_INVULN_VEHICLE				1
@@ -1147,6 +1148,9 @@ static int menu_callback_cheats ( int op, struct menu_item *item )
 
 		case ID_CHEAT_FLY_SPEED:
 			return cheat_state->actor.fly_on;
+
+		case ID_CHEAT_DISABLE_WAVES:
+			return pGameInterface->GetWaterManager()->GetWaveLevel() == 0.0f;
 		}
 		break;
 
@@ -1228,6 +1232,13 @@ static int menu_callback_cheats ( int op, struct menu_item *item )
 
 		case ID_CHEAT_FLY_SPEED:
 			cheat_state->actor.fly_on ^= 1;
+			break;
+
+		case ID_CHEAT_DISABLE_WAVES:
+			if ( pGameInterface->GetWaterManager()->GetWaveLevel() == 0.0f )
+				pGameInterface->GetWaterManager()->SetWaveLevel( -1.0f );
+			else
+				pGameInterface->GetWaterManager()->SetWaveLevel( 0.0f );
 			break;
 
 		default:
@@ -3081,6 +3092,7 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_cheats, NULL, "Use CJ running style", ID_CHEAT_CJ_RUNSTYLE, MENU_COLOR_DEFAULT, NULL );
 	snprintf( name, sizeof(name), "Player Fly Speed: %0.01f", set.fly_player_speed );
 	menu_item_add( menu_cheats, NULL, name, ID_CHEAT_FLY_SPEED, MENU_COLOR_DEFAULT, NULL );
+	menu_item_add( menu_cheats, NULL, "Disable Water Waves", ID_CHEAT_DISABLE_WAVES, MENU_COLOR_DEFAULT, NULL );
 
 	/* main menu -> cheats -> invulnerable */
 	menu_item_add( menu_cheats_inv, NULL, "Actor invulnerability", ID_CHEAT_INVULN_ACTOR, MENU_COLOR_DEFAULT, NULL );
