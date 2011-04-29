@@ -100,8 +100,7 @@ CGameSA::CGameSA()
 	this->m_pKeyGen                 = new CKeyGenSA;
 	this->m_pRopes                  = new CRopesSA;
 	this->m_pFx                     = new CFxSA ( (CFxSAInterface *)CLASS_CFx );
-// crashing right now
-//	this->m_pWaterManager           = new CWaterManagerSA ();
+	this->m_pWaterManager           = new CWaterManagerSA ();
 
     // Normal weapon types (WEAPONSKILL_STD)
 	for ( int i = 0; i < NUM_WeaponInfosStdSkill; i++)

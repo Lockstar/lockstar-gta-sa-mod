@@ -357,6 +357,8 @@ CWaterManagerSA::~CWaterManagerSA ()
 
 void CWaterManagerSA::RelocatePools ()
 {
+	return;
+/*
     DWORD* pXrefGroups[] = { m_VertexXrefs, m_QuadXrefs, m_TriangleXrefs, m_ZonePolyXrefs, 0 };
     void* pNewPools[] = { m_VertexPool, m_QuadPool, m_TrianglePool, m_ZonePolyPool, 0 };
 
@@ -371,6 +373,7 @@ void CWaterManagerSA::RelocatePools ()
             **ppXref += dwDelta;
         }
     }
+*/
 }
 
 // The following hooks change the way SA iterates over water polygons.

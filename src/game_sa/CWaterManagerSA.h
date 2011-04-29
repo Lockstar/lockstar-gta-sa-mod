@@ -138,6 +138,8 @@ public:
                                      CWaterManagerSA   ();
                                      ~CWaterManagerSA  ();
 
+// RelocatePools is disabled due to crash - when having problems using CWaterManagerSA interface
+// it is probably related to this function being disabled
     void                             RelocatePools     ();
     void                             InstallHooks      ();
     CWaterZoneSA*                    GetZoneContaining ( float fX, float fY );
