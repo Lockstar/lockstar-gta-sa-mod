@@ -1,7 +1,7 @@
 #include <main.h>
 #include "portaudio.h"
 
-#define SAMP_NETWORK_ID_OFFSET 0x222776
+#define SAMP_NETWORK_ID_OFFSET 0x22FF05
 
 RakVoice rakVoice;
 RakPeerInterface *rakPeer;
@@ -47,7 +47,7 @@ static int PACallback( void *inputBuffer, void *outputBuffer,
 	return 0;
 }
 
-#define SAMP_HOOKPOS_ReceiveHook	0x940B
+#define SAMP_HOOKPOS_ReceiveHook	0x94CB
 DWORD rakNet_receive_thread_return;
 Packet *rakNet_receive_thread_pktptr;
 uint8_t _declspec ( naked ) rakNet_receive_thread ( void )
