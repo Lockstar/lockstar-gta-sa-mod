@@ -327,7 +327,10 @@ void cheat_hook ( HWND wnd )
 	}
 
 	// menus are good
-	menu_run();
+	if(set.use_old_menu)
+		menu_run();
+	else
+		runNewMenu();
 
 	// install volatile patches from the .ini file
 	for ( i = 0; i < INI_PATCHES_MAX; i++ )

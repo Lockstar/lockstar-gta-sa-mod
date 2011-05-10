@@ -54,6 +54,15 @@ static LRESULT CALLBACK wnd_proc ( HWND wnd, UINT umsg, WPARAM wparam, LPARAM lp
 	if (gta_menu_active())
 		goto wnd_proc_original;
 
+	if(cheat_state->_generic.menu && !set.use_old_menu)
+	{
+		if(!gta_menu_active())
+		{
+			if(TwEventWin(wnd, umsg, wparam, lparam))
+				return 0;
+		}
+	}
+	
 	switch ( umsg )
 	{
 	case WM_LBUTTONDOWN:
@@ -145,6 +154,13 @@ static LRESULT CALLBACK wnd_proc ( HWND wnd, UINT umsg, WPARAM wparam, LPARAM lp
 			 ||	 vkey == set.key_menu_select
 			 ) )
 			{
+				return 0;
+			}
+			
+			if(cheat_state->_generic.menu && vkey == VK_ESCAPE && !set.use_old_menu)
+			{
+				cheat_state->_generic.menu = 0;
+				toggleCursor(false);
 				return 0;
 			}
 		}

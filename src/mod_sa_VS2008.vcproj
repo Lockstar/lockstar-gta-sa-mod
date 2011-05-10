@@ -50,8 +50,8 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="2"
 				OmitFramePointers="true"
-				AdditionalIncludeDirectories=".\;sparsehash\windows;sparsehash;game_sa;&quot;voice/speex-1.1.12/include&quot;;&quot;voice/speex-1.1.12/win32&quot;;voice/portaudio_v18_1/pa_common;voice/portaudio_v18_1/pa_win_ds;wdl/"
-				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32;NDEBUG;_WINDOWS;_USRDLL;HAVE_CONFIG_H;mod_sa_PROXY_EXPORTS"
+				AdditionalIncludeDirectories=".\;sparsehash\windows;sparsehash;game_sa;&quot;voice/speex-1.1.12/include&quot;;&quot;voice/speex-1.1.12/win32&quot;;voice/portaudio_v18_1/pa_common;voice/portaudio_v18_1/pa_win_ds;wdl/;AntTweakBar/"
+				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32;NDEBUG;_WINDOWS;_USRDLL;HAVE_CONFIG_H;mod_sa_PROXY_EXPORTS;TW_EXPORTS"
 				StringPooling="true"
 				ExceptionHandling="0"
 				RuntimeLibrary="0"
@@ -76,7 +76,7 @@
 				AdditionalDependencies="d3dx9.lib gdiplus.lib winmm.lib"
 				OutputFile="../bin/d3d9.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="dxsdk_apr2005/Lib/"
+				AdditionalLibraryDirectories="dxsdk_apr2005/Lib/;AntTweakBar/"
 				GenerateManifest="false"
 				ModuleDefinitionFile="mod_sa.def"
 				SubSystem="2"
@@ -1679,6 +1679,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\new_menu.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\new_menu.h"
+				>
+			</File>
+			<File
 				RelativePath=".\patcher.cpp"
 				>
 			</File>
@@ -2692,6 +2700,141 @@
 					>
 				</File>
 			</Filter>
+		</Filter>
+		<Filter
+			Name="AntTweakBar"
+			>
+			<File
+				RelativePath=".\AntTweakBar\AntPerfTimer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AntTweakBar\AntTweakBar.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AntTweakBar\resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AntTweakBar\TwBar.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						PrecompiledHeaderThrough=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\AntTweakBar\TwBar.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AntTweakBar\TwColors.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						PrecompiledHeaderThrough=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\AntTweakBar\TwColors.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AntTweakBar\TwDirect3D9.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						PrecompiledHeaderThrough=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\AntTweakBar\TwDirect3D9.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AntTweakBar\TwEventWin.c"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						PrecompiledHeaderThrough=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\AntTweakBar\TwFonts.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						PrecompiledHeaderThrough=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\AntTweakBar\TwFonts.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AntTweakBar\TwGraph.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AntTweakBar\TwMgr.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						PrecompiledHeaderThrough=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\AntTweakBar\TwMgr.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AntTweakBar\TwPrecomp.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						PrecompiledHeaderThrough=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\AntTweakBar\TwPrecomp.h"
+				>
+			</File>
 		</Filter>
 		<File
 			RelativePath=".\main.cpp"
