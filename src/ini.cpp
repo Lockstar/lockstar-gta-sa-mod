@@ -665,6 +665,10 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.money_interval_rand_max, "30" );
 
 	/* menu */
+	if ( (ent = ini_register_entry("use_old_menu", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.use_old_menu, "true" );
+	if ( (ent = ini_register_entry("new_menu_populator_time", TYPE_INT)) != NULL )
+		ini_register_data( ent, &set.new_menu_populator_time, "1000" );
 	if ( (ent = ini_register_entry("key_menu", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_menu, "f11" );
 	if ( (ent = ini_register_entry("key_menu_up", TYPE_KEY)) != NULL )

@@ -207,6 +207,7 @@ struct cheat_state_generic
 	int		vehicles_unlock;
 	int		vehicles_warp_invert;
 	int		vehicles_freeze;
+	int		vehicles_warpinside;
 	int		weapon_disable;
 
 	int		onfoot_data;

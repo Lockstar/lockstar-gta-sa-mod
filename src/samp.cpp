@@ -572,18 +572,22 @@ void spectateHandle()
 
 					if(iState == PLAYER_STATE_ONFOOT)
 					{
-						GTAfunc_CameraOnActor(getGTAPedFromSAMPPlayerID(g_iSpectatePlayerID));
+						struct actor_info *pPlayer = getGTAPedFromSAMPPlayerID(g_iSpectatePlayerID);
+						if(pPlayer == NULL) return;
+						GTAfunc_CameraOnActor(pPlayer);
 						g_iSpectateLock = 1;
 					}
 					else if(iState == PLAYER_STATE_DRIVER)
 					{
 						struct vehicle_info *pPlayerVehicleID = g_Players->pRemotePlayer[g_iSpectatePlayerID]->pPlayerData->pSAMP_Vehicle->pGTA_Vehicle;
+						if(pPlayerVehicleID == NULL) return;
 						GTAfunc_CameraOnVehicle(pPlayerVehicleID);
 						g_iSpectateLock = 1;
 					}
 					else if(iState == PLAYER_STATE_PASSENGER)
 					{
 						struct vehicle_info *pPlayerVehicleID = g_Players->pRemotePlayer[g_iSpectatePlayerID]->pPlayerData->pSAMP_Vehicle->pGTA_Vehicle;
+						if(pPlayerVehicleID == NULL) return;
 						GTAfunc_CameraOnVehicle(pPlayerVehicleID);
 						g_iSpectateLock = 1;
 					}
@@ -936,6 +940,14 @@ int getPlayerVehicleGTAScriptingID ( int iPlayerID )
 	return ScriptCarId( g_Players->pRemotePlayer[iPlayerID]->pPlayerData->pSAMP_Vehicle->pGTA_Vehicle );
 }
 
+int getPlayerSAMPVehicleID(int iPlayerID)
+{
+	if(g_Players == NULL && g_Vehicles == NULL) return 0;
+	if(g_Players->pRemotePlayer[iPlayerID] == NULL) return 0;
+	if(g_Vehicles->pSAMP_Vehicle[g_Players->pRemotePlayer[iPlayerID]->pPlayerData->sVehicleID] == NULL) return 0;
+	return g_Players->pRemotePlayer[iPlayerID]->pPlayerData->sVehicleID;
+}
+
 struct actor_info *getGTAPedFromSAMPPlayerID ( int iPlayerID )
 {
 	if ( g_Players == NULL || iPlayerID < 0 || iPlayerID > SAMP_PLAYER_MAX )
@@ -950,7 +962,9 @@ struct actor_info *getGTAPedFromSAMPPlayerID ( int iPlayerID )
 		return NULL;
 	if ( g_Players->pRemotePlayer[iPlayerID]->pPlayerData->pSAMP_Actor == NULL )
 		return NULL;
-
+	if ( g_Players->pRemotePlayer[iPlayerID]->pPlayerData->pSAMP_Actor->pGTA_Ped == NULL )
+		return NULL;
+		
 	// return actor_info, null or otherwise
 	return g_Players->pRemotePlayer[iPlayerID]->pPlayerData->pSAMP_Actor->pGTA_Ped;
 }

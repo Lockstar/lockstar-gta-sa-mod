@@ -492,6 +492,10 @@ BOOL APIENTRY DllMain ( HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpRese
 				g_flLogChatboxAll = NULL;
 			}
 		}
+		
+		if(!set.use_old_menu)
+			TwTerminate();
+			
 		break;
 	}
 

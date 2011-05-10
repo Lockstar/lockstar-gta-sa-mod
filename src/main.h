@@ -28,7 +28,7 @@
 
 
 #define M0D_NAME		"mod_sa"
-#define M0D_VERSION		"4.2.4.1"
+#define M0D_VERSION		"4.3.0.0"
 #define SAMP_VERSION	"SA:MP 0.3cR3"
 
 // Use this to activate the SQLite Vehicle Recording.
@@ -182,6 +182,10 @@
 
 // WDL includes
 #include "mutex.h"
+
+// AntTweakBar includes
+#include <AntTweakBar.h>
+#include "new_menu.h"
 
 // normal includes
 #include "patcher.h"

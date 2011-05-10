@@ -2217,7 +2217,7 @@ void clickWarp()
 {
 	traceLastFunc("clickWarp()");
 
-	if (!g_iCursorEnabled) return;
+	if (!iClickWarpEnabled) return;
 	if (gta_menu_active()) return;
 
 	POINT cursor_pos;
@@ -3505,6 +3505,12 @@ void proxyID3DDevice9_InitOurShit ( D3DPRESENT_PARAMETERS *pPresentationParamete
 	// load death texture
 	LoadSpriteTexture();
 
+	if(!set.use_old_menu)
+	{
+		TwInit(TW_DIRECT3D9, origIDirect3DDevice9);
+		TwWindowSize(pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight);
+	}
+	
 	// supposedly this worked so set init state
 	// this should probably actually check eventually
 	bD3DRenderInit = true;
@@ -3761,6 +3767,24 @@ void renderHandler()
 		*(uint8_t *)0xBAB232 = gta_money_hud->blue;
 		*(uint8_t *)0xBAB233 = gta_money_hud->alpha;
 
+		twBar_Main = TwNewBar("mod_sa", 0);
+
+		twBar_SPCheats = TwNewBar("Cheats", 1);
+		twBar_SPCarUpgrades = TwNewBar("Vehicle_Upgrades", 1);
+		twBar_SPCarColorPJ = TwNewBar("Vehicle_ColorPJs", 1);
+		twBar_SPWeapons = TwNewBar("Weapons", 1);
+		twBar_SPVehicles = TwNewBar("Vehicles", 1);
+		twBar_SPTeleports = TwNewBar("Teleports", 1);
+		twBar_SPMisc = TwNewBar("GTA_Misc", 1);
+		twBar_SPPatches = TwNewBar("GTA_Patches", 1);
+
+		twBar_SAMPPlayers = TwNewBar("Players", 1);
+		twBar_SAMPFavServers = TwNewBar("Favorite_servers", 1);
+		twBar_SAMPMisc = TwNewBar("SA:MP_Misc", 1);
+		twBar_SAMPObjects = TwNewBar("SA:MP_Objects", 1);
+		twBar_SAMPPickups = TwNewBar("SA:MP_Pickups", 1);
+		twBar_SAMPPatches = TwNewBar("SA:MP_Patches", 1);
+		
 		proxyIDirect3DDevice9_init = 1;
 	}
 
@@ -3981,7 +4005,25 @@ void renderHandler()
 		if ( cheat_state->_generic.teletext )
 			RenderTeleportTexts();
 		if ( cheat_state->_generic.menu )
-			RenderMenu();
+		{
+			if(set.use_old_menu)
+				RenderMenu();
+			else
+			{
+				if(!gta_menu_active())
+				{
+					static int menuinit;
+					if(!menuinit)
+					{
+						initializeBarsMenu();
+
+						menuinit = 1;
+					}
+
+					TwDraw();					
+				}
+			}
+		}
 		if ( cheat_state->debug_enabled )
 			RenderDebug();
 		if ( cheat_state->render_vehicle_tags )
