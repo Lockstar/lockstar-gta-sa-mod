@@ -52,6 +52,7 @@ FunctionEnd
 ; main installation screen variables
 Page directory
 DirText "Welcome to the installer for ${NAME} ${VERSION} for ${MP} ${MP_VERSION}.$\r$\n$\r$\nCheck out ${NAME} at Google Code for the lastest versions and information.  Just click the link on the bottom left." "Please select your GTA San Andreas directory."
+InstallDir "$PROGRAMFILES\Rockstar Games\GTA San Andreas\"
 InstallDirRegKey HKLM "SOFTWARE\Rockstar Games\GTA San Andreas\Installation" ExePath
 Function .onVerifyInstDir
 	IfFileExists $INSTDIR\gta_sa.exe +2
