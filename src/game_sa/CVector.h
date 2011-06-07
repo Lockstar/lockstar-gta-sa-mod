@@ -102,11 +102,24 @@ public:
 	void ZeroNearZero ( void )
 	{
 		if ( IsNearZeroFloat(fX) )
-			fX =0.0f;
+			fX = 0.0f;
 		if ( IsNearZeroFloat(fY) )
-			fY =0.0f;
+			fY = 0.0f;
 		if ( IsNearZeroFloat(fZ) )
-			fZ =0.0f;
+			fZ = 0.0f;
+	}
+
+	float GetAngleRadians ( void )
+	{
+		return -atan2(fY, -fX);
+	}
+
+	float GetAngleDegrees ( void )
+	{
+		static float radtodeg = 57.324840764331210191082802547771; // 180/pi
+		float ret = (atan2(fY, -fX) * radtodeg) + 270.0f;
+		if (ret >= 360.0f) ret -= 360.0f;
+		return ret;
 	}
 
     CVector operator + ( const CVector& vecRight ) const
@@ -133,6 +146,11 @@ public:
     {
         return CVector ( fX / vecRight.fX, fY / vecRight.fY, fZ / vecRight.fZ );
     }
+
+	CVector operator / ( float fRight ) const
+	{
+		return CVector ( fX / fRight, fY / fRight, fZ / fRight );
+	}
 
     CVector operator - () const
     {
@@ -211,8 +229,8 @@ public:
 };
 
 // global vector normals
-CVector const g_vecFrontNormal ( 1.0, 0.0, 0.0 );
-CVector const g_vecRightNormal ( 0.0, 1.0, 0.0 );
-CVector const g_vecUpNormal ( 0.0, 0.0, 1.0 );
+CVector const g_vecFrontNormal ( 1.0f, 0.0f, 0.0f );
+CVector const g_vecRightNormal ( 0.0f, 1.0f, 0.0f );
+CVector const g_vecUpNormal ( 0.0f, 0.0f, 1.0f );
 
 #endif
