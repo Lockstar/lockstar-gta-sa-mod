@@ -25,6 +25,7 @@ public:
 	virtual VOID			    RemoveAllExplosions         ( void ) = 0;
 	virtual CExplosion *        GetExplosion                ( DWORD ID ) = 0;
 	virtual CExplosion *        FindFreeExplosion           ( void ) = 0;
+	virtual int					GetExplosionActiveCount		( void ) = 0;
 };
 
 #endif
