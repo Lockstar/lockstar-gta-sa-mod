@@ -718,6 +718,7 @@ void TW_CALL changeGS(void *clientData)
 
 TwEnumVal special_actions[] = {
 	{ SPECIAL_ACTION_NONE, "None" },
+	{ SPECIAL_ACTION_SMOKE_CIGGY, "Smoke blunt" },
 	{ SPECIAL_ACTION_DUCK, "Duck" },
 	{ SPECIAL_ACTION_USEJETPACK, "Use jetpack" },
 	{ SPECIAL_ACTION_ENTER_VEHICLE, "Enter vehicle" },
@@ -731,7 +732,6 @@ TwEnumVal special_actions[] = {
 	{ SPECIAL_ACTION_SITTING, "Sitting" },
 	{ SPECIAL_ACTION_STOPUSECELLPHONE, "Stop using cellphone" },
 	{ SPECIAL_ACTION_DRINK_BEER, "Drink beer" },
-	{ SPECIAL_ACTION_SMOKE_CIGGY, "Smoke ciggy" },
 	{ SPECIAL_ACTION_DRINK_WINE, "Drink wine" },
 	{ SPECIAL_ACTION_DRINK_SPRUNK, "Drink sprunk" },
 };
@@ -929,8 +929,8 @@ void menuPopulator()
 
 			TwRemoveAllVars(twBar_SPVehicles);
 
-			TwAddVarRW(twBar_SPVehicles, "Freeze nearby vehicles", TW_TYPE_BOOLCPP, &cheat_state->_generic.vehicles_warp_invert, NULL);
-			TwAddVarRW(twBar_SPVehicles, "Warp vehicles to you", TW_TYPE_BOOLCPP, &cheat_state->_generic.vehicles_freeze, NULL);
+			TwAddVarRW(twBar_SPVehicles, "Freeze nearby vehicles", TW_TYPE_BOOLCPP, &cheat_state->_generic.vehicles_freeze, NULL);
+			TwAddVarRW(twBar_SPVehicles, "Warp vehicles to you", TW_TYPE_BOOLCPP, &cheat_state->_generic.vehicles_warp_invert, NULL);
 			TwAddVarRW(twBar_SPVehicles, "Warp inside", TW_TYPE_BOOLCPP, &cheat_state->_generic.vehicles_warpinside, NULL);
 
 			TwAddButton(twBar_SPVehicles, " ", NULL, NULL, NULL);
@@ -1295,7 +1295,7 @@ void initializeBarsMenu()
 	TwAddVarRW(twBar_SPCheats, "Toggle collisions", TW_TYPE_BOOLCPP, &cheat_state->_generic.nocols_enabled, " label='Toggle collisions' ");
 	TwAddVarRW(twBar_SPCheats, "Chams", TW_TYPE_BOOLCPP, &set.chams_on, " label='Chams' ");
 	TwAddVarRW(twBar_SPCheats, "Use CJ running style", TW_TYPE_BOOLCPP, &set.runanimation_cj, " label='Use CJs running style' ");
-	TwAddVarRW(twBar_SPCheats, "Player fly speed", TW_TYPE_FLOAT, &set.fly_player_speed, " label='Player fly speed' min=0.1 max=50.0 precision=1 step=0.1 ");
+	TwAddVarRW(twBar_SPCheats, "Player Fly speed", TW_TYPE_FLOAT, &set.fly_player_speed, " label='Player fly speed' min=0.1 max=10.0 precision=1 step=0.1 ");
 	TwDefine(" Cheats opened='false' ");
 
 	// WEAPONS
