@@ -22,6 +22,8 @@
 */
 #include "main.h"
 
+#define FLOAT_EPSILON 0.0001f
+
 /*
 
 a lot of these are only for float[] so it would be nice to consolidate
@@ -33,7 +35,7 @@ int near_zero ( float v )
 {
 	if ( !isfinite(v) )
 		return 1;
-	return fabs( v ) < 0.001;
+	return fabs( v ) < FLOAT_EPSILON;
 }
 
 void vect2_normalize ( const float in[2], float out[2] )
