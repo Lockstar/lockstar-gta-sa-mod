@@ -120,3 +120,12 @@ CExplosion * CExplosionManagerSA::FindFreeExplosion (  )
 		if(!Explosions[i]->IsActive()) return Explosions[i];
 	return NULL;
 }
+
+int CExplosionManagerSA::GetExplosionActiveCount ( )
+{
+	DEBUG_TRACE("int CExplosionManagerSA::GetExplosionCount (  )");
+	int ret = 0;
+	for(int i = 0; i < MAX_EXPLOSIONS; i++)
+		if(Explosions[i]->IsActive()) ret++;
+	return ret;
+}

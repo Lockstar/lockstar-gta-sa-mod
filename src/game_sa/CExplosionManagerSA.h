@@ -35,8 +35,9 @@ public:
 	VOID			    RemoveAllExplosions         ( void );
 	CExplosion *        GetExplosion                ( DWORD ID );
 	CExplosion *        FindFreeExplosion           ( void );
+	int					GetExplosionActiveCount		( void );
 
-private:
+//private:
 	CExplosionSA *      Explosions[MAX_EXPLOSIONS];
 };
 
