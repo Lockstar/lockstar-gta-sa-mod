@@ -3473,6 +3473,12 @@ void proxyID3DDevice9_UnInitOurShit ( void )
 	// the main render class
 	render->Invalidate();
 
+	// new menu
+	if(!set.use_old_menu)
+	{
+		TwWindowSize(0, 0);
+	}
+
 	// supposedly this worked so set init state
 	// this should probably actually check eventually
 	static int	proxyIDirect3DDevice9_init = 0;
@@ -3505,6 +3511,7 @@ void proxyID3DDevice9_InitOurShit ( D3DPRESENT_PARAMETERS *pPresentationParamete
 	// load death texture
 	LoadSpriteTexture();
 
+	// new menu
 	if(!set.use_old_menu)
 	{
 		TwInit(TW_DIRECT3D9, origIDirect3DDevice9);

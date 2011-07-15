@@ -32,11 +32,54 @@
 float						*cam_matrix = (float *)0xB6F99C;
 
 uint64_t					__time_current;
+double						g_timeDiff;
+
 struct pool					*pool_actor;
 struct pool					*pool_vehicle;
 
 static struct cheat_state	__cheat_state;
 struct cheat_state			*cheat_state = NULL;
+
+
+
+// debug display function
+float g_f_debugDisplay[10];
+CVector g_vec_debugDisplay[10];
+void cheat_main_display_debug_stuff ( double time_diff )
+{
+
+	// drawing some stuff
+	int lineSpace = 0;
+	char buf[256];
+
+	/* template
+	
+	sprintf( buf, "Beta: %0.02f", g_f_debugDisplay[0] );
+	//sprintf( buf, "CCam Front: 0x%08x", pGameInterface->GetCamera()->GetCam(pGameInterface->GetCamera()->GetActiveCam())->GetFront() );
+	pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
+	lineSpace += 12;
+	sprintf( buf, "Alpha: %0.02f", g_f_debugDisplay[1] );
+	pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
+	lineSpace += 12;
+	sprintf( buf, "My Beta: %0.02f", g_f_debugDisplay[2] );
+	pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
+	lineSpace += 12;
+	*/
+
+	/* template
+
+	CVector vecSpeed;
+	pPedSelf->GetMoveSpeed(&vecSpeed);
+	CVector *position = pPedSelf->GetPosition();
+	D3DXVECTOR3 ainfoPos(position->fX, position->fY, position->fZ);
+	D3DXVECTOR3 vecSpeedD3D(vecSpeed.fX, vecSpeed.fY, vecSpeed.fZ);
+	render->DrawLine( ainfoPos, ainfoPos + (vecSpeedD3D * 10), D3DCOLOR_ARGB(255, 0, 255, 0) );
+	*/
+
+	// uncomment templates here and tweak as needed
+
+}
+
 
 static void cheat_main_actor ( double time_diff )
 {
@@ -132,6 +175,7 @@ void cheat_hook ( HWND wnd )
 	// get the time
 	static uint64_t time_last;
 	__time_current = __time_get();
+	g_timeDiff = TIME_TO_DOUBLE(time_get() - time_last);
 
 	// for looping
 	int i;
@@ -345,6 +389,7 @@ void cheat_hook ( HWND wnd )
 	cheat_handle_spoof_weapon();
 	cheat_handle_weapon();
 	gta_game_speed_set( cheat_state->game_speed );
+	cheat_main_display_debug_stuff(g_timeDiff);
 
 	if ( cheat_state->state != CHEAT_STATE_NONE )
 	{
@@ -363,11 +408,11 @@ void cheat_hook ( HWND wnd )
 		// do stuff :p
 		if ( cheat_state->state == CHEAT_STATE_VEHICLE )
 		{
-			cheat_main_vehicle( TIME_TO_DOUBLE(time_get() - time_last) );
+			cheat_main_vehicle( g_timeDiff );
 		}
 		else if ( cheat_state->state == CHEAT_STATE_ACTOR )
 		{
-			cheat_main_actor( TIME_TO_FLOAT(time_get() - time_last) );
+			cheat_main_actor( g_timeDiff );
 		}
 
 		if ( KEY_PRESSED(set.key_disable_Wall_Collisions) )

@@ -23,7 +23,7 @@
 #include "main.h"
 
 // ---------------------------------------------------
-CVector *GravityNormal = new CVector( 0.0, 0.0, -1.0 );
+CVector *GravityNormal = new CVector( 0.0f, 0.0f, -1.0f );
 
 // ---------------------------------------------------
 // new gravity hook
@@ -1498,6 +1498,14 @@ CMatrix gravCamPed_matInvertGravity;
 CMatrix gravCamPed_matPedTransform;
 CVector gravCamPed_vecPedVelocity;
 
+
+CVector gravCamPed_vecCameraFrontTarget = g_vecFrontNormal;
+CVector gravCamPed_vecCameraFrontOffset;
+CVector gravCamPed_vecCameraFrontLastSet = g_vecFrontNormal;
+
+CVector gravCamPed_vecCameraUpTarget = g_vecUpNormal;
+CVector gravCamPed_vecCameraUpLastSet = g_vecUpNormal;
+
 // ---------------------------------------------------
 
 #define HOOKPOS_PedCamStart 0x522D78
@@ -1534,6 +1542,7 @@ bool _cdecl PedCamStart ( DWORD dwCam, DWORD pPedInterface )
 
 	CVector vecVelocityInverted = gravCamPed_matInvertGravity * gravCamPed_vecPedVelocity;
 	//pPed->SetMoveSpeed( &vecVelocityInverted );
+
 	return true;
 }
 
@@ -1569,7 +1578,9 @@ void _cdecl PedCamLookDir1 ( DWORD dwCam, DWORD pPedInterface )
 	// For the same reason as in PedCamStart, inverse transform the camera's lookdir
 	// at this point
 	CVector *pvecLookDir = ( CVector * ) ( dwCam + 0x190 );
-	*pvecLookDir = gravCamPed_matInvertGravity * ( *pvecLookDir );
+	//*pvecLookDir = gravCamPed_matInvertGravity * ( *pvecLookDir );
+	//*pvecLookDir = gravCamPed_matGravity * ( *pvecLookDir );
+	*pvecLookDir = gravCamPed_vecCameraFrontLastSet;
 }
 
 void _declspec ( naked ) HOOK_PedCamLookDir1 ()
@@ -1592,27 +1603,148 @@ void _declspec ( naked ) HOOK_PedCamLookDir1 ()
 
 #define HOOKPOS_PedCamLookDir2	0x5241CC
 DWORD	RETURN_PedCamLookDir2 = 0x524213;
+CEntitySA* gravCamPed_panEntity;
 
 bool _cdecl PedCamLookDir2 ( DWORD dwCam )
 {
 	traceLastFunc( "PedCamLookDir2()" );
 
-	// Calculates the look direction vector for the ped camera. This vector
-	// is later multiplied by a factor and added to the ped position by SA
-	// to obtain the final camera position.
-	float	fPhi = *(float *)( dwCam + 0xBC );
-	float	fTheta = *(float *)( dwCam + 0xAC );
+	if ( cheat_state
+		&& cheat_state->actor.fly_active )
+	{
 
-	*( CVector * ) ( dwCam + 0x190 ) = -gravCamPed_matGravity.vRight *
-		cos( fPhi ) *
-		cos( fTheta ) -
-		gravCamPed_matGravity.vFront *
-		sin( fPhi ) *
-		cos( fTheta ) +
-		gravCamPed_matGravity.vUp *
-		sin( fTheta );
+		CCamSAInterface* cam = (CCamSAInterface*)dwCam;
+		//CCameraSA* camera = (CCameraSA*)pGame->GetCamera();
+		//CCameraSAInterface* camerasa = (CCameraSAInterface*)camera->GetInterface();
 
-	*(float *)0x8CCE6C = fPhi;
+		// get speed to effect camera
+		CVector vecSpeed;
+		pPedSelf->GetMoveSpeed(&vecSpeed);
+
+		// fix issues with camera pointing straight down
+		/*if (gravCamPed_matGravity.vUp.fZ < 0.01f
+			&& cam->Alpha < -0.985f)
+		{
+			cam->Alpha = -0.985f;
+		}*/
+
+		float	fPhi = cam->Beta;
+		float	fTheta = cam->Alpha;
+
+		g_f_debugDisplay[0] = cam->Beta;
+		g_f_debugDisplay[1] = cam->Alpha;
+
+		CMatrix matGravityNormal;
+		//matGravityNormal.vFront = gravCamPed_matGravity.vFront;
+		GetMatrixForGravity( -g_vecUpNormal, matGravityNormal );
+
+		gravCamPed_vecCameraFrontTarget =
+			-matGravityNormal.vRight *
+			cos( fPhi ) *
+			cos( fTheta ) -
+			matGravityNormal.vFront *
+			sin( fPhi ) *
+			cos( fTheta ) +
+			matGravityNormal.vUp *
+			sin( fTheta );
+		gravCamPed_vecCameraFrontTarget.Normalize();
+
+		// populate a matrix for rotation
+		CMatrix camRotate = CMatrix();
+		camRotate.vFront = gravCamPed_vecCameraFrontLastSet;
+		camRotate.vUp = gravCamPed_vecCameraUpLastSet;
+		CMatrix matCamera;
+		pGame->GetCamera()->GetMatrix(&matCamera);
+		camRotate.vRight = matCamera.vRight;
+
+		// rotate the camera front
+		CVector rotationAxis = gravCamPed_vecCameraFrontLastSet;
+		rotationAxis.CrossProduct( &gravCamPed_vecCameraFrontTarget );
+
+		float thetaBase = gravCamPed_vecCameraFrontLastSet.DotProduct(&gravCamPed_vecCameraFrontTarget);
+		float thetaCorrection = 0.0f;
+		if (thetaBase < 0.3f)
+		{
+			thetaCorrection = 0.3f - thetaBase;
+		}
+
+
+		// smooth camera rotation
+		float rotationMultiplier = (g_timeDiff * 69.0f) / ( 14.0f + (vecSpeed.Length() * 3.0f) - (thetaCorrection * 14.0f) );
+		float theta = -cos(thetaBase) * rotationMultiplier;
+
+
+		if ( !near_zero(theta) )
+		{
+			// rotate the camera
+			camRotate = camRotate.Rotate(&rotationAxis, theta);
+			gravCamPed_vecCameraFrontLastSet = camRotate.vFront;
+			gravCamPed_vecCameraUpLastSet = camRotate.vUp;
+			gravCamPed_vecCameraFrontLastSet.Normalize();
+			gravCamPed_vecCameraUpLastSet.Normalize();
+			cam->Front = gravCamPed_vecCameraFrontLastSet;
+			cam->Up = gravCamPed_vecCameraUpLastSet;
+			// maybe fix the glitching?
+
+
+
+
+			cam->m_cvecSourceSpeedOverOneFrame = vecSpeed;
+			cam->m_cvecTargetSpeedOverOneFrame = vecSpeed;
+			cam->SpeedVar = vecSpeed.Length();
+			cam->Rotating = true;
+			cam->bBehindPlayerDesired = false;
+			cam->m_nCurrentHistoryPoints = 0;
+			//cam->
+			/*
+			*/
+
+			// rotate the reference
+			gravCamPed_matGravity = gravCamPed_matGravity.Rotate(&rotationAxis, -theta);
+		}
+
+
+		// set this value that gets used for other calculations when we return
+		//*(float *)0x8CCE6C = cos(gravCamPed_vecCameraFrontLastSet.GetAngleDegrees());
+		//*(float *)0x8CCE6C = gravCamPed_vecCameraUpLastSet.GetAngleDegrees();
+		*(float *)0x8CCE6C = fPhi;
+		//g_f_debugDisplay[2] = cos(gravCamPed_vecCameraFrontLastSet.GetAngleDegrees() / 360.0f);
+
+		// set offset so we can use it in other things like Player Fly
+		gravCamPed_vecCameraFrontOffset = gravCamPed_vecCameraFrontTarget - gravCamPed_vecCameraFrontLastSet;
+
+
+
+		// helps center some movements of the camera around the ped
+		cam->m_fBufferedTargetBeta = 0.0f;
+
+
+
+	}
+	else
+	{
+		// Calculates the look direction vector for the ped camera. This vector
+		// is later multiplied by a factor and added to the ped position by SA
+		// to obtain the final camera position.watching
+
+		float	fPhi = *(float *)( dwCam + 0xBC );
+		float	fTheta = *(float *)( dwCam + 0xAC );
+
+		// old raw gravity based movement
+		gravCamPed_vecCameraFrontLastSet =
+			-gravCamPed_matGravity.vRight *
+			cos( fPhi ) *
+			cos( fTheta ) -
+			gravCamPed_matGravity.vFront *
+			sin( fPhi ) *
+			cos( fTheta ) +
+			gravCamPed_matGravity.vUp *
+			sin( fTheta );
+		gravCamPed_vecCameraFrontLastSet.Normalize();
+		*( CVector * ) ( dwCam + 0x190 ) = gravCamPed_vecCameraFrontLastSet;
+		*(float *)0x8CCE6C = fPhi;
+		gravCamPed_vecCameraFrontOffset = CVector(0.0f, 0.0f, 0.0f);
+	}
 
 	traceLastFunc( "PedCamLookDir2() End" );
 	return true;
@@ -1640,10 +1772,20 @@ void _cdecl PedCamHistory ( DWORD dwCam, CVector *pvecTarget, float fTargetTheta
 {
 	traceLastFunc( "PedCamHistory()" );
 
-	float	fPhi = *(float *)( dwCam + 0xBC );
-	CVector vecDir = -gravCamPed_matGravity.vRight * cos( fPhi ) * cos( fTargetTheta ) - gravCamPed_matGravity.vFront * sin( fPhi ) * cos( fTargetTheta ) + gravCamPed_matGravity.vUp * sin( fTargetTheta );
-	( (CVector *) (dwCam + 0x1D8) )[0] = *pvecTarget - vecDir * fRadius;
-	( (CVector *) (dwCam + 0x1D8) )[1] = *pvecTarget - vecDir * fZoom;
+	if ( cheat_state
+		&& cheat_state->actor.fly_active )
+	{
+		CVector vecDir = gravCamPed_vecCameraFrontLastSet;
+		( (CVector *) (dwCam + 0x1D8) )[0] = *pvecTarget - vecDir * fRadius;
+		( (CVector *) (dwCam + 0x1D8) )[1] = *pvecTarget - vecDir * fZoom;
+	}
+	else
+	{
+		float	fPhi = *(float *)( dwCam + 0xBC );
+		CVector vecDir = -gravCamPed_matGravity.vRight * cos( fPhi ) * cos( fTargetTheta ) - gravCamPed_matGravity.vFront * sin( fPhi ) * cos( fTargetTheta ) + gravCamPed_matGravity.vUp * sin( fTargetTheta );
+		( (CVector *) (dwCam + 0x1D8) )[0] = *pvecTarget - vecDir * fRadius;
+		( (CVector *) (dwCam + 0x1D8) )[1] = *pvecTarget - vecDir * fZoom;
+	}
 }
 
 void _declspec ( naked ) HOOK_PedCamHistory ()
@@ -1666,6 +1808,8 @@ void _declspec ( naked ) HOOK_PedCamHistory ()
 
 // ---------------------------------------------------
 
+CVector gravCamPed_vecCameraPanSource;
+
 #define CALL_PedCamUp		0x524527
 void _cdecl PedCamUp ( DWORD dwCam )
 {
@@ -1674,38 +1818,242 @@ void _cdecl PedCamUp ( DWORD dwCam )
 	if (!dwCam)
 		return;
 
-	// Calculates the up vector for the ped camera.
-	CVector *pvecUp = ( CVector * ) ( dwCam + 0x1B4 );
-	CVector *pvecLookDir = ( CVector * ) ( dwCam + 0x190 );
+	CCamSAInterface* cam = (CCamSAInterface*)dwCam;
 
-	if (!pvecUp || !pvecLookDir)
-		return;
-
-	CVector smoothedGrav = gravCamPed_matGravity.vUp + (g_vecUpNormal * 2.0f);
-	smoothedGrav.Normalize();
-
-	CVector newVecUp = *pvecLookDir;
-	newVecUp.CrossProduct( &smoothedGrav );
-	newVecUp.CrossProduct( pvecLookDir );
-	
-	if (!newVecUp.IsNearZero())
-		*pvecUp = newVecUp;
-
-	/*CVector vecSpeed;
-	pPedSelf->GetMoveSpeed( &vecSpeed );
-	if ( !near_zero(vecSpeed.Length()) )
+	if ( cheat_state
+		&& cheat_state->actor.fly_active )
 	{
-		vecSpeed.Normalize();
-		*pvecUp = vecSpeed;
-		pvecUp->CrossProduct( &gravCamPed_matGravity.vUp );
-		pvecUp->CrossProduct( &vecSpeed );
+		
+		// Calculates the up vector for the ped camera.
+		CVector *pvecUp = ( CVector * ) ( dwCam + 0x1B4 );
+		CVector *pvecLookDir = ( CVector * ) ( dwCam + 0x190 );
+
+		if (!pvecUp || !pvecLookDir)
+			return;
+
+		// get speed to effect camera
+		CVector vecSpeed;
+		pPedSelf->GetMoveSpeed(&vecSpeed);
+
+		// tone down the movement
+		CVector smoothedGrav = gravCamPed_matGravity.vUp + (g_vecUpNormal * 2.0f);
+		smoothedGrav.Normalize();
+
+		CVector newVecUp = *pvecLookDir;
+		newVecUp.fZ = 0.0f;
+		//newVecUp.Normalize();
+		newVecUp.CrossProduct( &smoothedGrav );
+		newVecUp.CrossProduct( pvecLookDir );
+		//newVecUp.Normalize();
+
+		if (!newVecUp.IsNearZero())
+		{
+			*pvecUp = newVecUp;
+			gravCamPed_matGravity.vUp = newVecUp;
+			gravCamPed_vecCameraUpLastSet = newVecUp;
+			// maybe fix the glitching?
+			/*
+			CMatrix *matCamera;
+			pGame->GetCamera()->GetMatrix(matCamera);
+			matCamera->vUp = newVecUp;
+			*/
+		}
+		/*
+		*/
+
+
+
+
+		//CVector newVecUp = gravCamPed_vecCameraFrontOffset;
+		// gravCamPed_vecCameraFrontLastSet
+		/*
+		CVector upStrafeAxis = matCamera.vFront;
+		upStrafeAxis.CrossProduct(&matPedTarget.vUp);
+		theta = -1.5; // 1.57 = 90 degrees
+		matPedTarget = matPedTarget.Rotate( &upStrafeAxis, theta );
+
+		*/
+
+
+
+
+		/*
+		// populate a matrix for rotation
+		CMatrix camRotate = CMatrix();
+		camRotate.vFront = gravCamPed_vecCameraFrontOffset;
+		camRotate.vFront.fZ = 0.0f;
+		camRotate.vFront.Normalize();
+		//camRotate.vUp = gravCamPed_vecCameraUpLastSet;
+		CMatrix matCamera;
+		pGame->GetCamera()->GetMatrix(&matCamera);
+		camRotate.vRight = -matCamera.vRight;
+
+
+		// flip front offset up
+		float theta = -1.57; // 1.57 = 90 degrees
+		camRotate = camRotate.Rotate( &camRotate.vRight, theta );
+
+
+		*pvecUp = camRotate.vFront;
+		gravCamPed_matGravity.vUp = camRotate.vFront;
+		gravCamPed_vecCameraUpLastSet = camRotate.vFront;
+		*/
+
+
+		/*
+		// rotate the camera vUp
+		CVector rotationAxis = camRotate.vRight;
+		//rotationAxis.CrossProduct( &gravCamPed_vecCameraFrontTarget );
+
+		float thetaBase = gravCamPed_vecCameraFrontLastSet.DotProduct(&gravCamPed_vecCameraFrontTarget);
+		float thetaCorrection = 0.0f;
+		if (thetaBase < 0.3f)
+		{
+			thetaCorrection = 0.3f - thetaBase;
+		}
+
+		// smooth camera rotation
+		float rotationMultiplier = (g_timeDiff * 69.0f) / ( 14.0f + (vecSpeed.Length() * 3.0f) - (thetaCorrection * 14.0f) );
+		theta = -cos(thetaBase) * rotationMultiplier;
+
+		if ( !near_zero(theta) )
+		{
+			// rotate the camera
+			camRotate = camRotate.Rotate(&rotationAxis, theta);
+			gravCamPed_vecCameraFrontLastSet = camRotate.vFront;
+			gravCamPed_vecCameraUpLastSet = camRotate.vUp;
+			gravCamPed_vecCameraFrontLastSet.Normalize();
+			gravCamPed_vecCameraUpLastSet.Normalize();
+			cam->Front = gravCamPed_vecCameraFrontLastSet;
+			cam->Up = gravCamPed_vecCameraUpLastSet;
+			// rotate the reference
+			gravCamPed_matGravity = gravCamPed_matGravity.Rotate(&rotationAxis, -theta);
+		}
+		*/
+
+
+
+
+		/*
+		// get speed to effect camera
+		CVector vecSpeed;
+		pPedSelf->GetMoveSpeed(&vecSpeed);
+
+		// populate a matrix for rotation
+		CMatrix camRotate = CMatrix();
+		camRotate.vUp = gravCamPed_vecCameraUpLastSet;
+
+		// smooth camera rotation
+		float rotationMultiplier = (g_timeDiff * 69.0f) / ( 14.0f + (vecSpeed.Length() * 4.0f) );
+
+		// set Up vector target
+		CVector smoothedGrav = gravCamPed_matGravity.vUp + (g_vecUpNormal * 2.0f);
+		smoothedGrav.Normalize();
+
+		gravCamPed_vecCameraUpTarget = cam->Front;
+		gravCamPed_vecCameraUpTarget.CrossProduct( &smoothedGrav );
+		gravCamPed_vecCameraUpTarget.CrossProduct( &cam->Front );
+		gravCamPed_vecCameraUpTarget.Normalize();
+
+		// rotate Up vector
+		CVector rotationAxis = gravCamPed_vecCameraUpLastSet;
+		rotationAxis.CrossProduct( &gravCamPed_vecCameraUpTarget );
+		float thetaBase = gravCamPed_vecCameraUpLastSet.DotProduct(&gravCamPed_vecCameraUpTarget);
+		float theta = -cos(thetaBase) * rotationMultiplier;
+		if ( !near_zero(theta) )
+		{
+			camRotate = camRotate.Rotate( &rotationAxis, theta );
+			gravCamPed_vecCameraUpLastSet = camRotate.vUp;
+			gravCamPed_vecCameraUpLastSet.Normalize();
+			cam->Up = gravCamPed_vecCameraUpLastSet;
+		}
+		*/
+
+
+		//// set our target source position offset
+		//CVector vecCameraPanTarget = gravCamPed_vecCameraPanOffset;
+		//vecCameraPanTarget.Normalize();
+		//float vecCameraPanSourceLength = gravCamPed_vecCameraPanSource.Length();
+		//gravCamPed_vecCameraPanSource.Normalize();
+
+		//// get speed to effect source
+		//CVector vecSpeed;
+		//pPedSelf->GetMoveSpeed(&vecSpeed);
+
+		//// populate a matrix for rotation
+		//CMatrix camSourceRotate = CMatrix();
+		//camSourceRotate.vFront = gravCamPed_vecCameraPanSource;
+
+		//// smooth source position offset
+		//float rotationMultiplier = (g_timeDiff * 69.0f) / ( 2.0f + (vecSpeed.Length() * 4.0f) );
+
+		//// rotate the source position offset in a front vector
+		//CVector rotationAxis = gravCamPed_vecCameraPanSource;
+		//rotationAxis.CrossProduct( &vecCameraPanTarget );
+		//float thetaBase = gravCamPed_vecCameraPanSource.DotProduct(&vecCameraPanTarget);
+		//float theta = -cos(thetaBase) * rotationMultiplier;
+		//if ( !near_zero(theta) )
+		//{
+		//	camSourceRotate = camSourceRotate.Rotate( &rotationAxis, theta );
+		//}
+
+		//// set the source position offset
+		//gravCamPed_vecCameraPanSource = camSourceRotate.vFront * vecCameraPanSourceLength;
+		//cam->Source = cam->Source - gravCamPed_vecCameraPanSource;
+
+
+
+
+
+
+		
+		// set our target source position offset
+		CVector vecCameraPanTargetSmoother = gravCamPed_vecCameraFrontOffset - gravCamPed_vecCameraPanSource;
+
+		gravCamPed_vecCameraPanSource +=
+			(vecCameraPanTargetSmoother / 3.0f ) // added to camera pan
+			* (vecCameraPanTargetSmoother.Length() / 50.0f) // return to zero
+			* (g_timeDiff * 69.0f); // fps/timing
+
+		//cam->SourceBeforeLookBehind = cam->Source + gravCamPed_vecCameraPanSource;
+		//cam->m_aTargetHistoryPos[3] = cam->m_aTargetHistoryPos[2];
+		//cam->m_aTargetHistoryPos[2] = cam->m_aTargetHistoryPos[1];
+		//cam->m_aTargetHistoryPos[1] = cam->m_aTargetHistoryPos[0];
+		//cam->m_aTargetHistoryPos[0] = cam->Source;
+
+		cam->m_cvecSourceSpeedOverOneFrame = vecSpeed;
+		cam->m_cvecTargetSpeedOverOneFrame = vecSpeed;
+		//cam->m_fBufferedTargetOrientationSpeed = gravCamPed_vecCameraPanSource.Length();
+
+
+		cam->Source = cam->Source - gravCamPed_vecCameraPanSource;
+
+		/*
+		*/
+
+
+
+
 	}
 	else
 	{
-		*pvecUp = *pvecLookDir;
-		pvecUp->CrossProduct( &gravCamPed_matGravity.vUp );
-		pvecUp->CrossProduct( pvecLookDir );
-	}*/
+		// Calculates the up vector for the ped camera.
+		CVector *pvecUp = ( CVector * ) ( dwCam + 0x1B4 );
+		CVector *pvecLookDir = ( CVector * ) ( dwCam + 0x190 );
+
+		if (!pvecUp || !pvecLookDir)
+			return;
+
+		CVector newVecUp = *pvecLookDir;
+		newVecUp.CrossProduct( pvecUp );
+		newVecUp.CrossProduct( pvecLookDir );
+		newVecUp.Normalize(); // was commented out, why?
+
+		if (!newVecUp.IsNearZero())
+		{
+			*pvecUp = newVecUp;
+		}
+	}
 }
 
 void _declspec ( naked ) HOOK_PedCamUp ()
@@ -1742,11 +2090,13 @@ void _cdecl PedCamEnd ( DWORD pPedInterface )
 	traceLastFunc( "PedCamEnd()" );
 
 	// Restore the things that we inverse transformed in VehicleCamStart
+	/*
 	CPed	*pPed = pPools->GetPed( (DWORD *)pPedInterface );
 	if ( !pPed )
 		return;
 	pPed->SetMatrix( &gravCamPed_matPedTransform );
 	pPed->SetMoveSpeed( &gravCamPed_vecPedVelocity );
+	*/
 }
 
 void _declspec ( naked ) HOOK_PedCamEnd ()
@@ -1781,8 +2131,8 @@ void cheat_hookers_installhooks ( void )
 {
 	// ped cam
 	HookInstall( HOOKPOS_PedCamStart, (DWORD) HOOK_PedCamStart, 6 );
-	//HookInstall( HOOKPOS_PedCamLookDir1, (DWORD) HOOK_PedCamLookDir1, 5 );
-	//HookInstall( HOOKPOS_PedCamLookDir2, (DWORD) HOOK_PedCamLookDir2, 6 );
+	HookInstall( HOOKPOS_PedCamLookDir1, (DWORD) HOOK_PedCamLookDir1, 5 );
+	HookInstall( HOOKPOS_PedCamLookDir2, (DWORD) HOOK_PedCamLookDir2, 6 );
 	HookInstall( HOOKPOS_PedCamHistory, (DWORD) HOOK_PedCamHistory, 8 );
 	HookInstallCall( CALL_PedCamUp, (DWORD) HOOK_PedCamUp );
 	//HookInstall( HOOKPOS_PedCamEnd, (DWORD) HOOK_PedCamEnd, 9 );

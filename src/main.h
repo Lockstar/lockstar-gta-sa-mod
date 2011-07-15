@@ -184,7 +184,7 @@
 #include "mutex.h"
 
 // AntTweakBar includes
-#include <AntTweakBar.h>
+#include "AntTweakBar.h"
 #include "new_menu.h"
 
 // normal includes
@@ -220,6 +220,7 @@
 #include "voice/RakVoice/BitStream.h"
 #include "voice/RakVoice/RakVoice.h"
 #include "voice/mod_sa_voice.h"
+
 
 // main.cpp functions
 void							traceLastFunc ( const char *szFunc );

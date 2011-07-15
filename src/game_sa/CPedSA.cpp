@@ -1622,26 +1622,26 @@ ePedState CPedSA::GetPedState()
 
 void CPedSA::SetGravity ( const CVector* pvecGravity )
 {
-	if ( pGame->GetPools ()->GetPedFromRef ( 1 ) == this )
-	{
-		// If this is the local player, adjust the camera's position history.
-		// This is to keep the automatic camera settling
-		// nice and consistent while the gravity changes.
-		CCam* pCam = pGame->GetCamera ()->GetCam ( pGame->GetCamera ()->GetActiveCam () );
+	//if ( pGame->GetPools ()->GetPedFromRef ( 1 ) == this )
+	//{
+	//	// If this is the local player, adjust the camera's position history.
+	//	// This is to keep the automatic camera settling
+	//	// nice and consistent while the gravity changes.
+	//	CCam* pCam = pGame->GetCamera ()->GetCam ( pGame->GetCamera ()->GetActiveCam () );
 
-		CMatrix matOld, matNew;
-		GetMatrixForGravity ( m_vecGravity, matOld );
-		GetMatrixForGravity ( *pvecGravity, matNew );
+	//	CMatrix matOld, matNew;
+	//	GetMatrixForGravity ( m_vecGravity, matOld );
+	//	GetMatrixForGravity ( *pvecGravity, matNew );
 
-		CVector* pvecPosition = &m_pInterface->Placeable.matrix->vPos;
+	//	CVector* pvecPosition = &m_pInterface->Placeable.matrix->vPos;
 
-		matOld.Invert ();
-		pCam->GetTargetHistoryPos () [ 0 ] = matOld * (pCam->GetTargetHistoryPos () [ 0 ] - *pvecPosition);
-		pCam->GetTargetHistoryPos () [ 0 ] = matNew * pCam->GetTargetHistoryPos () [ 0 ] + *pvecPosition;
+	//	matOld.Invert ();
+	//	pCam->GetTargetHistoryPos () [ 0 ] = matOld * (pCam->GetTargetHistoryPos () [ 0 ] - *pvecPosition);
+	//	pCam->GetTargetHistoryPos () [ 0 ] = matNew * pCam->GetTargetHistoryPos () [ 0 ] + *pvecPosition;
 
-		pCam->GetTargetHistoryPos () [ 1 ] = matOld * (pCam->GetTargetHistoryPos () [ 1 ] - *pvecPosition);
-		pCam->GetTargetHistoryPos () [ 1 ] = matNew * pCam->GetTargetHistoryPos () [ 1 ] + *pvecPosition;
-	}
+	//	pCam->GetTargetHistoryPos () [ 1 ] = matOld * (pCam->GetTargetHistoryPos () [ 1 ] - *pvecPosition);
+	//	pCam->GetTargetHistoryPos () [ 1 ] = matNew * pCam->GetTargetHistoryPos () [ 1 ] + *pvecPosition;
+	//}
 
 	m_vecGravity = *pvecGravity;
 }

@@ -412,6 +412,7 @@ public:
     VOID						RestoreWithJumpCut();
 	CMatrix						* GetMatrix ( CMatrix * matrix );
 	VOID						SetMatrix ( CMatrix * matrix );
+	VOID						SetMatrix ( CMatrix * matrix, bool setPosition );
 	VOID						SetCamPositionForFixedMode ( CVector * vecPosition, CVector * vecUpOffset );
 	VOID						Find3rdPersonCamTargetVector ( FLOAT fDistance, CVector * vecGunMuzzle, CVector * vecSource, CVector * vecTarget );
 	float                       Find3rdPersonQuickAimPitch ( void );
