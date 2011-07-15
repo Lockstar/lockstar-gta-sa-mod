@@ -178,13 +178,13 @@ VOID CRadarSA::ClearMarkerForEntity(CPed * ped)
 	}
 }
 
-struct CRect {
+struct CRadarSARect {
     float fX1, fY1, fX2, fY2;
 };
 
 VOID CRadarSA::DrawAreaOnRadar(float fX1, float fY1, float fX2, float fY2, DWORD abgr )
 {
-    CRect myRect;
+    CRadarSARect myRect;
     myRect.fX1 = fX1;
     myRect.fY1 = fY1;
     myRect.fX2 = fX2;

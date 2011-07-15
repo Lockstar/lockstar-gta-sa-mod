@@ -582,12 +582,16 @@ void cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *act
 	if ( KEY_PRESSED(set.key_hp_cheat) )
 		cheat_state->_generic.hp_cheat ^= 1;	/* toggle hp cheat */
 
-	// check for hp_disable_inv_sp_enemies, because this will make SP enemies invulnerable
-	if ( cheat_state->_generic.hp_cheat && cheat_state->actor.invulnerable && !set.hp_disable_inv_sp_enemies )
-		patcher_install( &patch_actor_hp_extraInv );
-	else
-		patcher_remove( &patch_actor_hp_extraInv );
-
+	// this will make SP enemies invulnerable
+	// now checking for a valid SAMP game
+	if (g_SAMP)
+	{
+		if ( cheat_state->_generic.hp_cheat && cheat_state->actor.invulnerable && !set.hp_disable_inv_sp_enemies )
+			patcher_install( &patch_actor_hp_extraInv );
+		else
+			patcher_remove( &patch_actor_hp_extraInv );
+	}
+	
 	if ( cheat_state->_generic.hp_cheat && cheat_state->actor.invulnerable )
 		patcher_install( &patch_actor_hp );
 	else

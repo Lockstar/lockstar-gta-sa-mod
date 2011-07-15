@@ -228,7 +228,7 @@ VOID CCameraSA::SetMatrix ( CMatrix * matrix )
 		memcpy(&pCamMatrix->vPos,			&matrix->vPos,			sizeof(CVector));
 		memcpy(&pCamMatrix->vUp,			&matrix->vUp,			sizeof(CVector));
 		memcpy(&pCamMatrix->vRight,			&matrix->vRight,			sizeof(CVector));
-	}	
+	}
 }
 
 VOID CCameraSA::SetCamPositionForFixedMode ( CVector * vecPosition, CVector * vecUpOffset )

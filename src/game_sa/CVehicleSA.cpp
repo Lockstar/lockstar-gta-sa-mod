@@ -64,10 +64,13 @@ CVehicleSA::CVehicleSA( eVehicleTypes dwModelID )
 	LockDoors ( false );
 
 	// Reset the car countss to 0 so that this vehicle doesn't affect the population vehicles
+	/*
+	// removed by mod_sa team
 	for ( int i = 0; i < 5; i++ )
 	{
 		*(DWORD *)(VARS_CarCounts + i * sizeof(DWORD)) = 0;
 	}
+	*/
 
     // only applicable for CAutomobile based vehicles (i.e. not bikes or boats, but includes planes, helis etc)
     this->damageManager = new CDamageManagerSA ( m_pInterface, (CDamageManagerSAInterface *)((DWORD)this->GetInterface() + 1440));
@@ -97,10 +100,13 @@ CVehicleSA::CVehicleSA ( CVehicleSAInterface * vehicleInterface )
     GetVehicleInterface ()->m_pVehicle = this;
 
     // Reset the car countss to 0 so that this vehicle doesn't affect the population vehicles
+	/*
+	// removed by mod_sa team
 	for ( int i = 0; i < 5; i++ )
 	{
 		*(DWORD *)(VARS_CarCounts + i * sizeof(DWORD)) = 0;
 	}
+	*/
 
     // only applicable for CAutomobile based vehicles (i.e. not bikes, trains or boats, but includes planes, helis etc)
     this->damageManager = new CDamageManagerSA( m_pInterface, (CDamageManagerSAInterface *)((DWORD)this->GetInterface() + 1440));

@@ -852,10 +852,18 @@ struct vehicle_state
 	struct vehicle_info		*trailerPtr;
 };
 
+
+// debug display function
+extern float g_f_debugDisplay[10];
+extern CVector g_vec_debugDisplay[10];
+void cheat_main_display_debug_stuff ( double time_diff );
+
+
 /* __time_current is set in cheat_hook(). the time is "cached".
    by doing this we save some CPU time, and we get a constant time */
-#define time_get()	__time_current
-extern uint64_t				__time_current;
+#define time_get() __time_current
+extern uint64_t __time_current;
+extern double g_timeDiff;
 
 extern struct pool			*pool_actor;
 extern struct pool			*pool_vehicle;
