@@ -2217,7 +2217,7 @@ void clickWarp()
 {
 	traceLastFunc("clickWarp()");
 
-	if (!iClickWarpEnabled) return;
+	if (!g_iCursorEnabled) return;
 	if (gta_menu_active()) return;
 
 	POINT cursor_pos;

@@ -542,4 +542,3 @@ void __declspec(naked) HOOK_Camera_CollisionDetection ()
         jmp         RETURN_Camera_CollisionDetection
     }
 }
-

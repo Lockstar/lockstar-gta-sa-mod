@@ -12,6 +12,7 @@
 #ifndef __CGAME_CAMERA
 #define __CGAME_CAMERA
 
+
 #include "CEntity.h"
 #include "CCam.h"
 
