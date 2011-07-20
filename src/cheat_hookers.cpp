@@ -1506,6 +1506,10 @@ CVector gravCamPed_vecCameraFrontLastSet = g_vecFrontNormal;
 CVector gravCamPed_vecCameraUpTarget = g_vecUpNormal;
 CVector gravCamPed_vecCameraUpLastSet = g_vecUpNormal;
 
+CVector gravCamPed_vecCameraPosLastSet;
+
+CVector gravCamPed_vecCameraPanSource;
+
 // ---------------------------------------------------
 
 #define HOOKPOS_PedCamStart 0x522D78
@@ -1525,6 +1529,9 @@ bool _cdecl PedCamStart ( DWORD dwCam, DWORD pPedInterface )
 	if ( !pPed )
 		return false;
 
+	// get cam
+	CCamSAInterface* cam = (CCamSAInterface*)dwCam;
+
 	CVector vecGravity;
 	pPed->GetGravity( &vecGravity );
 
@@ -1542,6 +1549,66 @@ bool _cdecl PedCamStart ( DWORD dwCam, DWORD pPedInterface )
 
 	CVector vecVelocityInverted = gravCamPed_matInvertGravity * gravCamPed_vecPedVelocity;
 	//pPed->SetMoveSpeed( &vecVelocityInverted );
+
+
+
+
+	// get speed to effect camera
+	CVector vecSpeed;
+	pPedSelf->GetMoveSpeed(&vecSpeed);
+
+	// can't believe this actually works
+	CCameraSAInterface *cameraInterface = (CCameraSAInterface*)pGame->GetCamera();
+
+
+	cameraInterface->m_bCamDirectlyBehind = false;
+	//cameraInterface->m_bItsOkToLookJustAtThePlayer = false;
+	cameraInterface->m_bResetOldMatrix = false;
+	cameraInterface->m_bUseTransitionBeta = false;
+	cameraInterface->m_bWaitForInterpolToFinish = false;
+
+	cameraInterface->m_cvecStartingSourceForInterPol = cam->Source;
+	cameraInterface->m_cvecStartingTargetForInterPol = gravCamPed_vecCameraFrontLastSet;
+	cameraInterface->m_cvecStartingUpForInterPol = gravCamPed_vecCameraUpLastSet;
+	cameraInterface->m_cvecSourceSpeedAtStartInter = vecSpeed;
+	//cameraInterface->m_iWorkOutSpeedThisNumFrames = 4;
+	cameraInterface->m_PreviousCameraPosition = cam->Source;
+	cameraInterface->m_RealPreviousCameraPosition = cam->Source;
+	cameraInterface->m_vecAttachedCamLookAt = gravCamPed_vecCameraFrontLastSet;
+	cameraInterface->m_vecAttachedCamOffset = cam->Source;
+	cameraInterface->m_vecBottomFrustumNormal = -gravCamPed_vecCameraUpLastSet;
+	cameraInterface->m_vecTopFrustumNormal = gravCamPed_vecCameraUpLastSet;
+	//cameraInterface->m_viewMatrix
+
+	cameraInterface->m_vecOldFrontForInter = gravCamPed_vecCameraFrontLastSet;
+	cameraInterface->m_vecOldUpForInter = gravCamPed_vecCameraUpLastSet;
+	cameraInterface->m_vecOldSourceForInter = gravCamPed_vecCameraPosLastSet;
+
+	
+
+
+	
+	CMatrix setCamera;
+	setCamera.vFront = gravCamPed_vecCameraFrontLastSet;
+	setCamera.vUp = gravCamPed_vecCameraUpLastSet;
+	setCamera.vRight = gravCamPed_vecCameraFrontLastSet;
+	setCamera.vRight.CrossProduct(&gravCamPed_vecCameraUpLastSet);
+	setCamera.vPos = cam->Source;
+	//cameraInterface->m_cameraMatrixOld.SetFromMatrix(setCamera);
+	/**/
+
+	cameraInterface->m_vecRightFrustumNormal = setCamera.vRight;
+	cameraInterface->m_vecSourceWhenInterPol = cam->Source;
+	cameraInterface->m_vecTargetWhenInterPol = gravCamPed_vecCameraFrontTarget;
+	cameraInterface->m_vecUpWhenInterPol = gravCamPed_vecCameraUpTarget;
+	cameraInterface->SourceDuringInter = cam->Source - gravCamPed_vecCameraPanSource;
+	cameraInterface->TargetDuringInter = gravCamPed_vecCameraFrontLastSet;
+	cameraInterface->UpDuringInter = gravCamPed_vecCameraUpLastSet;
+
+
+	//gravCamPed_vecCameraPosLastSet
+
+
 
 	return true;
 }
@@ -1631,8 +1698,8 @@ bool _cdecl PedCamLookDir2 ( DWORD dwCam )
 		float	fPhi = cam->Beta;
 		float	fTheta = cam->Alpha;
 
-		g_f_debugDisplay[0] = cam->Beta;
-		g_f_debugDisplay[1] = cam->Alpha;
+		//g_f_debugDisplay[0] = cam->Beta;
+		//g_f_debugDisplay[1] = cam->Alpha;
 
 		CMatrix matGravityNormal;
 		//matGravityNormal.vFront = gravCamPed_matGravity.vFront;
@@ -1689,8 +1756,8 @@ bool _cdecl PedCamLookDir2 ( DWORD dwCam )
 
 
 
-			cam->m_cvecSourceSpeedOverOneFrame = vecSpeed;
-			cam->m_cvecTargetSpeedOverOneFrame = vecSpeed;
+			//cam->m_cvecSourceSpeedOverOneFrame = vecSpeed;
+			//cam->m_cvecTargetSpeedOverOneFrame = vecSpeed;
 			cam->SpeedVar = vecSpeed.Length();
 			cam->Rotating = true;
 			cam->bBehindPlayerDesired = false;
@@ -1708,10 +1775,13 @@ bool _cdecl PedCamLookDir2 ( DWORD dwCam )
 		//*(float *)0x8CCE6C = cos(gravCamPed_vecCameraFrontLastSet.GetAngleDegrees());
 		//*(float *)0x8CCE6C = gravCamPed_vecCameraUpLastSet.GetAngleDegrees();
 		*(float *)0x8CCE6C = fPhi;
+		g_f_debugDisplay[0] = fPhi;
 		//g_f_debugDisplay[2] = cos(gravCamPed_vecCameraFrontLastSet.GetAngleDegrees() / 360.0f);
 
 		// set offset so we can use it in other things like Player Fly
 		gravCamPed_vecCameraFrontOffset = gravCamPed_vecCameraFrontTarget - gravCamPed_vecCameraFrontLastSet;
+		g_f_debugDisplay[1] = gravCamPed_vecCameraFrontOffset.Length();
+
 
 
 
@@ -1807,8 +1877,6 @@ void _declspec ( naked ) HOOK_PedCamHistory ()
 }
 
 // ---------------------------------------------------
-
-CVector gravCamPed_vecCameraPanSource;
 
 #define CALL_PedCamUp		0x524527
 void _cdecl PedCamUp ( DWORD dwCam )
@@ -2015,21 +2083,23 @@ void _cdecl PedCamUp ( DWORD dwCam )
 			* (vecCameraPanTargetSmoother.Length() / 50.0f) // return to zero
 			* (g_timeDiff * 69.0f); // fps/timing
 
+		cam->Source = cam->Source - gravCamPed_vecCameraPanSource;
+		gravCamPed_vecCameraPosLastSet = cam->Source;
+
+		/*
+		*/
+
 		//cam->SourceBeforeLookBehind = cam->Source + gravCamPed_vecCameraPanSource;
 		//cam->m_aTargetHistoryPos[3] = cam->m_aTargetHistoryPos[2];
 		//cam->m_aTargetHistoryPos[2] = cam->m_aTargetHistoryPos[1];
 		//cam->m_aTargetHistoryPos[1] = cam->m_aTargetHistoryPos[0];
 		//cam->m_aTargetHistoryPos[0] = cam->Source;
 
-		cam->m_cvecSourceSpeedOverOneFrame = vecSpeed;
-		cam->m_cvecTargetSpeedOverOneFrame = vecSpeed;
+		//cam->m_cvecSourceSpeedOverOneFrame = vecSpeed;
+		//cam->m_cvecTargetSpeedOverOneFrame = vecSpeed;
 		//cam->m_fBufferedTargetOrientationSpeed = gravCamPed_vecCameraPanSource.Length();
 
 
-		cam->Source = cam->Source - gravCamPed_vecCameraPanSource;
-
-		/*
-		*/
 
 
 

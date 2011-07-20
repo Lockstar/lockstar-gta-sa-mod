@@ -54,17 +54,19 @@ void cheat_main_display_debug_stuff ( double time_diff )
 
 	/* template
 	
-	sprintf( buf, "Beta: %0.02f", g_f_debugDisplay[0] );
+	sprintf( buf, "fPhi: %0.02f", g_f_debugDisplay[0] );
 	//sprintf( buf, "CCam Front: 0x%08x", pGameInterface->GetCamera()->GetCam(pGameInterface->GetCamera()->GetActiveCam())->GetFront() );
 	pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
 	lineSpace += 12;
-	sprintf( buf, "Alpha: %0.02f", g_f_debugDisplay[1] );
-	pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
-	lineSpace += 12;
-	sprintf( buf, "My Beta: %0.02f", g_f_debugDisplay[2] );
+	sprintf( buf, "FrontOffset: %0.02f", g_f_debugDisplay[1] );
 	pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
 	lineSpace += 12;
 	*/
+	/*
+	sprintf( buf, "My Beta: %0.02f", g_f_debugDisplay[2] );
+	pD3DFontFixed->PrintShadow(50, 500 + lineSpace, D3DCOLOR_XRGB(0, 200, 0), buf);
+	lineSpace += 12;
+	
 
 	/* template
 
