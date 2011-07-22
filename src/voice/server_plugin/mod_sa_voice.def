@@ -1,7 +1,0 @@
-LIBRARY	"mod_sa_voice"
-EXPORTS
-	Supports
-	Load
-	Unload
-	AmxLoad
-	AmxUnload

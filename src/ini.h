@@ -291,9 +291,6 @@ struct settings
 	int						clickwarp_enabled;
 	int						key_clickwarp_enable;
 	int						key_clickwarp_click;
-	
-	int						voice_enabled;
-	int						voice_key;
 
 	int						key_player_info_list;
 	int						key_fast_exit;
