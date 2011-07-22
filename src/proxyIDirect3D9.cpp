@@ -38,11 +38,6 @@ proxyIDirect3D9::proxyIDirect3D9 ( IDirect3D9 *pOriginal )
 proxyIDirect3D9::~proxyIDirect3D9 ( void )
 {
 	//Log("proxyIDirect3D9 destructor called.");
-	if(!set.use_old_menu)
-	{
-		TwWindowSize(0,0);
-		TwTerminate();
-	}
 	origIDirect3D9 = NULL;
 }
 

@@ -3473,12 +3473,6 @@ void proxyID3DDevice9_UnInitOurShit ( void )
 	// the main render class
 	render->Invalidate();
 
-	// new menu
-	if(!set.use_old_menu)
-	{
-		TwWindowSize(0, 0);
-	}
-
 	// supposedly this worked so set init state
 	// this should probably actually check eventually
 	static int	proxyIDirect3DDevice9_init = 0;
@@ -3510,12 +3504,6 @@ void proxyID3DDevice9_InitOurShit ( D3DPRESENT_PARAMETERS *pPresentationParamete
 
 	// load death texture
 	LoadSpriteTexture();
-
-	// new menu
-	if ( !set.use_old_menu )
-	{
-		TwWindowSize(pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight);
-	}
 	
 	// supposedly this worked so set init state
 	// this should probably actually check eventually
@@ -3744,12 +3732,6 @@ void proxyID3DDevice9_InitWindowMode ( D3DPRESENT_PARAMETERS *pPresentationParam
 proxyID3DDevice9_InitWindowMode_end: ;
 	// always make sure our window_mode is synced with the game's
 	set.window_mode = ( g_RsGlobal->ps->fullscreen == 0 );
-
-	// update the new menu
-	if ( !set.use_old_menu )
-	{
-		TwWindowSize(pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight);
-	}
 }
 
 void renderHandler()
@@ -3778,31 +3760,6 @@ void renderHandler()
 		*(uint8_t *)0xBAB231 = gta_money_hud->green;
 		*(uint8_t *)0xBAB232 = gta_money_hud->blue;
 		*(uint8_t *)0xBAB233 = gta_money_hud->alpha;
-
-		// AntTweakBar
-		if (!set.use_old_menu)
-		{
-			TwInit(TW_DIRECT3D9, origIDirect3DDevice9);
-			TwWindowSize(pPresentParam.BackBufferWidth, pPresentParam.BackBufferHeight);
-
-			twBar_Main = TwNewBar("mod_sa", 0);
-
-			twBar_SPCheats = TwNewBar("Cheats", 1);
-			twBar_SPCarUpgrades = TwNewBar("Vehicle_Upgrades", 1);
-			twBar_SPCarColorPJ = TwNewBar("Vehicle_ColorPJs", 1);
-			twBar_SPWeapons = TwNewBar("Weapons", 1);
-			twBar_SPVehicles = TwNewBar("Vehicles", 1);
-			twBar_SPTeleports = TwNewBar("Teleports", 1);
-			twBar_SPMisc = TwNewBar("GTA_Misc", 1);
-			twBar_SPPatches = TwNewBar("GTA_Patches", 1);
-
-			twBar_SAMPPlayers = TwNewBar("Players", 1);
-			twBar_SAMPFavServers = TwNewBar("Favorite_servers", 1);
-			twBar_SAMPMisc = TwNewBar("SA:MP_Misc", 1);
-			twBar_SAMPObjects = TwNewBar("SA:MP_Objects", 1);
-			twBar_SAMPPickups = TwNewBar("SA:MP_Pickups", 1);
-			twBar_SAMPPatches = TwNewBar("SA:MP_Patches", 1);
-		}
 		
 		proxyIDirect3DDevice9_init = 1;
 	}
@@ -4030,31 +3987,9 @@ void renderHandler()
 		if ( cheat_state->_generic.map )
 			RenderMap();
 
-		// render menus
-		if ( set.use_old_menu )
-		{
-			if ( cheat_state->_generic.menu )
-			{
-				RenderMenu();
-			}
-		}
-		else
-		{
-			static int menuinit;
-			if ( cheat_state->_generic.menu && !gta_menu_active() && menuinit > 200 )
-			{
-				TwDraw();
-			}
-			else if ( menuinit < 200 && pPedSelf )
-			{
-				menuinit++;
-			}
-			else if ( menuinit == 200 )
-			{
-				initializeBarsMenu();
-				menuinit++;
-			}
-		}
+		// render menu
+		if ( cheat_state->_generic.menu )
+			RenderMenu();
 
 
 no_render: ;
