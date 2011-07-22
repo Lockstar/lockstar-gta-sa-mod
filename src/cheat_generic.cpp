@@ -230,28 +230,6 @@ void cheat_teleport_nearest_car ( void )
 
 void cheat_handle_misc ( void )
 {
-	// voice handling
-	if(set.voice_enabled)
-	{
-		if(g_SAMP != NULL)
-		{
-			if(!gta_menu_active() && g_SAMP->iGameState == GAMESTATE_CONNECTED)
-			{
-				if(iVoiceEnabled && !KEY_DOWN(set.voice_key))
-				{
-					iVoiceEnabled = 0;
-					rakVoice.CloseVoiceChannel();
-				}
-
-				if(!iVoiceEnabled && KEY_DOWN(set.voice_key))
-				{
-					iVoiceEnabled = 1;
-					rakVoice.RequestVoiceChannel();
-				}
-			}
-		}
-	}
-
 	if ( set.clickwarp_enabled )
 	{
 		if(KEY_PRESSED(set.key_clickwarp_enable))

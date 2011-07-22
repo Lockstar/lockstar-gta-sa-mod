@@ -728,28 +728,6 @@ static void menu_playermute_populate ( struct menu *menu )
 	}
 }
 
-static void menu_playervmute_populate ( struct menu *menu )
-{
-	menu_items_free( menu );
-	if ( g_Players == NULL )
-		return;
-
-	char	text[64];
-	int		i;
-	for ( i = 0; i < SAMP_PLAYER_MAX; i++ )
-	{
-		if ( g_Players->iIsListed[i] != 1 )
-			continue;
-		if ( g_Players->pRemotePlayer[i] == NULL )
-			continue;
-		if ( !g_playerTalking[i].isTalking ) // include people talking
-			continue;
-
-		snprintf( text, sizeof(text), "Mute %s (ID: %d)", getPlayerName(i), i );
-		menu_item_add( menu, NULL, text, i, MENU_COLOR_DEFAULT, (void *)(UINT_PTR) i );
-	}
-}
-
 #ifdef __CHEAT_VEHRECORDING_H__
 static void menu_routes_drop_populate ( struct menu *menu )
 {
@@ -858,10 +836,6 @@ static void menu_event_activate ( struct menu *menu )
 
 	case ID_MENU_PLAYERS_MUTE:
 		menu_playermute_populate( menu );
-		break;
-
-	case ID_MENU_PLAYERS_VMUTE:
-		menu_playervmute_populate( menu );
 		break;
 
 #ifdef __CHEAT_VEHRECORDING_H__
@@ -2831,33 +2805,6 @@ static int menu_callback_playermute ( int op, struct menu_item *item )
 	return 0;
 }
 
-static int menu_callback_playervmute ( int op, struct menu_item *item )
-{
-	if ( g_Players == NULL )
-		return 0;
-
-	int id = item->id;
-	if ( op == MENU_OP_SELECT )
-	{
-		if(g_playerTalking[id].isMuted)
-		{
-			g_playerTalking[id].isMuted = 0;
-			cheat_state_text("Player %s has been unmuted.", getPlayerName(id));
-		}
-		else
-		{
-			g_playerTalking[id].isMuted = 1;
-			cheat_state_text("Player %s has been muted.", getPlayerName(id));
-		}
-
-
-
-		return 1;
-	}
-
-	return 0;
-}
-
 int joining_server = 0;
 static int menu_callback_server_list ( int op, struct menu_item *item )
 {
@@ -2980,7 +2927,7 @@ void menu_maybe_init ( void )
 #endif
 
 	//*menu_cheats_handling,
-	*menu_player_info, *menu_players_mute, *menu_players_vmute, *menu_sampmisc, *menu_spoof_weapon, *menu_fake_kill, *menu_vehicles_instant, 
+	*menu_player_info, *menu_players_mute, *menu_sampmisc, *menu_spoof_weapon, *menu_fake_kill, *menu_vehicles_instant, 
 	*menu_gamestate, *menu_specialaction, *menu_teleobject, *menu_telepickup, *menu_samppatches;
 
 	char		name[128];
@@ -3034,7 +2981,6 @@ void menu_maybe_init ( void )
 		menu_players_spec = menu_new( menu_players, ID_MENU_PLAYERS_SPEC, menu_callback_spec );
 		menu_player_info = menu_new( menu_players, ID_MENU_PLAYERS_INFO, menu_callback_playerinfo );
 		menu_players_mute = menu_new( menu_players, ID_MENU_PLAYERS_MUTE, menu_callback_playermute );
-		menu_players_vmute = menu_new( menu_players, ID_MENU_PLAYERS_VMUTE, menu_callback_playervmute );
 		// main menu -> sampmisc
 		menu_spoof_weapon = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_SPOOF_WEAPON, menu_callback_sampmisc );
 		menu_fake_kill = menu_new( menu_sampmisc, ID_MENU_SAMPMISC_FAKE_KILL, menu_callback_sampmisc );
@@ -3252,8 +3198,6 @@ void menu_maybe_init ( void )
 		menu_item_add( menu_players, menu_players_spec, "Spectate player", ID_MENU_PLAYERS_SPEC, MENU_COLOR_DEFAULT, NULL );
 		menu_item_add( menu_players, menu_player_info, "Show infos on player", ID_MENU_PLAYERS_INFO, MENU_COLOR_DEFAULT, NULL );
 		menu_item_add( menu_players, menu_players_mute, "Mute player chat (Anti-spam)", ID_MENU_PLAYERS_MUTE, MENU_COLOR_DEFAULT, NULL );
-		if(set.voice_enabled)
-			menu_item_add( menu_players, menu_players_vmute, "Mute player (voice)", ID_MENU_PLAYERS_VMUTE, MENU_COLOR_DEFAULT, NULL );
 
 		// samp patches
 		for ( i = 0; i < INI_SAMPPATCHES_MAX; i++ )

@@ -2456,103 +2456,6 @@ void clickWarp()
 	}
 }
 
-float fYVoiceRectPosAdj;
-void renderVoiceIcons()
-{
-	if(gta_menu_active())
-		return;
-
-	static int a;
-	if(!a)
-	{
-		if(pPresentParam.BackBufferHeight > 0)
-			fYVoiceRectPosAdj = pPresentParam.BackBufferHeight - 50.0f;
-
-		a = 1;
-	}
-
-	if(iVoiceEnabled)
-	{
-		if ((sMicrophonePNG) && (tMicrophonePNG))
-		{
-			sMicrophonePNG->Begin(D3DXSPRITE_ALPHABLEND);
-			sMicrophonePNG->Draw(tMicrophonePNG,NULL,NULL,&voiceMicrophonePos,0xFFFFFFFF);
-			sMicrophonePNG->End();
-		}
-	}
-
-	float pos[3];
-	float		fYVoicePos = fYVoiceRectPosAdj;
-	for(int i = 0; i < SAMP_PLAYER_MAX; i++)
-	{
-		if(g_Players->iIsListed[i] != 1)
-			continue;
-
-		if(!g_playerTalking[i].isTalking)
-			continue;
-
-		if(g_playerTalking[i].isMuted)
-			continue;
-
-		if(!getPlayerPos(i, pos))
-			continue;
-
-		D3DXVECTOR3 poss;
-		D3DXVECTOR3 screenposs;
-		D3DXVECTOR3 screenpos;
-
-		poss.x = pos[0];
-		poss.y = pos[1];
-		poss.z = pos[2];
-		CalcScreenCoors( &poss, &screenposs );
-
-		screenpos.x = screenposs.x;
-		screenpos.y = screenposs.y;
-
-		if ( g_playerTalking[i].talkingTime > 0 && time_get() - g_playerTalking[i].talkingTime < MSEC_TO_TIME(1500) )
-		{
-			uint32_t color, alpha = 255;
-
-			if ( time_get() - g_playerTalking[i].talkingTime > MSEC_TO_TIME(1000) )
-				alpha -= ( time_get() - g_playerTalking[i].talkingTime - MSEC_TO_TIME(1000) ) * 255 / MSEC_TO_TIME( 500 );
-
-			if(alpha == 0)
-				g_playerTalking[i].isTalking = 0;
-
-			if(screenposs.z < 1.f)
-				goto culled;
-
-			color = D3DCOLOR_ARGB( alpha, 255, 255, 255 );
-
-			// render the speaker
-			if ((sSpeakerPNG) && (tSpeakerPNG))
-			{
-				sSpeakerPNG->Begin(D3DXSPRITE_ALPHABLEND);
-				sSpeakerPNG->Draw(tSpeakerPNG,NULL,NULL,&screenpos,color);
-				sSpeakerPNG->End();
-			}
-
-culled:;
-			// render stacked rectangle
-			// BOX
-			alpha = (alpha << 24);
-			color = samp_color_get(i, alpha);
-			render->D3DBoxi(pPresentParam.BackBufferWidth - 310, fYVoicePos, 300, 25, color, 0);
-
-			// NAME
-			char buf[256];
-			sprintf(buf, "%s (%d) %0.2f",
-				getPlayerName(i),
-				i,
-				vect3_dist((cheat_state->state == CHEAT_STATE_VEHICLE) ? cheat_state->vehicle.coords : cheat_state->actor.coords, pos)
-			);
-			pD3DFontChat->PrintShadow( pPresentParam.BackBufferWidth - 300, fYVoicePos + 3.0f, -1, buf );
-
-			fYVoicePos -= 20.0f + pD3DFontChat->DrawHeight();
-		}
-	}
-}
-
 float	fYChatPosAdj = 167.0f;
 void renderChat ( void )
 {
@@ -3266,12 +3169,6 @@ void renderSAMP ( void )
 
 		// patch
 		memcpy_safe((void *)(g_dwSAMP_Addr + SAMP_PATCH_NOCARCOLORRESETTING), "\xC3", 1);
-
-		if(set.voice_enabled)
-		{
-			// rakvoice
-			CreateThread(NULL, 0, voiceThread, NULL, 0, NULL);
-		}
 		
 		g_renderSAMP_initSAMPstructs = 1;
 	}
@@ -3300,7 +3197,6 @@ void renderSAMP ( void )
 		renderScoreList();
 		renderTextLabels();
 		clickWarp();
-		if(set.voice_enabled) renderVoiceIcons();
 
 		if ( iViewingInfoPlayer == -1 )
 		{ }
@@ -3378,29 +3274,6 @@ void texturesInitResources ( IDirect3DDevice9 *pDevice, D3DPRESENT_PARAMETERS *p
 		speedoPos.x = ( 750.0f * needlePos.x );
 		speedoPos.y = pPresentationParameters->BackBufferHeight - ( 292.0f * needlePos.y );
 	}
-
-	if(set.voice_enabled)
-	{
-		// voice icons
-		tMicrophonePNG = NULL;
-		sMicrophonePNG = NULL;
-		tSpeakerPNG = NULL;
-		sSpeakerPNG = NULL;
-
-		if ( !tMicrophonePNG )
-			D3DXCreateTextureFromFile( pDevice, "microphone.png", &tMicrophonePNG );
-		if ( !sMicrophonePNG )
-			D3DXCreateSprite( pDevice, &sMicrophonePNG );
-		if ( !tSpeakerPNG )
-			D3DXCreateTextureFromFile( pDevice, "speaker.png", &tSpeakerPNG );
-		if ( !sSpeakerPNG )
-			D3DXCreateSprite( pDevice, &sSpeakerPNG );
-
-		voiceMicrophonePos.x = pPresentationParameters->BackBufferWidth - 50.0f;
-		voiceMicrophonePos.y = pPresentationParameters->BackBufferHeight - 100.0f;
-		voiceSpeakerPos.x = pPresentationParameters->BackBufferWidth - 300.0f;
-		voiceSpeakerPos.y = pPresentationParameters->BackBufferHeight - 200.0f;
-	}
 	
 	// ret
 }
@@ -3457,14 +3330,6 @@ void proxyID3DDevice9_UnInitOurShit ( void )
 		SAFE_RELEASE( tSpeedoPNG );
 		SAFE_RELEASE( sNeedlePNG );
 		SAFE_RELEASE( tNeedlePNG );
-	}
-
-	if ( set.voice_enabled )
-	{
-		SAFE_RELEASE ( sMicrophonePNG );
-		SAFE_RELEASE ( tMicrophonePNG );
-		SAFE_RELEASE ( sSpeakerPNG );
-		SAFE_RELEASE ( tSpeakerPNG );
 	}
 	
 	// death texture
