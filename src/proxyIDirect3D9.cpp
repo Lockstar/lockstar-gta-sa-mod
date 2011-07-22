@@ -30,12 +30,19 @@ proxyIDirect3D9::proxyIDirect3D9 ( IDirect3D9 *pOriginal )
 	//Log("proxyIDirect3D9 constructor called. Original IDirect3D9 interface address is 0x%p.", pOriginal);
 	origIDirect3D9 = pOriginal;
 
+	// to allow computers with Aero to disable so the window doesn't get minimized by
+	// other windows switching off Aero.
 	Sleep(1000);
 }
 
 proxyIDirect3D9::~proxyIDirect3D9 ( void )
 {
 	//Log("proxyIDirect3D9 destructor called.");
+	if(!set.use_old_menu)
+	{
+		TwWindowSize(0,0);
+		TwTerminate();
+	}
 	origIDirect3D9 = NULL;
 }
 
@@ -170,6 +177,9 @@ HRESULT __stdcall proxyIDirect3D9::CreateDevice ( UINT Adapter, D3DDEVTYPE Devic
 
 	if ( hRes == D3D_OK )
 		*ppReturnedDeviceInterface = new proxyIDirect3DDevice9( *ppReturnedDeviceInterface );
+
+	// according to Ant docs, this is where it should be, but we're not doing it here
+	//TwInit(TW_DIRECT3D9, ppReturnedDeviceInterface);
 
 	return hRes;
 }

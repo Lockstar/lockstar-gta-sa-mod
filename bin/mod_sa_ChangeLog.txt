@@ -2,6 +2,10 @@ mod_sa
 by jflm, nuckfuts, notaplane, and the game modification community
 http://code.google.com/p/m0d-s0beit-sa/
 
+Version 4.3.0.1
+* Many bugs fixed.
+* Slightly unsmooth but awesome enough to use new beta camera for Player Fly
+
 Version 4.3.0.0
 * Added new menu AntTweakBar (http://www.antisphere.com/Wiki/tools:anttweakbar).
 
