@@ -1574,7 +1574,7 @@ bool _cdecl PedCamStart ( DWORD dwCam, DWORD pPedInterface )
 		cameraInterface->m_cvecStartingUpForInterPol = gravCamPed_vecCameraUpLastSet;
 		cameraInterface->m_cvecSourceSpeedAtStartInter = vecSpeed;
 		cameraInterface->m_vecAttachedCamLookAt = gravCamPed_vecCameraFrontLastSet;
-		cameraInterface->m_vecAttachedCamOffset = cam->Source;
+		cameraInterface->m_vecAttachedCamOffset = cam->Source - gravCamPed_vecCameraPanSource;
 		cameraInterface->m_vecBottomFrustumNormal = -gravCamPed_vecCameraUpLastSet;
 		cameraInterface->m_vecTopFrustumNormal = gravCamPed_vecCameraUpLastSet;
 		cameraInterface->m_vecOldUpForInter = gravCamPed_vecCameraUpLastSet;
@@ -1589,7 +1589,7 @@ bool _cdecl PedCamStart ( DWORD dwCam, DWORD pPedInterface )
 		//cameraInterface->m_cameraMatrixOld.SetFromMatrix(setCamera);
 
 		cameraInterface->m_vecRightFrustumNormal = setCamera.vRight;
-		cameraInterface->m_vecSourceWhenInterPol = cam->Source;
+		cameraInterface->m_vecSourceWhenInterPol = cam->Source - gravCamPed_vecCameraPanSource;
 		cameraInterface->m_vecTargetWhenInterPol = gravCamPed_vecCameraFrontTarget;
 		cameraInterface->m_vecUpWhenInterPol = gravCamPed_vecCameraUpTarget;
 		cameraInterface->SourceDuringInter = cam->Source - gravCamPed_vecCameraPanSource;
