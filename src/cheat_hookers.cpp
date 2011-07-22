@@ -1565,20 +1565,17 @@ bool _cdecl PedCamStart ( DWORD dwCam, DWORD pPedInterface )
 		// testing grounds to try to make the camera smoother,
 		// but i'll probably have to create a new hook for it. -nf
 
-		cameraInterface->m_bCamDirectlyBehind = false;
-		cameraInterface->m_bItsOkToLookJustAtThePlayer = false;
-		cameraInterface->m_bResetOldMatrix = false;
-		cameraInterface->m_bUseTransitionBeta = false;
-		cameraInterface->m_bWaitForInterpolToFinish = true;
+		//cameraInterface->m_bCamDirectlyBehind = false;
+		//cameraInterface->m_bItsOkToLookJustAtThePlayer = false;
+		//cameraInterface->m_bResetOldMatrix = false;
+		//cameraInterface->m_bUseTransitionBeta = false;
+		//cameraInterface->m_bWaitForInterpolToFinish = false;
 /*
-*/		
-		cameraInterface->m_cvecSourceSpeedAtStartInter = vecSpeed;
+*/
 		cameraInterface->m_vecAttachedCamLookAt = gravCamPed_vecCameraFrontLastSet;
 		cameraInterface->m_vecAttachedCamOffset = cam->Source - gravCamPed_vecCameraPanSource;
 		cameraInterface->m_vecBottomFrustumNormal = -gravCamPed_vecCameraUpLastSet;
 		cameraInterface->m_vecTopFrustumNormal = gravCamPed_vecCameraUpLastSet;
-		cameraInterface->m_vecOldUpForInter = gravCamPed_vecCameraUpLastSet;
-		cameraInterface->m_vecOldSourceForInter = gravCamPed_vecCameraPosLastSet;
 
 		CMatrix setCamera;
 		//setCamera.vFront = gravCamPed_vecCameraFrontLastSet;
@@ -1606,10 +1603,13 @@ bool _cdecl PedCamStart ( DWORD dwCam, DWORD pPedInterface )
 
 		//cameraInterface->m_cvecStartingSourceForInterPol = cam->Source; // crashes
 		//cameraInterface->m_cvecStartingTargetForInterPol = gravCamPed_vecCameraFrontLastSet; // crashes
-		//cameraInterface->m_PreviousCameraPosition = cam->Source; // crashes
-		//cameraInterface->m_RealPreviousCameraPosition = cam->Source; // crashes
+		//cameraInterface->m_PreviousCameraPosition = cam->Source; // samp exceptions
+		//cameraInterface->m_RealPreviousCameraPosition = cam->Source; // samp exceptions
 		//cameraInterface->m_vecOldFrontForInter = gravCamPed_vecCameraFrontLastSet; // crashes
 		//cameraInterface->m_cvecStartingUpForInterPol = gravCamPed_vecCameraUpLastSet; // crashes
+		//cameraInterface->m_cvecSourceSpeedAtStartInter = vecSpeed; // samp exceptions
+		//cameraInterface->m_vecOldUpForInter = gravCamPed_vecCameraUpLastSet; // samp exceptions
+		//cameraInterface->m_vecOldSourceForInter = gravCamPed_vecCameraPosLastSet; // samp exceptions
 	}
 	
 
