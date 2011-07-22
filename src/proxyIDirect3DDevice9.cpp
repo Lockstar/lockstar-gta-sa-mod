@@ -54,14 +54,6 @@ ID3DXSprite				*sSpeedoPNG;
 IDirect3DTexture9		*tNeedlePNG;
 ID3DXSprite				*sNeedlePNG;
 
-D3DXVECTOR3				voiceMicrophonePos;
-IDirect3DTexture9		*tMicrophonePNG;
-ID3DXSprite				*sMicrophonePNG;
-D3DXVECTOR3				voiceSpeakerPos;
-IDirect3DTexture9		*tSpeakerPNG;
-ID3DXSprite				*sSpeakerPNG;
-
-
 // create a render object
 CD3DRender				*render = new CD3DRender( 128 );
 
