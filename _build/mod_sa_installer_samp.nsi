@@ -111,8 +111,6 @@ Section "Install" SecDummy
 	File ..\bin\mod_sa_ChangeLog.txt
 	File ..\bin\speedo.png
 	File ..\bin\needle.png
-	File ..\bin\microphone.png
-	File ..\bin\speaker.png
 
 	; need to figure out how to patch this instead of overwriting every time
 	File ..\bin\mod_sa.ini
@@ -143,8 +141,6 @@ Section "Uninstall"
 	Delete "$INSTDIR\speedo.png"
 	Delete "$INSTDIR\needle.png"
 	Delete "$INSTDIR\mod_sa_setup.log"
-	Delete "$INSTDIR\microphone.png"
-	Delete "$INSTDIR\speaker.png"
 
 	; this should not be deleted
 	;Delete "$INSTDIR\mod_sa.ini"
