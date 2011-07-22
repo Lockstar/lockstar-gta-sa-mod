@@ -179,7 +179,10 @@ HRESULT __stdcall proxyIDirect3D9::CreateDevice ( UINT Adapter, D3DDEVTYPE Devic
 		*ppReturnedDeviceInterface = new proxyIDirect3DDevice9( *ppReturnedDeviceInterface );
 
 	// according to Ant docs, this is where it should be, but we're not doing it here
-	//TwInit(TW_DIRECT3D9, ppReturnedDeviceInterface);
+	/*if (!set.use_old_menu)
+	{
+		TwInit(TW_DIRECT3D9, ppReturnedDeviceInterface);
+	}*/
 
 	return hRes;
 }

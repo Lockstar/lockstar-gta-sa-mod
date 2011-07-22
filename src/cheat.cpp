@@ -49,8 +49,10 @@ void cheat_main_display_debug_stuff ( double time_diff )
 {
 
 	// drawing some stuff
+	/*
 	int lineSpace = 0;
 	char buf[256];
+	*/
 
 	/* template
 	

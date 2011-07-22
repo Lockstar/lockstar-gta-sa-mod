@@ -1552,63 +1552,73 @@ bool _cdecl PedCamStart ( DWORD dwCam, DWORD pPedInterface )
 
 
 
-
+	
 	// get speed to effect camera
 	CVector vecSpeed;
 	pPedSelf->GetMoveSpeed(&vecSpeed);
 
-	// can't believe this actually works
+	// this works because CCameraSAInterface pointer is the first thing in CCamera
 	CCameraSAInterface *cameraInterface = (CCameraSAInterface*)pGame->GetCamera();
 
+	if (cameraInterface != NULL)
+	{
+		// testing grounds to try to make the camera smoother,
+		// but i'll probably have to create a new hook for it. -nf
 
-	cameraInterface->m_bCamDirectlyBehind = false;
-	//cameraInterface->m_bItsOkToLookJustAtThePlayer = false;
-	cameraInterface->m_bResetOldMatrix = false;
-	cameraInterface->m_bUseTransitionBeta = false;
-	cameraInterface->m_bWaitForInterpolToFinish = false;
 
-	cameraInterface->m_cvecStartingSourceForInterPol = cam->Source;
-	cameraInterface->m_cvecStartingTargetForInterPol = gravCamPed_vecCameraFrontLastSet;
-	cameraInterface->m_cvecStartingUpForInterPol = gravCamPed_vecCameraUpLastSet;
-	cameraInterface->m_cvecSourceSpeedAtStartInter = vecSpeed;
-	//cameraInterface->m_iWorkOutSpeedThisNumFrames = 4;
-	cameraInterface->m_PreviousCameraPosition = cam->Source;
-	cameraInterface->m_RealPreviousCameraPosition = cam->Source;
-	cameraInterface->m_vecAttachedCamLookAt = gravCamPed_vecCameraFrontLastSet;
-	cameraInterface->m_vecAttachedCamOffset = cam->Source;
-	cameraInterface->m_vecBottomFrustumNormal = -gravCamPed_vecCameraUpLastSet;
-	cameraInterface->m_vecTopFrustumNormal = gravCamPed_vecCameraUpLastSet;
-	//cameraInterface->m_viewMatrix
+		cameraInterface->m_bCamDirectlyBehind = false;
+		cameraInterface->m_bItsOkToLookJustAtThePlayer = false;
+		cameraInterface->m_bResetOldMatrix = false;
+		cameraInterface->m_bUseTransitionBeta = false;
+		cameraInterface->m_bWaitForInterpolToFinish = true;
 
-	cameraInterface->m_vecOldFrontForInter = gravCamPed_vecCameraFrontLastSet;
-	cameraInterface->m_vecOldUpForInter = gravCamPed_vecCameraUpLastSet;
-	cameraInterface->m_vecOldSourceForInter = gravCamPed_vecCameraPosLastSet;
+		cameraInterface->m_cvecStartingSourceForInterPol = cam->Source;
+		cameraInterface->m_cvecStartingTargetForInterPol = gravCamPed_vecCameraFrontLastSet;
+		cameraInterface->m_cvecStartingUpForInterPol = gravCamPed_vecCameraUpLastSet;
+		cameraInterface->m_cvecSourceSpeedAtStartInter = vecSpeed;
 
 	
+		cameraInterface->m_PreviousCameraPosition = cam->Source;
+		cameraInterface->m_RealPreviousCameraPosition = cam->Source;
+		cameraInterface->m_vecAttachedCamLookAt = gravCamPed_vecCameraFrontLastSet;
+		cameraInterface->m_vecAttachedCamOffset = cam->Source;
+		//cameraInterface->m_viewMatrix
+		
+		cameraInterface->m_vecBottomFrustumNormal = -gravCamPed_vecCameraUpLastSet;
+		cameraInterface->m_vecTopFrustumNormal = gravCamPed_vecCameraUpLastSet;
 
 
+
+		//cameraInterface->m_vecOldFrontForInter = gravCamPed_vecCameraFrontLastSet; // crashes
+		cameraInterface->m_vecOldUpForInter = gravCamPed_vecCameraUpLastSet;
+		cameraInterface->m_vecOldSourceForInter = gravCamPed_vecCameraPosLastSet;
+
+		//cameraInterface->m_iWorkOutSpeedThisNumFrames = 4; // probably crashes
+
+
+
+		CMatrix setCamera;
+		//setCamera.vFront = gravCamPed_vecCameraFrontLastSet;
+		//setCamera.vUp = gravCamPed_vecCameraUpLastSet;
+		setCamera.vRight = gravCamPed_vecCameraFrontLastSet;
+		setCamera.vRight.CrossProduct(&gravCamPed_vecCameraUpLastSet);
+		//setCamera.vPos = cam->Source;
+		//cameraInterface->m_cameraMatrixOld.SetFromMatrix(setCamera);
+
+
+		cameraInterface->m_vecRightFrustumNormal = setCamera.vRight;
+		cameraInterface->m_vecSourceWhenInterPol = cam->Source;
+		cameraInterface->m_vecTargetWhenInterPol = gravCamPed_vecCameraFrontTarget;
+		cameraInterface->m_vecUpWhenInterPol = gravCamPed_vecCameraUpTarget;
+		cameraInterface->SourceDuringInter = cam->Source - gravCamPed_vecCameraPanSource;
+		cameraInterface->TargetDuringInter = gravCamPed_vecCameraFrontLastSet;
+		cameraInterface->UpDuringInter = gravCamPed_vecCameraUpLastSet;
+		
+
+
+		//gravCamPed_vecCameraPosLastSet
+	}
 	
-	CMatrix setCamera;
-	setCamera.vFront = gravCamPed_vecCameraFrontLastSet;
-	setCamera.vUp = gravCamPed_vecCameraUpLastSet;
-	setCamera.vRight = gravCamPed_vecCameraFrontLastSet;
-	setCamera.vRight.CrossProduct(&gravCamPed_vecCameraUpLastSet);
-	setCamera.vPos = cam->Source;
-	//cameraInterface->m_cameraMatrixOld.SetFromMatrix(setCamera);
-	/**/
-
-	cameraInterface->m_vecRightFrustumNormal = setCamera.vRight;
-	cameraInterface->m_vecSourceWhenInterPol = cam->Source;
-	cameraInterface->m_vecTargetWhenInterPol = gravCamPed_vecCameraFrontTarget;
-	cameraInterface->m_vecUpWhenInterPol = gravCamPed_vecCameraUpTarget;
-	cameraInterface->SourceDuringInter = cam->Source - gravCamPed_vecCameraPanSource;
-	cameraInterface->TargetDuringInter = gravCamPed_vecCameraFrontLastSet;
-	cameraInterface->UpDuringInter = gravCamPed_vecCameraUpLastSet;
-
-
-	//gravCamPed_vecCameraPosLastSet
-
-
 
 	return true;
 }
