@@ -4030,37 +4030,32 @@ void renderHandler()
 		if ( cheat_state->_generic.map )
 			RenderMap();
 
-		// init menus
-		// for some reason the new menu needs to be initialized immediately,
-		// but it can't be done too immediately.  weirrrrrd.  figure this out jflm. ;)
-		static int menuinit;
-		if ( menuinit > 200 )
-		{
-			// do nothing
-		}
-		else if ( menuinit < 200 && pPedSelf )
-		{
-			menuinit++;
-		}
-		else if ( menuinit == 200 )
-		{
-			initializeBarsMenu();
-			menuinit++;
-		}
-
 		// render menus
-		if ( cheat_state->_generic.menu )
+		if ( set.use_old_menu )
 		{
-			if(set.use_old_menu)
-				RenderMenu();
-			else
+			if ( cheat_state->_generic.menu )
 			{
-				if(!gta_menu_active() && menuinit > 200)
-				{
-					TwDraw();
-				}
+				RenderMenu();
 			}
 		}
+		else
+		{
+			static int menuinit;
+			if ( cheat_state->_generic.menu && !gta_menu_active() && menuinit > 200 )
+			{
+				TwDraw();
+			}
+			else if ( menuinit < 200 && pPedSelf )
+			{
+				menuinit++;
+			}
+			else if ( menuinit == 200 )
+			{
+				initializeBarsMenu();
+				menuinit++;
+			}
+		}
+
 
 no_render: ;
 		render->EndRender();
