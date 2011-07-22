@@ -28,7 +28,7 @@
 
 
 #define M0D_NAME		"mod_sa"
-#define M0D_VERSION		"4.3.0.0"
+#define M0D_VERSION		"4.3.0.1"
 #define SAMP_VERSION	"SA:MP 0.3cR3"
 
 // Use this to activate the SQLite Vehicle Recording.
