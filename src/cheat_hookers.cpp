@@ -1565,13 +1565,13 @@ bool _cdecl PedCamStart ( DWORD dwCam, DWORD pPedInterface )
 		// testing grounds to try to make the camera smoother,
 		// but i'll probably have to create a new hook for it. -nf
 
-		/**/
 		cameraInterface->m_bCamDirectlyBehind = false;
 		cameraInterface->m_bItsOkToLookJustAtThePlayer = false;
 		cameraInterface->m_bResetOldMatrix = false;
 		cameraInterface->m_bUseTransitionBeta = false;
 		cameraInterface->m_bWaitForInterpolToFinish = true;
-		cameraInterface->m_cvecStartingUpForInterPol = gravCamPed_vecCameraUpLastSet;
+/*
+*/		
 		cameraInterface->m_cvecSourceSpeedAtStartInter = vecSpeed;
 		cameraInterface->m_vecAttachedCamLookAt = gravCamPed_vecCameraFrontLastSet;
 		cameraInterface->m_vecAttachedCamOffset = cam->Source - gravCamPed_vecCameraPanSource;
@@ -1587,23 +1587,29 @@ bool _cdecl PedCamStart ( DWORD dwCam, DWORD pPedInterface )
 		setCamera.vRight.CrossProduct(&gravCamPed_vecCameraUpLastSet);
 		//setCamera.vPos = cam->Source;
 		//cameraInterface->m_cameraMatrixOld.SetFromMatrix(setCamera);
-
 		cameraInterface->m_vecRightFrustumNormal = setCamera.vRight;
-		cameraInterface->m_vecSourceWhenInterPol = cam->Source - gravCamPed_vecCameraPanSource;
-		cameraInterface->m_vecTargetWhenInterPol = gravCamPed_vecCameraFrontTarget;
-		cameraInterface->m_vecUpWhenInterPol = gravCamPed_vecCameraUpTarget;
+
 		cameraInterface->SourceDuringInter = cam->Source - gravCamPed_vecCameraPanSource;
 		cameraInterface->TargetDuringInter = gravCamPed_vecCameraFrontLastSet;
 		cameraInterface->UpDuringInter = gravCamPed_vecCameraUpLastSet;
 
 		//gravCamPed_vecCameraPosLastSet
 
+
+
+		// somehow this is causing exceptions, sometimes about vehicle type 406 not being created?!?
+		//cameraInterface->m_vecSourceWhenInterPol = cam->Source - gravCamPed_vecCameraPanSource;
+		//cameraInterface->m_vecTargetWhenInterPol = gravCamPed_vecCameraFrontTarget;
+		//cameraInterface->m_vecUpWhenInterPol = gravCamPed_vecCameraUpTarget;
+
+		//cameraInterface->m_iWorkOutSpeedThisNumFrames = 4; // probably crashes
+
 		//cameraInterface->m_cvecStartingSourceForInterPol = cam->Source; // crashes
 		//cameraInterface->m_cvecStartingTargetForInterPol = gravCamPed_vecCameraFrontLastSet; // crashes
 		//cameraInterface->m_PreviousCameraPosition = cam->Source; // crashes
 		//cameraInterface->m_RealPreviousCameraPosition = cam->Source; // crashes
 		//cameraInterface->m_vecOldFrontForInter = gravCamPed_vecCameraFrontLastSet; // crashes
-		//cameraInterface->m_iWorkOutSpeedThisNumFrames = 4; // probably crashes
+		//cameraInterface->m_cvecStartingUpForInterPol = gravCamPed_vecCameraUpLastSet; // crashes
 	}
 	
 
