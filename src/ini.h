@@ -216,8 +216,6 @@ struct settings
 	int						money_interval_rand_min;
 	int						money_interval_rand_max;
 
-	int						use_old_menu;
-	int						new_menu_populator_time;
 	int						key_menu;
 	int						key_menu_up;
 	int						key_menu_right;

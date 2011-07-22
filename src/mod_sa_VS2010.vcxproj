@@ -51,7 +51,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
-      <AdditionalIncludeDirectories>.\;AntTweakBar;sparsehash\windows;sparsehash;game_sa;voice/speex-1.1.12/include;voice/speex-1.1.12/win32;voice/portaudio_v18_1/pa_common;voice/portaudio_v18_1/pa_win_ds;wdl/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>sparsehash\windows;sparsehash;game_sa;voice/speex-1.1.12/include;voice/speex-1.1.12/win32;voice/portaudio_v18_1/pa_common;voice/portaudio_v18_1/pa_win_ds;wdl/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;NDEBUG;_WINDOWS;_USRDLL;HAVE_CONFIG_H;mod_sa_PROXY_EXPORTS;TW_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>
@@ -88,16 +88,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="AntTweakBar\AntPerfTimer.h" />
-    <ClInclude Include="AntTweakBar\AntTweakBar.h" />
-    <ClInclude Include="AntTweakBar\resource.h" />
-    <ClInclude Include="AntTweakBar\TwBar.h" />
-    <ClInclude Include="AntTweakBar\TwColors.h" />
-    <ClInclude Include="AntTweakBar\TwDirect3D9.h" />
-    <ClInclude Include="AntTweakBar\TwFonts.h" />
-    <ClInclude Include="AntTweakBar\TwGraph.h" />
-    <ClInclude Include="AntTweakBar\TwMgr.h" />
-    <ClInclude Include="AntTweakBar\TwPrecomp.h" />
     <ClInclude Include="game_sa\game\C3DMarker.h" />
     <ClInclude Include="game_sa\game\C3DMarkers.h" />
     <ClInclude Include="game_sa\game\CAERadioTrackManager.h" />
@@ -353,7 +343,6 @@
     <ClInclude Include="ini.h" />
     <ClInclude Include="keyhook.h" />
     <ClInclude Include="math_stuff.h" />
-    <ClInclude Include="new_menu.h" />
     <ClInclude Include="patcher.h" />
     <ClInclude Include="samp.h" />
     <ClInclude Include="CDirect3DData.h" />
@@ -436,34 +425,6 @@
     <ClInclude Include="stdtypes.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AntTweakBar\TwBar.cpp">
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TwPrecomp.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)TwPrecomp.pch</PrecompiledHeaderOutputFile>
-    </ClCompile>
-    <ClCompile Include="AntTweakBar\TwColors.cpp">
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TwPrecomp.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)TwPrecomp.pch</PrecompiledHeaderOutputFile>
-    </ClCompile>
-    <ClCompile Include="AntTweakBar\TwDirect3D9.cpp">
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TwPrecomp.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)TwPrecomp.pch</PrecompiledHeaderOutputFile>
-    </ClCompile>
-    <ClCompile Include="AntTweakBar\TwEventWin.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="AntTweakBar\TwFonts.cpp">
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TwPrecomp.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)TwPrecomp.pch</PrecompiledHeaderOutputFile>
-    </ClCompile>
-    <ClCompile Include="AntTweakBar\TwMgr.cpp">
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TwPrecomp.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)TwPrecomp.pch</PrecompiledHeaderOutputFile>
-    </ClCompile>
-    <ClCompile Include="AntTweakBar\TwPrecomp.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TwPrecomp.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)TwPrecomp.pch</PrecompiledHeaderOutputFile>
-    </ClCompile>
     <ClCompile Include="game_sa\C3DMarkerSA.cpp" />
     <ClCompile Include="game_sa\C3DMarkersSA.cpp" />
     <ClCompile Include="game_sa\CAERadioTrackManagerSA.cpp" />
@@ -597,7 +558,6 @@
     <ClCompile Include="ini.cpp" />
     <ClCompile Include="keyhook.cpp" />
     <ClCompile Include="math_stuff.cpp" />
-    <ClCompile Include="new_menu.cpp" />
     <ClCompile Include="patcher.cpp" />
     <ClCompile Include="samp.cpp" />
     <ClCompile Include="CDirect3DData.cpp" />

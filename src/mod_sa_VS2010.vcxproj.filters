@@ -43,9 +43,6 @@
     <Filter Include="voice\portaudio">
       <UniqueIdentifier>{c519485f-d122-457f-9a33-5b2bf59b064e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="AntTweakBar">
-      <UniqueIdentifier>{a6d1a04f-931a-456b-a151-b81094e5e203}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game_sa\game\C3DMarker.h">
@@ -1047,39 +1044,6 @@
     <ClInclude Include="main.h" />
     <ClInclude Include="stddefs.h" />
     <ClInclude Include="stdtypes.h" />
-    <ClInclude Include="new_menu.h">
-      <Filter>Cheat</Filter>
-    </ClInclude>
-    <ClInclude Include="AntTweakBar\AntPerfTimer.h">
-      <Filter>AntTweakBar</Filter>
-    </ClInclude>
-    <ClInclude Include="AntTweakBar\AntTweakBar.h">
-      <Filter>AntTweakBar</Filter>
-    </ClInclude>
-    <ClInclude Include="AntTweakBar\resource.h">
-      <Filter>AntTweakBar</Filter>
-    </ClInclude>
-    <ClInclude Include="AntTweakBar\TwBar.h">
-      <Filter>AntTweakBar</Filter>
-    </ClInclude>
-    <ClInclude Include="AntTweakBar\TwColors.h">
-      <Filter>AntTweakBar</Filter>
-    </ClInclude>
-    <ClInclude Include="AntTweakBar\TwDirect3D9.h">
-      <Filter>AntTweakBar</Filter>
-    </ClInclude>
-    <ClInclude Include="AntTweakBar\TwFonts.h">
-      <Filter>AntTweakBar</Filter>
-    </ClInclude>
-    <ClInclude Include="AntTweakBar\TwGraph.h">
-      <Filter>AntTweakBar</Filter>
-    </ClInclude>
-    <ClInclude Include="AntTweakBar\TwMgr.h">
-      <Filter>AntTweakBar</Filter>
-    </ClInclude>
-    <ClInclude Include="AntTweakBar\TwPrecomp.h">
-      <Filter>AntTweakBar</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="game_sa\C3DMarkerSA.cpp">
@@ -1656,30 +1620,6 @@
       <Filter>voice\portaudio</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="new_menu.cpp">
-      <Filter>Cheat</Filter>
-    </ClCompile>
-    <ClCompile Include="AntTweakBar\TwBar.cpp">
-      <Filter>AntTweakBar</Filter>
-    </ClCompile>
-    <ClCompile Include="AntTweakBar\TwColors.cpp">
-      <Filter>AntTweakBar</Filter>
-    </ClCompile>
-    <ClCompile Include="AntTweakBar\TwDirect3D9.cpp">
-      <Filter>AntTweakBar</Filter>
-    </ClCompile>
-    <ClCompile Include="AntTweakBar\TwEventWin.c">
-      <Filter>AntTweakBar</Filter>
-    </ClCompile>
-    <ClCompile Include="AntTweakBar\TwFonts.cpp">
-      <Filter>AntTweakBar</Filter>
-    </ClCompile>
-    <ClCompile Include="AntTweakBar\TwMgr.cpp">
-      <Filter>AntTweakBar</Filter>
-    </ClCompile>
-    <ClCompile Include="AntTweakBar\TwPrecomp.cpp">
-      <Filter>AntTweakBar</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="mod_sa.def" />
