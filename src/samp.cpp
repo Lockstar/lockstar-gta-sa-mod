@@ -416,6 +416,13 @@ void getSamp ()
 				Log( "Unknown SA:MP version. Only %s is supported in this version. Running in basic mode.", SAMP_VERSION );
 				iIsSAMPSupported = 0;
 				set.basic_mode = true;
+
+				// (0.3d temp) disable AC
+				if(memcmp_safe((uint32_t *)(g_dwSAMP_Addr + 0x24AE16), "\x66\x81\x04\x08\x01\xFF", 6))
+					memset_safe((uint32_t *)(g_dwSAMP_Addr + 0x24AE16), 0x90, 6);
+				if(memcmp_safe((uint32_t *)(g_dwSAMP_Addr + 0x27B1D3), "\x66\x81\x04\x08\x01\xFF",6 ))
+					memset_safe((uint32_t *)(g_dwSAMP_Addr + 0x27B1D3), 0x90, 6);
+
 				g_dwSAMP_Addr = NULL;
 				return;
 			}
