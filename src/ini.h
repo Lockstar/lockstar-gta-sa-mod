@@ -73,6 +73,9 @@ struct settings
 	float					hp_minimum;
 	float					hp_regen;
 	float					hp_regen_onfoot;
+	int						hp_actor_explosion_inv;
+	int						hp_actor_fall_inv;
+	int						hp_actor_fire_inv;
 	int						hp_keep_vehicleHPsane;
 	int						hp_disable_inv_sp_enemies;
 
@@ -348,7 +351,8 @@ struct settings
 
 	int						key_panic;
 
-	int						runanimation_cj;
+	int						custom_runanimation_enabled;
+	int						custom_runanimation_id;
 
 	int						key_brkd_toggle;
 	int						key_brkd_forward;

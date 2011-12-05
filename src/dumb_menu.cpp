@@ -76,7 +76,7 @@
 #define ID_CHEAT_KEEP_TRAILER				180
 #define ID_CHEAT_NOCOLS						190
 #define ID_CHEAT_CHAMS						200
-#define ID_CHEAT_CJ_RUNSTYLE				210
+#define ID_CHEAT_CUSTOM_RUNSTYLE			210
 #define ID_CHEAT_FLY_SPEED					220
 #define ID_CHEAT_DISABLE_WAVES				230
 
@@ -87,6 +87,9 @@
 #define ID_CHEAT_INVULN_REGEN				5
 #define ID_CHEAT_INVULN_REGEN_ONFOOT		6
 #define ID_CHEAT_INVULN_DISABLE_EXTRA_INV	7
+#define ID_CHEAT_INVULN_ACT_EXPL_INV		8
+#define ID_CHEAT_INVULN_ACT_FALL_INV		9
+#define ID_CHEAT_INVULN_ACT_FIRE_INV		10
 
 #define ID_CHEAT_MONEY_GIVE_500				0
 #define ID_CHEAT_MONEY_GIVE_1000			1
@@ -1117,8 +1120,8 @@ static int menu_callback_cheats ( int op, struct menu_item *item )
 		case ID_CHEAT_CHAMS:
 			return set.chams_on;
 
-		case ID_CHEAT_CJ_RUNSTYLE:
-			return set.runanimation_cj;
+		case ID_CHEAT_CUSTOM_RUNSTYLE:
+			return set.custom_runanimation_enabled;
 
 		case ID_CHEAT_FLY_SPEED:
 			return cheat_state->actor.fly_on;
@@ -1200,8 +1203,8 @@ static int menu_callback_cheats ( int op, struct menu_item *item )
 			set.chams_on ^= 1;
 			break;
 
-		case ID_CHEAT_CJ_RUNSTYLE:
-			set.runanimation_cj ^= 1;
+		case ID_CHEAT_CUSTOM_RUNSTYLE:
+			set.custom_runanimation_enabled ^= 1;
 			break;
 
 		case ID_CHEAT_FLY_SPEED:
@@ -1237,6 +1240,16 @@ static int menu_callback_cheats ( int op, struct menu_item *item )
 		case ID_CHEAT_GAME_SPEED:
 			cheat_state->game_speed += (float)mod * 0.05f;
 			menu_item_name_set( item, "Game speed: %d%%", (int)roundf(cheat_state->game_speed * 100.0f) );
+			return 1;
+
+		case ID_CHEAT_CUSTOM_RUNSTYLE:
+			set.custom_runanimation_id += mod;
+			if ( set.custom_runanimation_id >= MOVE_ANIMATIONS_COUNT )
+				set.custom_runanimation_id = 0;
+			else if ( set.custom_runanimation_id < 0 )
+				set.custom_runanimation_id = (MOVE_ANIMATIONS_COUNT-1);
+			menu_item_name_set( item, "Custom running style: %i, %s", set.custom_runanimation_id,
+										move_animations[set.custom_runanimation_id].moveStyleName );
 			return 1;
 
 		case ID_CHEAT_FLY_SPEED:
@@ -1451,6 +1464,15 @@ static int menu_callback_cheats_invuln ( int op, struct menu_item *item )
 
 		case ID_CHEAT_INVULN_DISABLE_EXTRA_INV:
 			return set.hp_disable_inv_sp_enemies;
+
+		case ID_CHEAT_INVULN_ACT_EXPL_INV:
+			return set.hp_actor_explosion_inv;
+
+		case ID_CHEAT_INVULN_ACT_FALL_INV:
+			return set.hp_actor_fall_inv;
+
+		case ID_CHEAT_INVULN_ACT_FIRE_INV:
+			return set.hp_actor_fire_inv;
 		}
 		break;
 
@@ -1483,6 +1505,18 @@ static int menu_callback_cheats_invuln ( int op, struct menu_item *item )
 
 		case ID_CHEAT_INVULN_DISABLE_EXTRA_INV:
 			set.hp_disable_inv_sp_enemies ^= 1;
+			break;
+
+		case ID_CHEAT_INVULN_ACT_EXPL_INV:
+			set.hp_actor_explosion_inv ^= 1;
+			break;
+
+		case ID_CHEAT_INVULN_ACT_FALL_INV:
+			set.hp_actor_fall_inv ^= 1;
+			break;
+
+		case ID_CHEAT_INVULN_ACT_FIRE_INV:
+			set.hp_actor_fire_inv ^= 1;
 			break;
 
 		default:
@@ -3035,7 +3069,8 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_cheats, NULL, "Keep trailers attached", ID_CHEAT_KEEP_TRAILER, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_cheats, NULL, "Toggle vehicle collisions", ID_CHEAT_NOCOLS, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_cheats, NULL, "Chams", ID_CHEAT_CHAMS, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_cheats, NULL, "Use CJ running style", ID_CHEAT_CJ_RUNSTYLE, MENU_COLOR_DEFAULT, NULL );
+	snprintf( name, sizeof(name), "Custom running style: %i, ", set.custom_runanimation_id );
+	menu_item_add( menu_cheats, NULL, name, ID_CHEAT_CUSTOM_RUNSTYLE, MENU_COLOR_DEFAULT, NULL );
 	snprintf( name, sizeof(name), "Player Fly Speed: %0.01f", set.fly_player_speed );
 	menu_item_add( menu_cheats, NULL, name, ID_CHEAT_FLY_SPEED, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_cheats, NULL, "Disable Water Waves", ID_CHEAT_DISABLE_WAVES, MENU_COLOR_DEFAULT, NULL );
@@ -3054,6 +3089,11 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_cheats_inv, NULL, name, ID_CHEAT_INVULN_REGEN_ONFOOT, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_cheats_inv, NULL, "Single Player Enemies vulnerable", 
 		ID_CHEAT_INVULN_DISABLE_EXTRA_INV, MENU_COLOR_DEFAULT, NULL );
+	// actor invulnerability additional values
+	menu_item_add(menu_cheats_inv, NULL, "Additional actor inv.:", ID_NONE, MENU_COLOR_SEPARATOR, NULL);
+	menu_item_add( menu_cheats_inv, NULL, "Explosion invulnerability", ID_CHEAT_INVULN_ACT_EXPL_INV, MENU_COLOR_DEFAULT, NULL );
+	menu_item_add( menu_cheats_inv, NULL, "Fall invulnerability", ID_CHEAT_INVULN_ACT_FALL_INV, MENU_COLOR_DEFAULT, NULL );
+	menu_item_add( menu_cheats_inv, NULL, "Fire invulnerability", ID_CHEAT_INVULN_ACT_FIRE_INV, MENU_COLOR_DEFAULT, NULL );
 
 	/* main menu -> cheats -> money */
 	menu_item_add( menu_cheats_money, NULL, "Give $500", ID_CHEAT_MONEY_GIVE_500, MENU_COLOR_DEFAULT, NULL );

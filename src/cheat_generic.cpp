@@ -676,7 +676,18 @@ void cheat_handle_hp ( struct vehicle_info *vehicle_info, struct actor_info *act
 		}
 
 		if ( cheat_state->_generic.hp_cheat && cheat_state->actor.invulnerable )
-			info->flags |= ACTOR_FLAGS_INVULNERABLE;
+		{
+			// invulnerability is on - at least be
+			//  invulnerable against non explosive projectiles
+			info->flags |= 4;
+			if ( set.hp_actor_explosion_inv )
+				info->flags |= 8;
+			if ( set.hp_actor_fall_inv )
+				info->flags |= 64;
+			if ( set.hp_actor_fire_inv )
+				info->flags |= 128;
+			//info->flags |= ACTOR_FLAGS_INVULNERABLE;
+		}
 		else
 			info->flags &= ~ACTOR_FLAGS_INVULNERABLE;
 	}

@@ -319,6 +319,12 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.hp_regen, "1.0" );
 	if ( (ent = ini_register_entry("hp_regen_onfoot", TYPE_FLOAT)) != NULL )
 		ini_register_data( ent, &set.hp_regen_onfoot, "1.0" );
+	if ( (ent = ini_register_entry("hp_actor_explosion_inv", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.hp_actor_explosion_inv, "true" );
+	if ( (ent = ini_register_entry("hp_actor_fall_inv", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.hp_actor_fall_inv, "true" );
+	if ( (ent = ini_register_entry("hp_actor_fire_inv", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.hp_actor_fire_inv, "true" );
 	if ( (ent = ini_register_entry("hp_keep_vehicleHPsane", TYPE_BOOL)) != NULL )
 		ini_register_data( ent, &set.hp_keep_vehicleHPsane, "false" );
 	if ( (ent = ini_register_entry("hp_disable_inv_sp_enemies", TYPE_BOOL)) != NULL )
@@ -915,8 +921,14 @@ static void ini_init ( void )
 	if ( (ent = ini_register_entry("key_panic", TYPE_KEY)) != NULL )
 		ini_register_data( ent, &set.key_panic, "f12" );
 
-	if ( (ent = ini_register_entry("runanimation_cj", TYPE_BOOL)) != NULL )
-		ini_register_data( ent, &set.runanimation_cj, "true" );
+	if ( (ent = ini_register_entry("custom_runanimation_enabled", TYPE_BOOL)) != NULL )
+		ini_register_data( ent, &set.custom_runanimation_enabled, "true" );
+	// Due to crashes with some move animations, for example MOVE_PLAYER_F
+	//  it is currently not supported to set the walk anim id by ini.
+	//  (see move_animations[] in cheat_funcs.h shows which ones are crashing)
+	set.custom_runanimation_id = 0;
+	//if ( (ent = ini_register_entry("custom_runanimation_id", TYPE_INT)) != NULL )
+	//	ini_register_data( ent, &set.custom_runanimation_id, "0" );
 
 	// new ESP ish
 	if ( (ent = ini_register_entry("esp_vehicles_defaulton", TYPE_BOOL)) != NULL )

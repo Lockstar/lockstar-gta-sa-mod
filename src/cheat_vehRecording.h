@@ -26,8 +26,6 @@
 #ifdef __CHEAT_VEHRECORDING_H__
 #pragma comment (lib, "sqlite3/sqlite3.lib")
 
-void cmd_rec_addVeh ( char *text );
-
 enum eRecordingState
 {
 	RECORDING_OFF = 0,

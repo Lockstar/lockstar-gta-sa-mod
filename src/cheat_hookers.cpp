@@ -1233,148 +1233,29 @@ hkPlCl_noClimb:
 // ---------------------------------------------------
 // ---------------------------------------------------
 // ---------------------------------------------------
-/*
-#define HOOKPOS_PlayerCollision_CrashFixX	0x0469FD4
-DWORD	playercol_crashFixX_ecx_back;
-DWORD	playercol_crashFixX_edx_back;
-DWORD	playercol_crashFixX_temp_back;
-void _declspec ( naked ) PlayerCollision_CrashFixX ()
+
+#define HOOKPOS_RwFrame_childless	0x7F0BF7
+DWORD RwFrame_childless_abortPregnancy = 0x7F0CB5;
+DWORD RwFrame_childless_haveAChild = 0x7F0BFD;
+void _declspec ( naked ) HOOK_RwFrame_childless ()
 {
 	__asm
 	{
-		mov playercol_crashFixX_ecx_back, ecx
-		mov playercol_crashFixX_edx_back, edx
-		pushad
-		cmp eax, 874
-		jnz getout
-	}
+		cmp esi, 0
+		jz damn_hooker_got_pregnant_again
+		mov eax, [esi+0x98]
+		jmp RwFrame_childless_haveAChild
 
-	traceLastFunc( "PlayerCollision_CrashFixX()" );
-	__asm
-	{
-		mov eax, g_SAMP
-		test eax, eax
-		jz getout
-		push 0
-		push 0xFFFFFFFF
-		call actor_info_get
-		mov playercol_crashFixX_temp_back, eax
-		pop eax
-		pop eax
-		mov eax, [ESI + 0x14]
-		inc eax
-		mov dx, [eax]
-		movzx eax, dx
-		mov eax, [0xA49960 + eax]
-		push eax
-		call GetActorByGtaId
-		mov ecx, playercol_crashFixX_temp_back
-		cmp eax, ecx
-		pop eax
-		jnz getout
-		mov eax, [esi + 0x14]
-		add eax, 4
-		mov dx, [eax]
-		movzx eax, dx
-		mov eax, [esi + eax * 4 + 0x3C]
-		push eax
-		call GetVehicleByGtaId
-		mov ecx, [eax + 0x460]
-		pop eax
-		test ecx, ecx
-		jz getout
-		mov playercol_crashFixX_ecx_back, 1096
-		getout:
+		// do not want killer-babies killing our game
+damn_hooker_got_pregnant_again:
+		pushad
+	}
+	//addMessageToChatWindow( "Unwanted pregnancy" );
+	__asm{
 		popad
-		mov ecx, playercol_crashFixX_ecx_back
-		mov edx, playercol_crashFixX_edx_back
-		mov[esi + 0x00d2], dl
-		mov eax, HOOKPOS_PlayerCollision_CrashFixX
-		add eax, 0x06
-		jmp eax
+		jmp RwFrame_childless_abortPregnancy
 	}
 }
-
-#define HOOKPOS_PlayerCollision_CrashFix	0x00469ED6
-DWORD	playercol_crashfix_ecx_back;
-DWORD	playercol_crashfix_temp_back;
-void _declspec ( naked ) PlayerCollision_CrashFix ()
-{
-	__asm
-	{
-		mov playercol_crashfix_ecx_back, ecx
-		mov ecx, [esp + 0x04]
-		mov playercol_crashfix_temp_back, ecx
-		pushad
-		cmp eax, 874
-		jz checkmeForBugs
-		cmp eax, 1834
-		jz checkmeForBugs
-		jmp getout
-		checkmeForBugs:
-	}
-
-	traceLastFunc( "PlayerCollision_CrashFix()" );
-	__asm
-	{
-		mov eax, g_SAMP
-		test eax, eax
-		jz getout
-		mov eax, playercol_crashfix_temp_back
-		mov ecx, g_dwSAMP_Addr
-		add ecx, 0x32B8E
-		cmp ecx, eax
-		je getout
-	}
-		playercol_crashfix_temp_back = cheat_state->_generic.unrelatedToAnything;
-	__asm
-	{
-		mov eax, playercol_crashfix_temp_back
-		cmp eax, 0x539
-		je getout
-		mov eax, [edi + 0x04]
-		push eax
-		call GetVehicleByGtaId
-		test eax, eax
-		jz ohnoyoudamagedit
-		mov ecx, [eax + 0x460]
-		pop eax
-		test ecx, ecx
-		jz getout
-		push 0
-		push 0xFFFFFFFF
-		call actor_info_get
-		mov playercol_crashfix_temp_back, eax
-		pop eax
-		pop eax
-		mov eax, [edi]
-		push eax
-		call GetActorByGtaId
-		mov ecx, playercol_crashfix_temp_back
-		cmp eax, ecx
-		pop eax
-		jnz getout
-		ohnoyoudamagedit:
-		popad
-		mov ecx, playercol_crashfix_ecx_back
-		push 2
-		mov eax, 0x464080
-		call eax
-		pop ecx
-		mov eax, HOOKPOS_PlayerCollision_CrashFix
-		add eax, 0x22
-		jmp eax
-		getout:
-		popad
-		mov ecx, playercol_crashfix_ecx_back
-		mov[ecx + 0x00d2], dl
-		mov eax, HOOKPOS_PlayerCollision_CrashFix
-		add eax, 0x06
-		jmp eax
-	}
-}
-*/
-
 
 // ---------------------------------------------------
 // Handle SpiderFeet standing
@@ -2234,10 +2115,11 @@ void cheat_hookers_installhooks ( void )
 
 	// collision removal
 	HookInstall( HOOKPOS_PlayerCollision, (DWORD) HOOK_PlayerCollision, 6 );
-	//HookInstall( HOOKPOS_PlayerCollision_CrashFix, (DWORD) PlayerCollision_CrashFix, 6 );
-	//HookInstall( HOOKPOS_PlayerCollision_CrashFixX, (DWORD) PlayerCollision_CrashFixX, 6 );
 	HookInstall( HOOKPOS_CEntity_Render, (DWORD) HOOK_RenderEntity, 6 );
 	HookInstall( HOOKPOS_Player_Climb, (DWORD) HOOK_PlayerClimb, 9 );
+
+	// Get rid of unwanted stuff (like killer babies)
+	HookInstall( HOOKPOS_RwFrame_childless, (DWORD) HOOK_RwFrame_childless, 6 );
 
 	// SpiderFeet
 	//HookInstallCall( CALL_CMatrix__rotateAroundZ, (DWORD) HOOK_CMatrix__rotateAroundZ );
