@@ -113,8 +113,8 @@ static void cheat_main_actor ( double time_diff )
 	// cheat_handle_SpiderFeet(info, time_diff);
 	cheat_handle_actor_fly(info, time_diff);
 
-	if ( set.runanimation_cj )
-		info->runningStyle = 0x36;
+	if ( set.custom_runanimation_enabled )
+		pPedSelf_setMoveAnimation__array( set.custom_runanimation_id );
 
 
 	// these NEED to stay last, because they can remove the player from the vehicle

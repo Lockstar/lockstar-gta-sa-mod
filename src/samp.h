@@ -23,7 +23,7 @@
 
 #define SAMP_PLAYER_MAX				1001
 #define SAMP_VEHICLE_MAX			2000
-#define SAMP_PICKUP_MAX				2048
+#define SAMP_PICKUP_MAX				4096
 #define SAMP_OBJECTS_MAX			1000
 #define SAMP_GANGZONE_MAX			1024
 #define MAX_3DTEXT					2048
@@ -180,10 +180,12 @@ struct stPickup
 struct stPickupPool
 {
 #pragma pack( 1 )
-	int iPickupID[SAMP_PICKUP_MAX];
-	int iTimePickup[SAMP_PICKUP_MAX];
-	int unk[1536];
-	struct stPickup pickup[SAMP_PICKUP_MAX];
+	int					iPickupID[SAMP_PICKUP_MAX];
+	int					iTimePickup[SAMP_PICKUP_MAX];
+	uint8_t				unk[SAMP_PICKUP_MAX * 3];
+	struct stPickup		pickup[SAMP_PICKUP_MAX];
+	uint32_t			iCount;
+	uint32_t			ul_GTA_PickupID[SAMP_PICKUP_MAX];
 };
 
 struct stPlayerPool
@@ -532,6 +534,7 @@ struct stObject
 {
 #pragma pack( 1 )
 	void				*pVTBL_Object;
+	uint8_t				pad[60];
 	struct object_info	*pGTAObject;
 	uint32_t			ulGTA_Object_ID;
 };
