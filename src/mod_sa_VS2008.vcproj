@@ -76,7 +76,7 @@
 				AdditionalDependencies="d3dx9.lib gdiplus.lib"
 				OutputFile="../bin/d3d9.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="dxsdk_apr2005/Lib/"
+				AdditionalLibraryDirectories=""
 				GenerateManifest="false"
 				ModuleDefinitionFile="mod_sa.def"
 				SubSystem="2"
