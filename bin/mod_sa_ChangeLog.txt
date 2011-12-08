@@ -3,7 +3,11 @@ by jflm, nuckfuts, notaplane, and the game modification community
 http://code.google.com/p/m0d-s0beit-sa/
 
 Version 4.3.1.1
-* Support for SA-MP 0.3d R1
+* Support for SA-MP 0.3d
+
+Version 4.3.1.0
+* Final version for SA-MP 0.3c R3
+* jflm did some stuff. (you gotta add stuff here bro -nf)
 
 Version 4.3.0.1
 * Many bugs fixed.
@@ -14,7 +18,7 @@ Version 4.3.0.0
 
 Version 4.2.4.1
 * Added Player Fly fast turning animations.
-* Support for SA-MP 0.3c R3.
+* Support for SA-MP 0.3c R3
 
 Version 4.2.4.0
 * Added RakNet voice support for SA-MP.

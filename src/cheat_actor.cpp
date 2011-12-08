@@ -1167,11 +1167,10 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 // set the ped rotation target
 
 			// copy speed and normalize, for initial direction
-			CVector vecPedRotate = vecSpeed;
+			CVector vecPedRotate = matSpeedVecRotate.vFront; // should use the rotated speed, not original speed
 			vecPedRotate.Normalize();
 
 			CMatrix matPedTarget;
-			//pPedSelf->GetMatrix(&matPedTarget);
 			matPedTarget.vFront = matCamera.vFront;
 			matPedTarget.vRight = matCamera.vRight;
 			matPedTarget.vUp = matCamera.vUp;
@@ -1230,7 +1229,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			if ( !near_zero(theta) )
 			{
 				playerFly_lastPedRotation = playerFly_lastPedRotation.Rotate( &rotationAxis, theta );
-				//matPedTarget = matPedTarget.Rotate( &rotationAxis, theta );
+				matPedTarget = matPedTarget.Rotate( &rotationAxis, -theta );
 			}
 
 			// front
@@ -1288,13 +1287,16 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			//CVector smoothedGrav = -playerFly_lastPedRotation.vUp + (g_vecUpNormal * 2.0f);
 			//smoothedGrav.Normalize();
 			//pPedSelf->SetGravity( &smoothedGrav );
+			// -nf
 
 			// but the function is hacked to hell to make it work, so since we're the only
 			// thing using it so far, we'll just do this, and fudge the camera in the hook
+			// -nf
 			pPedSelf->SetGravity( &-playerFly_lastPedRotation.vUp );
 
 			// actually... the camera is doing quite a lot now which is flying specific, with some
-			// logic to run when actually flying, so...  just doing literal set gravity is appropriate now.
+			// logic to run when actually flying, so...  just doing literal set gravity is appropriate for now.
+			// -nf
 
 		} // I believe I can touch the sky...
 	}

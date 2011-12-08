@@ -1387,6 +1387,9 @@ CVector gravCamPed_vecCameraFrontLastSet = g_vecFrontNormal;
 CVector gravCamPed_vecCameraUpTarget = g_vecUpNormal;
 CVector gravCamPed_vecCameraUpLastSet = g_vecUpNormal;
 
+CVector gravCamPed_vecCameraRightTarget = g_vecRightNormal;
+CVector gravCamPed_vecCameraRightLastSet = g_vecRightNormal;
+
 CVector gravCamPed_vecCameraPosLastSet;
 
 CVector gravCamPed_vecCameraPanSource;
@@ -1422,8 +1425,8 @@ bool _cdecl PedCamStart ( DWORD dwCam, DWORD pPedInterface )
 
 	pPed->GetMatrix( &gravCamPed_matPedTransform );
 
-	CMatrix matPedInverted = gravCamPed_matInvertGravity * gravCamPed_matPedTransform;
-	matPedInverted.vPos = gravCamPed_matPedTransform.vPos;
+	//CMatrix matPedInverted = gravCamPed_matInvertGravity * gravCamPed_matPedTransform;
+	//matPedInverted.vPos = gravCamPed_matPedTransform.vPos;
 	//pPed->SetMatrix( &matPedInverted );
 
 	pPed->GetMoveSpeed( &gravCamPed_vecPedVelocity );
@@ -1467,13 +1470,13 @@ bool _cdecl PedCamStart ( DWORD dwCam, DWORD pPedInterface )
 		//cameraInterface->m_cameraMatrixOld.SetFromMatrix(setCamera);
 		cameraInterface->m_vecRightFrustumNormal = setCamera.vRight;
 
-		cameraInterface->SourceDuringInter = cam->Source - gravCamPed_vecCameraPanSource;
-		cameraInterface->TargetDuringInter = gravCamPed_vecCameraFrontLastSet;
-		cameraInterface->UpDuringInter = gravCamPed_vecCameraUpLastSet;
+		// disabled to test more stably, none of this really fixes it anyways, only makes it "less"
+		//cameraInterface->SourceDuringInter = cam->Source - gravCamPed_vecCameraPanSource;
+		//cameraInterface->TargetDuringInter = gravCamPed_vecCameraFrontLastSet;
+		//cameraInterface->UpDuringInter = gravCamPed_vecCameraUpLastSet;
+		//
 
 		//gravCamPed_vecCameraPosLastSet
-
-
 
 		// somehow this is causing exceptions, sometimes about vehicle type 406 not being created?!?
 		//cameraInterface->m_vecSourceWhenInterPol = cam->Source - gravCamPed_vecCameraPanSource;
@@ -1572,22 +1575,15 @@ bool _cdecl PedCamLookDir2 ( DWORD dwCam )
 		CVector vecSpeed;
 		pPedSelf->GetMoveSpeed(&vecSpeed);
 
-		// fix issues with camera pointing straight down
-		/*if (gravCamPed_matGravity.vUp.fZ < 0.01f
-			&& cam->Alpha < -0.985f)
-		{
-			cam->Alpha = -0.985f;
-		}*/
-
+		// get originally intended camera direction, controlled directly by mouse/gamepad
 		float	fPhi = cam->Beta;
 		float	fTheta = cam->Alpha;
 
-		//g_f_debugDisplay[0] = cam->Beta;
-		//g_f_debugDisplay[1] = cam->Alpha;
 
 		CMatrix matGravityNormal;
+		// change not needed if the actual gravity downforce doesn't change
 		//matGravityNormal.vFront = gravCamPed_matGravity.vFront;
-		GetMatrixForGravity( -g_vecUpNormal, matGravityNormal );
+		//GetMatrixForGravity( -g_vecUpNormal, matGravityNormal );
 
 		gravCamPed_vecCameraFrontTarget =
 			-matGravityNormal.vRight *
@@ -1602,11 +1598,11 @@ bool _cdecl PedCamLookDir2 ( DWORD dwCam )
 
 		// populate a matrix for rotation
 		CMatrix camRotate = CMatrix();
-		camRotate.vFront = gravCamPed_vecCameraFrontLastSet;
-		camRotate.vUp = gravCamPed_vecCameraUpLastSet;
 		CMatrix matCamera;
 		pGame->GetCamera()->GetMatrix(&matCamera);
 		camRotate.vRight = matCamera.vRight;
+		camRotate.vFront = gravCamPed_vecCameraFrontLastSet;
+		camRotate.vUp = gravCamPed_vecCameraUpLastSet;
 
 		// rotate the camera front
 		CVector rotationAxis = gravCamPed_vecCameraFrontLastSet;
@@ -1619,21 +1615,23 @@ bool _cdecl PedCamLookDir2 ( DWORD dwCam )
 			thetaCorrection = 0.3f - thetaBase;
 		}
 
-
 		// smooth camera rotation
 		float rotationMultiplier = (g_timeDiff * 69.0f) / ( 14.0f + (vecSpeed.Length() * 3.0f) - (thetaCorrection * 14.0f) );
 		float theta = -cos(thetaBase) * rotationMultiplier;
-
 
 		if ( !near_zero(theta) )
 		{
 			// rotate the camera
 			camRotate = camRotate.Rotate(&rotationAxis, theta);
 			gravCamPed_vecCameraFrontLastSet = camRotate.vFront;
+// maybe not comment
 			gravCamPed_vecCameraUpLastSet = camRotate.vUp;
+			gravCamPed_vecCameraRightLastSet = camRotate.vRight;
 			gravCamPed_vecCameraFrontLastSet.Normalize();
 			gravCamPed_vecCameraUpLastSet.Normalize();
+			gravCamPed_vecCameraRightLastSet.Normalize();
 			cam->Front = gravCamPed_vecCameraFrontLastSet;
+// maybe not comment
 			cam->Up = gravCamPed_vecCameraUpLastSet;
 			// maybe fix the glitching?
 
@@ -1659,8 +1657,6 @@ bool _cdecl PedCamLookDir2 ( DWORD dwCam )
 		//*(float *)0x8CCE6C = cos(gravCamPed_vecCameraFrontLastSet.GetAngleDegrees());
 		//*(float *)0x8CCE6C = gravCamPed_vecCameraUpLastSet.GetAngleDegrees();
 		*(float *)0x8CCE6C = fPhi;
-		g_f_debugDisplay[0] = fPhi;
-		//g_f_debugDisplay[2] = cos(gravCamPed_vecCameraFrontLastSet.GetAngleDegrees() / 360.0f);
 
 		// set offset so we can use it in other things like Player Fly
 		gravCamPed_vecCameraFrontOffset = gravCamPed_vecCameraFrontTarget - gravCamPed_vecCameraFrontLastSet;
@@ -1803,15 +1799,8 @@ void _cdecl PedCamUp ( DWORD dwCam )
 			*pvecUp = newVecUp;
 			gravCamPed_matGravity.vUp = newVecUp;
 			gravCamPed_vecCameraUpLastSet = newVecUp;
-			// maybe fix the glitching?
-			/*
-			CMatrix *matCamera;
-			pGame->GetCamera()->GetMatrix(matCamera);
-			matCamera->vUp = newVecUp;
-			*/
 		}
-		/*
-		*/
+
 
 
 
@@ -1967,11 +1956,9 @@ void _cdecl PedCamUp ( DWORD dwCam )
 			* (vecCameraPanTargetSmoother.Length() / 50.0f) // return to zero
 			* (g_timeDiff * 69.0f); // fps/timing
 
-		cam->Source = cam->Source - gravCamPed_vecCameraPanSource;
-		gravCamPed_vecCameraPosLastSet = cam->Source;
+		gravCamPed_vecCameraPosLastSet = cam->Source - gravCamPed_vecCameraPanSource;
+		cam->Source = gravCamPed_vecCameraPosLastSet;
 
-		/*
-		*/
 
 		//cam->SourceBeforeLookBehind = cam->Source + gravCamPed_vecCameraPanSource;
 		//cam->m_aTargetHistoryPos[3] = cam->m_aTargetHistoryPos[2];
