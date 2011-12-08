@@ -6,7 +6,7 @@
 !define MUI_INSTFILESPAGE_PROGRESSBAR colored
 !define NAME 'mod_sa'
 !define MP 'SA-MP'
-!define MP_VERSION 'v0.3dR1'
+!define MP_VERSION 'v0.3d'
 !define VERSION 'v4.3.1.1'
 
 ; create output directory if it doesn't exist
@@ -25,7 +25,7 @@ RequestExecutionLevel admin
 ; gimme some mo plugins
 !addplugindir ".\nsis"
 
-; Yo dawg...  I heard you like installers with music, so we put some music in your installer so you can listen to music while you like your installer.
+; music (yo dawg is unfunny)
 !define BASSMOD_PATH ".\nsis"
 !define BASSMOD_NAME "bassmod.dll"
 !define BASSMOD_LOCATION "${BASSMOD_PATH}\${BASSMOD_NAME}"
@@ -130,6 +130,12 @@ Section "Install" SecDummy
 	Call DirectXUpdater
 
 	WriteUninstaller "$INSTDIR\Uninstall_${NAME}.exe"
+	
+	; add game directory location to the registry even if it exists
+	; just in case someone changed their installation location.
+	; this should happen much more often than using more than one
+	; copy of the game at a time.
+	WriteRegStr HKLM "SOFTWARE\Rockstar Games\GTA San Andreas\Installation" "ExePath" $INSTDIR
 SectionEnd
 
 ; Uninstall Sequence
