@@ -1624,14 +1624,12 @@ bool _cdecl PedCamLookDir2 ( DWORD dwCam )
 			// rotate the camera
 			camRotate = camRotate.Rotate(&rotationAxis, theta);
 			gravCamPed_vecCameraFrontLastSet = camRotate.vFront;
-// maybe not comment
 			gravCamPed_vecCameraUpLastSet = camRotate.vUp;
 			gravCamPed_vecCameraRightLastSet = camRotate.vRight;
 			gravCamPed_vecCameraFrontLastSet.Normalize();
 			gravCamPed_vecCameraUpLastSet.Normalize();
 			gravCamPed_vecCameraRightLastSet.Normalize();
 			cam->Front = gravCamPed_vecCameraFrontLastSet;
-// maybe not comment
 			cam->Up = gravCamPed_vecCameraUpLastSet;
 			// maybe fix the glitching?
 
@@ -1784,7 +1782,7 @@ void _cdecl PedCamUp ( DWORD dwCam )
 		pPedSelf->GetMoveSpeed(&vecSpeed);
 
 		// tone down the movement
-		CVector smoothedGrav = gravCamPed_matGravity.vUp + (g_vecUpNormal * 2.0f);
+		CVector smoothedGrav = gravCamPed_matGravity.vUp + (g_vecUpNormal * 1.445f);
 		smoothedGrav.Normalize();
 
 		CVector newVecUp = *pvecLookDir;
@@ -1800,6 +1798,65 @@ void _cdecl PedCamUp ( DWORD dwCam )
 			gravCamPed_matGravity.vUp = newVecUp;
 			gravCamPed_vecCameraUpLastSet = newVecUp;
 		}
+
+
+
+
+		
+
+
+		// set our target source position offset
+		// this is a feedback system, so be careful with how it's tuned.
+		// this is needed or you have to do a lot more heavy math
+		// to properly handle a more complete rotation ability of
+		// a camera.vFront  but it IS possible to fly around without
+		// any limitations to the camera, and to make controls so you
+		// can have elevators in any vehicle, or object. :)
+		CVector vecCameraPanTargetSmoother = gravCamPed_vecCameraFrontOffset - gravCamPed_vecCameraPanSource;
+
+		gravCamPed_vecCameraPanSource +=
+			(vecCameraPanTargetSmoother / 3.0f ) // added to camera pan
+			* (vecCameraPanTargetSmoother.Length() / 50.0f) // return to zero
+			* (g_timeDiff * 69.0f); // fps/timing
+
+		gravCamPed_vecCameraPosLastSet = cam->Source - gravCamPed_vecCameraPanSource;
+		cam->Source = gravCamPed_vecCameraPosLastSet;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		// development stuff below here.
+		// use the ideas in this and the player fly code to make
+		// a car fly mode that just flies toward the mouse, but...
+		// with air-craft physics of course. :)
+		//
+		// have fun. merry xmas, and hopefully many happy hookers for Kye's new year's.
+		// -nf
+
+		// p.s. someone do something with SpiderFeet.
+		// it can be done, if the collision z placements are fixed.
+		// then move the camera based on 5 collisions under the player when not on the
+		// ground, and at least two to detect proximity in front on the player, to
+		// make the player start running across the surfaces more accurately.
+		// and to enable, of course, jumping around corners sideways and such.
+		// nananananananananananananananana Kyebatman.
+
+
+
+
+
+
+
 
 
 
@@ -1944,20 +2001,6 @@ void _cdecl PedCamUp ( DWORD dwCam )
 
 
 
-
-
-
-		
-		// set our target source position offset
-		CVector vecCameraPanTargetSmoother = gravCamPed_vecCameraFrontOffset - gravCamPed_vecCameraPanSource;
-
-		gravCamPed_vecCameraPanSource +=
-			(vecCameraPanTargetSmoother / 3.0f ) // added to camera pan
-			* (vecCameraPanTargetSmoother.Length() / 50.0f) // return to zero
-			* (g_timeDiff * 69.0f); // fps/timing
-
-		gravCamPed_vecCameraPosLastSet = cam->Source - gravCamPed_vecCameraPanSource;
-		cam->Source = gravCamPed_vecCameraPosLastSet;
 
 
 		//cam->SourceBeforeLookBehind = cam->Source + gravCamPed_vecCameraPanSource;

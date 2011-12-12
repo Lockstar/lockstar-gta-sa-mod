@@ -114,6 +114,18 @@ public:
 		return mRotateMult;
 	}
 
+	void Normalize ( bool bNormalizePosition=0 )
+	{
+		// normalize vectors
+		vRight.Normalize();
+		vFront.Normalize();
+		vUp.Normalize();
+
+		// if you want the position matric to also be normalized, defaults to no.
+		if (bNormalizePosition)
+			vPos.Normalize();
+	}
+
 };
 
 #endif
