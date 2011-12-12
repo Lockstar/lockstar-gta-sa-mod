@@ -654,6 +654,7 @@ bool playerFly_animationKeyStateSpeedDownChanged = false;
 bool playerFly_animationDirectionSpeedDownChanged = false;
 bool playerFly_animationDeceleration = false;
 CMatrix playerFly_lastPedRotation = CMatrix();
+CVector upStrafeAxisBuffer; // used for smoothing up strafing over time
 
 void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 {
@@ -1103,7 +1104,9 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			// calculate rotation
 			rotationAxis = vecSpeedRotate;// + gravCamPed_vecCameraPanOffset;
 			rotationAxis.Normalize();
+			// magic
 			rotationAxis.CrossProduct( &matSpeedVecRotate.vFront );
+			// control
 			thetaBase = abs(sinh(vecSpeedRotate.DotProduct(&matSpeedVecRotate.vFront)) - 1.175f) / 2.35f + 1.0f;
 			theta = thetaBase * rotationMultiplier;
 			if ( !near_zero(theta) )
@@ -1172,7 +1175,8 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 
 			CMatrix matPedTarget;
 			matPedTarget.vFront = matCamera.vFront;
-			matPedTarget.vRight = matCamera.vRight;
+			matPedTarget.vRight = matCamera.vRight + (playerFly_lastPedRotation.vRight * 0.2f);
+			matPedTarget.vRight.Normalize();
 			matPedTarget.vUp = matCamera.vUp;
 
 			// rotate the ped rotation target to direction of speed
@@ -1182,7 +1186,8 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				rotationAxis = g_vecUpNormal;
 				rotationAxis.CrossProduct( &vecPedRotate );
 				thetaBase = vecSpeedRotate.DotProduct(&vecPedRotate);
-				rotationMultiplier = (time_diff * 69.0f) / ( 16.0f + (vecSpeed.Length() * 2.0f) );
+				// drifting
+				rotationMultiplier = (time_diff * 69.0f) / ( 18.0f + (vecSpeed.Length() * 1.75f) );
 				theta = cos(thetaBase * rotationMultiplier);
 				if ( !near_zero(theta) )
 				{
@@ -1195,10 +1200,18 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 				// animation so that the animation is at the correct angle
 				if (playerFly_animationDeceleration)
 				{
-					CVector upStrafeAxis = matCamera.vFront;
+					CVector upStrafeAxis = vecPedRotate;
 					upStrafeAxis.CrossProduct(&matPedTarget.vUp);
-					theta = -1.5; // 1.57 = 90 degrees
-					matPedTarget = matPedTarget.Rotate( &upStrafeAxis, theta );
+					rotationMultiplier = (time_diff * 69.0f) / ( 1.0f + (vecSpeed.Length() * 0.25f) );
+					thetaBase = -1.5;// * rotationMultiplier; // 1.57 = 90 degrees
+					theta = cos(thetaBase * rotationMultiplier);
+
+					// rotate the ped rotation target to direction of speed
+					if (!near_zero(vecSpeed.Length()))
+					{
+						matPedTarget = matPedTarget.Rotate( &upStrafeAxis, theta );
+					}
+					//upStrafeAxis = upStrafeAxisBuffer;
 				}
 			}
 
@@ -1210,9 +1223,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			}
 
 			// normalize everything
-			matPedTarget.vFront.Normalize();
-			matPedTarget.vRight.Normalize();
-			matPedTarget.vUp.Normalize();
+			matPedTarget.Normalize(false); // sure, why not
 
 // rotate the ped
 
@@ -1247,7 +1258,7 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			rotationAxis = playerFly_lastPedRotation.vRight;
 			rotationAxis.CrossProduct( &matPedTarget.vRight );
 			thetaBase = playerFly_lastPedRotation.vRight.DotProduct(&matPedTarget.vRight);
-			theta = -cos(thetaBase) * rotationMultiplier;
+			theta = -cos(thetaBase) * (rotationMultiplier * 0.825f);
 			if ( !near_zero(theta) )
 			{
 				playerFly_lastPedRotation = playerFly_lastPedRotation.Rotate( &rotationAxis, theta );
@@ -1255,10 +1266,11 @@ void cheat_handle_actor_fly ( struct actor_info *ainfo, double time_diff )
 			}
 
 			// up
-			rotationAxis = playerFly_lastPedRotation.vUp;
+			rotationAxis = playerFly_lastPedRotation.vUp + (g_vecUpNormal / 1.4f);
+			rotationAxis.Normalize();
 			rotationAxis.CrossProduct( &matPedTarget.vUp );
 			thetaBase = playerFly_lastPedRotation.vUp.DotProduct(&matPedTarget.vUp);
-			theta = -cos(thetaBase) * (rotationMultiplier / 10.0f);
+			theta = -cos(thetaBase) * (rotationMultiplier / 8.0f);
 			if ( !near_zero(theta) )
 			{
 				playerFly_lastPedRotation = playerFly_lastPedRotation.Rotate( &rotationAxis, theta );
