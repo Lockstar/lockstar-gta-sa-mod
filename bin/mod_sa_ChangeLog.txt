@@ -2,6 +2,9 @@ mod_sa
 by jflm, nuckfuts, notaplane, and the game modification community
 http://code.google.com/p/m0d-s0beit-sa/
 
+Version 4.3.1.2
+* Really smooth player flying in samp.
+
 Version 4.3.1.1
 * Support for SA-MP 0.3d
 
