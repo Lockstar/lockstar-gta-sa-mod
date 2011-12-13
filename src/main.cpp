@@ -31,6 +31,7 @@ FILE					*g_flLogChatbox = NULL;
 FILE					*g_flLogChatboxAll = NULL;
 char					g_szLastFunc[256];
 uint32_t				g_dwSAMP_Addr = NULL;
+char					g_szSAMPVer[16];
 
 CSettingsSAInterface	*g_pCSettingsSAInterface = (CSettingsSAInterface *)CLASS_CMenuManager;
 D3DPRESENT_PARAMETERS	*g_pGTAPresent = (D3DPRESENT_PARAMETERS *)0xC9C040;
