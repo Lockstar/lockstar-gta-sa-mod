@@ -3664,7 +3664,9 @@ void renderHandler()
 						render->D3DBoxi( (int)x - 1,
 										 (int)(pPresentParam.BackBufferHeight - 1) - (int)pD3DFont->DrawHeight() - 3,
 										 (int)(pPresentParam.BackBufferWidth + 14), 22, bar_color, NULL );
-						HUD_TEXT( x, D3DCOLOR_ARGB(127, 255, 255, 255), NAME " for " SAMP_VERSION );
+
+						_snprintf_s( buf, sizeof(buf)-1, "%s for %s", NAME, g_szSAMPVer );
+						HUD_TEXT( x, D3DCOLOR_ARGB(127, 255, 255, 255), buf );
 					}
 					else
 					{

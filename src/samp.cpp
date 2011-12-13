@@ -22,8 +22,9 @@
 */
 #include "main.h"
 
-#define SAMP_DLL	"samp.dll"
-#define SAMP_CMP	"C70424C97E9C8F442430"
+#define SAMP_DLL		"samp.dll"
+#define SAMP_CMP_03DR1	"C70424C97E9C8F442430"
+#define SAMP_CMP_03DR2	"0074201000A30B100073"
 
 //randomStuff
 extern int						iViewingInfoPlayer;
@@ -411,18 +412,33 @@ void getSamp ()
 
 		if ( g_dwSAMP_Addr != NULL )
 		{
-			if ( !memcmp_safe((uint8_t *)g_dwSAMP_Addr + 0xBABE, hex_to_bin(SAMP_CMP), 10) )
+			if ( memcmp_safe((uint8_t *)g_dwSAMP_Addr + 0xBABE, hex_to_bin(SAMP_CMP_03DR1), 10) )
 			{
-				Log( "Unknown SA:MP version. Only %s is supported in this version. Running in basic mode.", SAMP_VERSION );
+				strcpy(g_szSAMPVer, "SA:MP 0.3d");
+				Log( "%s was detected. g_dwSAMP_Addr: 0x%p", g_szSAMPVer, g_dwSAMP_Addr );
+				iIsSAMPSupported = 1;
+			}
+			else if ( memcmp_safe((uint8_t *)g_dwSAMP_Addr + 0xBABE, hex_to_bin(SAMP_CMP_03DR2), 10) )
+			{
+				strcpy(g_szSAMPVer, "SA:MP 0.3d-R2");
+				Log( "%s was detected. g_dwSAMP_Addr: 0x%p", g_szSAMPVer, g_dwSAMP_Addr );
+
+				// (0.3d-R2 temp) disable AC
+				if(memcmp_safe((uint32_t *)(g_dwSAMP_Addr + 0x8F210), "\xE9\x34\x91\x24\x00", 5))
+					memset_safe((uint32_t *)(g_dwSAMP_Addr + 0x8F210), 0xC3, 1);
+
+				iIsSAMPSupported = 0;
+				set.basic_mode = true;
+				g_dwSAMP_Addr = NULL;
+			}
+			else
+			{
+				Log( "Unknown SA:MP version. Running in basic mode." );
 				iIsSAMPSupported = 0;
 				set.basic_mode = true;
 
 				g_dwSAMP_Addr = NULL;
-				return;
 			}
-
-			Log( "g_dwSAMP_Addr: 0x%p", g_dwSAMP_Addr );
-			iIsSAMPSupported = 1;
 		}
 	}
 	else

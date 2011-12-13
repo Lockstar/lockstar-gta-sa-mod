@@ -28,7 +28,7 @@
 
 
 #define M0D_NAME		"mod_sa"
-#define M0D_VERSION		"4.3.1.2 (0.3d ONLY, NO RC2)"
+#define M0D_VERSION		"4.3.1.2"
 #define SAMP_VERSION	"SA:MP 0.3d"
 
 // Use this to activate the SQLite Vehicle Recording.
@@ -221,6 +221,7 @@ extern FILE						*g_flLog;
 extern FILE						*g_flLogAll;
 extern char						g_szLastFunc[256];
 extern uint32_t					g_dwSAMP_Addr;
+extern char						g_szSAMPVer[16];
 extern CSettingsSAInterface		*g_pCSettingsSAInterface;
 extern D3DPRESENT_PARAMETERS	*g_pGTAPresent;
 extern RsGlobalType				*g_RsGlobal;
