@@ -1,4 +1,4 @@
-# ![lgmicon](http://i.imgur.com/MBCoEKN.png) GTA SA Mod
+# ![lgmicon](http://i.imgur.com/B18NXj1.png) GTA SA Mod
 #### Lockstar GTA SA Mod ( m0d s0beit ) is a multi-purpose cheat tool for Grand Theft Auto San Andreas.
 
 
