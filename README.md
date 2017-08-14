@@ -2,6 +2,6 @@
 #### Lockstar GTA SA Mod ( m0d s0beit ) is a multi-purpose cheat tool for Grand Theft Auto San Andreas.
 
 
-Welcome to the new official GitHub project. Until this project is active again, we recommend checking out the <b>[closest working version]</b> to the original m0d s0beit, for Grand Theft Auto San Andreas and San Andreas Multiplayer ( SAMP ). Please also visit our new project, <b>[Lockstar GTA V Mod]</b>.
-[Lockstar GTA V Mod]:https://github.com/Lockstar/lockstar-gta-v-mod "Lockstar GTA V Mod"
-[closest working version]:https://github.com/BlastHackNet/mod_s0beit_sa/releases "closest working version"
+Welcome to the new official GitHub project. Until this project is active again, we recommend checking out the <b>[UG-Base Forums]</b> for updated forks of m0d_s0beit, for Grand Theft Auto San Andreas and San Andreas Multiplayer ( SAMP ).
+
+[UG-Base Forums]:http://ugbase.eu/Forum-m0d-s0beit-Projects "UG-Base Forums"
